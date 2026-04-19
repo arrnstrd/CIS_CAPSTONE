@@ -30,7 +30,7 @@
 
                     <!-- Left: Page title and subtitle -->
                     <div>
-                        <h3 class="fw-bold text-dark mb-0">{{$pageName ?? 'Header' }} </h3>
+                        <h4 class="fw-bold text-dark mb-0">{{$pageName ?? 'Header' }} </h4>
                         <p class="text-muted small mb-0">{{ $subtitle ?? 'subtile here' }}</p>
                     </div>
 
