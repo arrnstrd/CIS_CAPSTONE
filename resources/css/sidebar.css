@@ -1,0 +1,176 @@
+
+/* ===== SIDEBAR WRAPPER ===== */
+.sidebar-wrapper {
+    width: 260px;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background: #2F4AC0;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+}
+
+/* ===== SCROLLABLE NAV AREA ===== */
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.sidebar-content::-webkit-scrollbar { width: 4px; }
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* ===== BRAND ===== */
+.sidebar-brand {
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== NAV MENU ===== */
+.sidebar-menu { padding-bottom: 10px; }
+
+.sidebar-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu ul li { position: relative; }
+
+.sidebar-menu ul li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.sidebar-menu ul li a i {
+    margin-right: 15px;
+    width: 20px;
+    text-align: center;
+    font-size: 11px;
+}
+
+.sidebar-menu ul li a:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* ===== ACTIVE STATE ===== */
+.sidebar-menu ul li.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 15%;
+    height: 70%;
+    width: 4px;
+    background-color: #ffffff;
+    border-radius: 0 4px 4px 0;
+}
+
+.sidebar-menu ul li.active > a {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+}
+
+/* ===== SUBMENU ===== */
+.sidebar-submenu {
+    display: none;
+    background: rgba(0, 0, 0, 0.08);
+    font-size: 13px;
+}
+
+.sidebar-submenu ul li a {
+    padding-left: 52px !important;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.sidebar-submenu ul li a:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-radius: 0 !important;
+}
+
+.sidebar-submenu ul li.active a {
+    color: #ffffff !important;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== DROPDOWN CHEVRON ===== */
+.sidebar-dropdown > a:after {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    content: "\f105";
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-dropdown.active > a:after {
+    transform: rotate(90deg);
+}
+
+.sidebar-dropdown.active .sidebar-submenu {
+    display: block;
+}
+
+/* ===== SECTION LABEL ===== */
+.sidebar-section-label {
+    padding: 14px 25px 4px;
+    list-style: none;
+}
+
+.sidebar-section-label small {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+/* ===== LOGOUT FOOTER ===== */
+.sidebar-footer {
+    flex-shrink: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-logout-action {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-logout-action:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #ffffff;
+}

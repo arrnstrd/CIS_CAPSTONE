@@ -1,0 +1,13 @@
+.page-content {
+    padding: 20px 0 0 260px;
+    transition: padding-left 0.3s ease;
+}
+
+.sidebar-collapsed .page-content {
+    padding-left: 0;
+}
+
+body{
+       font-size: 0.9rem;
+    background-color: #e7ecf9;
+}

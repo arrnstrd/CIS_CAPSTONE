@@ -1,0 +1,48 @@
+
+.table-panel {
+    border-radius: 5px;
+    overflow: hidden;
+}
+/* Force column widths and clip overflow */
+.table {
+    table-layout: fixed;
+    border-collapse: collapse; /* collapse so row dividers show cleanly */
+}
+
+/* Compact row cells */
+.table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 7px 8px;           /* Reduced from 16px — tighter rows */
+    font-size: 0.85rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0; /* Subtle row divider */
+}
+
+/* Table header */
+.table-panel .table thead tr {
+    background-color: #0d25c2;
+    color: #ffffff;
+
+}
+
+.table-panel .table thead th {
+    background-color: inherit;
+    color: #fffcfc;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;         /* Slightly smaller header text */
+    letter-spacing: 0.4px;
+    padding: 9px 8px;           /* Tight header height */
+    border: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+ 
+}
+
+/* Hover row highlight */
+.table-hover tbody tr:hover {
+    background-color: #ffffff;
+}
