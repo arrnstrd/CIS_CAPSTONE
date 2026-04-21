@@ -10,9 +10,9 @@
               </thead>
 
                 <tbody>
-                    <tr>
+                    
                         {{$tbody  }}
-                    </tr>
+                    
                 </tbody>
             </table>
         </div>

@@ -1,0 +1,56 @@
+
+/* Container Spacing */
+.grade-selection-wrapper {
+    max-width: 10000px;
+}
+
+/* Label Styling */
+.ls-1 {
+    letter-spacing: 1.5px;
+}
+
+/* Grade Card Design */
+.grade-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    padding: 1.25rem;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: 1px solid transparent;
+}
+
+.grade-card:hover {
+    transform: translateY(-2px);
+    border-color: #e2e5ff; /* Your theme blue */
+    box-shadow: 0 10px 20px rgba(16, 46, 240, 0.08) !important;
+}
+
+/* Text inside cards */
+.grade-name {
+    display: block;
+    font-weight: 700;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.student-count {
+    display: block;
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.grade-card i {
+    font-size: 0.9rem;
+    transition: transform 0.2s;
+}
+
+.grade-card:hover i {
+    transform: translateX(3px);
+    color: #d7dbf2 !important;
+}
+

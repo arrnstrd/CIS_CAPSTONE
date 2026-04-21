@@ -33,7 +33,7 @@
                     <div class="sidebar-submenu">
                         <ul>
                             <li><a href="/entry_exit"><i class="fa fa-exchange-alt me-2"></i>Entry/Exit Monitoring</a></li>
-                            <li><a href="#"><i class="fa fa-user-check me-2"></i>Class Attendance</a></li>
+                            <li><a href="/attendance"><i class="fa fa-user-check me-2"></i>Class Attendance</a></li>
                             <li><a href="#"><i class="fa fa-exclamation-triangle me-2"></i>Flagged Scans</a></li>
                             <li><a href="#"><i class="fa fa-envelope-open-text me-2"></i>Email Monitoring</a></li>
                         </ul>
