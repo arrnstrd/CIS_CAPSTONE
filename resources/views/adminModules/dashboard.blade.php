@@ -13,7 +13,7 @@
 
     {{-- contents inside eontainer fluid --}}
     <div class="row g-3 mb-3 justify-content-center">
-         <x-card title="entry scans" value="0" icon="fa-solid fa-door-open" variants="success" />
+        <x-card title="entry scans" value="0" icon="fa-solid fa-door-open" variants="success" />
         <x-card title="exit scans" value="0" icon="fa-solid fa-door-open" variants="primary" />
         <x-card title="flagged scans" value="0" icon="fa-solid fa-door-open" variants="warning" />
 
@@ -23,7 +23,7 @@
 
     <x-ui.table>
         <x-slot name="thead">
-             <th> Date</th>
+            <th> Date</th>
             <th> name</th>
             <th>grade</th>
             <th>section</th>
@@ -35,14 +35,18 @@
 
 
         <x-slot name="tbody">
-            <td> </td>
-            <td> </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+
+            <tr>
+                <td> </td>
+                <td> </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+
         </x-slot>
     </x-ui.table>
 

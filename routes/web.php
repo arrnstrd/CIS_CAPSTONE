@@ -16,3 +16,11 @@ Route::get('/layout', function(){
 Route::get('/entry_exit' , function (){
     return view ('adminModules.monitoring.entry_exit_monitoring');
 })->name('entryExit');
+
+
+
+Route::get('/attendance' , function (){
+    return view ('adminModules.monitoring.attendance');
+})->name('attendance');
+
+

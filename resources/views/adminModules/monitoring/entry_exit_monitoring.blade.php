@@ -36,14 +36,18 @@
         </x-slot>
 
         <x-slot name="tbody">
-             <td> </td>
-            <td> </td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+
+            <tr>
+                <td> </td>
+                <td> </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+           
         </x-slot>
     </x-ui.table>
 
