@@ -16,7 +16,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
             $table->string('code')->unique();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
+
+
 
         });
     }
