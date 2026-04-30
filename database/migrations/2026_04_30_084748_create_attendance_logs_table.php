@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('enrollment_id')->constrained('enrollments')->onDelete('cascade');
             $table->enum('scan_type' ,['IN', 'OUT', 'RE_ENTRY', 'RE_EXIT']);
-            $table->enum('session_label' , ['morning' , 'afternoon' , 'whole_day']);
+            $table->enum('session_type' , ['morning' , 'afternoon' , 'whole_day']);
             $table->dateTime('scan_time');
             $table->foreignId('scanned_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('device_id')->nullable();

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('student_id');
+            $table->index('email');
             $table->index('attendance_log_id');
             $table->index(['status', 'attempt_count']);
         });

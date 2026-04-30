@@ -19,8 +19,6 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-
-
         });
     }
 

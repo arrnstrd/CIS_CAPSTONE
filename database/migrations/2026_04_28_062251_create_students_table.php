@@ -17,10 +17,12 @@ return new class extends Migration
             $table->string('first_name');
             $table->string('last_name');
             $table->enum('sex',['female', 'male']);
-            $table->text('address');
+            $table->string('address');
             $table->date('birthdate');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
+
+            $table->index(['last_name', 'first_name']);
         });
     }
 

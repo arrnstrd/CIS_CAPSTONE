@@ -25,7 +25,7 @@ return new class extends Migration
 
              $table->timestamps();
 
-            $table->unique(['level' , 'session']);
+            $table->unique(['level' , 'session_type']);
 
         });
     }

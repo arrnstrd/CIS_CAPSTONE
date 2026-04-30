@@ -24,3 +24,12 @@ Route::get('/attendance' , function (){
 })->name('attendance');
 
 
+
+
+
+
+
+//qr
+Route::get('/qr_code' , function(){
+    return view ('qr');
+});
