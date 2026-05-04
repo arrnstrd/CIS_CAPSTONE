@@ -13,12 +13,10 @@ class Student extends Model
         'last_name',
         'sex',
         'address',
+        'birthdate',
         'status'
     ];
 
-    protected $casts = [
-        'birthdate'
-    ];
-    
+ 
     
 }
