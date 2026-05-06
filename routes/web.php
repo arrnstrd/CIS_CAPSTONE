@@ -30,6 +30,6 @@ Route::get('/attendance' , function (){
 
 
 //qr
-Route::get('/qr_code' , function(){
-    return view ('qr');
+Route::get('/role-selection' , function(){
+    return view ('login.role_selection');
 });
