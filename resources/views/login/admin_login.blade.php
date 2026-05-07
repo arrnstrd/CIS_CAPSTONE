@@ -1,3 +1,6 @@
+@vite(['resources/css/app.css', 'resources/js/app.js'])
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

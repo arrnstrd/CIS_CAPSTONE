@@ -1,3 +1,5 @@
+@vite(['resources/css/app.css', 'resources/js/app.js'])
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,7 +52,7 @@
         
         <!-- Header -->
         <div class="text-center mb-5">
-            <img src="/assets/images/cis-logo-w-bg.png" alt="CIS Logo" class="mb-3 rounded-circle shadow-sm" style="width: 120px;">
+            <img src="{{ asset('images/CIS-logo.png')}}" alt="CIS Logo" class="mb-3 rounded-circle shadow-sm" style="width: 120px;">
             <h2 class="text-white fw-bold mb-0">CONCEPCION INTEGRATED SCHOOL</h2>
             <p class="text-white-50 text-uppercase small ls-2 mt-1">Centralized Management System</p>
         </div>
@@ -59,7 +61,7 @@
             
             <!-- Admin Role Card -->
             <div class="col-md-5">
-                <a href="/login-portal/admin-login.html" class="text-decoration-none h-100 d-block admin-card hover-card">
+                <a href="#" class="text-decoration-none h-100 d-block admin-card hover-card">
                     <!-- Added rounded-4 and standard shadow -->
                     <div class="card border-0 h-100 p-4 text-center rounded-4 shadow">
                         
@@ -81,7 +83,7 @@
 
             <!-- Teacher Role Card -->
             <div class="col-md-5">
-                <a href="/login-portal/teacher-login.html" class="text-decoration-none h-100 d-block teacher-card hover-card">
+                <a href="#" class="text-decoration-none h-100 d-block teacher-card hover-card">
                     <div class="card border-0 h-100 p-4 text-center rounded-4 shadow">
                         
                         <!-- Using bg-success and bg-opacity-10 for the teacher icon wrapper -->

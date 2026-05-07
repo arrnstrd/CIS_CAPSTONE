@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Guardian;
 use App\Models\Student;
+use App\Models\QrCode;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
 
 class StudentController extends Controller
 {
@@ -13,69 +17,77 @@ class StudentController extends Controller
 
     public function index()
     {
-        $students = Student::where('student_id')->get()->all();
+        // $students = Student::where('student_id')->get()->all();
     }
 
     public function store(Request $request)
     {
-        //validate data in input field
+        // validate input
         $validatedData = $request->validate([
             'first_name' => ['required', 'string'],
-            'last_name' =>  ['required', 'string'],
+            'last_name' => ['required', 'string'],
             'sex' => ['required', 'in:female,male'],
             'address' => ['required', 'string'],
             'birthdate' => ['required', 'date'],
             'status' => ['required', 'in:active,inactive'],
 
-            //for guardian input
+            // guardian input
             'name' => ['required', 'string'],
             'relationship' => ['required', 'in:mother,father,sibling,guardian'],
             'email' => ['required', 'email']
         ]);
 
 
-        $studentData = [
-            'first_name' => strip_tags($validatedData['first_name']),
-            'last_name' => strip_tags($validatedData['last_name']),
-            'sex' => $validatedData['sex'],
-            'address' => strip_tags($validatedData['address']),
-            'birthdate' => $validatedData['birthdate'],
-            'status' => $validatedData['status'],
-        ];
+        $student = DB::transaction(function () use ($validatedData) {
 
+            // 1. create student first (without student_number)
+            $student = Student::create([
+                'first_name' => strip_tags($validatedData['first_name']),
+                'last_name' => strip_tags($validatedData['last_name']),
+                'sex' => $validatedData['sex'],
+                'address' => strip_tags($validatedData['address']),
+                'birthdate' => $validatedData['birthdate'],
+                'status' => $validatedData['status'],
+            ]);
 
+            // 2. generate student number using real DB ID
+            $studentNumber = 'STU-' . now()->year . '-' . str_pad($student->id, 4, '0', STR_PAD_LEFT);
 
-        $student =  DB::transaction(function () use ($studentData, $validatedData) {
-            $student = Student::create($studentData);
+            $student->update([
+                'student_number' => $studentNumber
+            ]);
 
-
-
-            $guardianData = [
+            // 3. create guardian linked to student
+            Guardian::create([
                 'student_id' => $student->id,
                 'name' => strip_tags($validatedData['name']),
-                'relationship' => ($validatedData['relationship']),
+                'relationship' => $validatedData['relationship'],
                 'email' => strip_tags($validatedData['email']),
-            ];
+            ]);
 
-            Guardian::create($guardianData);
+            //4. generate Unique qr code 
+            do {
+                $qrCode = Str::upper(Str::random(10));
+            }while (QrCode::where('code' , $qrCode)->exists());
+
+            //5/ stoer qr
+
+            QrCode::create([
+                'student_id' => $student->id,
+                'code' => $qrCode,
+                'is_active' => true
+            ]);
+
 
             return $student;
         });
 
+        
+
         return response()->json([
             'message' => 'Student and guardian created successfully',
-            'student' => $student
+            'student' => $student,
+            // 'qr_code' => $qrCode
         ]);
     }
-
-
-    public function update(Request $request) {
-
-    
-    }
-
-
-
-
-    public function destroy() {}
 }
