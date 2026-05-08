@@ -1,0 +1,37 @@
+QR Scan
+→ Validate QR
+
+→ Resolve Student
+
+→ Get level + session_type
+
+→ Find matching ScheduleConfig
+
+→ Compare current time vs late_threshold
+
+→ Determine attendance status
+
+→ Create AttendanceLog
+
+→ Create EmailLog
+
+→ Send email
+
+→ Return scan response
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
