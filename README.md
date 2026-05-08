@@ -28,8 +28,8 @@ late threshold
 
 -----
 controllers
-
-EmailLog
+✅ ScanController (gate scan)
+✅ EmailLog
 AttendanceLog
 FlaggedScan
 QrCode
@@ -38,7 +38,7 @@ Student
 User
 Guardian
 Teacher
-Enrollment
+Enrollment 
 
 
 
