@@ -6,11 +6,11 @@ use App\Models\AttendanceLog;
 use App\Models\EmailLog;
 use App\Models\Enrollment;
 use App\Models\FlaggedScan;
-use App\Models\Guardian;
 use App\Models\QrCode;
 use App\Models\ScheduleConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class ScanController extends Controller
@@ -23,7 +23,8 @@ class ScanController extends Controller
         ]);
 
         // find active QR code
-        $qr = QrCode::where('code', $request->code)
+        $qr = QrCode::with('student.guardian')
+            ->where('code', $request->code)
             ->where('is_active', true)
             ->first();
 
@@ -44,19 +45,23 @@ class ScanController extends Controller
             ], 404);
         }
 
-        // resolve enrollment
-        $enrollment = Enrollment::where('student_id', $student->id)->first();
+        $guardian = $student->guardian;
+
+        // resolve active enrollment
+        $enrollment = Enrollment::where('student_id', $student->id)
+            ->where('status', 'active')
+            ->first();
 
         // enrollment missing
         if (!$enrollment) {
             return response()->json([
-                'message' => 'Enrollment not found'
+                'message' => 'No active enrollment found for this student'
             ], 404);
         }
 
-        // get schedule configuration
-        $schedule = ScheduleConfig::where('level', $student->level ?? 'hs')
-            ->where('session_type', $student->session_type ?? 'morning')
+        // get schedule configuration based on enrollment
+        $schedule = ScheduleConfig::where('level', $enrollment->level)
+            ->where('session_type', $enrollment->session_type)
             ->first();
 
         // determine if late
@@ -66,28 +71,27 @@ class ScanController extends Controller
             $isLate = now()->format('H:i:s') > $schedule->late_threshold;
         }
 
+        // check for duplicate scan BEFORE inserting
+        $existingToday = AttendanceLog::where('enrollment_id', $enrollment->id)
+            ->whereDate('scan_time', today())
+            ->exists();
+
         // start transaction
         $attendanceLog = DB::transaction(function () use (
             $enrollment,
-            $student,
-            $isLate
+            $isLate,
+            $existingToday
         ) {
-
             // create attendance log
             $attendanceLog = AttendanceLog::create([
                 'enrollment_id' => $enrollment->id,
                 'scan_type' => 'IN',
-                'session_type' => $student->session_type ?? 'morning',
+                'session_type' => $enrollment->session_type,
                 'scan_time' => now(),
             ]);
 
-            // detect duplicate scan
-            $duplicateScan = AttendanceLog::where('enrollment_id', $enrollment->id)
-                ->whereDate('scan_time', today())
-                ->count();
-
-            // flag duplicate
-            if ($duplicateScan > 1) {
+            // flag duplicate scan
+            if ($existingToday) {
                 FlaggedScan::create([
                     'attendance_log_id' => $attendanceLog->id,
                     'flag_type' => 'duplicate_scan',
@@ -107,13 +111,8 @@ class ScanController extends Controller
             return $attendanceLog;
         });
 
-        // resolve guardian
-        $guardian = Guardian::where('student_id', $student->id)->first();
-
         // email flow
-        if ($guardian && $guardian->email) {
-
-            // create email log
+        if ($guardian && !empty($guardian->email)) {
             $emailLog = EmailLog::create([
                 'attendance_log_id' => $attendanceLog->id,
                 'student_id' => $student->id,
@@ -124,38 +123,49 @@ class ScanController extends Controller
             ]);
 
             try {
-
-                // send email
                 Mail::raw(
-                    "Student {$student->first_name} scanned at " . now(),
-                    function ($message) use ($guardian) {
+                    "Magandang araw! Si {$student->first_name} {$student->last_name} ay naka-scan ng pasok ngayong " . now()->format('h:i A') . ".",
+                    function ($message) use ($guardian, $student) {
                         $message->to($guardian->email)
-                            ->subject('CIS Gate Scan Notification');
+                            ->subject("CIS Attendance: {$student->first_name} ay nakapasok na");
                     }
                 );
 
-                // update email log status
                 $emailLog->update([
                     'status' => 'sent',
-                    'attempt_count' => $emailLog->attempt_count + 1
+                    'sent_at' => now(),
+                    'attempt_count' => 1,
+                    'last_attempt_at' => now(),
                 ]);
-
             } catch (\Exception $e) {
+                Log::error("Mail failed for student {$student->id}: " . $e->getMessage());
 
-                // update failed email status
                 $emailLog->update([
                     'status' => 'failed',
-                    'attempt_count' => $emailLog->attempt_count + 1
+                    'attempt_count' => 1,
+                    'last_attempt_at' => now(),
                 ]);
             }
         }
 
-        // success response
+        // success response — limited fields only, no sensitive data
         return response()->json([
             'message' => 'Scan successful',
-            'student' => $student,
-            'attendance_log' => $attendanceLog,
-            'late' => $isLate
+            'student' => [
+                'id' => $student->id,
+                'name' => "{$student->first_name} {$student->last_name}",
+                'student_number' => $student->student_number,
+                'section' => $enrollment->section,
+                'level' => $enrollment->level,
+            ],
+            'attendance_log' => [
+                'id' => $attendanceLog->id,
+                'scan_type' => $attendanceLog->scan_type,
+                'session_type' => $attendanceLog->session_type,
+                'scan_time' => $attendanceLog->scan_time,
+            ],
+            'late' => $isLate,
+            'flagged' => $existingToday || $isLate,
         ]);
     }
 }

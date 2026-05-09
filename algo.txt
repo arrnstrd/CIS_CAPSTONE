@@ -26,6 +26,44 @@ QR Scan
 
 
 
+scan qr
+validate qr
+find qr
+look for student
+look for guardian
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+problem
+
+it doesnt send automated email right after scanning the qr code
+
+
+
 
 
 

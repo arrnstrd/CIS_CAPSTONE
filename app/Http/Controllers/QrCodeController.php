@@ -17,7 +17,7 @@ class QrCodeController extends Controller
 
         // 2. Generate QR image (base64 PNG)
         $qrImage = base64_encode(
-            QrCode::format('png')
+            QrCode::format('svg')
                 ->size(200)
                 ->generate($student->qrCode->code)
         );

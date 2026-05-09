@@ -1,7 +1,9 @@
 <?php
 
-use App\Http\Controllers\StudentController;
 use App\Http\Controllers\QrCodeController;
+use App\Http\Controllers\ScanController;
+use App\Http\Controllers\StudentController;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', function () {
@@ -39,6 +41,7 @@ Route::get('/role-selection' , function(){
 
 
 
+
 //testing phase - student management
 Route::get('/student-management', function(){
     return view('adminModules.management.studentList');
@@ -48,5 +51,29 @@ Route::get('/student-management', function(){
 
 Route::post('/students' , [StudentController::class, 'store'])->name('students.store');
 
-
+//for showing/dl of qr code
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
+
+
+
+//for testing only (can be remove soon)
+Route::get('/test-email', function () {
+
+    Mail::raw('Testing email', function ($message) {
+        $message->to('arriane.dev@gmail.com')
+                ->subject('Test');
+    });
+
+    return 'Enail Sent!!';
+});
+
+
+
+Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
+
+
+
+
+Route::get('/scanner', function () {
+    return view('scanner.index');
+});
