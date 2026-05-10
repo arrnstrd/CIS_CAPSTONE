@@ -16,9 +16,7 @@ class Enrollment extends Model
         'school_year',
         'grade_level',
         'section',
-        'level',
         'session_type',
-        'adviser_id',
         'status'
     ];
 

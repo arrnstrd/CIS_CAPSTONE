@@ -148,7 +148,7 @@ class ScanController extends Controller
             }
         }
 
-        // success response — limited fields only, no sensitive data
+        // success response 
         return response()->json([
             'message' => 'Scan successful',
             'student' => [

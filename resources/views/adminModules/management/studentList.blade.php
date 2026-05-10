@@ -3,11 +3,29 @@
         Student List
     </x-slot>
 
+
+    <x-slot name="pageName">
+        Student
+    </x-slot>
+
+    
+
+
+
+
+
+
+
+
+    
     <button class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#addStudentModal">
         + Add Student
     </button>
     
 
+
+
+    {{-- modal for add student --}}
     <div class="modal fade" id="addStudentModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
