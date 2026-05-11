@@ -1,20 +1,24 @@
 <?php
 
+use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/dashboard', function () {
-    return view('adminModules.dashboard');
-});
 
 
+// for the layouts viewing purposes
 Route::get('/layout', function(){
     return view ('components.layouts.admin');
 });
 
+
+//webpages
+Route::get('/dashboard', function () {
+    return view('adminModules.dashboard');
+});
 
 
 Route::get('/entry_exit' , function (){
@@ -22,16 +26,9 @@ Route::get('/entry_exit' , function (){
 })->name('entryExit');
 
 
-
 Route::get('/attendance' , function (){
     return view ('adminModules.monitoring.attendance');
 })->name('attendance');
-
-
-
-
-
-
 
 
 //role selection for login
@@ -42,17 +39,30 @@ Route::get('/role-selection' , function(){
 
 
 
-//testing phase - student management
+
+
+
+
+
+
+
+//testing phase - student management==========================
 Route::get('/student-management', function(){
     return view('adminModules.management.studentList');
 })->name('addStudent');
 
 
-
+//storing
 Route::post('/students' , [StudentController::class, 'store'])->name('students.store');
 
 //for showing/dl of qr code
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
+
+
+
+
+
+
 
 
 
@@ -68,12 +78,13 @@ Route::get('/test-email', function () {
 });
 
 
-
 Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
 
 
 
 
+//scanner for testing
 Route::get('/scanner', function () {
     return view('scanner.index');
 });
+

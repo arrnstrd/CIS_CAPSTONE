@@ -126,6 +126,6 @@ class UserController extends Controller
 
     public function destroy(string $id)
     {
-        //i dont know here haha
+        
     }
 }

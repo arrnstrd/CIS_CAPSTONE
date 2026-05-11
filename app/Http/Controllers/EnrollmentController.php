@@ -15,6 +15,7 @@ class EnrollmentController extends Controller
         $validateData = $request->validate([
              'student_id' => ['required', 'exists:students,id'],
             'school_year' => ['required', 'regex:/^\d{4}-\d{4}$/'],
+            'level' => ['required' , 'in:elementary,hs,shs'],
             'grade_level' => [
                 'required',
                 Rule::in([
@@ -25,7 +26,7 @@ class EnrollmentController extends Controller
             ],
 
             'section' => ['required', 'string', 'max:255'],
-            'session_type' => ['required', 'in:morning,afternoon,whole_day'],
+            'session_type' => ['required', 'in:morning,afternoon'],
             'status' => ['required', 'in:active,inactive'],
         ]);
         
@@ -53,6 +54,7 @@ class EnrollmentController extends Controller
         $validatedData = $request->validate([
              'student_id' => ['required', 'exists:students,id'],
             'school_year' => ['required', 'regex:/^\d{4}-\d{4}$/'],
+            'level' => ['required' , 'in:elementary,hs,shs'],
             'grade_level' => [
                 'required',
                 Rule::in([
@@ -63,7 +65,7 @@ class EnrollmentController extends Controller
             ],
 
             'section' => ['required', 'string', 'max:255'],
-            'session_type' => ['required', 'in:morning,afternoon,whole_day'],
+            'session_type' => ['required', 'in:morning,afternoon'],
             'status' => ['required', 'in:active,inactive'],
         ]);
 
@@ -88,6 +90,37 @@ class EnrollmentController extends Controller
             'data' => $enrollment
         ]);
     }
+
+    public function destroy(string $id)
+{
+    $enrollment = Enrollment::find($id);
+
+    if (!$enrollment) {
+        return response()->json([
+            'message' => 'Enrollment not found'
+        ], 404);
+    }
+
+    try {
+        $enrollment->delete();
+
+        return response()->json([
+            'message' => 'Enrollment deleted successfully',
+            'data' => [
+                'id' => $enrollment->id,
+                'student_id' => $enrollment->student_id,
+                'school_year' => $enrollment->school_year,
+                'level' => $enrollment->level,
+                'status' => 'deleted'
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Failed to delete enrollment',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
     
     
