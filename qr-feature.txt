@@ -1,0 +1,37 @@
+
+
+current/existing:
+Controller
+1. AttendanceLogController
+2. EmailLogController (to be review)
+3. EnrollmentController (index, destroy)
+4. LoginController
+5.QrCodeController (index, to be review)
+6. StudentController(index, update, destroy)
+
+
+missing
+Controller
+1. Schedule Config - rush
+2. Flagged Scan
+3. Guardian ??
+
+
+
+plan
+
+login flow
+
+----------------------------------
+Files
+
+Email Notification
+1. index.blade.php
+2. route/api.php
+
+
+QrCode
+1.view/pdf/student-qr.blade.php
+
+
+qr code scanner
