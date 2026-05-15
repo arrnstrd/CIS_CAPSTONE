@@ -1,0 +1,16 @@
+simulation: new-simulation
+mocks:
+  - file: ../mocks/mock-1.js
+    scenarios:
+      - type: error
+        config:
+          status_code: 500
+      - type: latency
+        config:
+          delay_ms: 2000
+      - type: rate_limit
+        config:
+          requests_per_minute: 16
+      - type: chaos
+        config:
+          failure_rate: 10

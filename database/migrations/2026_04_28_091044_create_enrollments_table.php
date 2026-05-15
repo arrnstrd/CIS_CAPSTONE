@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->string('section');
 
             $table->enum('level', ['elementary', 'hs', 'shs']);
-            $table->enum('session_type', ['morning', 'afternoon', 'whole_day']);
+            $table->enum('session_type', ['morning', 'afternoon' ]);
 
             $table->foreignId('adviser_id')
                 ->nullable()

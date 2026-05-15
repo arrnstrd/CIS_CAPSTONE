@@ -31,6 +31,8 @@ class EmailLogController extends Controller
         ]);
     }
 
+
+    //email logic
     private function resendEmail($emailLog)
     {
         try {

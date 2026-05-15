@@ -18,6 +18,9 @@ class AttendanceLog extends Model
         'scanned_by_user_id',
         'device_id'
     ];
+    protected $casts = [
+    'scan_time' => 'datetime',
+];
 
     public function enrollment(){
         return $this->belongsTo(Enrollment::class, 'enrollment_id');
