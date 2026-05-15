@@ -15,21 +15,21 @@
         <!-- Navigation Menu -->
         <div class="sidebar-menu">
             <ul>
-
+{{-- 
                 <!-- Dashboard -->
                 <li>
                     <a href="/dashboard">
                         <i class="fa fa-th-large"></i>
                         <span>Dashboard</span>
                     </a>
-                </li>
+                </li> --}}
 
                 <!-- MONITORING SECTION -->
                 <li class="sidebar-section-label">
                     <small>MONITORING</small>
                 </li>
                 <li>
-                    <a href="/entry_exit">
+                    <a href="/entry-exit">
                         <i class="fa fa-exchange-alt"></i>
                         <span>Entry/Exit Monitoring</span>
                     </a>
@@ -58,7 +58,7 @@
                     <small>MANAGEMENT</small>
                 </li>
                 <li>
-                    <a href="/students">
+                    <a href="/student-management">
                         <i class="fa fa-user-graduate"></i>
                         <span>Student Management</span>
                     </a>

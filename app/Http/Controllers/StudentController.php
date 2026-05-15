@@ -17,7 +17,9 @@ class StudentController extends Controller
 
     public function index()
     {
-        // $students = Student::where('student_id')->get()->all();
+        // $students = Student::get();
+        $students = Student::orderBy('student_number' , 'desc' )->paginate(25);
+        return view('adminModules.management.studentList', compact('students'));
     }
 
     public function store(Request $request)

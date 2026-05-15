@@ -1,6 +1,4 @@
 to do:
-fix the time validation control for scanner (flagged, attendance logs)
-mailtrap = automated email format 
 
 
 Rate limiter
@@ -10,13 +8,13 @@ existing:
 Controller
 
 gaps to fill
-1. AttendanceLogController(crud)
-2. EmailLogController (to be review)
+1. AttendanceLogController(destroy index)??
+2. EmailLogController (need to refactor)
 3. EnrollmentController (index)
 4. LoginController(crud, need planning for system flow)
-5.QrCodeController (index, to be review)
+5.QrCodeController (index, to be review) //viewing and downloading for bulk
 6. StudentController(index, destroy)
-7. Flagged Scan - need to fix 
+7. Flagged Scan - review ||status: only capture late_arrival
 
 
 

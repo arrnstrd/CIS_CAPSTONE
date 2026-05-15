@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceLogController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ScanController;
@@ -43,17 +44,18 @@ Route::get('/role-selection' , function(){
 
 
 
-
-
-
 //testing phase - student management==========================
 Route::get('/student-management', function(){
     return view('adminModules.management.studentList');
 })->name('addStudent');
 
+Route::get('/student-management' , [StudentController::class , 'index']);
+Route::get('/entry-exit' , [AttendanceLogController::class , 'index']);
+
+
 
 //storing
-Route::post('/students' , [StudentController::class, 'store'])->name('students.store');
+Route::post('/students' , [StudentController::class, 'store'])->name('student.store');
 
 //for showing/dl of qr code
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);

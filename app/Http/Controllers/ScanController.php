@@ -78,10 +78,44 @@ class ScanController extends Controller
             ->latest('id')
             ->first();
 
-        // MVP STATE MACHINE (IN / OUT only)
-        $scanType = (!$lastLog || $lastLog->scan_type === 'OUT') ? 'IN' : 'OUT';
 
-        // IN window validation
+        
+        // // MVP STATE MACHINE (IN / OUT only)
+        // $scanType = (!$lastLog || $lastLog->scan_type === 'OUT') ? 'IN' : 'OUT' ;
+
+
+        if (!$lastLog) {
+
+            $scanType = 'IN';
+
+        } else {
+
+            switch ($lastLog->scan_type) {
+
+                case 'IN':
+                    $scanType = 'OUT';
+                    break;
+
+                case 'OUT':
+                    $scanType = 'RE_ENTRY';
+                    break;
+
+                case 'RE_ENTRY':
+                    $scanType = 'RE_EXIT';
+                    break;
+
+                case 'RE_EXIT':
+                    $scanType = 'RE_ENTRY';
+                    break;
+
+                default:
+                    return response()->json([
+                        'message' => 'Unknown scan state'
+                    ], 400);
+            }
+        }
+
+        // // IN window validation
         if ($scanType === 'IN' && !($currentTime >= $inStart && $currentTime <= $inEnd)) {
             return response()->json([
                 'message' => 'Outside of allowed check-in window',
@@ -99,6 +133,39 @@ class ScanController extends Controller
             ], 400);
         }
 
+        //student movements
+        if (!$lastLog) {
+
+            $scanType = 'IN';
+
+        } elseif ($lastLog->scan_type === 'IN') {
+
+            $scanType = 'OUT';
+
+        } elseif ($lastLog->scan_type === 'OUT') {
+
+            $scanType = 'RE_ENTRY';
+
+        } elseif ($lastLog->scan_type === 'RE_ENTRY') {
+
+            $scanType = 'RE_EXIT';
+
+        } elseif ($lastLog->scan_type === 'RE_EXIT') {
+
+            $scanType = 'RE_ENTRY';
+
+        } else {
+
+            return response()->json([
+                'message' => 'Invalid scan state'
+            ], 400);
+        }
+
+
+
+
+
+
         // Late detection
         $isLate = $scanType === 'IN' && $currentTime > $lateThreshold;
 
@@ -111,6 +178,7 @@ class ScanController extends Controller
                 'scan_time' => now(),
             ]);
         });
+        
 
         // Flags
         if ($scanType === 'IN' && $isLate) {
@@ -128,6 +196,9 @@ class ScanController extends Controller
                 'description' => 'OUT scan without valid IN'
             ]);
         }
+
+
+
 
         // Email notification
         if ($guardian && $guardian->email) {

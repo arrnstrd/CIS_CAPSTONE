@@ -9,18 +9,55 @@
     </x-slot>
 
 
+    <div class="mb-3">
+        <button class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+            + Add Student
+        </button>
+    </div>
 
 
+    <x-ui.table>
+
+        <x-slot>
+
+            <thead class="text-uppercase">
+                <tr>
+                    <th>Student No.</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                    <th>LRN</th>
+                    <th>Sex</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @forelse($students as $student)
+                        <tr>
+                            <td>{{  $student->student_number  }} </td>
+                            <td> {{  $student->last_name }}</td>
+                            <td>{{  $student->first_name }} </td>
+                            <td>{{  $student->middle_name }} </td>
+                            <td>{{  $student->lrn }} </td>
+                            <td>{{  $student->sex }} </td>
+                            <td> {{  $student->status }} </td>
+                        </tr>
+                    </tbody>
 
 
+                @empty
+                <p class="small text-muted"> No student yet</p>
 
+            @endforelse
 
+        </x-slot>
 
+    </x-ui.table>
+    <div class="pagination">
+        {{ $students->links() }}
 
-
-    <button class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-        + Add Student
-    </button>
+    </div>
 
 
 
@@ -37,7 +74,7 @@
             Add Student
         </x-slot>
 
-        <form action=" {{ route('students.store') }}" method="POST">
+        <form action=" {{ route('student.store') }}" method="POST">
             @csrf
             {{-- @method('PUT') --}}
 

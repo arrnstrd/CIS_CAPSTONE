@@ -11,45 +11,70 @@
         School entry/exit gate scans.
     </x-slot>
 
-    <div class="row g-3 mb-3 mx-2">
-        
-        <x-card title="entry" value="0" icon="fa-solid fa-right-to-bracket" variants="success" />
-        <x-card title="exit" value="0" icon="fa-solid fa-door-open" variants="primary" />
-        <x-card title="late" value="0" icon="fa-solid fa-hourglass-half" variants="warning" />
-        <x-card title="early out" value="0" icon="fa-solid fa-right-from-bracket" variants="danger" />
-
+    <div class="row mb-3 mx-2">
+        <div class="d-flex justify-content-center align-items center gap-3">
+            <x-card title="entry" value="0" icon="fa-solid fa-right-to-bracket" variants="success" />
+            <x-card title="exit" value="0" icon="fa-solid fa-door-open" variants="primary" />
+            <x-card title="late" value="0" icon="fa-solid fa-hourglass-half" variants="warning" />
+        </div>
     </div>
 
 
 
 
     <x-ui.table>
-        <x-slot name="thead">
-            <th> Date</th>
-            <th> name</th>
-            <th>grade</th>
-            <th>section</th>
-            <th>gate time</th>
-            <th>type</th>
-            <th>session</th>
-            <th>status</th>
-        </x-slot>
+        <x-slot>
+            <thead class="text-uppercase">
+                <tr>
+                    <th>Date </th>
+                    <th>Student No.</th>
+                    <th>Student Name</th>
+                    <th>Scan Type</th>
+                    <th>Session</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
 
-        <x-slot name="tbody">
+            <tbody>
+                @forelse($attendance_logs as $attendance_log)
+                    <tr>
+                        <td>
+                            {{ $attendance_log->scan_time->format('Y-m-d') }}
+                        </td>
 
-            <tr>
-                <td> </td>
-                <td> </td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-           
+                        <td>
+                            {{ $attendance_log->enrollment->student->student_number ?? '-' }}
+                        </td>
+
+                        <td>
+                            {{ $attendance_log->enrollment->student->first_name ?? '' }}
+                            {{ $attendance_log->enrollment->student->last_name ?? '' }}
+                        </td>
+
+                        <td>{{ $attendance_log->scan_type }}</td>
+
+                        <td>{{ $attendance_log->session_type }}</td>
+
+                        <td>
+                            {{ $attendance_log->scan_time->format('h:i A') }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            No logs yet
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
         </x-slot>
     </x-ui.table>
+
+    {{-- pagination --}}
+    <div class="mx-3">
+        {{ $attendance_logs->links() }}
+    </div>
+
 
 
 </x-layouts.admin>
