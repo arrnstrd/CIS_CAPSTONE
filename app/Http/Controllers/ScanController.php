@@ -83,7 +83,7 @@ class ScanController extends Controller
         // // MVP STATE MACHINE (IN / OUT only)
         // $scanType = (!$lastLog || $lastLog->scan_type === 'OUT') ? 'IN' : 'OUT' ;
 
-
+        
         if (!$lastLog) {
 
             $scanType = 'IN';
