@@ -14,11 +14,10 @@ class Enrollment extends Model
     protected $fillable = [
         'student_id',
         'school_year',
+        'level',
         'grade_level',
         'section',
-        'level',
         'session_type',
-        'adviser_id',
         'status'
     ];
 

@@ -24,61 +24,93 @@
                     </a>
                 </li>
 
-                <!-- Monitoring -->
-                <li class="sidebar-dropdown">
-                    <a href="javascript:void(0)">
-                        <i class="fa fa-desktop"></i>
-                        <span>Monitoring</span>
+                <!-- MONITORING SECTION -->
+                <li class="sidebar-section-label">
+                    <small>MONITORING</small>
+                </li>
+                <li>
+                    <a href="/entry_exit">
+                        <i class="fa fa-exchange-alt"></i>
+                        <span>Entry/Exit Monitoring</span>
                     </a>
-                    <div class="sidebar-submenu">
-                        <ul>
-                            <li><a href="/entry_exit"><i class="fa fa-exchange-alt me-2"></i>Entry/Exit Monitoring</a></li>
-                            <li><a href="/attendance"><i class="fa fa-user-check me-2"></i>Class Attendance</a></li>
-                            <li><a href="#"><i class="fa fa-exclamation-triangle me-2"></i>Flagged Scans</a></li>
-                            <li><a href="#"><i class="fa fa-envelope-open-text me-2"></i>Email Monitoring</a></li>
-                        </ul>
-                    </div>
+                </li>
+                <li>
+                    <a href="/attendance">
+                        <i class="fa fa-user-check"></i>
+                        <span>Class Attendance</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/flagged">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        <span>Flagged Scans</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/emails">
+                        <i class="fa fa-envelope-open-text"></i>
+                        <span>Email Monitoring</span>
+                    </a>
                 </li>
 
-                <!-- Management -->
-                <li class="sidebar-dropdown">
-                    <a href="javascript:void(0)">
-                        <i class="fa fa-users-cog"></i>
-                        <span>Management</span>
+                <!-- MANAGEMENT SECTION -->
+                <li class="sidebar-section-label">
+                    <small>MANAGEMENT</small>
+                </li>
+                <li>
+                    <a href="/students">
+                        <i class="fa fa-user-graduate"></i>
+                        <span>Student Management</span>
                     </a>
-                    <div class="sidebar-submenu">
-                        <ul>
-                            <li><a href="#"><i class="fa fa-user-graduate me-2"></i>Student Management</a></li>
-                            <li><a href="#"><i class="fa fa-chalkboard-teacher me-2"></i>Teacher Management</a></li>
-                            <li><a href="#"><i class="fa fa-user-shield me-2"></i>User Role Management</a></li>
-                            <li><a href="#"><i class="fa fa-file-signature me-2"></i>Grade Management</a></li>
-                        </ul>
-                    </div>
+                </li>
+                <li>
+                    <a href="/teachers">
+                        <i class="fa fa-chalkboard-teacher"></i>
+                        <span>Teacher Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/roles">
+                        <i class="fa fa-user-shield"></i>
+                        <span>User Role Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/grades">
+                        <i class="fa fa-file-signature"></i>
+                        <span>Grade Management</span>
+                    </a>
                 </li>
 
-                <!-- Others -->
-                <li class="sidebar-dropdown">
-                    <a href="javascript:void(0)">
-                        <i class="fa fa-folder-plus"></i>
-                        <span>Others</span>
+                <!-- OTHERS SECTION -->
+                <li class="sidebar-section-label">
+                    <small>OTHERS</small>
+                </li>
+                <li>
+                    <a href="/history">
+                        <i class="fa fa-history"></i>
+                        <span>In/Out History</span>
                     </a>
-                    <div class="sidebar-submenu">
-                        <ul>
-                            <li><a href="#"><i class="fa fa-history me-2"></i>In/Out History</a></li>
-                            <li><a href="#"><i class="fa fa-qrcode me-2"></i>QR Generation</a></li>
-                            <li><a href="#"><i class="fa fa-file-contract me-2"></i>Report Generation</a></li>
-                        </ul>
-                    </div>
+                </li>
+                <li>
+                    <a href="/qr-generation">
+                        <i class="fa fa-qrcode"></i>
+                        <span>QR Generation</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/reports">
+                        <i class="fa fa-file-contract"></i>
+                        <span>Report Generation</span>
+                    </a>
                 </li>
 
-                <!-- System label -->
+                <!-- SYSTEM SECTION -->
                 <li class="sidebar-section-label">
                     <small>SYSTEM</small>
                 </li>
-
-                <!-- Settings -->
                 <li>
-                    <a href="#">
+                    <a href="/settings">
                         <i class="fa fa-cog"></i>
                         <span>Settings</span>
                     </a>

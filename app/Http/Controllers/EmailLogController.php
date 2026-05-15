@@ -8,77 +8,65 @@ use Illuminate\Support\Facades\Mail;
 
 class EmailLogController extends Controller
 {
-    //
-
-    public function index(){
+    public function index()
+    {
         $logs = EmailLog::latest()->get();
         return response()->json($logs);
     }
 
-
-
     public function store(Request $request)
     {
-        //valiadting data
         $data = $request->validate([
-            ' student_id' => ['required' , 'integer' ],
-            'email' => ['required' , 'string'],
-            'scan_type'=> ['required' ,  'in:IN,OUT,RE_ENTRY, RE_EXIT'],
-            'status' => ['required' , 'in:pending,sent, failed']
+            'student_id' => ['required', 'integer'],
+            'email' => ['required', 'string'],
+            'scan_type' => ['required', 'in:IN,OUT,RE_ENTRY,RE_EXIT'],
+            'status' => ['required', 'in:pending,sent,failed']
         ]);
-
 
         $emailLog = EmailLog::create($data);
 
         return response()->json([
-            'messaage' => 'Email log created succesfully',
+            'message' => 'Email log created successfully',
             'data' => $emailLog
-        ]);        
+        ]);
     }
 
 
+    //email logic
+    private function resendEmail($emailLog)
+    {
+        try {
+            Mail::raw(
+                "Student ID {$emailLog->student_id} gate attendance recorded at " . now(),
+                function ($message) use ($emailLog) {
+                    $message->to($emailLog->email)
+                        ->subject('CIS Gate Scan Notification');
+                }
+            );
 
-
-    //for resend  feature
-    private function resendEmail($emailLog){
-        try{
-             Mail::raw(
-                    "Student ID{$emailLog->student_id} gate attendance  recorded at " . now(),
-                    function ($message) use ($emailLog){
-                            $message->to($emailLog->email)
-                                ->subject ('CIS Gate Scan Notification');
-                    }
-                );
-
-            //upate
             $emailLog->update([
                 'status' => 'sent',
-                'attmpt_count' => $emailLog->attmpt_count + 1
+                'attempt_count' => ($emailLog->attempt_count ?? 0) + 1
             ]);
 
+            return true;
 
-            return true;           
-        }
+        } catch (\Exception $e) {
 
-        //failed
-        catch(\Exception $e){
             $emailLog->update([
                 'status' => 'failed',
-                'attempt_count'=> $emailLog->attempt_count + 1
+                'attempt_count' => ($emailLog->attempt_count ?? 0) + 1
             ]);
 
-        return false;
+            return false;
         }
     }
 
+    public function retry($id)
+    {
+        $emailLog = EmailLog::find($id);
 
-
-
-    // for resend single email
-    public function retry($id){
-        $emailLog= EmailLog::find($id);
-
-        if(!$emailLog){
+        if (!$emailLog) {
             return response()->json([
                 'message' => 'Email log not found'
             ], 404);
@@ -86,39 +74,39 @@ class EmailLogController extends Controller
 
         $this->resendEmail($emailLog);
 
-
         return response()->json([
             'message' => 'Retry attempted',
             'data' => $emailLog
         ]);
-            
     }
 
-
-
-    //for resend all
-
-      public function retryAll(){
-        $failedLogs = EmailLog::where('status' , 'failed')->get();
-        
+    public function retryAll()
+    {
+        $failedLogs = EmailLog::where('status', 'failed')->get();
 
         $success = 0;
-        $failed = 0 ;
+        $failed = 0;
 
-        foreach($failedLogs as $log){
+        foreach ($failedLogs as $log) {
+
+            // limit retries
+            if (($log->attempt_count ?? 0) >= 4) {
+                continue;
+            }
+
             $result = $this->resendEmail($log);
 
-            if($result){
+            if ($result) {
                 $success++;
-            }else{
+            } else {
                 $failed++;
             }
         }
 
         return response()->json([
-            'message'=> 'Retry process completed',
+            'message' => 'Retry process completed',
             'success_count' => $success,
-            'failed_count' =>$failed
+            'failed_count' => $failed
         ]);
     }
 }

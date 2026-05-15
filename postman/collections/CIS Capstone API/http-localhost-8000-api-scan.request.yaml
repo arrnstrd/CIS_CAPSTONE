@@ -1,0 +1,13 @@
+$kind: http-request
+name: http://localhost:8000/api/scan
+url: http://localhost:8000/api/scan
+method: POST
+headers:
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+        "code": "SAHVZJ8O3JA6TVKIJGR8LY8TL3ZNRNRZ"
+    }
+order: 4503003889401855
