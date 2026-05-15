@@ -1,7 +1,9 @@
 to do:
-connect and validate the qr scanner using the ScheduleConfig
+fix the time validation control for scanner (flagged, attendance logs)
+mailtrap = automated email format 
 
 
+Rate limiter
 
 
 existing:
@@ -14,13 +16,7 @@ gaps to fill
 4. LoginController(crud, need planning for system flow)
 5.QrCodeController (index, to be review)
 6. StudentController(index, destroy)
-
-
-missing  (0)
-Controller
-1. Schedule Config - rush
-2. Flagged Scan
-3. Guardian ??
+7. Flagged Scan - need to fix 
 
 
 
@@ -41,3 +37,19 @@ QrCode
 
 
 qr code scanner
+
+
+modals (user interface)
+1. buttons modals
+2. forms
+3. search???
+4. pagination
+
+
+----
+soon 
+1. plan management system database design schema
+2. teacher db for class attendance logs
+
+study role based access control 
+

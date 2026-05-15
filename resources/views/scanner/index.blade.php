@@ -114,7 +114,7 @@
 <body>
 
     <div class="header">
-        <h1>CIS QR Attendance</h1>
+        <h1>CIS Gate Scan Attendance</h1>
         <p>Concepcion Integrated School</p>
     </div>
 

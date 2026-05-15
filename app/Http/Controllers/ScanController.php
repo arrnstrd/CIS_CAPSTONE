@@ -7,7 +7,6 @@ use App\Models\EmailLog;
 use App\Models\Enrollment;
 use App\Models\FlaggedScan;
 use App\Models\QrCode;
-use App\Models\ScheduleConfig;
 use App\Services\ScheduleResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,16 +17,12 @@ class ScanController extends Controller
 {
     public function scan(Request $request)
     {
-        // =========================
-        // 1. Validate QR
-        // =========================
+        // Validate QR input
         $request->validate([
             'code' => ['required', 'string']
         ]);
 
-        // =========================
-        // 2. Resolve QR + Student
-        // =========================
+        // Resolve QR + student
         $qr = QrCode::with('student.guardian')
             ->where('code', $request->code)
             ->where('is_active', true)
@@ -40,9 +35,7 @@ class ScanController extends Controller
         $student = $qr->student;
         $guardian = $student->guardian;
 
-        // =========================
-        // 3. Active Enrollment
-        // =========================
+        // Resolve active enrollment
         $enrollment = Enrollment::where('student_id', $student->id)
             ->where('status', 'active')
             ->first();
@@ -51,17 +44,17 @@ class ScanController extends Controller
             return response()->json(['message' => 'No active enrollment'], 404);
         }
 
-        // =========================
-        // 4. TIME NORMALIZATION
-        // =========================
+        // Current time
         $now = now();
         $currentTime = $now->format('H:i');
 
-        // =========================
-        // 5. Resolve Active Schedule
-        // =========================
+        // Resolve schedule
         $resolver = new ScheduleResolver();
-        $activeSchedule = $resolver->resolve($enrollment->level, $currentTime);
+        $activeSchedule = $resolver->resolve(
+            $enrollment->level,
+            $enrollment->session_type,
+            $currentTime
+        );
 
         if (!$activeSchedule) {
             return response()->json([
@@ -69,30 +62,25 @@ class ScanController extends Controller
             ], 400);
         }
 
-        // Normalize all schedule time boundaries to H:i for consistent comparison
-        $inStart       = date('H:i', strtotime($activeSchedule->in_start));
-        $inEnd         = date('H:i', strtotime($activeSchedule->in_end));
+        // Normalize schedule times
+        $inStart = date('H:i', strtotime($activeSchedule->in_start));
+        $inEnd = date('H:i', strtotime($activeSchedule->in_end));
         $lateThreshold = date('H:i', strtotime($activeSchedule->late_threshold));
-        $outStart      = date('H:i', strtotime($activeSchedule->out_start));
-        $outEnd        = date('H:i', strtotime($activeSchedule->out_end));
+        $outStart = date('H:i', strtotime($activeSchedule->out_start));
+        $outEnd = date('H:i', strtotime($activeSchedule->out_end));
 
-        // =========================
-        // 6. Last scan (session-aware)
-        // =========================
+        
+        // Get last scan today
         $lastLog = AttendanceLog::where('enrollment_id', $enrollment->id)
             ->whereDate('scan_time', today())
             ->where('session_type', $activeSchedule->session_type)
             ->latest('id')
             ->first();
 
-        $isInside = $lastLog && $lastLog->scan_type === 'IN';
+        // MVP STATE MACHINE (IN / OUT only)
+        $scanType = (!$lastLog || $lastLog->scan_type === 'OUT') ? 'IN' : 'OUT';
 
-        // =========================
-        // 7. IN / OUT TOGGLE with window enforcement
-        // =========================
-        $scanType = $isInside ? 'OUT' : 'IN';
-
-        // Enforce IN window: must be between in_start and in_end
+        // IN window validation
         if ($scanType === 'IN' && !($currentTime >= $inStart && $currentTime <= $inEnd)) {
             return response()->json([
                 'message' => 'Outside of allowed check-in window',
@@ -101,7 +89,7 @@ class ScanController extends Controller
             ], 400);
         }
 
-        // Enforce OUT window: must be between out_start and out_end
+        // OUT window validation
         if ($scanType === 'OUT' && !($currentTime >= $outStart && $currentTime <= $outEnd)) {
             return response()->json([
                 'message' => 'Outside of allowed check-out window',
@@ -110,23 +98,11 @@ class ScanController extends Controller
             ], 400);
         }
 
-        // =========================
-        // 8. LATE CHECK (ONLY FOR IN)
-        // =========================
-        $isLate = false;
+        // Late detection
+        $isLate = $scanType === 'IN' && $currentTime > $lateThreshold;
 
-        if ($scanType === 'IN') {
-            $isLate = $currentTime > $lateThreshold;
-        }
-
-        // =========================
-        // 9. STORE ATTENDANCE
-        // =========================
-        $attendanceLog = DB::transaction(function () use (
-            $enrollment,
-            $activeSchedule,
-            $scanType
-        ) {
+        // Store attendance
+        $attendanceLog = DB::transaction(function () use ($enrollment, $activeSchedule, $scanType) {
             return AttendanceLog::create([
                 'enrollment_id' => $enrollment->id,
                 'scan_type' => $scanType,
@@ -135,11 +111,7 @@ class ScanController extends Controller
             ]);
         });
 
-        // =========================
-        // 10. FLAGS (FIXED OUT BUG)
-        // =========================
-
-        // Late IN
+        // Flags
         if ($scanType === 'IN' && $isLate) {
             FlaggedScan::create([
                 'attendance_log_id' => $attendanceLog->id,
@@ -148,8 +120,7 @@ class ScanController extends Controller
             ]);
         }
 
-        // INVALID OUT FIXED HERE
-        if ($scanType === 'OUT' && !$isInside) {
+        if ($scanType === 'OUT' && $lastLog && $lastLog->scan_type !== 'IN') {
             FlaggedScan::create([
                 'attendance_log_id' => $attendanceLog->id,
                 'flag_type' => 'invalid_checkout',
@@ -157,9 +128,7 @@ class ScanController extends Controller
             ]);
         }
 
-        // =========================
-        // 11. EMAIL NOTIFICATION
-        // =========================
+        // Email notification
         if ($guardian && $guardian->email) {
 
             $emailLog = EmailLog::create([
@@ -186,7 +155,6 @@ class ScanController extends Controller
                     'attempt_count' => 1,
                     'last_attempt_at' => now(),
                 ]);
-
             } catch (\Exception $e) {
                 Log::error("Email failed for student {$student->id}: {$e->getMessage()}");
 
@@ -198,9 +166,7 @@ class ScanController extends Controller
             }
         }
 
-        // =========================
-        // 12. RESPONSE
-        // =========================
+        // Response
         return response()->json([
             'message' => 'Scan successful',
             'student' => [
@@ -208,11 +174,11 @@ class ScanController extends Controller
                 'name' => "{$student->first_name} {$student->last_name}",
                 'student_number' => $student->student_number,
                 'level' => $enrollment->level,
+                'session_type' => $enrollment->session_type,
             ],
             'attendance_log' => [
                 'id' => $attendanceLog->id,
                 'scan_type' => $scanType,
-                'session_type' => $activeSchedule->session_type,
                 'scan_time' => $attendanceLog->scan_time,
             ],
             'late' => $isLate,
