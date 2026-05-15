@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\GateScanMail;
 
 class ScanController extends Controller
 {
@@ -69,7 +70,7 @@ class ScanController extends Controller
         $outStart = date('H:i', strtotime($activeSchedule->out_start));
         $outEnd = date('H:i', strtotime($activeSchedule->out_end));
 
-        
+
         // Get last scan today
         $lastLog = AttendanceLog::where('enrollment_id', $enrollment->id)
             ->whereDate('scan_time', today())
@@ -141,12 +142,13 @@ class ScanController extends Controller
             ]);
 
             try {
-                Mail::raw(
-                    "{$student->first_name} {$student->last_name} has a {$scanType} scan at " . now()->format('h:i A'),
-                    function ($message) use ($guardian, $student) {
-                        $message->to($guardian->email)
-                            ->subject("Attendance Update: {$student->first_name}");
-                    }
+
+                Mail::to($guardian->email)->send(
+                    new GateScanMail(
+                        $student,
+                        $scanType,
+                        now()->format('F d, Y - h:i A')
+                    )
                 );
 
                 $emailLog->update([
@@ -155,7 +157,9 @@ class ScanController extends Controller
                     'attempt_count' => 1,
                     'last_attempt_at' => now(),
                 ]);
+
             } catch (\Exception $e) {
+
                 Log::error("Email failed for student {$student->id}: {$e->getMessage()}");
 
                 $emailLog->update([
@@ -164,24 +168,24 @@ class ScanController extends Controller
                     'last_attempt_at' => now(),
                 ]);
             }
-        }
 
-        // Response
-        return response()->json([
-            'message' => 'Scan successful',
-            'student' => [
-                'id' => $student->id,
-                'name' => "{$student->first_name} {$student->last_name}",
-                'student_number' => $student->student_number,
-                'level' => $enrollment->level,
-                'session_type' => $enrollment->session_type,
-            ],
-            'attendance_log' => [
-                'id' => $attendanceLog->id,
-                'scan_type' => $scanType,
-                'scan_time' => $attendanceLog->scan_time,
-            ],
-            'late' => $isLate,
-        ]);
+            // Response
+            return response()->json([
+                'message' => 'Scan successful',
+                'student' => [
+                    'id' => $student->id,
+                    'name' => "{$student->first_name} {$student->last_name}",
+                    'student_number' => $student->student_number,
+                    'level' => $enrollment->level,
+                    'session_type' => $enrollment->session_type,
+                ],
+                'attendance_log' => [
+                    'id' => $attendanceLog->id,
+                    'scan_type' => $scanType,
+                    'scan_time' => $attendanceLog->scan_time,
+                ],
+                'late' => $isLate,
+            ]);
+        }
     }
 }
