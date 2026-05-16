@@ -9,7 +9,14 @@ use Illuminate\Validation\Rule;
 
 class EnrollmentController extends Controller
 {
-    //
+    public function index(){
+        $enrollments = Enrollment::with('student')
+        ->orderBy('student_id')
+        ->paginate(25);
+        return view('adminModules.management.enrollment', compact('enrollments'));
+    }
+
+
     public function store(Request $request)
     {
         $validateData = $request->validate([

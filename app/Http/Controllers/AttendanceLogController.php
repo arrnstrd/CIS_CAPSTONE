@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AttendanceLog;
-use Illuminate\Http\Request;
+
 
 class AttendanceLogController extends Controller
 {
@@ -18,7 +18,7 @@ class AttendanceLogController extends Controller
             ->paginate(20);
 
         return view(
-            'adminModules.monitoring.entry_exit_monitoring',
+            'adminModules.monitoring.entry-exit',
             compact('attendance_logs')
         );
 

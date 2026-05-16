@@ -8,85 +8,60 @@ use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
-
-
-// for the layouts viewing purposes
-Route::get('/layout', function(){
-    return view ('components.layouts.admin');
+// Webpage Showcase
+Route::get('/layout', function () {
+    return view('components.layouts.admin');
 });
 
-
-//webpages
 Route::get('/dashboard', function () {
     return view('adminModules.dashboard');
 });
 
-
-Route::get('/entry_exit' , function (){
-    return view ('adminModules.monitoring.entry_exit_monitoring');
+Route::get('/entry_exit', function () {
+    return view('adminModules.monitoring.entry-exit');
 })->name('entryExit');
 
-
-Route::get('/attendance' , function (){
-    return view ('adminModules.monitoring.attendance');
+Route::get('/attendance', function () {
+    return view('adminModules.monitoring.attendance');
 })->name('attendance');
 
+Route::get('/role-selection', function () {
+    return view('login.role_selection');
+});
 
-//role selection for login
-Route::get('/role-selection' , function(){
-    return view ('login.role_selection');
+
+Route::get('/enrollment' , function(){
+    return view('adminModules.management.enrollment');
 });
 
 
 
 
-
-
-
-
-//testing phase - student management==========================
-Route::get('/student-management', function(){
+// CRUD & Core Operations
+Route::get('/student-management', function () {
     return view('adminModules.management.studentList');
 })->name('addStudent');
 
-Route::get('/student-management' , [StudentController::class , 'index']);
-Route::get('/entry-exit' , [AttendanceLogController::class , 'index']);
+Route::get('/student-management', [StudentController::class, 'index']);
 
+Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.log');
 
+Route::post('/students', [StudentController::class, 'store'])->name('student.store');
 
-//storing
-Route::post('/students' , [StudentController::class, 'store'])->name('student.store');
-
-//for showing/dl of qr code
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
-
-
-
-
-
-
-
-
-
-//for testing only (can be remove soon)
-Route::get('/test-email', function () {
-
-    Mail::raw('Testing email', function ($message) {
-        $message->to('arriane.dev@gmail.com')
-                ->subject('Test');
-    });
-
-    return 'Enail Sent!!';
-});
-
 
 Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
 
+//enrollment
+Route::get('/enrollment' , [EnrollmentController::class , 'index']);
 
 
 
-//scanner for testing
+
+
+
+// Testing Phase
+//web app scanner
 Route::get('/scanner', function () {
     return view('scanner.index');
 });
-
