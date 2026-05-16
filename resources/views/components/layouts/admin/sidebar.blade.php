@@ -40,12 +40,12 @@
                         <span>Class Attendance</span>
                     </a>
                 </li>
-                <li>
+                {{-- <li>
                     <a href="/flagged">
                         <i class="fa fa-exclamation-triangle"></i>
                         <span>Flagged Scans</span>
                     </a>
-                </li>
+                </li> --}}
                 <li>
                     <a href="/emails">
                         <i class="fa fa-envelope-open-text"></i>
@@ -64,6 +64,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="/enrollment">
+                        <i class="fa fa-user-graduate"></i>
+                        <span>Enrollment Management</span>
+                    </a>
+                </li>
+                <li>
                     <a href="/teachers">
                         <i class="fa fa-chalkboard-teacher"></i>
                         <span>Teacher Management</span>
@@ -72,7 +78,7 @@
                 <li>
                     <a href="/roles">
                         <i class="fa fa-user-shield"></i>
-                        <span>User Role Management</span>
+                        <span>User Management</span>
                     </a>
                 </li>
                 <li>
@@ -84,14 +90,16 @@
 
                 <!-- OTHERS SECTION -->
                 <li class="sidebar-section-label">
-                    <small>OTHERS</small>
+                    <small>Utilities</small>
                 </li>
+
                 <li>
-                    <a href="/history">
-                        <i class="fa fa-history"></i>
-                        <span>In/Out History</span>
+                    <a href="/scanner-configuration">
+                        <i class="fa fa-barcode"></i>
+                        <span>Scanner Configuration</span>
                     </a>
                 </li>
+          
                 <li>
                     <a href="/qr-generation">
                         <i class="fa fa-qrcode"></i>

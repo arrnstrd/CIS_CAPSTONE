@@ -47,4 +47,8 @@ class Student extends Model
     {
         return $this->hasOne(Guardian::class);
     }
+
+    public function enrollment(){
+        return $this->hasOne(Enrollment::class);
+    }
 }

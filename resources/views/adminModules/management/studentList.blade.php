@@ -9,45 +9,97 @@
     </x-slot>
 
 
-    <div class="mb-3">
-        <button class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#addStudentModal">
-            + Add Student
-        </button>
-    </div>
+
+
+    <div class="col mb-3 mx-2">
+            <div class="bg-white rounded p-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-semibold text-dark m-0 fs-5">Student Records</h3>
+                    <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
+                        data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                        <span>+ Add Student</span>
+                    </button>
+                </div>
+
+                <div class="row g-3 align-items-center">
+                    <div class="col-10 col-md-7 col-lg-8">
+                        <form action=" " method="GET" class="d-flex w-100 max-width-md">
+
+                            <div class="input-group">
+                                <!-- Search Input -->
+                                <input type="search" name="query" class="form-control"
+                                    placeholder="Search student's number or name..." value=" " aria-label="Search student's number or name..."
+                                    required>
+
+                                <!-- Search Button -->
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-search"></i> Search
+                                </button>
+
+                            </div>
+
+                        </form>
+                    </div>
+
+                    <div class="col-6 col-md-2.5 col-lg-2">
+                        <select name="school_year" id="schoolYearFilter"
+                            class="form-select rounded-3 py-2 border-light-subtle" aria-label="Filter by School Year">
+                            <option value="all" selected>All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-2.5 col-lg-2">
+                        <select name="level" id="levelFilter" class="form-select rounded-3 py-2 border-light-subtle"
+                            aria-label="Filter by Level">
+                            <option value="all" selected>All Sex</option>
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                          
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </div>
 
 
     <x-ui.table>
 
         <x-slot>
 
-            <thead class="text-uppercase">
+            <thead class="text-uppercase text-center">
                 <tr>
-                    <th>Student No.</th>
+                    <th class="ms-0">Student No.</th>
                     <th>Last Name</th>
                     <th>First Name</th>
                     <th>Middle Name</th>
                     <th>LRN</th>
                     <th>Sex</th>
                     <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
+            @forelse($students as $student)
+                <tbody class="text-center">
 
-            <tbody>
-                @forelse($students as $student)
-                        <tr>
-                            <td>{{  $student->student_number  }} </td>
-                            <td> {{  $student->last_name }}</td>
-                            <td>{{  $student->first_name }} </td>
-                            <td>{{  $student->middle_name }} </td>
-                            <td>{{  $student->lrn }} </td>
-                            <td>{{  $student->sex }} </td>
-                            <td> {{  $student->status }} </td>
-                        </tr>
-                    </tbody>
+                    <tr>
+                        <td>{{  $student->student_number  }} </td>
+                        <td> {{  $student->last_name }}</td>
+                        <td>{{  $student->first_name }} </td>
+                        <td>{{  $student->middle_name }} </td>
+                        <td>{{  $student->lrn }} </td>
+                        <td>{{  $student->sex }} </td>
+                        <td> {{  $student->status }} </td>
+                        <td> </td>
+
+                    </tr>
+                </tbody>
 
 
-                @empty
-                <p class="small text-muted"> No student yet</p>
+            @empty
+                <p class="small text-muted"> No student on the records yet</p>
 
             @endforelse
 
@@ -63,7 +115,6 @@
 
 
     {{-- modal for add student --}}
-
     <x-modal>
         <x-slot name="id">
             addStudentModal
