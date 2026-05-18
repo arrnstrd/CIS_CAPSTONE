@@ -73,7 +73,7 @@
         <x-slot>
             <thead class="text-uppercase">
                 <tr>
-                    <th>Date </th>
+                    <th style="width: 12%">Date </th>
                     <th>Student No.</th>
                     <th>Student Name</th>
                     <th>Scan Type</th>

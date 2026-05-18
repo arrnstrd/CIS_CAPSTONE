@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceLogController;
+use App\Http\Controllers\EmailLogController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ScanController;
@@ -29,13 +30,16 @@ Route::get('/entry_exit', function () {
 })->name('entryExit');
 
 Route::get('/attendance', function () {
-    return view('admin-modules.monitoring.attendance');
+    return view('admin-modules.monitoring.class-attendance');
 })->name('attendance');
 
-Route::get('/emails' , function(){
+Route::get('emails' , function(){
     return view('admin-modules.monitoring.emails');
 });
 
+Route::get('/users', function(){
+    return view('admin-modules.management.users');
+});
 
 
 //management-----
@@ -47,37 +51,55 @@ Route::get('/enrollment' , function(){
 
 //utilities------
 
-Route::get('/scanner-configuration', function(){
-    return view('admin-modules.utilities.scanner-configuration');
+Route::get('/schedule-configuration', function(){
+    return view('admin-modules.utilities.schedule-configuration');
 });
 
 
 
 
 // CRUD & Core Operations
+
+//students
+
 Route::get('/student-management', function () {
     return view('admin-modules.management.studentList');
 })->name('addStudent');
-
 Route::get('/student-management', [StudentController::class, 'index']);
-
-Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.log');
-
 Route::post('/students', [StudentController::class, 'store'])->name('student.store');
-
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
 
+//scanner
 Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
+
+//entry exit logs
+Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.log');
+
+
+
+//emails
+Route::get('/emails' , [EmailLogController::class , 'index']);
+
 
 //enrollment
 Route::get('/enrollment' , [EnrollmentController::class , 'index']);
 
 
-//scheduleconfig
-Route::get('/scanner-configuration' , [ScheduleConfigController::class,'index']);
+
+//scheduleconfig---------------
+Route::get('/schedule-configuration' , [ScheduleConfigController::class,'index']);
 
 //search controller
 Route::get('/student-management/search' , [SearchController::class, 'searchStudent'])->name('search.students');
+
+//add schedule
+Route::post('/schedule-configuration' , [ScheduleConfigController::class, 'store'])->name('schedconfig.store');
+
+//edit schedule
+Route::put('/schedule-configuration' , [ScheduleConfigController::class, 'store'])->name('schedconfig.update');
+
+
+
 
 
 

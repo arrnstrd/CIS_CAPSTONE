@@ -76,7 +76,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/roles">
+                    <a href="/users">
                         <i class="fa fa-user-shield"></i>
                         <span>User Management</span>
                     </a>
@@ -94,9 +94,9 @@
                 </li>
 
                 <li>
-                    <a href="/scanner-configuration">
+                    <a href="/schedule-configuration">
                         <i class="fa fa-barcode"></i>
-                        <span>Scanner Configuration</span>
+                        <span>Schedule Configuration</span>
                     </a>
                 </li>
           
