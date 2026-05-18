@@ -23,7 +23,7 @@
 
                 <div class="row g-3 align-items-center">
                     <div class="col-10 col-md-7 col-lg-8">
-                        <form action=" " method="GET" class="d-flex w-100 max-width-md">
+                        <form action="{{ route('search.students') }} " method="GET" class="d-flex w-100 max-width-md">
 
                             <div class="input-group">
                                 <!-- Search Input -->

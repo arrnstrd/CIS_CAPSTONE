@@ -19,7 +19,7 @@ class StudentController extends Controller
     {
         // $students = Student::get();
         $students = Student::orderBy('student_number' , 'desc' )->paginate(25);
-        return view('adminModules.management.studentList', compact('students'));
+        return view('admin-modules.management.studentList', compact('students'));
     }
 
     public function store(Request $request)

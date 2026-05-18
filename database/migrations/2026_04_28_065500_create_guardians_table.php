@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['student_id', 'email'], 'student_guardian_email_unique');
+            $table->index('name');
         });
 
     }
