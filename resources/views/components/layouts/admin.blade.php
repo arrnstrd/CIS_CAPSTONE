@@ -18,10 +18,12 @@
         <x-layouts.admin.sidebar/>
 
         <header class="top-nav">
+  
             <button id="sidebarToggle" class="btn-sidebar-toggle" title="Toggle Sidebar">
                 <i class="fa fa-bars"></i>
                 <span>Toggle Sidebar</span>
             </button>
+            
         </header>
 
    
@@ -42,8 +44,13 @@
                         <span class="fw-bold small text-uppercase" id="liveDate"> </span>
                     </div>
 
+                    
+                    
+
                 </div>
             </div>
+            
+            
 
             <div class="container-fluid">
                 {{ $slot }}

@@ -13,7 +13,7 @@ class EnrollmentController extends Controller
         $enrollments = Enrollment::with('student')
         ->orderBy('student_id')
         ->paginate(25);
-        return view('adminModules.management.enrollment', compact('enrollments'));
+        return view('admin-modules.management.enrollment', compact('enrollments'));
     }
 
 

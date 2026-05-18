@@ -51,3 +51,9 @@ soon
 
 study role based access control 
 
+
+section-sem-president
+
+
+3E- firstsem - reyjen
+3F - secondsem -reyjen

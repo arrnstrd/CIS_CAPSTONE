@@ -4,8 +4,9 @@ use App\Http\Controllers\AttendanceLogController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\ScheduleConfigController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StudentController;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 // Webpage Showcase
@@ -14,24 +15,40 @@ Route::get('/layout', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('adminModules.dashboard');
+    return view('admin-modules.dashboard');
 });
-
-Route::get('/entry_exit', function () {
-    return view('adminModules.monitoring.entry-exit');
-})->name('entryExit');
-
-Route::get('/attendance', function () {
-    return view('adminModules.monitoring.attendance');
-})->name('attendance');
 
 Route::get('/role-selection', function () {
     return view('login.role_selection');
 });
 
 
+//monitoring----
+Route::get('/entry_exit', function () {
+    return view('admin-modules.monitoring.entry-exit');
+})->name('entryExit');
+
+Route::get('/attendance', function () {
+    return view('admin-modules.monitoring.attendance');
+})->name('attendance');
+
+Route::get('/emails' , function(){
+    return view('admin-modules.monitoring.emails');
+});
+
+
+
+//management-----
 Route::get('/enrollment' , function(){
-    return view('adminModules.management.enrollment');
+    return view('admin-modules.management.enrollment');
+});
+
+
+
+//utilities------
+
+Route::get('/scanner-configuration', function(){
+    return view('admin-modules.utilities.scanner-configuration');
 });
 
 
@@ -39,7 +56,7 @@ Route::get('/enrollment' , function(){
 
 // CRUD & Core Operations
 Route::get('/student-management', function () {
-    return view('adminModules.management.studentList');
+    return view('admin-modules.management.studentList');
 })->name('addStudent');
 
 Route::get('/student-management', [StudentController::class, 'index']);
@@ -56,7 +73,11 @@ Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
 Route::get('/enrollment' , [EnrollmentController::class , 'index']);
 
 
+//scheduleconfig
+Route::get('/scanner-configuration' , [ScheduleConfigController::class,'index']);
 
+//search controller
+Route::get('/student-management/search' , [SearchController::class, 'searchStudent'])->name('search.students');
 
 
 

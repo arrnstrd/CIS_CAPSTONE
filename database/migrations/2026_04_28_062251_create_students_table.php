@@ -23,6 +23,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['last_name', 'first_name']);
+            $table->index('student_number');
         });
     }
 

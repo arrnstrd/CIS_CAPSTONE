@@ -18,7 +18,7 @@ class AttendanceLogController extends Controller
             ->paginate(20);
 
         return view(
-            'adminModules.monitoring.entry-exit',
+            'admin-modules.monitoring.entry-exit',
             compact('attendance_logs')
         );
 
