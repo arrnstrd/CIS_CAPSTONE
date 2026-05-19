@@ -11,7 +11,7 @@ class ScheduleConfigController extends Controller
 {       
     public function index(){
         $scheduleConfigs = ScheduleConfig::all();
-        return view('admin-modules.others.scanner-configuration', compact('scheduleConfigs'));
+        return view('admin-modules.utilities.schedule-configuration', compact('scheduleConfigs'));
     }
 
 

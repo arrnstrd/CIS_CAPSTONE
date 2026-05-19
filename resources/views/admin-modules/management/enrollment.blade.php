@@ -116,103 +116,105 @@
     </div>
 
 
-  <x-modal>
-    <x-slot name="id">addEnrollmentModal</x-slot>
+    <x-modal>
+        <x-slot name="id">addEnrollmentModal</x-slot>
+        <x-slot name="modalTitle">Add Enrollment</x-slot>
 
-    <x-slot name="modalTitle">Add Enrollment</x-slot>
+        <form id="enrollmentForm" action="{{ route('enrollments.store') }}" method="POST">
+            @csrf
 
-    <form action="#" method="POST">
-        @csrf
-
-        {{-- Student Search --}}
-        <div class="mb-3">
-            <label class="form-label">Search Student</label>
-            <div class="input-group">
-                <input
-                    type="search"
-                    name="query"
-                    class="form-control"
-                    placeholder="Search by student number or name..."
-                    aria-label="Search by student number or name..."
-                    required
-                />
-                <button class="btn btn-primary" type="button">
-                    <i class="bi bi-search"></i> Search
-                </button>
+            {{-- Student Search --}}
+            <div class="mb-3">
+                <label class="form-label">Search Student</label>
+                <div style="position: relative;">
+                    <input type="text" id="enrollmentStudentSearch" class="form-control"
+                        placeholder="Search by student number or name..." autocomplete="off" />
+                    <div id="enrollmentSearchResults" style="
+                    display: none;
+                    position: absolute;
+                    top: 100%; left: 0; right: 0;
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 6px;
+                    z-index: 9999;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                "></div>
+                </div>
+                <input type="hidden" name="student_id" id="enrollmentStudentId" />
+                <div id="enrollmentSelectedStudent"
+                    class="mt-2 px-2 py-1 bg-light rounded d-flex align-items-center gap-2"
+                    style="display:none!important;">
+                    <small class="text-muted">Selected:</small>
+                    <span id="enrollmentSelectedName" class="fw-semibold small"></span>
+                    <button type="button" id="enrollmentClearStudent"
+                        class="btn btn-sm btn-link text-danger p-0 ms-auto">✕</button>
+                </div>
+                <div class="invalid-feedback">Please select a student from the list.</div>
             </div>
-            {{-- Hidden field to hold the resolved student ID --}}
-            <input type="hidden" name="student_id" value="" />
-        </div>
 
-        {{-- School Year & Level --}}
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">School Year</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    name="school_year"
-                    placeholder="e.g. 2026-2027"
-                    required
-                />
+            {{-- School Year & Level --}}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">School Year</label>
+                    <input type="text" class="form-control" name="school_year" placeholder="e.g. 2026-2027" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Level</label>
+                    <select class="form-select" name="level" required>
+                        <option value="" disabled selected>Select level</option>
+                        <option value="elementary">Elementary</option>
+                        <option value="hs">High School</option>
+                        <option value="shs">Senior High School</option>
+                    </select>
+                </div>
             </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Level</label>
-                <select class="form-select" name="level" required>
-                    <option value="" disabled selected>Select level</option>
-                    <option value="elementary">Elementary</option>
-                    <option value="high_school">High School</option>
-                    <option value="senior_high_school">Senior High School</option>
-                </select>
-            </div>
-        </div>
 
-        {{-- Sex & Section --}}
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Sex</label>
-                <select class="form-select" name="sex" required>
-                    <option value="" disabled selected>Select sex</option>
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                </select>
+            {{-- Grade Level & Section --}}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Grade Level</label>
+                    <select class="form-select" name="grade_level" required>
+                        <option value="" disabled selected>Select grade</option>
+                        @foreach(['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'] as $grade)
+                            <option value="{{ $grade }}">{{ $grade }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Section</label>
+                    <input type="text" class="form-control" name="section" placeholder="e.g. Rizal, Section A" required />
+                </div>
             </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Section</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    name="section"
-                    placeholder="e.g. Section A, Rizal, Mabini"
-                />
+
+            {{-- Session Type & Status --}}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Session Type</label>
+                    <select class="form-select" name="session_type" required>
+                        <option value="" disabled selected>Select session</option>
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status" required>
+                        <option value="" disabled selected>Select status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
             </div>
-        </div>
 
-        {{-- Session Type & Status --}}
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Session Type</label>
-                <select class="form-select" name="session_type" required>
-                    <option value="" disabled selected>Select session</option>
-                    <option value="morning">Morning</option>
-                    <option value="afternoon">Afternoon</option>
-                    <option value="whole_day">Whole Day</option>
-                </select>
-            </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Status</label>
-                <select class="form-select" name="status" required>
-                    <option value="" disabled selected>Select status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-            </div>
-        </div>
+            <button type="submit" class="btn btn-dark w-100">Add Enrollment</button>
+        </form>
 
-        <button type="submit" class="btn btn-dark w-100">Add Enrollment</button>
-    </form>
-</x-modal>
+    </x-modal>
 
-
+    @push('scripts')
+        <script src="{{ asset('js/enrollment.js') }}"></script>
+    @endpush
 
 </x-layouts.admin>

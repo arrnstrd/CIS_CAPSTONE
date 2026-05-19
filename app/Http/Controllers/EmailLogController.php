@@ -10,8 +10,13 @@ class EmailLogController extends Controller
 {
     public function index()
     {
-        $logs = EmailLog::latest()->get();
-        return response()->json($logs);
+        // $logs = EmailLog::latest()->get();
+        // return response()->json($logs);
+
+        $emailLogs = EmailLog::with('student')
+            ->orderBy('student_id')
+            ->paginate(25);
+            return view('admin-modules.monitoring.emails', compact('emailLogs'));
     }
 
     public function store(Request $request)

@@ -9,12 +9,35 @@ use Illuminate\Validation\Rule;
 
 class EnrollmentController extends Controller
 {
-    public function index(){
-        $enrollments = Enrollment::with('student')
+    public function index(Request $request)
+{
+    $query      = $request->input('query');
+    $schoolYear = $request->input('school_year');
+    $level      = $request->input('level');
+
+    $enrollments = Enrollment::with('student')
+        ->when($query, function ($q) use ($query) {
+            $q->whereHas('student', function ($q) use ($query) {
+                $q->where('student_number', 'like', "%{$query}%")
+                  ->orWhere('first_name', 'like', "%{$query}%")
+                  ->orWhere('last_name', 'like', "%{$query}%");
+            });
+        })
+        ->when($schoolYear && $schoolYear !== 'all', function ($q) use ($schoolYear) {
+            $q->where('school_year', $schoolYear);
+        })
+        ->when($level && $level !== 'all', function ($q) use ($level) {
+            $q->where('level', $level);
+        })
         ->orderBy('student_id')
-        ->paginate(25);
-        return view('admin-modules.management.enrollment', compact('enrollments'));
-    }
+        ->paginate(25)
+        ->withQueryString(); // preserve search params sa pagination links
+
+    $schoolYears = Enrollment::distinct()->orderBy('school_year', 'desc')->pluck('school_year');
+    $levels      = Enrollment::distinct()->pluck('level');
+
+    return view('admin-modules.management.enrollment', compact('enrollments', 'schoolYears', 'levels'));
+}
 
 
     public function store(Request $request)
