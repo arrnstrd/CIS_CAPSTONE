@@ -13,11 +13,12 @@
 
 
 
-    <div class="row mb-3 mx-2">
+    <div class="row mb-3 mx-4">
         <div class="d-flex justify-content-center align-items center gap-3">
-            <x-card title="entry" value="0" icon="fa-solid fa-right-to-bracket" variants="success" />
-            <x-card title="exit" value="0" icon="fa-solid fa-door-open" variants="primary" />
-            <x-card title="late" value="0" icon="fa-solid fa-hourglass-half" variants="warning" />
+            <x-card title="entry scans" value="0" icon="fa-solid fa-right-to-bracket" variants="success" />
+            <x-card title="exit scans" value="0" icon="fa-solid fa-door-open" variants="primary" />
+            <x-card title="late arrival" value="0" icon="fa-solid fa-hourglass-half" variants="warning" />
+            <x-card title="flagged scans" value="0" icon="fa-solid fa-warning" variants="danger" />
         </div>
     </div>
 
@@ -27,7 +28,7 @@
             <div class="row g-3 align-items-center">
 
                 {{-- Search --}}
-                <div class="col-12 col-md-6 col-lg-7">
+                <div class="col-12 col-md-6 col-lg-6">
                     <form action="#" method="GET">
                         <div class="input-group">
                             <input type="search" name="query" class="form-control"
@@ -51,13 +52,21 @@
                 </div>
 
                 {{-- Scan Type Filter --}}
-                <div class="col-6 col-md-3 col-lg-3">
+                <div class="col-6 col-md-3 col-lg-2">
                     <select class="form-select" name="scan_type">
                         <option value="" disabled selected>Scan Type</option>
                         <option value="IN">IN</option>
                         <option value="OUT">OUT</option>
                         <option value="RE_ENTRY">RE ENTRY</option>
                         <option value="RE_EXIT">RE EXIT</option>
+                    </select>
+                </div>
+
+                 <div class="col-6 col-md-3 col-lg-2">
+                    <select class="form-select" name="scan_type">
+                        <option value="" disabled selected>Flagged Type</option>
+                        <option value="late_arrival">Late Arrival</option>
+                        <option value="duplicate_scan">Duplicate Scan</option>
                     </select>
                 </div>
 
@@ -78,7 +87,7 @@
                     <th>Student Name</th>
                     <th>Scan Type</th>
                     <th>Session</th>
-                    <th>Time</th>
+                    <th>Gate Time</th>
                 </tr>
             </thead>
 

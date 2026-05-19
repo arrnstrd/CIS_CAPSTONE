@@ -15,12 +15,29 @@ class StudentController extends Controller
 {
     //
 
-    public function index()
-    {
-        // $students = Student::get();
-        $students = Student::orderBy('student_number' , 'desc' )->paginate(25);
-        return view('admin-modules.management.studentList', compact('students'));
-    }
+    public function index(Request $request)
+{
+    $query  = $request->input('query');
+    $status = $request->input('status');
+    $sex    = $request->input('sex');
+
+    $students = Student::when($query, function ($q) use ($query) {
+            $q->where('student_number', 'like', "%{$query}%")
+              ->orWhere('first_name', 'like', "%{$query}%")
+              ->orWhere('last_name', 'like', "%{$query}%");
+        })
+        ->when($status && $status !== 'all', function ($q) use ($status) {
+            $q->where('status', $status);
+        })
+        ->when($sex && $sex !== 'all', function ($q) use ($sex) {
+            $q->where('sex', $sex);
+        })
+        ->orderBy('student_number', 'desc')
+        ->paginate(25)
+        ->withQueryString();
+
+    return view('admin-modules.management.studentList', compact('students'));
+}
 
     public function store(Request $request)
     {
@@ -54,7 +71,7 @@ class StudentController extends Controller
                     ? strip_tags($validatedData['middle_name'])
                     : null,
 
-
+                 'sex'  => $validatedData['sex'],
                 'address' => strip_tags($validatedData['address']),
                 'birthdate' => $validatedData['birthdate'],
                 'status' => $validatedData['status'],
@@ -159,6 +176,20 @@ class StudentController extends Controller
     public function destroy(){
         
     }
+
+
+    public function search(Request $request)
+{
+    $q = $request->query('q', '');
+
+    $students = Student::where('student_number', 'like', "%{$q}%")
+        ->orWhere('first_name', 'like', "%{$q}%")
+        ->orWhere('last_name', 'like', "%{$q}%")
+        ->limit(10)
+        ->get(['id', 'student_number', 'first_name', 'last_name']);
+
+    return response()->json($students);
+}
 
     
 }

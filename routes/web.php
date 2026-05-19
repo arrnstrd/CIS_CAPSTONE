@@ -10,101 +10,38 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
-// Webpage Showcase
-Route::get('/layout', function () {
-    return view('components.layouts.admin');
-});
+// misc
+Route::get('/layout', fn() => view('components.layouts.admin'));
+Route::get('/dashboard', fn() => view('admin-modules.dashboard'));
+Route::get('/role-selection', fn() => view('login.role_selection'));
 
-Route::get('/dashboard', function () {
-    return view('admin-modules.dashboard');
-});
+// monitoring
+Route::get('/entry_exit', fn() => view('admin-modules.monitoring.entry-exit'))->name('entryExit');
+Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
+Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.log');
+Route::get('/emails', [EmailLogController::class, 'index']);
 
-Route::get('/role-selection', function () {
-    return view('login.role_selection');
-});
-
-
-//monitoring----
-Route::get('/entry_exit', function () {
-    return view('admin-modules.monitoring.entry-exit');
-})->name('entryExit');
-
-Route::get('/attendance', function () {
-    return view('admin-modules.monitoring.class-attendance');
-})->name('attendance');
-
-Route::get('emails' , function(){
-    return view('admin-modules.monitoring.emails');
-});
-
-Route::get('/users', function(){
-    return view('admin-modules.management.users');
-});
-
-
-//management-----
-Route::get('/enrollment' , function(){
-    return view('admin-modules.management.enrollment');
-});
-
-
-
-//utilities------
-
-Route::get('/schedule-configuration', function(){
-    return view('admin-modules.utilities.schedule-configuration');
-});
-
-
-
-
-// CRUD & Core Operations
-
-//students
-
-Route::get('/student-management', function () {
-    return view('admin-modules.management.studentList');
-})->name('addStudent');
-Route::get('/student-management', [StudentController::class, 'index']);
+// students
+Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');
 Route::post('/students', [StudentController::class, 'store'])->name('student.store');
+Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
+Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
 
-//scanner
+// enrollment
+Route::get('/enrollment', [EnrollmentController::class, 'index'])->name('enrollment.index');
+Route::post('/enrollments', [EnrollmentController::class, 'store'])->name('enrollments.store');
+
+// schedule configuration
+Route::get('/schedule-configuration', [ScheduleConfigController::class, 'index']);
+Route::post('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.store');
+Route::put('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.update');
+
+// scanner
 Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
 
-//entry exit logs
-Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.log');
+// management
+Route::get('/users', fn() => view('admin-modules.management.users'));
 
-
-
-//emails
-Route::get('/emails' , [EmailLogController::class , 'index']);
-
-
-//enrollment
-Route::get('/enrollment' , [EnrollmentController::class , 'index']);
-
-
-
-//scheduleconfig---------------
-Route::get('/schedule-configuration' , [ScheduleConfigController::class,'index']);
-
-//search controller
-Route::get('/student-management/search' , [SearchController::class, 'searchStudent'])->name('search.students');
-
-//add schedule
-Route::post('/schedule-configuration' , [ScheduleConfigController::class, 'store'])->name('schedconfig.store');
-
-//edit schedule
-Route::put('/schedule-configuration' , [ScheduleConfigController::class, 'store'])->name('schedconfig.update');
-
-
-
-
-
-
-// Testing Phase
-//web app scanner
-Route::get('/scanner', function () {
-    return view('scanner.index');
-});
+// testing
+Route::get('/scanner', fn() => view('scanner.index'));

@@ -22,7 +22,7 @@
                 <div class="row g-3 align-items-center">
                     {{-- Search --}}
                     <!-- col-md makes this dynamically stretch to fill all leftover space on the left -->
-                    <div class="col-12 col-md">
+                    <div class="col-12 col-md  col-lg-7">
                         <form action="#" method="GET">
                             <div class="input-group">
                                 <input type="search" name="query" class="form-control"
@@ -37,7 +37,7 @@
 
                     {{-- Level Filter --}}
                     <!-- col-6 on mobile, hugs its content tightly on tablet/desktop -->
-                    <div class="col-6 col-md-auto">
+                    <div class="col-6 col-md-auto  col-lg-2">
                         <select class="form-select" name="level">
                             <option value="" disabled selected>Status</option>
                             <option value="send">Sent</option>
@@ -48,7 +48,7 @@
 
                     {{-- Scan Type Filter --}}
                     <!-- col-6 on mobile, hugs its content tightly on tablet/desktop -->
-                    <div class="col-6 col-md-auto">
+                    <div class="col-6 col-md-auto  col-lg-2">
                         <select class="form-select" name="scan_type">
                             <option value="" disabled selected>Scan Type</option>
                             <option value="IN">IN</option>

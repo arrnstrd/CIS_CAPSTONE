@@ -28,49 +28,61 @@
         </div>
 
         {{-- Quick Guide --}}
-        <div class="bg-white border rounded-3 p-3 mb-3 mx-3 shadow-sm">
+        <div class="border-start border-primary border-4 bg-white rounded-3 p-3 mb-4 mx-3 shadow-sm">
+            <div class="text-primary fw-bold mb-3">How to Use</div>
 
             <div class="row g-3 small">
-
-                <div class="col-md">
-                    <div class="fw-semibold">Department</div>
-                    <div class="text-muted">
-                        Elementary, HS, SHS
+                <div class="col-md d-flex align-items-start gap-2">
+                    <span
+                        class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                        style="width: 24px; height: 24px; min-width: 24px; font-size: 12px;">1</span>
+                    <div>
+                        <div class="fw-semibold text-dark">Department</div>
+                        <div class="text-muted">Elementary, HS, SHS</div>
                     </div>
                 </div>
 
-                <div class="col-md">
-                    <div class="fw-semibold">Session</div>
-                    <div class="text-muted">
-                        Morning or Afternoon
+                <div class="col-md d-flex align-items-start gap-2">
+                    <span
+                        class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                        style="width: 24px; height: 24px; min-width: 24px; font-size: 12px;">2</span>
+                    <div>
+                        <div class="fw-semibold text-dark">Session</div>
+                        <div class="text-muted">Morning or Afternoon</div>
                     </div>
                 </div>
 
-                <div class="col-md">
-                    <div class="fw-semibold">IN Window</div>
-                    <div class="text-muted">
-                        Allowed entry scan time
+                <div class="col-md d-flex align-items-start gap-2">
+                    <span
+                        class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                        style="width: 24px; height: 24px; min-width: 24px; font-size: 12px;">3</span>
+                    <div>
+                        <div class="fw-semibold text-dark">IN Window</div>
+                        <div class="text-muted">Allowed entry scan time</div>
                     </div>
                 </div>
 
-                <div class="col-md">
-                    <div class="fw-semibold">Late Threshold</div>
-                    <div class="text-muted">
-                        Basis for late detection
+                <div class="col-md d-flex align-items-start gap-2">
+                    <span
+                        class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                        style="width: 24px; height: 24px; min-width: 24px; font-size: 12px;">4</span>
+                    <div>
+                        <div class="fw-semibold text-dark">Late Threshold</div>
+                        <div class="text-muted">Basis for late detection</div>
                     </div>
                 </div>
 
-                <div class="col-md">
-                    <div class="fw-semibold">OUT Window</div>
-                    <div class="text-muted">
-                        Allowed exit scan time
+                <div class="col-md d-flex align-items-start gap-2">
+                    <span
+                        class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                        style="width: 24px; height: 24px; min-width: 24px; font-size: 12px;">5</span>
+                    <div>
+                        <div class="fw-semibold text-dark">OUT Window</div>
+                        <div class="text-muted">Allowed exit scan time</div>
                     </div>
                 </div>
-
             </div>
-
         </div>
-
 
         <div class="col">
             <x-ui.table>
@@ -118,85 +130,85 @@
 
 
     {{-- modal --}}
-  <x-modal>
-    <x-slot name="id">addScheduleModal</x-slot>
-    <x-slot name="modalTitle">Add Schedule Configuration</x-slot>
+    <x-modal>
+        <x-slot name="id">addScheduleModal</x-slot>
+        <x-slot name="modalTitle">Add Schedule Configuration</x-slot>
 
-    <form action="{{ route('schedconfig.store') }}" method="POST">
-        @csrf
-
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-semibold">Education Level</label>
-                <select class="form-select" name="level" required>
-                    <option value="" disabled selected>Select education level</option>
-                    <option value="elementary">Elementary</option>
-                    <option value="hs">High School</option>
-                    <option value="shs">Senior High School</option>
-                </select>
-            </div>
-
-            <div class="col-md-6 mb-3">
-                <label class="form-label fw-semibold">Session Type</label>
-                <select class="form-select" name="session_type" required>
-                    <option value="" disabled selected>Select session type</option>
-                    <option value="morning">Morning Session</option>
-                    <option value="afternoon">Afternoon Session</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="border rounded-3 p-3 mb-3">
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <i class="fa-solid fa-right-to-bracket text-success"></i>
-                <h6 class="fw-bold mb-0">Entry Scan Window</h6>
-            </div>
+        <form action="{{ route('schedconfig.store') }}" method="POST">
+            @csrf
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Entry Start Time</label>
-                    <input type="time" class="form-control" name="in_start" required>
-                    <div class="form-text">Earliest allowed time for entry scanning.</div>
+                    <label class="form-label fw-semibold">Education Level</label>
+                    <select class="form-select" name="level" required>
+                        <option value="" disabled selected>Select education level</option>
+                        <option value="elementary">Elementary</option>
+                        <option value="hs">High School</option>
+                        <option value="shs">Senior High School</option>
+                    </select>
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Entry End Time</label>
-                    <input type="time" class="form-control" name="in_end" required>
-                    <div class="form-text">Latest allowed time for entry scanning.</div>
+                    <label class="form-label fw-semibold">Session Type</label>
+                    <select class="form-select" name="session_type" required>
+                        <option value="" disabled selected>Select session type</option>
+                        <option value="morning">Morning Session</option>
+                        <option value="afternoon">Afternoon Session</option>
+                    </select>
                 </div>
             </div>
 
-            <div>
-                <label class="form-label">Late Threshold</label>
-                <input type="time" class="form-control" name="late_threshold" required>
-                <div class="form-text">Students scanning after this time will be marked late.</div>
-            </div>
-        </div>
-
-        <div class="border rounded-3 p-3 mb-4">
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <i class="fa-solid fa-right-from-bracket text-danger"></i>
-                <h6 class="fw-bold mb-0">Exit Scan Window</h6>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Exit Start Time</label>
-                    <input type="time" class="form-control" name="out_start" required>
-                    <div class="form-text">Earliest allowed time for exit scanning.</div>
+            <div class="border rounded-3 p-3 mb-3">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="fa-solid fa-right-to-bracket text-success"></i>
+                    <h6 class="fw-bold mb-0">Entry Scan Window</h6>
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Exit End Time</label>
-                    <input type="time" class="form-control" name="out_end" required>
-                    <div class="form-text">Latest allowed time for exit scanning.</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Entry Start Time</label>
+                        <input type="time" class="form-control" name="in_start" required>
+                        <div class="form-text">Earliest allowed time for entry scanning.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Entry End Time</label>
+                        <input type="time" class="form-control" name="in_end" required>
+                        <div class="form-text">Latest allowed time for entry scanning.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Late Threshold</label>
+                    <input type="time" class="form-control" name="late_threshold" required>
+                    <div class="form-text">Students scanning after this time will be marked late.</div>
                 </div>
             </div>
-        </div>
 
-        <button type="submit" class="btn btn-dark w-100">Save Schedule Configuration</button>
-    </form>
-</x-modal>
+            <div class="border rounded-3 p-3 mb-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="fa-solid fa-right-from-bracket text-danger"></i>
+                    <h6 class="fw-bold mb-0">Exit Scan Window</h6>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Exit Start Time</label>
+                        <input type="time" class="form-control" name="out_start" required>
+                        <div class="form-text">Earliest allowed time for exit scanning.</div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Exit End Time</label>
+                        <input type="time" class="form-control" name="out_end" required>
+                        <div class="form-text">Latest allowed time for exit scanning.</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark w-100">Save Schedule Configuration</button>
+        </form>
+    </x-modal>
 
     {{-- Manual Guide Modal --}}
     <div class="modal fade" id="scheduleGuideModal" tabindex="-1" aria-hidden="true">

@@ -12,57 +12,49 @@
 
 
     <div class="col mb-3 mx-2">
-            <div class="bg-white rounded p-4 shadow-sm">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="bg-white rounded p-4 shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3 class="fw-semibold text-dark m-0 fs-5">Student Records</h3>
                     <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
                         data-bs-toggle="modal" data-bs-target="#addStudentModal">
                         <span>+ Add Student</span>
                     </button>
                 </div>
-
+            <form action="{{ route('addStudent') }}" method="GET">
                 <div class="row g-3 align-items-center">
                     <div class="col-10 col-md-7 col-lg-8">
-                        <form action="{{ route('search.students') }} " method="GET" class="d-flex w-100 max-width-md">
-
-                            <div class="input-group">
-                                <!-- Search Input -->
-                                <input type="search" name="query" class="form-control"
-                                    placeholder="Search student's number or name..." value=" " aria-label="Search student's number or name..."
-                                    required>
-
-                                <!-- Search Button -->
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-search"></i> Search
-                                </button>
-
-                            </div>
-
-                        </form>
+                        <div class="input-group">
+                            <input type="search" name="query" class="form-control"
+                                placeholder="Search by name or student number..." value="{{ request('query') }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </div>
                     </div>
 
                     <div class="col-6 col-md-2.5 col-lg-2">
-                        <select name="school_year" id="schoolYearFilter"
-                            class="form-select rounded-3 py-2 border-light-subtle" aria-label="Filter by School Year">
-                            <option value="all" selected>All Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
+                        <select name="status" class="form-select" onchange="this.form.submit()">
+                            <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All Status
+                            </option>
+                            <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive
+                            </option>
                         </select>
                     </div>
 
                     <div class="col-6 col-md-2.5 col-lg-2">
-                        <select name="level" id="levelFilter" class="form-select rounded-3 py-2 border-light-subtle"
-                            aria-label="Filter by Level">
-                            <option value="all" selected>All Sex</option>
-                            <option value="female">Female</option>
-                            <option value="male">Male</option>
-                          
+                        <select name="sex" class="form-select" onchange="this.form.submit()">
+                            <option value="all" {{ request('sex', 'all') === 'all' ? 'selected' : '' }}>All Sex</option>
+                            <option value="female" {{ request('sex') === 'female' ? 'selected' : '' }}>Female</option>
+                            <option value="male" {{ request('sex') === 'male' ? 'selected' : '' }}>Male</option>
                         </select>
                     </div>
                 </div>
+            </form>
 
-            </div>
+
         </div>
+    </div>
 
 
     <x-ui.table>
