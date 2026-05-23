@@ -13,7 +13,6 @@ use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
-    //
 
     public function index(Request $request)
 {
@@ -35,6 +34,7 @@ class StudentController extends Controller
         ->orderBy('student_number', 'desc')
         ->paginate(25)
         ->withQueryString();
+        
 
     return view('admin-modules.management.studentList', compact('students'));
 }

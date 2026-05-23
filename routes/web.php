@@ -19,7 +19,11 @@ Route::get('/role-selection', fn() => view('login.role_selection'));
 Route::get('/entry_exit', fn() => view('admin-modules.monitoring.entry-exit'))->name('entryExit');
 Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
 Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.log');
-Route::get('/emails', [EmailLogController::class, 'index']);
+
+//emails
+Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
+Route::post('/emails/{id}/retry' , [EmailLogController::class, 'retry'])->name('retry.email');
+Route::post('/emails' , [EmailLogController::class , 'retryAll'])->name('retryAll.email');
 
 // students
 Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');

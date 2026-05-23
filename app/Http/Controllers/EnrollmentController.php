@@ -10,48 +10,58 @@ use Illuminate\Validation\Rule;
 class EnrollmentController extends Controller
 {
     public function index(Request $request)
-{
-    $query      = $request->input('query');
-    $schoolYear = $request->input('school_year');
-    $level      = $request->input('level');
+    {
+        $query = $request->input('query');
+        $school_year = $request->input('school_year');
+        $grade_level = $request->input('grade_level');
 
-    $enrollments = Enrollment::with('student')
-        ->when($query, function ($q) use ($query) {
-            $q->whereHas('student', function ($q) use ($query) {
-                $q->where('student_number', 'like', "%{$query}%")
-                  ->orWhere('first_name', 'like', "%{$query}%")
-                  ->orWhere('last_name', 'like', "%{$query}%");
-            });
-        })
-        ->when($schoolYear && $schoolYear !== 'all', function ($q) use ($schoolYear) {
-            $q->where('school_year', $schoolYear);
-        })
-        ->when($level && $level !== 'all', function ($q) use ($level) {
-            $q->where('level', $level);
-        })
-        ->orderBy('student_id')
-        ->paginate(25)
-        ->withQueryString(); // preserve search params sa pagination links
+        $enrollments = Enrollment::with('student')
+            ->when($query, function ($q) use ($query) {
+                $q->whereHas('student', function ($q) use ($query) {
+                    $q->where('student_number', 'like', "%{$query}%")
+                        ->orWhere('first_name', 'like', "%{$query}%")
+                        ->orWhere('last_name', 'like', "%{$query}%");
+                });
+            })
+            ->when($school_year && $school_year !== 'all', function ($q) use ($school_year) {
+                $q->where('school_year', $school_year);
+            })
+            ->when($grade_level && $grade_level !== 'all', function ($q) use ($grade_level) {
+                $q->where('grade_level', $grade_level);
+            })
+            ->orderBy('student_id')
+            ->paginate(25)
+            ->withQueryString();
 
-    $schoolYears = Enrollment::distinct()->orderBy('school_year', 'desc')->pluck('school_year');
-    $levels      = Enrollment::distinct()->pluck('level');
+        $school_years = Enrollment::distinct()
+            ->orderBy('school_year', 'desc')
+            ->pluck('school_year');
 
-    return view('admin-modules.management.enrollment', compact('enrollments', 'schoolYears', 'levels'));
-}
+        return view('admin-modules.management.enrollment', compact('enrollments', 'school_years'));
+    }
 
 
     public function store(Request $request)
     {
         $validateData = $request->validate([
-             'student_id' => ['required', 'exists:students,id'],
+            'student_id' => ['required', 'exists:students,id'],
             'school_year' => ['required', 'regex:/^\d{4}-\d{4}$/'],
-            'level' => ['required' , 'in:elementary,hs,shs'],
+            'level' => ['required', 'in:elementary,hs,shs'],
             'grade_level' => [
                 'required',
                 Rule::in([
-                    'Grade 1','Grade 2','Grade 3','Grade 4',
-                    'Grade 5','Grade 6','Grade 7','Grade 8',
-                    'Grade 9','Grade 10','Grade 11','Grade 12',
+                    'Grade 1',
+                    'Grade 2',
+                    'Grade 3',
+                    'Grade 4',
+                    'Grade 5',
+                    'Grade 6',
+                    'Grade 7',
+                    'Grade 8',
+                    'Grade 9',
+                    'Grade 10',
+                    'Grade 11',
+                    'Grade 12',
                 ])
             ],
 
@@ -59,38 +69,47 @@ class EnrollmentController extends Controller
             'session_type' => ['required', 'in:morning,afternoon'],
             'status' => ['required', 'in:active,inactive'],
         ]);
-        
 
-        try{
+
+        try {
             $enrollment = Enrollment::create($validateData);
 
-          return response()->json([
-            'message' => 'Enrollment created successfully',
-            'data' => $enrollment
-          ]);
-        }
-        catch(QueryException $e){
+            return response()->json([
+                'message' => 'Enrollment created successfully',
+                'data' => $enrollment
+            ]);
+        } catch (QueryException $e) {
             return response()->json([
                 'message' => 'Student is already enrolled for this school year'
-            ] , 422);
-        }          
+            ], 422);
+        }
     }
 
 
 
-    public function update(Request $request, string $id){
+    public function update(Request $request, string $id)
+    {
         $enrollment = Enrollment::findOrFail($id);
 
         $validatedData = $request->validate([
-             'student_id' => ['required', 'exists:students,id'],
+            'student_id' => ['required', 'exists:students,id'],
             'school_year' => ['required', 'regex:/^\d{4}-\d{4}$/'],
-            'level' => ['required' , 'in:elementary,hs,shs'],
+            'level' => ['required', 'in:elementary,hs,shs'],
             'grade_level' => [
                 'required',
                 Rule::in([
-                    'Grade 1','Grade 2','Grade 3','Grade 4',
-                    'Grade 5','Grade 6','Grade 7','Grade 8',
-                    'Grade 9','Grade 10','Grade 11','Grade 12',
+                    'Grade 1',
+                    'Grade 2',
+                    'Grade 3',
+                    'Grade 4',
+                    'Grade 5',
+                    'Grade 6',
+                    'Grade 7',
+                    'Grade 8',
+                    'Grade 9',
+                    'Grade 10',
+                    'Grade 11',
+                    'Grade 12',
                 ])
             ],
 
@@ -100,17 +119,17 @@ class EnrollmentController extends Controller
         ]);
 
         //check if exists
-       $exists = Enrollment::where('student_id', $validatedData['student_id'])
-                    ->where('school_year', $validatedData['school_year'])
-                    ->where('id', '!=', $id)
-                    ->exists();
+        $exists = Enrollment::where('student_id', $validatedData['student_id'])
+            ->where('school_year', $validatedData['school_year'])
+            ->where('id', '!=', $id)
+            ->exists();
 
-        if($exists){
+        if ($exists) {
             return response()->json([
                 'message' => 'This student is already enrolled for this school year'
-            ] , 422);
+            ], 422);
         }
-        
+
 
         $enrollment->update($validatedData);
 
@@ -122,38 +141,33 @@ class EnrollmentController extends Controller
     }
 
     public function destroy(string $id)
-{
-    $enrollment = Enrollment::find($id);
+    {
+        $enrollment = Enrollment::find($id);
 
-    if (!$enrollment) {
-        return response()->json([
-            'message' => 'Enrollment not found'
-        ], 404);
+        if (!$enrollment) {
+            return response()->json([
+                'message' => 'Enrollment not found'
+            ], 404);
+        }
+
+        try {
+            $enrollment->delete();
+
+            return response()->json([
+                'message' => 'Enrollment deleted successfully',
+                'data' => [
+                    'id' => $enrollment->id,
+                    'student_id' => $enrollment->student_id,
+                    'school_year' => $enrollment->school_year,
+                    'level' => $enrollment->level,
+                    'status' => 'deleted'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete enrollment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-
-    try {
-        $enrollment->delete();
-
-        return response()->json([
-            'message' => 'Enrollment deleted successfully',
-            'data' => [
-                'id' => $enrollment->id,
-                'student_id' => $enrollment->student_id,
-                'school_year' => $enrollment->school_year,
-                'level' => $enrollment->level,
-                'status' => 'deleted'
-            ]
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Failed to delete enrollment',
-            'error' => $e->getMessage()
-        ], 500);
-    }
-}
-
-    
-    
-
-
 }
