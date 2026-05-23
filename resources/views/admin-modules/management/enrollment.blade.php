@@ -13,6 +13,7 @@
                 <x-card title="elementary students" value="0" icon="fa-solid fa-child" variants="primary" />
                 <x-card title="high school students" value="0" icon="fa-solid fa-user-graduate" variants="primary" />
                 <x-card title="senior high students" value="0" icon="fa-solid fa-graduation-cap" variants="primary" />
+                
             </div>
         </div>
 
@@ -27,43 +28,46 @@
                 </div>
 
                 <div class="row g-3 align-items-center">
-                    <div class="col-10 col-md-7 col-lg-8">
-                        <form action=" " method="GET" class="d-flex w-100 max-width-md">
-
-                            <div class="input-group">
-                                <!-- Search Input -->
-                                <input type="search" name="query" class="form-control"
-                                    placeholder="Search student's number or name..." value=" "
-                                    aria-label="Search student's number or name..." required>
-
-                                <!-- Search Button -->
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-search"></i> Search
-                                </button>
-
+                    <form action="{{ route('enrollment.index') }}" method="GET">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-10 col-md-7 col-lg-8">
+                                <div class="input-group">
+                                    <input type="search" name="query" class="form-control"
+                                        placeholder="Search student's number or name..." value="{{ request('query') }}">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="bi bi-search"></i> Search
+                                    </button>
+                                </div>
                             </div>
 
-                        </form>
-                    </div>
+                            <div class="col-6 col-md-2.5 col-lg-2">
+                                <select name="school_year" class="form-select rounded-3 py-2 border-light-subtle"
+                                    onchange="this.form.submit()">
+                                    <option value="all" {{ request('school_year', 'all') === 'all' ? 'selected' : '' }}>
+                                        All School Years</option>
+                                    @foreach($school_years as $year)
+                                        <option value="{{ $year }}" {{ request('school_year') === $year ? 'selected' : '' }}>
+                                            {{ $year }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                    <div class="col-6 col-md-2.5 col-lg-2">
-                        <select name="school_year" id="schoolYearFilter"
-                            class="form-select rounded-3 py-2 border-light-subtle" aria-label="Filter by School Year">
-                            <option value="all" selected>All School Years</option>
-                            <option value="2025-2026">2025 - 2026</option>
-                            <option value="2024-2025">2024 - 2025</option>
-                        </select>
-                    </div>
+                            <div class="col-6 col-md-2.5 col-lg-2">
+                                <select class="form-select" name="grade_level" onchange="this.form.submit()">
+                                    <option value="all" {{ request('grade_level', 'all') === 'all' ? 'selected' : '' }}>
+                                        All Grade Levels
+                                    </option>
 
-                    <div class="col-6 col-md-2.5 col-lg-2">
-                        <select name="level" id="levelFilter" class="form-select rounded-3 py-2 border-light-subtle"
-                            aria-label="Filter by Level">
-                            <option value="all" selected>All Levels</option>
-                            <option value="elementary">Elementary</option>
-                            <option value="high-school">High School</option>
-                            <option value="senior-high">Senior High School</option>
-                        </select>
-                    </div>
+                                    @foreach(['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'] as $grade)
+                                        <option value="{{ $grade }}" {{ request('grade_level') === $grade ? 'selected' : '' }}>
+                                            {{ $grade }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </form>
                 </div>
 
             </div>
@@ -71,26 +75,26 @@
 
         <x-ui.table>
             <x-slot>
-                <thead class="text-uppercase text-center">
+                <thead class="text-uppercase">
                     <tr>
-                        <th>Student Number</th>
-                        <th>Student Name</th>
-                        <th>School Year</th>
-                        <th>Level</th>
-                        <th>Grade Level</th>
-                        <th>Section</th>
-                        <th>Session Type</th>
-                        <th>Status</th>
-                        <th>Actions</th>
+                        <th style="width: 11%">Student Number</th>
+                        <th style="width: 12%">Student Name</th>
+                        <th style="width: 11%">School Year</th>
+                        <th style="width: 10%">Level</th>
+                        <th style="width: 10%">Grade Level</th>
+                        <th style="width: 10%">Section</th>
+                        <th style="width: 11%">Session Type</th>
+                        <th style="width: 9%">Status</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
 
                 @forelse ($enrollments as $enrollment)
 
-                    <tbody class="text-center">
+                    <tbody>
                         <tr>
                             <td> {{ $enrollment->student->student_number ?? '-'}}</td>
-                            <td>{{ $enrollment->student->first_name ?? ''}}
+                            <td>{{ $enrollment->student->first_name ?? ''}} 
                                 {{ $enrollment->student->last_name ?? '' }}
                             </td>
                             <td> {{ $enrollment->school_year }}</td>
@@ -99,8 +103,31 @@
                             <td> {{ $enrollment->section }}</td>
                             <td> {{ $enrollment->session_type }}</td>
                             <td> {{ $enrollment->status }}</td>
-                            <td> </td>
+                              <td class="whitespace-nowrap">
+                            <div class="d-flex align-items-center gap-2">
+                                <!-- View Action -->
+                                <a href="#" class="btn btn-sm btn-outline-primary px-3">
+                                    View
+                                </a>
+
+                                <!-- Edit Action -->
+                                <a href="#" class="btn btn-sm btn-outline-warning px-3">
+                                    Edit
+                                </a>
+
+                                <!-- Delete Action -->
+                                <form action="" method="POST" class="d-inline"
+                                    onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                         </tr>
+
                     </tbody>
 
                 @empty
@@ -184,7 +211,8 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Section</label>
-                    <input type="text" class="form-control" name="section" placeholder="e.g. Rizal, Section A" required />
+                    <input type="text" class="form-control" name="section" placeholder="e.g. Rizal, Section A"
+                        required />
                 </div>
             </div>
 

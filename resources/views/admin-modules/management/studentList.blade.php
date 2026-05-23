@@ -9,17 +9,17 @@
     </x-slot>
 
 
-
+        
 
     <div class="col mb-3 mx-2">
         <div class="bg-white rounded p-4 shadow-sm">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="fw-semibold text-dark m-0 fs-5">Student Records</h3>
-                    <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
-                        data-bs-toggle="modal" data-bs-target="#addStudentModal">
-                        <span>+ Add Student</span>
-                    </button>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-semibold text-dark m-0 fs-5">Student Records</h3>
+                <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
+                    data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                    <span>+ Add Student</span>
+                </button>
+            </div>
             <form action="{{ route('addStudent') }}" method="GET">
                 <div class="row g-3 align-items-center">
                     <div class="col-10 col-md-7 col-lg-8">
@@ -61,20 +61,20 @@
 
         <x-slot>
 
-            <thead class="text-uppercase text-center">
+            <thead class="text-uppercase">
                 <tr>
-                    <th class="ms-0">Student No.</th>
-                    <th>Last Name</th>
-                    <th>First Name</th>
-                    <th>Middle Name</th>
-                    <th>LRN</th>
-                    <th>Sex</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th style="width: 13%">Student No.</th>
+                    <th style="width: 11%">Last Name</th>
+                    <th style="width: 10%">First Name</th>
+                    <th style="width: 14%">Middle Name</th>
+                    <th style="width: 13%">LRN</th>
+                    <th style="width: 14%">Sex</th>
+                    <th style="width: 10%">Status</th>
+                    <th class="text-center">Actions</th>
                 </tr>
             </thead>
             @forelse($students as $student)
-                <tbody class="text-center">
+                <tbody>
 
                     <tr>
                         <td>{{  $student->student_number  }} </td>
@@ -84,7 +84,29 @@
                         <td>{{  $student->lrn }} </td>
                         <td>{{  $student->sex }} </td>
                         <td> {{  $student->status }} </td>
-                        <td> </td>
+                        <td class="whitespace-nowrap">
+                            <div class="d-flex align-items-center gap-2">
+                                <!-- View Action -->
+                                <a href="#" class="btn btn-sm btn-outline-primary px-3">
+                                    View
+                                </a>
+
+                                <!-- Edit Action -->
+                                <a href="#" class="btn btn-sm btn-outline-warning px-3">
+                                    Edit
+                                </a>
+
+                                <!-- Delete Action -->
+                                <form action="" method="POST" class="d-inline"
+                                    onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
 
                     </tr>
                 </tbody>

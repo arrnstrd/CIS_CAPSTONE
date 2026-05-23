@@ -8,15 +8,38 @@ use Illuminate\Support\Facades\Mail;
 
 class EmailLogController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // $logs = EmailLog::latest()->get();
-        // return response()->json($logs);
+        $query = $request->input('query');
+        $scan_type = $request->input('scan_type');
+        $status = $request->input('status');
+
 
         $emailLogs = EmailLog::with('student')
+            ->when($query, function ($q) use ($query) {
+                $q->whereHas('student', function ($q) use ($query) {
+                    $q->where('student_number', 'like', "%{$query}%")
+                        ->orWhere('first_name', 'like', "%{$query}%")
+                        ->orWhere('last_name', 'like', "%{$query}%")
+                        ->orWhere('email' , 'like' , "%{$query}%");
+                });
+            })
+            ->when($scan_type && $scan_type  !== 'all', function($q) use ($scan_type){
+                $q->where('scan_type' , $scan_type);
+            })
+            ->when($status && $status  !== 'all', function($q) use ($status){
+                $q->where('status' , $status);
+            })
             ->orderBy('student_id')
-            ->paginate(25);
-            return view('admin-modules.monitoring.emails', compact('emailLogs'));
+            ->paginate(25)
+            ->withQueryString();
+
+            $emailCounts = [
+                'sent' => $emailLogs->where('status' , 'sent')->count(),
+                'pending' => $emailLogs->where('status' , 'pending')->count(),
+                'failed' => $emailLogs->where('status' , 'failed')->count(),
+            ];
+        return view('admin-modules.monitoring.emails', compact('emailLogs','emailCounts'));
     }
 
     public function store(Request $request)
@@ -67,6 +90,8 @@ class EmailLogController extends Controller
         }
     }
 
+
+    // one - resend
     public function retry($id)
     {
         $emailLog = EmailLog::find($id);
@@ -85,6 +110,7 @@ class EmailLogController extends Controller
         ]);
     }
 
+    //bulk - all failed
     public function retryAll()
     {
         $failedLogs = EmailLog::where('status', 'failed')->get();
