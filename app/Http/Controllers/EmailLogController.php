@@ -137,7 +137,7 @@ class EmailLogController extends Controller
     {
         try {
             Mail::raw(
-                "Student ID {$emailLog->student_id} gate attendance recorded at " . now(),
+                "Your child  {$emailLog->student->first_name} gate attendance recorded at " . now(),
                 function ($message) use ($emailLog) {
                     $message->to($emailLog->email)
                         ->subject('CIS Gate Scan Notification');
@@ -157,7 +157,6 @@ class EmailLogController extends Controller
                 'status' => 'failed',
                 'attempt_count' => ($emailLog->attempt_count ?? 0) + 1
             ]);
-
             return false;
         }
     }

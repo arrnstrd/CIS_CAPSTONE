@@ -9,260 +9,227 @@
 
     <div class="main-content mx-2">
         <!-- Overview Cards Section -->
-        <div class="row mb-4 mx-2">
-            <div class="col-12">
-                <div class="row g-3">
-                    <!-- Total Emails Today Card -->
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body d-flex align-items-center gap-3">
-                                <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
-                                    <i class="fas fa-envelope fa-lg text-primary"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="card-title mb-1 text-muted">Total Emails Today</h6>
-                                    <h3 class="mb-0 text-primary">{{ $emailCounts['total'] }}</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Sent Emails Today Card -->
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body d-flex align-items-center gap-3">
-                                <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded">
-                                    <i class="fas fa-paper-plane fa-lg text-success"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="card-title mb-1 text-muted">Sent Emails Today</h6>
-                                    <h3 class="mb-0 text-success">{{ $emailCounts['sent'] }}</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Failed Emails Today Card -->
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body d-flex align-items-center gap-3">
-                                <div class="flex-shrink-0 bg-danger bg-opacity-10 p-3 rounded">
-                                    <i class="fas fa-times-circle fa-lg text-danger"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="card-title mb-1 text-muted">Failed Emails Today</h6>
-                                    <h3 class="mb-0 text-danger">{{ $emailCounts['failed'] }}</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pending Emails Today Card -->
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body d-flex align-items-center gap-3">
-                                <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded">
-                                    <i class="fas fa-hourglass-half fa-lg text-warning"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="card-title mb-1 text-muted">Pending Emails Today</h6>
-                                    <h3 class="mb-0 text-warning">{{ $emailCounts['pending'] }}</h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="row mb-3 mx-4">
+            <div class="d-flex justify-content-center align-items center gap-3">
+                <x-card title="total emails today" value="{{ $emailCounts['total'] ?? 0 }} " icon="fas fa-envelope"
+                    variants="primary" />
+                <x-card title="sent emails today" value="{{ $emailCounts['sent'] ?? 0 }} " icon="fas fa-paper-plane"
+                    variants="success" />
+                <x-card title="pending emails today" value="{{ $emailCounts['pending'] ?? 0 }} "
+                    icon="fa-solid fa-hourglass-half" variants="warning" />
+                <x-card title="failed emails today" value="{{ $emailCounts['failed'] ?? 0 }} "
+                    icon="fas fa-times-circle" variants="danger" />
             </div>
         </div>
+
 
         <!-- Filters and Controls Section -->
         <div class="col mb-4 mx-2">
             <div class="bg-white rounded p-4 shadow-sm">
-                <div class="row g-3 align-items-center">
-                    <!-- Search Form -->
-                    <form action="{{ route('emails.index') }}" method="GET"
-                        class="col-12 d-lg-flex align-items-center gap-2 m-0 p-0">
 
-                        <!-- Search Input -->
-                        <div class="col-12 col-lg-5 flex-shrink-0">
+                {{-- Main GET filter form --}}
+                <form action="{{ route('emails.index') }}" method="GET" id="filterForm">
+
+                    {{-- ROW 1: Search (col-7) | Status (col-2) | Scan Type (col-2) --}}
+                    <div class="row g-2 pt-2 align-items-center mb-3">
+                        <div class="col-12 col-lg-8">
                             <div class="input-group">
                                 <input type="search" name="query" class="form-control"
-                                    placeholder="Search by student, email..."
-                                    aria-label="Search by student number, student name or email recipient..."
-                                    value="{{ request('query') }}" />
+                                    placeholder="Search by student, email..." value="{{ request('query') }}" />
                                 <button class="btn btn-primary" type="submit">
                                     <i class="bi bi-search"></i> Search
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Date Filter Selector -->
-                        <div class="col-12 col-sm-6 col-lg-2 flex-shrink-0">
-                            <select class="form-select" name="date_filter" onchange="this.form.submit()">
-                                <option value="today" {{ request('date_filter', 'today') === 'today' ? 'selected' : '' }}>Today</option>
-                                <option value="yesterday" {{ request('date_filter') === 'yesterday' ? 'selected' : '' }}>Yesterday</option>
-                                <option value="last_7_days" {{ request('date_filter') === 'last_7_days' ? 'selected' : '' }}>Last 7 Days</option>
-                                <option value="custom" {{ request('date_filter') === 'custom' ? 'selected' : '' }}>Custom Range</option>
-                            </select>
-                        </div>
-
-                        <!-- Status Filter -->
-                        <div class="col-12 col-sm-6 col-lg-2 flex-shrink-0">
+                        <div class="col-6 col-lg-2">
                             <select class="form-select" name="status" onchange="this.form.submit()">
-                                <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All Status</option>
+                                <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All Status
+                                </option>
                                 <option value="sent" {{ request('status') === 'sent' ? 'selected' : '' }}>Sent</option>
-                                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Failed</option>
+                                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending
+                                </option>
+                                <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Failed
+                                </option>
                             </select>
                         </div>
 
-                        <!-- Scan Type Filter -->
-                        <div class="col-12 col-sm-6 col-lg-2 flex-shrink-0">
+                        <div class="col-6 col-lg-2">
                             <select class="form-select" name="scan_type" onchange="this.form.submit()">
-                                <option value="all" {{ request('scan_type', 'all') === 'all' ? 'selected' : '' }}>All Scan Type</option>
+                                <option value="all" {{ request('scan_type', 'all') === 'all' ? 'selected' : '' }}>All Scan
+                                    Type</option>
                                 <option value="IN" {{ request('scan_type') === 'IN' ? 'selected' : '' }}>IN</option>
                                 <option value="OUT" {{ request('scan_type') === 'OUT' ? 'selected' : '' }}>OUT</option>
-                                <option value="RE_ENTRY" {{ request('scan_type') === 'RE_ENTRY' ? 'selected' : '' }}>RE ENTRY</option>
-                                <option value="RE_EXIT" {{ request('scan_type') === 'RE_EXIT' ? 'selected' : '' }}>RE EXIT</option>
+                                <option value="RE_ENTRY" {{ request('scan_type') === 'RE_ENTRY' ? 'selected' : '' }}>RE
+                                    ENTRY</option>
+                                <option value="RE_EXIT" {{ request('scan_type') === 'RE_EXIT' ? 'selected' : '' }}>RE EXIT
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- ROW 2: Date filter (left) | Custom range (expands inline) | Help + Resend All (right, fixed)
+                    --}}
+                    <div class="row g-2 align-items-center">
+
+                        {{-- Date filter dropdown --}}
+                        <div class="col-6 col-sm-4 col-lg-2">
+                            <select class="form-select" name="date_filter" onchange="this.form.submit()">
+                                <option value="today" {{ request('date_filter', 'today') === 'today' ? 'selected' : '' }}>
+                                    Today</option>
+                                <option value="week" {{ request('date_filter') === 'week' ? 'selected' : '' }}>This Week
+                                </option>
+                                <option value="month" {{ request('date_filter') === 'month' ? 'selected' : '' }}>This
+                                    Month</option>
+                                <option value="custom" {{ request('date_filter') === 'custom' ? 'selected' : '' }}>Custom
+                                    Range</option>
                             </select>
                         </div>
 
-                        <!-- Custom Date Range (Hidden by default) -->
+                        {{-- Custom date fields expand to the right of the dropdown --}}
                         @if (request('date_filter') === 'custom')
-                            <div class="col-12 col-sm-6 col-lg-2 flex-shrink-0">
+                            <div class="col-6 col-sm-4 col-lg-2">
                                 <input type="date" name="custom_start_date" class="form-control"
-                                    value="{{ request('custom_start_date') }}" placeholder="Start Date" />
+                                    value="{{ request('custom_start_date') }}" />
                             </div>
-                            <div class="col-12 col-sm-6 col-lg-2 flex-shrink-0">
+                            <div class="col-6 col-sm-4 col-lg-2">
                                 <input type="date" name="custom_end_date" class="form-control"
-                                    value="{{ request('custom_end_date') }}" placeholder="End Date" />
+                                    value="{{ request('custom_end_date') }}" />
                             </div>
-                            <div class="col-12 col-lg-auto flex-shrink-0">
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="bi bi-funnel"></i> Apply Filter
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-funnel"></i> Apply
                                 </button>
                             </div>
                         @endif
 
-                    </form>
-
-                    <!-- Help and Resend All Buttons -->
-                    <div class="col-12 d-flex gap-2 flex-wrap">
-                        <!-- Help Button -->
-                        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal"
-                            data-bs-target="#helpModal">
-                            <i class="fas fa-question-circle"></i> Help
-                        </button>
-
-                        <!-- Resend All Button -->
-                        <form action="{{ route('retryAll.email') }}" method="POST" class="m-0">
-                            @csrf
-                            <button type="submit" class="btn btn-outline-danger"
-                                onclick="return confirm('Are you sure you want to resend all failed emails?')">
-                                <i class="bi bi-arrow-clockwise"></i>
-                                <span>Resend Failed</span>
+                        {{-- Help button (right side, ms-auto pushes it to the end) --}}
+                        <div class="col ms-auto d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-info" data-bs-toggle="modal"
+                                data-bs-target="#helpModal">
+                                <i class="fas fa-question-circle"></i> Help
                             </button>
-                        </form>
+
+                            {{-- Resend All — triggers a separate hidden POST form via JS to avoid form nesting --}}
+                            <button type="button" class="btn btn-outline-danger" onclick="confirmResendAll()">
+                                <i class="bi bi-arrow-clockwise"></i> Resend All
+                            </button>
+                        </div>
+
                     </div>
-                </div>
+
+                </form>
+
+                {{-- Separate POST form for Resend All, outside the GET form --}}
+                <form id="resendAllForm" action="{{ route('retryAll.email') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
+
             </div>
         </div>
 
+        <script>
+            function confirmResendAll() {
+                if (confirm('Are you sure you want to resend all failed emails?')) {
+                    document.getElementById('resendAllForm').submit();
+                }
+            }
+        </script>
+
         <!-- Email Logs Table Section -->
-        <div class="table-section mx-2 mb-4">
-            <div class="bg-white rounded shadow-sm overflow-hidden">
-                <x-ui.table>
-                    <thead>
-                        <tr>
-                            <th style="width: 12%">Date</th>
-                            <th style="width: 15%">Student Name</th>
-                            <th style="width: 20%">Recipient Email</th>
-                            <th style="width: 12%">Scan Type</th>
-                            <th style="width: 12%">Status</th>
-                            <th style="width: 12%">Time</th>
-                            <th style="width: 15%">Actions</th>
-                        </tr>
-                    </thead>
+        <x-ui.table>
+            <thead>
+                <tr>
+                    <th style="width: 12%">Date</th>
+                    <th style="width: 15%">Student Name</th>
+                    <th style="width: 20%">Recipient Email</th>
+                    <th style="width: 12%">Scan Type</th>
+                    <th style="width: 12%">Status</th>
+                    <th style="width: 12%">Time</th>
+                    <th style="width: 15%">Actions</th>
+                </tr>
+            </thead>
 
-                    <tbody>
-                        @forelse($emailLogs as $emailLog)
-                            <tr>
-                                <td>
-                                    <span class="text-muted small">
-                                        {{ $emailLog->last_attempt_at?->format('M d, Y') }}
-                                    </span>
-                                </td>
+            <tbody>
+                @forelse($emailLogs as $emailLog)
+                    <tr>
+                        <td>
+                            <span class="text-muted small">
+                                {{ $emailLog->last_attempt_at?->format('M d, Y') }}
+                            </span>
+                        </td>
 
-                                <td>
-                                    <span class="fw-500">
-                                        {{ $emailLog->student?->first_name ?? '' }}
-                                        {{ $emailLog->student?->last_name ?? '' }}
-                                    </span>
-                                    @if ($emailLog->student?->student_number)
-                                        <br>
-                                        <small class="text-muted">{{ $emailLog->student->student_number }}</small>
-                                    @endif
-                                </td>
+                        <td>
+                            <span class="fw-500">
+                                {{ $emailLog->student?->first_name ?? '' }}
+                                {{ $emailLog->student?->last_name ?? '' }}
+                            </span>
+                            @if ($emailLog->student?->student_number)
+                                <br>
+                                <small class="text-muted">{{ $emailLog->student->student_number }}</small>
+                            @endif
+                        </td>
 
-                                <td>
-                                    <span class="text-break">{{ $emailLog->email }}</span>
-                                </td>
+                        <td>
+                            <span class="text-break">{{ $emailLog->email }}</span>
+                        </td>
 
-                                <td>
-                                    <span class="badge bg-light text-dark">{{ $emailLog->scan_type }}</span>
-                                </td>
+                        <td>
+                            <span class="badge bg-light text-dark">{{ $emailLog->scan_type }}</span>
+                        </td>
 
-                                <td>
-                                    @php
-                                        $statusColors = [
-                                            'sent' => 'success',
-                                            'failed' => 'danger',
-                                            'pending' => 'warning'
-                                        ];
-                                        $statusColor = $statusColors[$emailLog->status] ?? 'secondary';
-                                    @endphp
-                                    <span class="badge bg-{{ $statusColor }} bg-opacity-10 text-{{ $statusColor }}">
-                                        {{ ucfirst($emailLog->status) }}
-                                    </span>
-                                </td>
+                        <td>
+                            @php
+                                $statusColors = [
+                                    'sent' => 'success',
+                                    'failed' => 'danger',
+                                    'pending' => 'warning'
+                                ];
+                                $statusColor = $statusColors[$emailLog->status] ?? 'secondary';
+                            @endphp
+                            <span class="badge bg-{{ $statusColor }} bg-opacity-10 text-{{ $statusColor }}">
+                                {{ ucfirst($emailLog->status) }}
+                            </span>
+                        </td>
 
-                                <td>
-                                    <span class="text-muted">{{ $emailLog->last_attempt_at?->format('h:i A') }}</span>
-                                </td>
+                        <td>
+                            <span class="text-muted">{{ $emailLog->last_attempt_at?->format('h:i A') }}</span>
+                        </td>
 
-                                <td>
-                                    @if ($emailLog->status === 'failed')
-                                        <form action="{{ route('retry.email', $emailLog->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-danger px-3"
-                                                onclick="return confirm('Retry sending this email?')">
-                                                <i class="bi bi-arrow-repeat"></i> Retry
-                                            </button>
-                                        </form>
-                                    @else
-                                        <span class="text-muted small">—</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-muted py-5">
-                                    <i class="fas fa-inbox fa-2x mb-3 d-block opacity-50"></i>
-                                    <p class="mb-0">No email logs found for the selected criteria</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </x-ui.table>
+                        <td>
+                            @if ($emailLog->status === 'failed')
+                                <form action="{{ route('retry.email', $emailLog->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3"
+                                        onclick="return confirm('Retry sending this email?')">
+                                        <i class="bi bi-arrow-repeat"></i> Retry
+                                    </button>
+                                </form>
+                            @else
+                                <span class="text-muted small">No actions</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="fas fa-inbox fa-2x mb-3 d-block opacity-50"></i>
+                            <p class="mb-0">No email logs found for the selected criteria</p>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </x-ui.table>
 
-                <!-- Pagination -->
-                <div class="px-4 py-3 border-top bg-light">
-                    {{ $emailLogs->links() }}
-                </div>
-            </div>
+        <!-- Pagination -->
+        <div class=" mx-2 mt-3 ">
+            {{ $emailLogs->links() }}
         </div>
 
     </div>
+
 
     <!-- Help Modal -->
     <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
@@ -334,10 +301,12 @@
                         </p>
                         <ul class="small text-muted mb-3">
                             <li>
-                                <strong>Retry Button:</strong> Appears only for failed emails. Click to attempt redelivery of the email. Maximum 4 retry attempts per email.
+                                <strong>Retry Button:</strong> Appears only for failed emails. Click to attempt
+                                redelivery of the email. Maximum 4 retry attempts per email.
                             </li>
                             <li>
-                                <strong>Resend Failed:</strong> Bulk action to retry all failed emails at once (respects the 4-retry limit).
+                                <strong>Resend Failed:</strong> Bulk action to retry all failed emails at once (respects
+                                the 4-retry limit).
                             </li>
                         </ul>
                     </section>
