@@ -111,6 +111,10 @@
                                 data-bs-target="#helpModal">
                                 <i class="fas fa-question-circle"></i> Help
                             </button>
+                            <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal"
+                                data-bs-target="#">
+                                <i class="fas fa-download"></i> Download Excel
+                            </button>
 
                             {{-- Resend All — triggers a separate hidden POST form via JS to avoid form nesting --}}
                             <button type="button" class="btn btn-outline-danger" onclick="confirmResendAll()">
@@ -156,9 +160,7 @@
                 @forelse($emailLogs as $emailLog)
                     <tr>
                         <td>
-                            <span class="text-muted small">
-                                {{ $emailLog->last_attempt_at?->format('M d, Y') }}
-                            </span>
+                            {{ $emailLog->last_attempt_at?->format('M d, Y') }}
                         </td>
 
                         <td>
@@ -166,10 +168,6 @@
                                 {{ $emailLog->student?->first_name ?? '' }}
                                 {{ $emailLog->student?->last_name ?? '' }}
                             </span>
-                            @if ($emailLog->student?->student_number)
-                                <br>
-                                <small class="text-muted">{{ $emailLog->student->student_number }}</small>
-                            @endif
                         </td>
 
                         <td>
@@ -195,7 +193,7 @@
                         </td>
 
                         <td>
-                            <span class="text-muted">{{ $emailLog->last_attempt_at?->format('h:i A') }}</span>
+                            {{ $emailLog->last_attempt_at?->format('h:i A') }}
                         </td>
 
                         <td>
@@ -215,8 +213,10 @@
                 @empty
                     <tr>
                         <td colspan="7" class="text-center text-muted py-5">
-                            <i class="fas fa-inbox fa-2x mb-3 d-block opacity-50"></i>
-                            <p class="mb-0">No email logs found for the selected criteria</p>
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                <i class="fas fa-inbox fa-2x mb-3 opacity-50"></i>
+                                <p class="mb-0">No email logs found for the selected criteria</p>
+                            </div>
                         </td>
                     </tr>
                 @endforelse

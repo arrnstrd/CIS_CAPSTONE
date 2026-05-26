@@ -84,6 +84,9 @@ class EmailLogController extends Controller
                 case 'last_7_days':
                     return $q->last7Days();
 
+                case 'month':
+                    return $q->where('created_at' , '>=' , now()->subMonth());
+
                 case 'custom':
                     if ($customStartDate && $customEndDate) {
                         return $q->filterByDateRange($customStartDate, $customEndDate);
