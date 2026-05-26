@@ -13,7 +13,7 @@
                 <x-card title="elementary students" value="0" icon="fa-solid fa-child" variants="primary" />
                 <x-card title="high school students" value="0" icon="fa-solid fa-user-graduate" variants="primary" />
                 <x-card title="senior high students" value="0" icon="fa-solid fa-graduation-cap" variants="primary" />
-                
+
             </div>
         </div>
 
@@ -84,8 +84,8 @@
                         <th style="width: 10%">Grade Level</th>
                         <th style="width: 10%">Section</th>
                         <th style="width: 11%">Session Type</th>
-                        <th style="width: 9%">Status</th>
-                        <th class="text-center">Actions</th>
+                        <th style="width: 10%">Status</th>
+                        <th style="width:8%">Actions</th>
                     </tr>
                 </thead>
 
@@ -94,7 +94,7 @@
                     <tbody>
                         <tr>
                             <td> {{ $enrollment->student->student_number ?? '-'}}</td>
-                            <td>{{ $enrollment->student->first_name ?? ''}} 
+                            <td>{{ $enrollment->student->first_name ?? ''}}
                                 {{ $enrollment->student->last_name ?? '' }}
                             </td>
                             <td> {{ $enrollment->school_year }}</td>
@@ -103,29 +103,28 @@
                             <td> {{ $enrollment->section }}</td>
                             <td> {{ $enrollment->session_type }}</td>
                             <td> {{ $enrollment->status }}</td>
-                              <td class="whitespace-nowrap">
-                            <div class="d-flex align-items-center gap-2">
-                                <!-- View Action -->
-                                <a href="#" class="btn btn-sm btn-outline-primary px-3">
-                                    View
-                                </a>
-
-                                <!-- Edit Action -->
-                                <a href="#" class="btn btn-sm btn-outline-warning px-3">
-                                    Edit
-                                </a>
-
-                                <!-- Delete Action -->
-                                <form action="" method="POST" class="d-inline"
-                                    onsubmit="return confirm('Are you sure you want to delete this item?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3">
-                                        Delete
+                            <td class="whitespace-nowrap">
+                                <div class="dropdown position-static">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
                                     </button>
-                                </form>
-                            </div>
-                        </td>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">View</a></li>
+                                        <li><a class="dropdown-item" href="#">Edit</a></li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            <form action="" method="POST" onsubmit="return confirm('Are you sure?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
                         </tr>
 
                     </tbody>

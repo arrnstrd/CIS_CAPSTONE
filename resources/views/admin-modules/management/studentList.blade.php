@@ -9,7 +9,7 @@
     </x-slot>
 
 
-        
+
 
     <div class="col mb-3 mx-2">
         <div class="bg-white rounded p-4 shadow-sm">
@@ -70,7 +70,7 @@
                     <th style="width: 13%">LRN</th>
                     <th style="width: 14%">Sex</th>
                     <th style="width: 10%">Status</th>
-                    <th class="text-center">Actions</th>
+                    <th style="width: 8%">Actions</th>
                 </tr>
             </thead>
             @forelse($students as $student)
@@ -85,26 +85,26 @@
                         <td>{{  $student->sex }} </td>
                         <td> {{  $student->status }} </td>
                         <td class="whitespace-nowrap">
-                            <div class="d-flex align-items-center gap-2">
-                                <!-- View Action -->
-                                <a href="#" class="btn btn-sm btn-outline-primary px-3">
-                                    View
-                                </a>
-
-                                <!-- Edit Action -->
-                                <a href="#" class="btn btn-sm btn-outline-warning px-3">
-                                    Edit
-                                </a>
-
-                                <!-- Delete Action -->
-                                <form action="" method="POST" class="d-inline"
-                                    onsubmit="return confirm('Are you sure you want to delete this item?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3">
-                                        Delete
-                                    </button>
-                                </form>
+                            <div class="dropdown position-static">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                   <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">View</a></li>
+                                    <li><a class="dropdown-item" href="#">Edit</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <form action="" method="POST"
+                                            onsubmit="return confirm('Are you sure?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item text-danger">Delete</button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </div>
                         </td>
 
