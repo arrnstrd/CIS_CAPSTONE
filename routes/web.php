@@ -18,7 +18,7 @@ Route::get('/role-selection', fn() => view('login.role_selection'));
 // monitoring
 Route::get('/entry_exit', fn() => view('admin-modules.monitoring.entry-exit'))->name('entryExit');
 Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
-Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.log');
+Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.index');
 
 //emails
 Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');

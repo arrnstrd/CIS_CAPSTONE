@@ -15,29 +15,29 @@ class StudentController extends Controller
 {
 
     public function index(Request $request)
-{
-    $query  = $request->input('query');
-    $status = $request->input('status');
-    $sex    = $request->input('sex');
+    {
+        $query  = $request->input('query');
+        $status = $request->input('status');
+        $sex    = $request->input('sex');
 
-    $students = Student::when($query, function ($q) use ($query) {
+        $students = Student::when($query, function ($q) use ($query) {
             $q->where('student_number', 'like', "%{$query}%")
-              ->orWhere('first_name', 'like', "%{$query}%")
-              ->orWhere('last_name', 'like', "%{$query}%");
+                ->orWhere('first_name', 'like', "%{$query}%")
+                ->orWhere('last_name', 'like', "%{$query}%");
         })
-        ->when($status && $status !== 'all', function ($q) use ($status) {
-            $q->where('status', $status);
-        })
-        ->when($sex && $sex !== 'all', function ($q) use ($sex) {
-            $q->where('sex', $sex);
-        })
-        ->orderBy('student_number', 'desc')
-        ->paginate(25)
-        ->withQueryString();
-        
+            ->when($status && $status !== 'all', function ($q) use ($status) {
+                $q->where('status', $status);
+            })
+            ->when($sex && $sex !== 'all', function ($q) use ($sex) {
+                $q->where('sex', $sex);
+            })
+            ->orderBy('student_number', 'desc')
+            ->paginate(25)
+            ->withQueryString();
 
-    return view('admin-modules.management.studentList', compact('students'));
-}
+
+        return view('admin-modules.management.studentList', compact('students'));
+    }
 
     public function store(Request $request)
     {
@@ -71,7 +71,7 @@ class StudentController extends Controller
                     ? strip_tags($validatedData['middle_name'])
                     : null,
 
-                 'sex'  => $validatedData['sex'],
+                'sex'  => $validatedData['sex'],
                 'address' => strip_tags($validatedData['address']),
                 'birthdate' => $validatedData['birthdate'],
                 'status' => $validatedData['status'],
@@ -173,23 +173,42 @@ class StudentController extends Controller
         ]);
     }
 
-    public function destroy(){
-        
+    public function destroy(string $id)
+    {
+        $student = Student::find($id);
+
+        if (!$student) {
+            return response()->json([
+                'message' => 'Student not found'
+            ], 404);
+        }
+
+        try {
+            $student->delete();
+
+            return response()->json([
+                'message' => 'Student deleted successfully',
+                'data' => $student
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete student',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
 
     public function search(Request $request)
-{
-    $q = $request->query('q', '');
+    {
+        $q = $request->query('q', '');
 
-    $students = Student::where('student_number', 'like', "%{$q}%")
-        ->orWhere('first_name', 'like', "%{$q}%")
-        ->orWhere('last_name', 'like', "%{$q}%")
-        ->limit(10)
-        ->get(['id', 'student_number', 'first_name', 'last_name']);
+        $students = Student::where('student_number', 'like', "%{$q}%")
+            ->orWhere('first_name', 'like', "%{$q}%")
+            ->orWhere('last_name', 'like', "%{$q}%")
+            ->limit(10)
+            ->get(['id', 'student_number', 'first_name', 'last_name']);
 
-    return response()->json($students);
-}
-
-    
+        return response()->json($students);
+    }
 }

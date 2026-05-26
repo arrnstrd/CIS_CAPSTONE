@@ -35,6 +35,7 @@
                     {{-- ROW 1: Search (col-7) | Status (col-2) | Scan Type (col-2) --}}
                     <div class="row g-2 pt-2 align-items-center mb-3">
                         <div class="col-12 col-lg-8">
+                             <label class="form-label text-muted text-uppercase small fw-bold">Search</label>
                             <div class="input-group">
                                 <input type="search" name="query" class="form-control"
                                     placeholder="Search by student, email..." value="{{ request('query') }}" />
@@ -45,6 +46,7 @@
                         </div>
 
                         <div class="col-6 col-lg-2">
+                              <label class="form-label text-muted text-uppercase small fw-bold">status</label>
                             <select class="form-select" name="status" onchange="this.form.submit()">
                                 <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All Status
                                 </option>
@@ -57,6 +59,7 @@
                         </div>
 
                         <div class="col-6 col-lg-2">
+                              <label class="form-label text-muted text-uppercase small fw-bold">scan type</label>
                             <select class="form-select" name="scan_type" onchange="this.form.submit()">
                                 <option value="all" {{ request('scan_type', 'all') === 'all' ? 'selected' : '' }}>All Scan
                                     Type</option>
@@ -74,32 +77,42 @@
                     --}}
                     <div class="row g-2 align-items-center">
 
-                        {{-- Date filter dropdown --}}
-                        <div class="col-6 col-sm-4 col-lg-2">
-                            <select class="form-select" name="date_filter" onchange="this.form.submit()">
-                                <option value="today" {{ request('date_filter', 'today') === 'today' ? 'selected' : '' }}>
-                                    Today</option>
-                                <option value="week" {{ request('date_filter') === 'week' ? 'selected' : '' }}>This Week
-                                </option>
-                                <option value="month" {{ request('date_filter') === 'month' ? 'selected' : '' }}>This
-                                    Month</option>
-                                <option value="custom" {{ request('date_filter') === 'custom' ? 'selected' : '' }}>Custom
-                                    Range</option>
-                            </select>
+                        {{-- Configuration --}}
+                        @php
+                            $filters = [
+                                'today' => 'Today',
+                                'week' => 'This Week',
+                                'month' => 'This Month',
+                                'custom' => 'Custom'
+                            ];
+                            $currentFilter = request('date_filter', 'today');
+                        @endphp
+
+                        {{-- Date Filter Pills --}}
+                        <div class="col-12 col-md-auto">
+                            <div class="btn-group" role="group" aria-label="Date Filter">
+                                @foreach($filters as $value => $label)
+                                    <input type="radio" class="btn-check" name="date_filter" id="date_{{ $value }}"
+                                        value="{{ $value }}" @checked($currentFilter === $value)
+                                        onchange="this.form.submit()">
+
+                                    <label class="btn btn-outline-primary nav-pill rounded px-3 me-2" for="date_{{ $value }}">
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
 
-                        {{-- Custom date fields expand to the right of the dropdown --}}
-                        @if (request('date_filter') === 'custom')
-                            <div class="col-6 col-sm-4 col-lg-2">
-                                <input type="date" name="custom_start_date" class="form-control"
-                                    value="{{ request('custom_start_date') }}" />
-                            </div>
-                            <div class="col-6 col-sm-4 col-lg-2">
-                                <input type="date" name="custom_end_date" class="form-control"
-                                    value="{{ request('custom_end_date') }}" />
-                            </div>
-                            <div class="col-auto">
-                                <button type="submit" class="btn btn-success">
+                        {{-- Custom Range Fields --}}
+                        @if ($currentFilter === 'custom')
+                            <div class="col-12 col-md-auto d-flex gap-2 animate__animated animate__fadeIn">
+                                <input type="date" name="custom_start_date" class="form-control nav-pill"
+                                    value="{{ request('custom_start_date') }}" required />
+
+                                <input type="date" name="custom_end_date" class="form-control nav-pill"
+                                    value="{{ request('custom_end_date') }}" required />
+
+                                <button type="submit" class="btn btn-success nav-pill px-3">
                                     <i class="bi bi-funnel"></i> Apply
                                 </button>
                             </div>
@@ -107,20 +120,17 @@
 
                         {{-- Help button (right side, ms-auto pushes it to the end) --}}
                         <div class="col ms-auto d-flex gap-2 justify-content-end">
-                            <button type="button" class="btn btn-outline-info" data-bs-toggle="modal"
-                                data-bs-target="#helpModal">
-                                <i class="fas fa-question-circle"></i> Help
-                            </button>
-                            <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal"
-                                data-bs-target="#">
-                                <i class="fas fa-download"></i> Download Excel
-                            </button>
-
+                          
+                        <a href="{{ route('emails.index') }}" class="btn btn-outline-secondary">
+                            Reset
+                        </a>
                             {{-- Resend All — triggers a separate hidden POST form via JS to avoid form nesting --}}
                             <button type="button" class="btn btn-outline-danger" onclick="confirmResendAll()">
                                 <i class="bi bi-arrow-clockwise"></i> Resend All
                             </button>
                         </div>
+
+                        
 
                     </div>
 

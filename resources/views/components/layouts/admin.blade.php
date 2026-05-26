@@ -6,30 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title> {{$title ?? 'CIS'  }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  
     <meta name="csrf-token" content="{{ csrf_token() }}">
-  
-</head>
+
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body>
-       
+
     <div class="page-wrapper toggled">
 
-        <x-layouts.admin.sidebar/>
+        <x-layouts.admin.sidebar />
 
         <header class="top-nav">
-  
+
             <button id="sidebarToggle" class="btn-sidebar-toggle" title="Toggle Sidebar">
                 <i class="fa fa-bars"></i>
                 <span>Toggle Sidebar</span>
             </button>
-            
+
         </header>
 
-   
+
 
         <main class="page-content">
             <div class="container-fluid px-4">
@@ -47,13 +45,13 @@
                         <span class="fw-bold small text-uppercase" id="liveDate"> </span>
                     </div>
 
-                    
-                    
+
+
 
                 </div>
             </div>
-            
-            
+
+
 
             <div class="container-fluid">
                 {{ $slot }}
