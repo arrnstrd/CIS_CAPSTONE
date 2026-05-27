@@ -49,3 +49,12 @@ Route::get('/users', fn() => view('admin-modules.management.users'));
 
 // testing
 Route::get('/scanner', fn() => view('scanner.index'));
+
+
+
+
+
+
+Route::get('/student-profile' , function(){
+    return view('admin-modules.management.student-profile');
+});
