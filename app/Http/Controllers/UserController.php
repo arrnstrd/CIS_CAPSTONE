@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -126,6 +127,29 @@ class UserController extends Controller
 
     public function destroy(string $id)
     {
-        
+      $user= User::find($id);
+        if (!$user){
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        if(auth()->id()== $user->id){
+            return response()->json([
+                'message' => 'You cannot delete your own account'
+            ], 403);
+        }
+        try{
+            $user->delete();
+            return response()->json([
+                'message' => 'User deleted successfully',
+                'data' => $user
+            ]);
+        }catch(Exception $e){
+            return response()->json([
+                'message' => 'Failed to delete user',
+                'error' => $e->getMessage()
+            ], 500) ;       
+        }      
     }
 }

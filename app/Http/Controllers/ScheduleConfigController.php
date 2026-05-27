@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 
 class ScheduleConfigController extends Controller
 {       
+    public function index(){
+        $scheduleConfigs = ScheduleConfig::all();
+        return view('admin-modules.utilities.schedule-configuration', compact('scheduleConfigs'));
+    }
+
 
     public function store(Request $request)
     {

@@ -15,21 +15,21 @@
         <!-- Navigation Menu -->
         <div class="sidebar-menu">
             <ul>
-
+{{-- 
                 <!-- Dashboard -->
                 <li>
                     <a href="/dashboard">
                         <i class="fa fa-th-large"></i>
                         <span>Dashboard</span>
                     </a>
-                </li>
+                </li> --}}
 
                 <!-- MONITORING SECTION -->
                 <li class="sidebar-section-label">
                     <small>MONITORING</small>
                 </li>
                 <li>
-                    <a href="/entry_exit">
+                    <a href="/entry-exit">
                         <i class="fa fa-exchange-alt"></i>
                         <span>Entry/Exit Monitoring</span>
                     </a>
@@ -40,12 +40,12 @@
                         <span>Class Attendance</span>
                     </a>
                 </li>
-                <li>
+                {{-- <li>
                     <a href="/flagged">
                         <i class="fa fa-exclamation-triangle"></i>
                         <span>Flagged Scans</span>
                     </a>
-                </li>
+                </li> --}}
                 <li>
                     <a href="/emails">
                         <i class="fa fa-envelope-open-text"></i>
@@ -58,9 +58,15 @@
                     <small>MANAGEMENT</small>
                 </li>
                 <li>
-                    <a href="/students">
+                    <a href="/student-management">
                         <i class="fa fa-user-graduate"></i>
                         <span>Student Management</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/enrollment">
+                        <i class="fa fa-user-graduate"></i>
+                        <span>Enrollment Management</span>
                     </a>
                 </li>
                 <li>
@@ -70,9 +76,9 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/roles">
+                    <a href="/users">
                         <i class="fa fa-user-shield"></i>
-                        <span>User Role Management</span>
+                        <span>User Management</span>
                     </a>
                 </li>
                 <li>
@@ -84,14 +90,16 @@
 
                 <!-- OTHERS SECTION -->
                 <li class="sidebar-section-label">
-                    <small>OTHERS</small>
+                    <small>Utilities</small>
                 </li>
+
                 <li>
-                    <a href="/history">
-                        <i class="fa fa-history"></i>
-                        <span>In/Out History</span>
+                    <a href="/schedule-configuration">
+                        <i class="fa fa-barcode"></i>
+                        <span>Schedule Configuration</span>
                     </a>
                 </li>
+          
                 <li>
                     <a href="/qr-generation">
                         <i class="fa fa-qrcode"></i>

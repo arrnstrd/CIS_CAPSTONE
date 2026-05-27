@@ -24,6 +24,8 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
 
+
+            $table->index(['first_name', 'last_name']);
             $table->index('role');
             $table->index('status');
         });
