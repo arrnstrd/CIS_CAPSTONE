@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('attendance_log_id')->nullable()->constrained('attendance_logs')->nullOnDelete();
             $table->enum('flag_type' , ['duplicate_scan' , 'late_arrival' , 'early_out' , 'missing_entry' , 'missing_out' , 'invalid_session' , 'too_early' , 'excess_scan']);
             $table->text('description')->nullable();
-            
+           
             $table->timestamps();
 
             $table->index('flag_type');

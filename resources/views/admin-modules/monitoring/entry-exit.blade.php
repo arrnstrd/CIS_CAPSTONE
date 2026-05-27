@@ -200,8 +200,13 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-4">No logs found.</td>
-                </tr>
+                        <td colspan="9" class="text-center text-muted py-5">
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
+                                <p class="mb-0">No gate scan logs found for the selected criteria</p>
+                            </div>
+                        </td>
+                    </tr>
             @endforelse
         </tbody>
     </x-ui.table>

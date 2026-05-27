@@ -10,6 +10,10 @@ class QrCodeController extends Controller
 {
     //
 
+    public function index(){
+        
+    }
+
       public function generate($id)
     {
         // 1. Load student + QR
