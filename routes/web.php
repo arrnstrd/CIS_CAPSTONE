@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\TableUpdated;
 use App\Http\Controllers\AttendanceLogController;
 use App\Http\Controllers\EmailLogController;
 use App\Http\Controllers\EnrollmentController;
@@ -8,6 +9,8 @@ use App\Http\Controllers\ScanController;
 use App\Http\Controllers\ScheduleConfigController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // misc
@@ -29,6 +32,9 @@ Route::post('/emails' , [EmailLogController::class , 'retryAll'])->name('retryAl
 Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');
 Route::post('/students', [StudentController::class, 'store'])->name('student.store');
 Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
+Route::put('/students/{id}' , [StudentController::class, 'update'])->name('students.update');
+
+
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
 Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
 
@@ -57,4 +63,19 @@ Route::get('/scanner', fn() => view('scanner.index'));
 
 Route::get('/student-profile' , function(){
     return view('admin-modules.management.student-profile');
+});
+
+
+Route::get('/student-profile/{student}' , [StudentProfileController::class, 'show'])->name('student.profile');
+
+
+Route::post('/items/store', function (Request $request) {
+    // Save to DB
+    Item::create($request->all());
+
+    // Broadcast update
+    $allItems = Item::all();
+    event(new TableUpdated($allItems));
+
+    return response()->json(['success' => true]);
 });

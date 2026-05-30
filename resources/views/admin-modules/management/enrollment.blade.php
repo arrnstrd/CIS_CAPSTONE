@@ -127,12 +127,18 @@
                             </td>
                         </tr>
 
-                    </tbody>
 
-                @empty
-                    <p class="small text-muted"> No enrollment for students on the records yet</p>
-
-                @endforelse
+                     @empty
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-inbox fa-2x mb-3 opacity-50"></i>
+                                    <p class="mb-0">No student found for the selected criteria</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
             </x-slot>
         </x-ui.table>
 
