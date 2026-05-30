@@ -211,4 +211,8 @@ class StudentController extends Controller
 
         return response()->json($students);
     }
+
+    public function show($id){
+        return Student::with('guardian')->findOrFail($id);
+    }
 }

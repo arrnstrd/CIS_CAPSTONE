@@ -18,7 +18,7 @@ Route::post('/scan', [ScanController::class, 'scan']);
 //storing
 Route::post('/students' , [StudentController::class, 'store'])->name('students.store');
 Route::post('/students/{id}' , [StudentController::class, 'update']);
-
+Route::get('/students/{id}' , [StudentController::class , 'show']);
 
 
 Route::post('/enrollment' , [ EnrollmentController::class , 'store'])->name('enrollment.store');
