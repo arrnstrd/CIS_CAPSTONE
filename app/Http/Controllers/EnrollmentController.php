@@ -3,19 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Enrollment;
+use App\Models\SchoolYear;
+use App\Models\Student;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class EnrollmentController extends Controller
+
 {
     public function index(Request $request)
     {
         $query = $request->input('query');
-        $school_year = $request->input('school_year');
+        $school_year_id = $request->input('school_year_id');
         $grade_level = $request->input('grade_level');
 
-        $enrollments = Enrollment::with('student')
+        $enrollments = Enrollment::with(['student', 'schoolYear'])
             ->when($query, function ($q) use ($query) {
                 $q->whereHas('student', function ($q) use ($query) {
                     $q->where('student_number', 'like', "%{$query}%")
@@ -23,8 +26,8 @@ class EnrollmentController extends Controller
                         ->orWhere('last_name', 'like', "%{$query}%");
                 });
             })
-            ->when($school_year && $school_year !== 'all', function ($q) use ($school_year) {
-                $q->where('school_year', $school_year);
+            ->when($school_year_id && $school_year_id !== 'all', function ($q) use ($school_year_id) {
+                $q->where('school_year_id', $school_year_id);
             })
             ->when($grade_level && $grade_level !== 'all', function ($q) use ($grade_level) {
                 $q->where('grade_level', $grade_level);
@@ -33,46 +36,40 @@ class EnrollmentController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        $school_years = Enrollment::distinct()
-            ->orderBy('school_year', 'desc')
-            ->pluck('school_year');
+        $school_years = SchoolYear::orderBy('school_year', 'desc')
+            ->get(['id', 'school_year']);
 
-        return view('admin-modules.management.enrollment', compact('enrollments', 'school_years'));
+        $statusCounts= Enrollment::getEnrollmentStatistics($school_year_id);
+        $studentWithoutEnrollment= Student::withoutCurrentEnrollment($school_year_id)->count();
+
+
+        return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years' , 'statusCounts' , 'studentWithoutEnrollment'));
     }
 
 
     public function store(Request $request)
     {
-        $validateData = $request->validate([
+        $validatedData = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
-            'school_year' => ['required', 'regex:/^\d{4}-\d{4}$/'],
             'level' => ['required', 'in:elementary,hs,shs'],
             'grade_level' => [
                 'required',
                 Rule::in([
-                    'Grade 1',
-                    'Grade 2',
-                    'Grade 3',
-                    'Grade 4',
-                    'Grade 5',
-                    'Grade 6',
-                    'Grade 7',
-                    'Grade 8',
-                    'Grade 9',
-                    'Grade 10',
-                    'Grade 11',
-                    'Grade 12',
+                    'Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
+                    'Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
                 ])
             ],
-
             'section' => ['required', 'string', 'max:255'],
             'session_type' => ['required', 'in:morning,afternoon'],
             'status' => ['required', 'in:active,inactive'],
         ]);
 
+        $currentSchoolYear = SchoolYear::where('is_active', true)->firstOrFail();
+
+        $validatedData['school_year_id'] = $currentSchoolYear->id;
 
         try {
-            $enrollment = Enrollment::create($validateData);
+            $enrollment = Enrollment::create($validatedData);
 
             return response()->json([
                 'message' => 'Enrollment created successfully',
@@ -86,41 +83,26 @@ class EnrollmentController extends Controller
     }
 
 
-
     public function update(Request $request, string $id)
     {
         $enrollment = Enrollment::findOrFail($id);
 
         $validatedData = $request->validate([
-            'student_id' => ['required', 'exists:students,id'],
-            'school_year' => ['required', 'regex:/^\d{4}-\d{4}$/'],
             'level' => ['required', 'in:elementary,hs,shs'],
             'grade_level' => [
                 'required',
                 Rule::in([
-                    'Grade 1',
-                    'Grade 2',
-                    'Grade 3',
-                    'Grade 4',
-                    'Grade 5',
-                    'Grade 6',
-                    'Grade 7',
-                    'Grade 8',
-                    'Grade 9',
-                    'Grade 10',
-                    'Grade 11',
-                    'Grade 12',
+                    'Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6',
+                    'Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12',
                 ])
             ],
-
             'section' => ['required', 'string', 'max:255'],
             'session_type' => ['required', 'in:morning,afternoon'],
             'status' => ['required', 'in:active,inactive'],
         ]);
 
-        //check if exists
-        $exists = Enrollment::where('student_id', $validatedData['student_id'])
-            ->where('school_year', $validatedData['school_year'])
+        $exists = Enrollment::where('student_id', $enrollment->student_id)
+            ->where('school_year_id', $enrollment->school_year_id)
             ->where('id', '!=', $id)
             ->exists();
 
@@ -130,15 +112,14 @@ class EnrollmentController extends Controller
             ], 422);
         }
 
-
         $enrollment->update($validatedData);
-
 
         return response()->json([
             'message' => 'Enrollment updated successfully',
-            'data' => $enrollment
+            'data' => $enrollment->fresh()
         ]);
     }
+
 
     public function destroy(string $id)
     {
@@ -158,7 +139,7 @@ class EnrollmentController extends Controller
                 'data' => [
                     'id' => $enrollment->id,
                     'student_id' => $enrollment->student_id,
-                    'school_year' => $enrollment->school_year,
+                    'school_year_id' => $enrollment->school_year_id,
                     'level' => $enrollment->level,
                     'status' => 'deleted'
                 ]
@@ -170,4 +151,10 @@ class EnrollmentController extends Controller
             ], 500);
         }
     }
+
+
+
+
+
+    
 }

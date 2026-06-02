@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Student;
 use App\Models\Teacher;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 
 class Enrollment extends Model
@@ -13,7 +14,7 @@ class Enrollment extends Model
 
     protected $fillable = [
         'student_id',
-        'school_year',
+        'school_year_id',
         'level',
         'grade_level',
         'section',
@@ -23,11 +24,39 @@ class Enrollment extends Model
 
     public function student()
     {
-        return $this->belongsTo(Student::class , 'student_id');
+        return $this->belongsTo(Student::class, 'student_id');
     }
 
-    public function adviser(){
-        return $this->belongsTo(Teacher::class , 'adviser_id');
+    public function adviser()
+    {
+        return $this->belongsTo(Teacher::class, 'adviser_id');
+    }
+
+    public function schoolYear()
+    {
+        return $this->belongsTo(SchoolYear::class);
+    }
+
+
+    //for overview cards
+    public function scopeGetEnrollmentStatistics(Builder $query)
+    {
+        return [
+            'total' => (clone $query)->count(),
+
+            'elementary' => (clone $query)
+                ->where('level', 'elementary')
+                ->count(),
+
+            'hs' => (clone $query)
+                ->where('level', 'hs')
+                ->count(),
+
+            'shs' => (clone $query)
+                ->where('level', 'shs')
+                ->count(),
+
+        ];
     }
 
 

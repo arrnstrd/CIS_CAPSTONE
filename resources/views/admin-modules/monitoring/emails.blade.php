@@ -27,7 +27,7 @@
 
         <!-- Filters and Controls Section -->
         <div class="col mb-4 mx-2">
-            <div class="bg-white rounded p-4 shadow-sm">
+            <div class="bg-white rounded p-4 border">
 
                 {{-- Main GET filter form --}}
                 <form action="{{ route('emails.index') }}" method="GET" id="filterForm">

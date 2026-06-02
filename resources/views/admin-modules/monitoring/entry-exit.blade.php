@@ -40,7 +40,7 @@
     <div class="row g-3 mb-4 px-3">
         @foreach ($overviewCards as $card)
             <div class="col-6 col-md-4 col-xl-2">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border h-100">
                     <div class="card-body d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-{{ $card['variant'] }}  text-light  d-flex align-items-center justify-content-center"
                             style="width: 3rem; height: 3rem; flex-shrink: 0;">
@@ -57,7 +57,7 @@
     </div>
 
 
-    <div class="card border-0 shadow-sm mx-3 mb-3">
+    <div class="card border mx-3 mb-3">
         <div class="card-body p-4">
             <form action="{{ route('attendance.index') }}" method="GET">
 

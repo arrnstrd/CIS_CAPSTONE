@@ -1,6 +1,6 @@
 <?php
 
-use App\Events\TableUpdated;
+// use App\Events\TableUpdated;
 use App\Http\Controllers\AttendanceLogController;
 use App\Http\Controllers\EmailLogController;
 use App\Http\Controllers\EnrollmentController;
@@ -10,7 +10,7 @@ use App\Http\Controllers\ScheduleConfigController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentProfileController;
-use Illuminate\Http\Request;
+// use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // misc
@@ -40,7 +40,9 @@ Route::get('/student-management/search', [SearchController::class, 'searchStuden
 
 // enrollment
 Route::get('/enrollment', [EnrollmentController::class, 'index'])->name('enrollment.index');
-Route::post('/enrollments', [EnrollmentController::class, 'store'])->name('enrollments.store');
+Route::post('/enrollment', [EnrollmentController::class, 'store'])->name('enrollment.store');
+Route::put('/enrollment/{id}' ,[EnrollmentController::class, 'update'])->name('enrollment.update');
+
 
 // schedule configuration
 Route::get('/schedule-configuration', [ScheduleConfigController::class, 'index']);
@@ -69,13 +71,13 @@ Route::get('/student-profile' , function(){
 Route::get('/student-profile/{student}' , [StudentProfileController::class, 'show'])->name('student.profile');
 
 
-Route::post('/items/store', function (Request $request) {
-    // Save to DB
-    Item::create($request->all());
+// Route::post('/items/store', function (Request $request) {
+//     // Save to DB
+//     Item::create($request->all());
 
-    // Broadcast update
-    $allItems = Item::all();
-    event(new TableUpdated($allItems));
+//     // Broadcast update
+//     $allItems = Item::all();
+//     event(new TableUpdated($allItems));
 
-    return response()->json(['success' => true]);
-});
+//     return response()->json(['success' => true]);
+// });

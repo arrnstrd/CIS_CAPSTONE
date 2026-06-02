@@ -21,7 +21,7 @@ Route::post('/students/{id}' , [StudentController::class, 'update']);
 Route::get('/students/{id}' , [StudentController::class , 'show']);
 
 
-Route::post('/enrollment' , [ EnrollmentController::class , 'store'])->name('enrollment.store');
+// Route::post('/enrollment' , [ EnrollmentController::class , 'store'])->name('enrollments.store');
 Route::post('/enrollment/{id}' , [ EnrollmentController::class , 'update']);
 Route::delete('/enrollment/{id}' , [EnrollmentController::class , 'destroy']);
 

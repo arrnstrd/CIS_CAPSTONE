@@ -16,6 +16,5 @@ if (editStudentModal) {
         document.getElementById('editStudentForm').action = '/students/' + btn.dataset.id;
 
 
-
     })
 }

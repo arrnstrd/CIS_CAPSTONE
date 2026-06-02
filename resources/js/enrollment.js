@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // ─── Elements ───────────────────────────────────────────
-    const searchInput   = document.getElementById('enrollmentStudentSearch');
-    const resultsBox    = document.getElementById('enrollmentSearchResults');
-    const hiddenInput   = document.getElementById('enrollmentStudentId');
-    const selectedBox   = document.getElementById('enrollmentSelectedStudent');
-    const selectedName  = document.getElementById('enrollmentSelectedName');
-    const clearBtn      = document.getElementById('enrollmentClearStudent');
-    const enrollForm    = document.getElementById('enrollmentForm');
+    const searchInput = document.getElementById('enrollmentStudentSearch');
+    const resultsBox = document.getElementById('enrollmentSearchResults');
+    const hiddenInput = document.getElementById('enrollmentStudentId');
+    const selectedBox = document.getElementById('enrollmentSelectedStudent');
+    const selectedName = document.getElementById('enrollmentSelectedName');
+    const clearBtn = document.getElementById('enrollmentClearStudent');
+    const enrollForm = document.getElementById('enrollmentForm');
 
     let debounceTimer;
 
@@ -83,11 +83,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ─── Clear Selected Student ──────────────────────────────
     clearBtn.addEventListener('click', () => {
-        hiddenInput.value   = '';
-        searchInput.value   = '';
+        hiddenInput.value = '';
+        searchInput.value = '';
         selectedBox.style.display = 'none';
-        resultsBox.style.display  = 'none';
-        resultsBox.innerHTML      = '';
+        resultsBox.style.display = 'none';
+        resultsBox.innerHTML = '';
     });
 
     // ─── Close dropdown pag nag-click sa labas ───────────────
@@ -101,11 +101,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const modal = document.getElementById('addEnrollmentModal');
     modal.addEventListener('hidden.bs.modal', () => {
         enrollForm.reset();
-        hiddenInput.value         = '';
+        hiddenInput.value = '';
         selectedBox.style.display = 'none';
-        resultsBox.style.display  = 'none';
-        resultsBox.innerHTML      = '';
-        searchInput.value         = '';
+        resultsBox.style.display = 'none';
+        resultsBox.innerHTML = '';
+        searchInput.value = '';
     });
 
     // ─── Form Submit ─────────────────────────────────────────
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData(enrollForm);
 
-        fetch('/enrollments', {
+        fetch('/enrollment', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -130,18 +130,95 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: formData
         })
-        .then(res => res.json().then(data => ({ ok: res.ok, data })))
-        .then(({ ok, data }) => {
-            if (ok) {
-                // close modal
-                bootstrap.Modal.getInstance(modal).hide();
-                // reload table to show new enrollment
-                window.location.reload();
-            } else {
-                alert(data.message ?? 'Something went wrong.');
-            }
-        })
-        .catch(() => alert('Network error. Please try again.'));
+            .then(res => res.json().then(data => ({ ok: res.ok, data })))
+            .then(({ ok, data }) => {
+                if (ok) {
+                    // close modal
+                    bootstrap.Modal.getInstance(modal).hide();
+                    // reload table to show new enrollment
+                    window.location.reload();
+                } else {
+                    alert(data.message ?? 'Something went wrong.');
+                }
+            })
+            .catch(() => alert('Network error. Please try again.'));
     });
 
 });
+
+
+
+const editEnrollmentModal = document.getElementById('editEnrollmentModal');
+if (editEnrollmentModal) {
+editEnrollmentModal.addEventListener('show.bs.modal', function (event) {
+    const btn = event.relatedTarget;
+
+    document.getElementById('edit_level').value = btn.dataset.level;
+    document.getElementById('edit_grade_level').value = btn.dataset.grade_level;
+    document.getElementById('edit_section').value = btn.dataset.section;
+    document.getElementById('edit_session_type').value = btn.dataset.session_type;
+    document.getElementById('edit_status').value = btn.dataset.status;
+
+    document.getElementById('editEnrollmentForm').action =
+        '/enrollment/' + btn.dataset.id;
+
+    document.getElementById('editStudentName').textContent =
+        btn.dataset.studentName;
+
+    document.getElementById('editStudentLrn').textContent =
+        btn.dataset.studentLrn;
+});
+}
+
+
+
+
+// // Handle edit form submission via AJAX
+// const editForm = document.getElementById('editEnrollmentForm');
+// if (editForm) {
+//     editForm.addEventListener('submit', async function(e) {
+//         e.preventDefault();
+
+//         // Collect form data
+//         const formData = {
+//             school_year: document.getElementById('edit_school_year').value,
+//             level: document.getElementById('edit_level').value,
+//             grade_level: document.getElementById('edit_grade_level').value,
+//             section: document.getElementById('edit_section').value,
+//             session_type: document.getElementById('edit_session_type').value,
+//             status: document.getElementById('edit_status').value
+//         };
+
+//         // Get enrollment ID from the form action (set in modal event)
+//         const actionUrl = editForm.action;  // e.g. /enrollment/6
+//         const enrollmentId = actionUrl.split('/').pop();
+
+//         try {
+//             const response = await fetch(`/enrollment/${enrollmentId}`, {
+//                 method: 'PUT',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+//                     'Accept': 'application/json'
+//                 },
+//                 body: JSON.stringify(formData)
+//             });
+
+//             const result = await response.json();
+
+//             if (response.ok) {
+//                 // Close modal
+//                 const modal = bootstrap.Modal.getInstance(document.getElementById('editEnrollmentModal'));
+//                 modal.hide();
+//                 // Reload page to reflect changes (or update table row dynamically)
+//                 window.location.reload();
+//             } else {
+//                 alert(result.message || 'Update failed. Check console for details.');
+//                 console.error(result);
+//             }
+//         } catch (error) {
+//             // alert('Network error. Please try again.');
+//             console.error('Actual error:',error);
+//         }
+//     });
+// }

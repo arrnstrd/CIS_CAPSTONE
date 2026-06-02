@@ -36,6 +36,7 @@ class StudentController extends Controller
             ->withQueryString();
 
 
+
         return view('admin-modules.management.studentList', compact('students'));
     }
 
@@ -115,7 +116,7 @@ class StudentController extends Controller
             'message' => 'Student and guardian created successfully',
             'student' => $student->load(['guardian', 'qrCode']),
 
-            // 'qr_code' => $qrCode
+           
         ]);
     }
 
@@ -166,6 +167,7 @@ class StudentController extends Controller
                 ]
             );
         });
+        
 
         return response()->json([
             'message' => 'Student information updated successfully',
