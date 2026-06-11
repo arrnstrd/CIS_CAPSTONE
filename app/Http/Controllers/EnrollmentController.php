@@ -26,8 +26,8 @@ class EnrollmentController extends Controller
                         ->orWhere('last_name', 'like', "%{$query}%");
                 });
             })
-            ->when($school_year_id && $school_year_id !== 'all', function ($q) use ($school_year_id) {
-                $q->where('school_year_id', $school_year_id);
+            ->when($school_year_id && $school_year_id !== 'all', function ($q) use ($school_years_id) {
+                $q->where('school_year_id', $school_years_id);
             })
             ->when($grade_level && $grade_level !== 'all', function ($q) use ($grade_level) {
                 $q->where('grade_level', $grade_level);
@@ -39,11 +39,14 @@ class EnrollmentController extends Controller
         $school_years = SchoolYear::orderBy('school_year', 'desc')
             ->get(['id', 'school_year']);
 
-        $statusCounts= Enrollment::getEnrollmentStatistics($school_year_id);
-        $studentWithoutEnrollment= Student::withoutCurrentEnrollment($school_year_id)->count();
+        $statusCounts= Enrollment::getEnrollmentStatistics($school_years_id);
+        $studentWithoutEnrollment= Student::withoutCurrentEnrollment($school_year_id)
+            ->count();
+
+        $notEnrolled = Student::doesntHave('enrollments')->get();
 
 
-        return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years' , 'statusCounts' , 'studentWithoutEnrollment'));
+        return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years' , 'statusCounts' , 'studentWithoutEnrollment' , 'notEnrolled'));
     }
 
 
@@ -66,7 +69,18 @@ class EnrollmentController extends Controller
 
         $currentSchoolYear = SchoolYear::where('is_active', true)->firstOrFail();
 
+        $exists = Enrollment::where('student_id', $validatedData['student_id'])
+            ->where('school_year_id', $currentSchoolYear->id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'This student is already enrolled for the active school year.'
+            ], 422);
+        }
+
         $validatedData['school_year_id'] = $currentSchoolYear->id;
+    
 
         try {
             $enrollment = Enrollment::create($validatedData);
@@ -102,7 +116,7 @@ class EnrollmentController extends Controller
         ]);
 
         $exists = Enrollment::where('student_id', $enrollment->student_id)
-            ->where('school_year_id', $enrollment->school_year_id)
+            ->where('school_year_id', $enrollment->school_years_id)
             ->where('id', '!=', $id)
             ->exists();
 

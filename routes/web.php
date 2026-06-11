@@ -13,6 +13,9 @@ use App\Http\Controllers\StudentProfileController;
 // use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Route::get('/' , fn() => view('admin-modules.monitoring.entry-exit'))
+
+
 // misc
 Route::get('/layout', fn() => view('components.layouts.admin'));
 Route::get('/dashboard', fn() => view('admin-modules.dashboard'));

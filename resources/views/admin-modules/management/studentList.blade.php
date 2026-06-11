@@ -3,6 +3,9 @@
         Student List
     </x-slot>
 
+<x-slot name="subtitle">
+    Manage and view student records such as profiles and enrollments.
+</x-slot>
 
     <x-slot name="pageName">
         Student
@@ -93,7 +96,7 @@
                                 <ul class="dropdown-menu">
                                     <li>
                                         <a class="dropdown-item"
-                                            href="{{ url('/student-profile/' . $student->id) }}">View</a>
+                                            href="{{ url('/student-profile/' . $student->id) }}" target="_blank">View</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="#editStudentModal" data-bs-toggle="modal"

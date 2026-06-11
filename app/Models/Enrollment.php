@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Enrollment extends Model
 {
-    //
 
     protected $fillable = [
         'student_id',
@@ -34,8 +33,10 @@ class Enrollment extends Model
 
     public function schoolYear()
     {
-        return $this->belongsTo(SchoolYear::class);
+        return $this->belongsTo(SchoolYear::class, 'school_years_id');
     }
+
+    
 
 
     //for overview cards
@@ -55,7 +56,6 @@ class Enrollment extends Model
             'shs' => (clone $query)
                 ->where('level', 'shs')
                 ->count(),
-
         ];
     }
 

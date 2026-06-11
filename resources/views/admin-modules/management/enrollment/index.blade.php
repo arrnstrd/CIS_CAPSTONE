@@ -10,7 +10,7 @@
     <div class="container-fluid">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 mb-3 g-3">
             <x-card title="total active enrollments" value="{{ $statusCounts['total'] ?? 0 }}" icon="fa-solid fa-user-check" variants="primary" />
-            <x-card title="total unenrolled students" value="{{ $studentWithoutEnrollment ?? 0 }} " icon="fa fa-solid fa-user-xmark" variants="primary" />
+            <x-card title="total unenrolled students" value="{{ $notEnrolled['total'] ?? 0 }} " icon="fa fa-solid fa-user-xmark" variants="primary" />
             <x-card title="elementary students" value="{{ $statusCounts['elementary'] ?? 0 }}" icon="fa-solid fa-child" variants="primary" />
             <x-card title="high school students" value="{{ $statusCounts['hs'] ?? 0 }}" icon="fa-solid fa-user-graduate" variants="primary" />
             <x-card title="senior high students" value="{{ $statusCounts['shs'] ?? 0 }}" icon="fa-solid fa-graduation-cap" variants="primary" />
@@ -101,7 +101,7 @@
             </div>
 
             <div class="tab-pane fade" id="not-enrolled-tab">
-                {{-- include --}}
+               @include('admin-modules.management.enrollment.partials.not-enrolled-table')
             </div>
 
         </div>
