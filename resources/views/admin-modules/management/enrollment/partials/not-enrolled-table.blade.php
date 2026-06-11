@@ -9,10 +9,32 @@
     </thead>
 
     <tbody>
-        <tr>
-            <td>{{$notEnrolled->first()->student->first_name ?? 'null'}} </td>
-            <td> </td>
-            <td> </td>
-        </tr>
+        @forelse ($notEnrolledStudents as $student)
+            <tr>
+                <td>{{ $student->student_number ?? '-' }}</td>
+                <td>{{ $student->first_name }} {{ $student->last_name }}</td>
+                <td>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-dark"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addEnrollmentModal"
+                        data-student-id="{{ $student->id }}"
+                        data-student-number="{{ $student->student_number ?? '' }}"
+                        data-student-name="{{ $student->first_name }} {{ $student->last_name }}"
+                    >
+                        Enroll
+                    </button>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="3" class="text-center text-muted py-4">No unenrolled students found for the active school year.</td>
+            </tr>
+        @endforelse
     </tbody>
 </x-ui.table>
+
+<div class="pagination mt-3">
+    {{ $notEnrolledStudents->links() }}
+</div>

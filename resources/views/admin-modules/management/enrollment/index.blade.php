@@ -10,7 +10,7 @@
     <div class="container-fluid">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 mb-3 g-3">
             <x-card title="total active enrollments" value="{{ $statusCounts['total'] ?? 0 }}" icon="fa-solid fa-user-check" variants="primary" />
-            <x-card title="total unenrolled students" value="{{ $notEnrolled['total'] ?? 0 }} " icon="fa fa-solid fa-user-xmark" variants="primary" />
+            <x-card title="total unenrolled students" value="{{ $studentWithoutEnrollment ?? 0 }}" icon="fa fa-solid fa-user-xmark" variants="primary" />
             <x-card title="elementary students" value="{{ $statusCounts['elementary'] ?? 0 }}" icon="fa-solid fa-child" variants="primary" />
             <x-card title="high school students" value="{{ $statusCounts['hs'] ?? 0 }}" icon="fa-solid fa-user-graduate" variants="primary" />
             <x-card title="senior high students" value="{{ $statusCounts['shs'] ?? 0 }}" icon="fa-solid fa-graduation-cap" variants="primary" />
@@ -42,15 +42,11 @@
                             </div>
 
                             <div class="col-6 col-md-2.5 col-lg-2">
-                                <select name="school_year" class="form-select rounded-3 py-2 border-light-subtle"
+                                <select name="school_year_id" class="form-select rounded-3 py-2 border-light-subtle"
                                     onchange="this.form.submit()">
-                                    <option value="all" {{ request('school_year', 'all') === 'all' ? 'selected' : '' }}>
-                                        All School Years</option>
-                                    @foreach($school_years as $year)
-                                        <option value="{{ $year }}" {{ request('school_year') === $year ? 'selected' : '' }}>
-                                            {{ $year }}
-                                        </option>
-                                    @endforeach
+                                    <option value="{{ $activeSchoolYear->id }}" selected>
+                                        {{ $activeSchoolYear->school_year }}
+                                    </option>
                                 </select>
                             </div>
 

@@ -45,6 +45,7 @@ Route::get('/student-management/search', [SearchController::class, 'searchStuden
 Route::get('/enrollment', [EnrollmentController::class, 'index'])->name('enrollment.index');
 Route::post('/enrollment', [EnrollmentController::class, 'store'])->name('enrollment.store');
 Route::put('/enrollment/{id}' ,[EnrollmentController::class, 'update'])->name('enrollment.update');
+Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy'])->name('enrollment.destroy');
 
 
 // schedule configuration

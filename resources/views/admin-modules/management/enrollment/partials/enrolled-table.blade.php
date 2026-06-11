@@ -21,7 +21,7 @@
                             <td>{{ $enrollment->student->first_name ?? ''}}
                                 {{ $enrollment->student->last_name ?? '' }}
                             </td>
-                            <td> {{ $enrollment->schoolYear->school_year }}</td>
+                            <td> {{ $enrollment->schoolYear->school_year ?? '-' }}</td>
                             <td> {{ $enrollment->level }}</td>
                             <td>{{$enrollment->grade_level  }}</td>
                             <td> {{ $enrollment->section }}</td>
@@ -36,7 +36,16 @@
                                     <ul class="dropdown-menu">
                                         <li>
                                             <a class="dropdown-item" href="#viewEnrollmentModal" data-bs-toggle="modal"
-                                                data-bs-target="#viewEnrollmentModal">View
+                                                data-bs-target="#viewEnrollmentModal"
+                                                data-student-name="{{ $enrollment->student->first_name ?? '' }} {{ $enrollment->student->last_name ?? '' }}"
+                                                data-student-lrn="{{ $enrollment->student->lrn ?? '' }}"
+                                                data-school-year="{{ $enrollment->schoolYear->school_year ?? '' }}"
+                                                data-level="{{ $enrollment->level }}"
+                                                data-grade-level="{{ $enrollment->grade_level }}"
+                                                data-section="{{ $enrollment->section }}"
+                                                data-session-type="{{ $enrollment->session_type }}"
+                                                data-status="{{ $enrollment->status }}"
+                                                data-created-at="{{ $enrollment->created_at?->format('Y-m-d') ?? '' }}">View
                                             </a>
                                         </li>
                                         <li>
@@ -44,12 +53,12 @@
                                                 data-bs-target="#editEnrollmentModal" data-id="{{ $enrollment->id }}" 
                                                 data-student-name="{{ $enrollment->student->first_name }} {{ $enrollment->student->last_name ?? 'N/A'}}"
                                                 data-student-lrn="{{ $enrollment->student->lrn }}"
-                                                data-school_year="{{ $enrollment->school_year }}"
                                                 data-level="{{ $enrollment->level }}"
-                                                data-grade_level="{{ $enrollment->grade_level }}"
+                                                data-grade-level="{{ $enrollment->grade_level }}"
                                                 data-section="{{ $enrollment->section }}"
-                                                data-session_type="{{ $enrollment->session_type }}"
-                                                data-status="{{ $enrollment->status }}">
+                                                data-session-type="{{ $enrollment->session_type }}"
+                                                data-status="{{ $enrollment->status }}"
+                                                data-update-url="{{ route('enrollment.update', $enrollment->id) }}">
                                                 Edit
                                             </a>
                                         </li>
@@ -57,7 +66,7 @@
                                             <hr class="dropdown-divider">
                                         </li>
                                         <li>
-                                            <form action="" method="POST" onsubmit="return confirm('Are you sure?');">
+                                            <form action="{{ route('enrollment.destroy', $enrollment->id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="dropdown-item text-danger">Delete</button>
@@ -211,7 +220,7 @@
                     </div>
 
                     <div class="flex-grow-1">
-                        <p class="mb-0 fw-bold" id="editStudentName">{{ $enrollment->student->first_name }} {{ $enrollment->student->middle_name }} {{ $enrollment->student->last_name }}</p>
+                        <p class="mb-0 fw-bold" id="editStudentName">Select an enrollment</p>
                         <small class="text-muted" id="editStudentLrn">LRN</small>
                     </div>
              </div>
@@ -294,10 +303,10 @@
                 <i class="fa-solid fa-user-graduate"></i>
             </div>
             <div class="flex-grow-1">
-                <p class="mb-0 fw-bold">{{ $enrollment->student->first_name }} {{ $enrollment->student->last_name }}</p>
-                <small class="text-muted">{{ $enrollment->student->lrn }}</small>
+                <p class="mb-0 fw-bold" id="viewStudentName">Select an enrollment</p>
+                <small class="text-muted" id="viewStudentLrn">LRN</small>
             </div>
-            <span class="badge rounded-pill bg-success-subtle text-success fw-medium px-3">{{$enrollment->status}}</span>
+            <span class="badge rounded-pill bg-success-subtle text-success fw-medium px-3" id="viewEnrollmentStatus">status</span>
         </div>
 
         <!-- Academic information -->
@@ -309,21 +318,21 @@
                 <div class="bg-light rounded-3 px-3 py-2">
                     <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">School
                         year</p>
-                    <p class="mb-0 fw-medium" style="font-size: 14px;">{{ $enrollment->schoolYear->school_year }}</p>
+                    <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewSchoolYear">-</p>
                 </div>
             </div>
             <div class="col-6">
                 <div class="bg-light rounded-3 px-3 py-2">
                     <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Grade
                         level</p>
-                    <p class="mb-0 fw-medium" style="font-size: 14px;">{{ $enrollment->grade_level }}</p>
+                    <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewGradeLevel">-</p>
                 </div>
             </div>
             <div class="col-6">
                 <div class="bg-light rounded-3 px-3 py-2">
                     <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Section
                     </p>
-                    <p class="mb-0 fw-medium" style="font-size: 14px;">{{ $enrollment->section }}</p>
+                    <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewSection">-</p>
                 </div>
             </div>
             <div class="col-6">
@@ -342,11 +351,11 @@
             <div class="col-6">
                 <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;"> Date Enrolled
                 </p>
-                <p class="mb-0" style="font-size: 14px;">{{$enrollment->created_at?->format('Y-m-d') ?? ''}}</p>
+                <p class="mb-0" style="font-size: 14px;" id="viewCreatedAt">-</p>
             </div>
             <div class="col-6">
                 <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Department Level </p>
-                <p class="mb-0" style="font-size: 14px;">{{$enrollment->level}} </p>
+                <p class="mb-0" style="font-size: 14px;" id="viewLevel">-</p>
             </div>
             <div class="col-6">
                 <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Enrolled by
@@ -357,7 +366,7 @@
                 <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Status</p>
                 <div class="d-flex align-items-center gap-2">
                     <span class="rounded-circle bg-success d-inline-block" style="width: 7px; height: 7px;"></span>
-                    <p class="mb-0" style="font-size: 14px;">{{$enrollment->status}}</p>
+                    <p class="mb-0" style="font-size: 14px;" id="viewDetailStatus">-</p>
                 </div>
             </div>
         </div>

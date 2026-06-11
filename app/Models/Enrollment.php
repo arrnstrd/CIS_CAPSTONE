@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Models\Student;
 use App\Models\Teacher;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -33,27 +32,29 @@ class Enrollment extends Model
 
     public function schoolYear()
     {
-        return $this->belongsTo(SchoolYear::class, 'school_years_id');
+        return $this->belongsTo(SchoolYear::class, 'school_year_id');
     }
 
     
 
 
-    //for overview cards
-    public function scopeGetEnrollmentStatistics(Builder $query)
+    public static function getEnrollmentStatistics(int $schoolYearId): array
     {
         return [
-            'total' => (clone $query)->count(),
+            'total' => static::query()->where('school_year_id', $schoolYearId)->count(),
 
-            'elementary' => (clone $query)
+            'elementary' => static::query()
+                ->where('school_year_id', $schoolYearId)
                 ->where('level', 'elementary')
                 ->count(),
 
-            'hs' => (clone $query)
+            'hs' => static::query()
+                ->where('school_year_id', $schoolYearId)
                 ->where('level', 'hs')
                 ->count(),
 
-            'shs' => (clone $query)
+            'shs' => static::query()
+                ->where('school_year_id', $schoolYearId)
                 ->where('level', 'shs')
                 ->count(),
         ];
