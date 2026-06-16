@@ -15,7 +15,13 @@ class Teacher extends Model
         'last_name',
     ];
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class , 'user_id');
+    }
+
+    public function advisedSections()
+    {
+        return $this->hasMany(Section::class, 'advisor_id');
     }
 }

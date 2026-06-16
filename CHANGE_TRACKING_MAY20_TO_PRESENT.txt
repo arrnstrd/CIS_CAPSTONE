@@ -1,0 +1,172 @@
+RECENT CHANGE TRACKING
+Scope: 2026-05-20 through 2026-06-16
+Source used: git history since 2026-05-20, local branch state, and current working-tree changes that are not yet pushed or committed.
+
+CURRENT LOCAL STATE
+- Local branch: feature/qr-system
+- Ahead of origin/feature/qr-system by 2 commits: 25bcba6, 9bab74b
+- Uncommitted files in the working tree:
+  - app/Models/Teacher.php
+  - database/migrations/2026_04_28_075708_create_teachers_table.php
+  - app/Http/Controllers/SectionController.php
+  - app/Models/Section.php
+  - database/migrations/2026_06_16_093708_create_sections_table.php
+
+PAGE-BY-PAGE / MODULE-BY-MODULE TRACKING
+
+1) ENROLLMENT PAGE
+Dates covered: 2026-05-23, 2026-06-02, 2026-06-11
+
+What changed:
+- 2026-05-23 (5079b51): Enrollment flow and UI were adjusted together with the enrollment controller and blade view. The page was reworked to match the updated filter/card layout used across the admin area.
+- 2026-06-02 (8f4cf15): The old single enrollment view was removed and replaced with a split structure.
+  - Deleted: resources/views/admin-modules/management/enrollment.blade.php
+  - Added: resources/views/admin-modules/management/enrollment/index.blade.php
+  - Added: resources/views/admin-modules/management/enrollment/partials/enrolled-table.blade.php
+  - Added: resources/views/admin-modules/management/enrollment/partials/not-enrolled-table.blade.php
+  - Added: app/Models/SchoolYear.php
+  - Added migrations for school years and enrollment-school-year linkage:
+    - database/migrations/2026_06_01_201756_create_school_years_table.php
+    - database/migrations/2026_06_01_212400_add_school_year_id_to_enrollments_table.php
+    - database/migrations/2026_06_02_182423_drop_unique_index_from_school_year_id_in_enrollments.php
+  - Modified: app/Http/Controllers/EnrollmentController.php, app/Models/Enrollment.php, app/Models/Student.php, app/Models/User.php, routes/web.php, resources/js/enrollment.js
+  - Result: enrollment became school-year aware and was organized into tabs/partials instead of one monolithic blade file.
+- 2026-06-11 (9bab74b): Enrollment was refined again while the student profile and not-enrolled table were being updated.
+  - Modified: app/Http/Controllers/EnrollmentController.php, app/Models/Enrollment.php, resources/views/admin-modules/management/enrollment/index.blade.php, resources/views/admin-modules/management/enrollment/partials/not-enrolled-table.blade.php, routes/web.php
+  - Result: the page was kept aligned with the student profile changes and additional routing/table logic.
+- 2026-06-11 (25bcba6): A follow-up bug fix tightened enrollment uniqueness.
+  - Added: database/migrations/2026_06_11_000000_add_unique_student_school_year_to_enrollments_table.php
+  - Modified: app/Http/Controllers/EnrollmentController.php, app/Http/Controllers/StudentController.php, app/Models/Enrollment.php, app/Models/SchoolYear.php, resources/js/enrollment.js, resources/views/admin-modules/management/enrollment/index.blade.php, resources/views/admin-modules/management/enrollment/partials/enrolled-table.blade.php, resources/views/admin-modules/management/enrollment/partials/not-enrolled-table.blade.php, routes/web.php
+  - Result: duplicate student-per-school-year enrollment was blocked and the UI/controller logic was updated to match.
+
+Added / deleted / modified summary for this page:
+- Added school-year support for enrollments.
+- Deleted the older single-file enrollment blade and replaced it with an index plus partials.
+- Added a uniqueness constraint migration for student + school year enrollment records.
+- Modified controller, model, and JavaScript logic multiple times to keep the page consistent with the new structure.
+
+2) STUDENT PROFILE / STUDENT LIST PAGES
+Dates covered: 2026-05-31, 2026-06-02, 2026-06-11
+
+What changed:
+- 2026-05-31 (e2237d3): The student edit modal became functional with populated fields.
+  - Added: app/Events/TableUpdated.php
+  - Added: app/Http/Controllers/StudentProfileController.php
+  - Added: resources/js/echo.js
+  - Added: resources/js/student.js
+  - Added broadcasting/realtime support files:
+    - config/broadcasting.php
+    - config/reverb.php
+    - routes/channels.php
+  - Modified: app/Http/Controllers/ClassroomScanController.php, app/Http/Controllers/StudentController.php, resources/views/admin-modules/management/student-profile.blade.php, resources/views/admin-modules/management/studentList.blade.php, resources/views/admin-modules/management/teacher.blade.php, resources/views/components/modal.blade.php, routes/api.php, routes/web.php
+  - Result: the profile page, list page, and modal workflow were wired to support populated edit forms and live updates.
+- 2026-06-02 (8f4cf15): Student profile and related admin views were refactored again as the enrollment/school-year work landed.
+  - Modified: app/Http/Controllers/StudentController.php, app/Models/Student.php, resources/js/student.js, resources/views/admin-modules/management/student-profile.blade.php, resources/views/admin-modules/management/studentList.blade.php, resources/views/admin-modules/management/users.blade.php, resources/views/admin-modules/monitoring/emails.blade.php, resources/views/admin-modules/monitoring/entry-exit.blade.php, resources/views/components/card.blade.php, resources/views/components/modal.blade.php, routes/api.php, routes/web.php
+  - Result: student-facing admin pages were reorganized to fit the new enrollment and realtime behavior.
+- 2026-06-11 (9bab74b): The student profile page received a larger visual and behavioral rewrite.
+  - Modified: app/Http/Controllers/EnrollmentController.php, app/Http/Controllers/StudentProfileController.php, app/Models/AttendanceLog.php, app/Models/Enrollment.php, app/Models/Student.php, resources/views/admin-modules/management/student-profile.blade.php, resources/views/admin-modules/management/studentList.blade.php, resources/views/emails/gate-scan.blade.php, routes/web.php
+  - Result: profile rendering, student listing, and supporting mail/output templates were updated together.
+
+Added / deleted / modified summary for these pages:
+- Added a dedicated student profile controller and realtime event flow.
+- Modified the modal system so edit fields can be populated correctly.
+- Refactored student profile and student list views multiple times to match enrollment and monitoring updates.
+- Updated routing and component files to support the new interaction flow.
+
+3) EMAIL LOGS / EMAIL MONITORING PAGE
+Dates covered: 2026-05-24, 2026-05-26, 2026-06-02, 2026-06-11
+
+What changed:
+- 2026-05-24 (85ad32f): The email logs page was implemented with today-by-default filtering and optimized queries.
+  - Added: DEPLOYMENT_CHECKLIST.txt, DOCUMENTATION_EMAIL_LOGS_REFACTOR.txt, IMPLEMENTATION_COMPLETE.txt, README_REFACTORING.txt, REFACTOR_SUMMARY.txt
+  - Added: app/Models/EmailLog.php
+  - Modified: app/Http/Controllers/EmailLogController.php, resources/views/admin-modules/monitoring/emails.blade.php
+  - Result: the page was rebuilt around the email-log data model and a documented refactor set.
+- 2026-05-24 (4441b48): Email filter options were still being tuned.
+  - Modified: app/Http/Controllers/EmailLogController.php, app/Http/Controllers/ScanController.php, resources/views/admin-modules/monitoring/emails.blade.php
+  - Result: filter behavior and the monitoring table were adjusted.
+- 2026-05-26 (6921765): A date-filter bug for month-based email monitoring was fixed.
+  - Modified: app/Http/Controllers/EmailLogController.php, resources/views/admin-modules/monitoring/class-attendance.blade.php, resources/views/admin-modules/monitoring/emails.blade.php
+  - Result: month selection and displayed results were corrected.
+- 2026-05-26 (a570907): The monitoring area gained cards and more filter options.
+  - Modified: app/Http/Controllers/AttendanceLogController.php, app/Http/Controllers/StudentController.php, app/Http/Controllers/UserController.php, app/Models/AttendanceLog.php, app/Models/FlaggedScan.php, resources/views/admin-modules/monitoring/emails.blade.php, resources/views/admin-modules/monitoring/entry-exit.blade.php, resources/views/components/layouts/admin.blade.php, resources/views/components/ui/table.blade.php, routes/web.php
+  - Result: the email-monitoring page was aligned with the wider admin card/filter style.
+- 2026-05-27 (ac165df): Several old documentation files were removed from tracking and the email-monitoring layout was trimmed.
+  - Deleted: DEPLOYMENT_CHECKLIST.txt, DOCUMENTATION_EMAIL_LOGS_REFACTOR.txt, IMPLEMENTATION_COMPLETE.txt, README_REFACTORING.txt, REFACTOR_SUMMARY.txt
+  - Modified: app/Http/Controllers/QrCodeController.php, database/migrations/2026_04_30_092224_create_flagged_scans_table.php, resources/views/admin-modules/monitoring/emails.blade.php, resources/views/admin-modules/monitoring/entry-exit.blade.php
+  - Result: the project stopped carrying the older refactor notes in tracked form.
+- 2026-06-11 (9bab74b): The gate-scan email template was updated as part of the student profile work.
+  - Modified: resources/views/emails/gate-scan.blade.php
+  - Result: outgoing email presentation stayed in sync with the newer student/profile changes.
+
+Added / deleted / modified summary for this page:
+- Added the EmailLog model and the initial refactored page docs.
+- Deleted older documentation files from tracked history later in May.
+- Modified the controller and blade repeatedly to refine filters, defaults, and date/month behavior.
+
+4) ENTRY / EXIT MONITORING PAGE
+Dates covered: 2026-05-26, 2026-05-27
+
+What changed:
+- 2026-05-26 (a570907): The entry/exit monitoring page was redesigned with cards and filter options.
+  - Modified: app/Http/Controllers/AttendanceLogController.php, app/Models/AttendanceLog.php, app/Models/FlaggedScan.php, resources/views/admin-modules/monitoring/entry-exit.blade.php, resources/views/components/layouts/admin.blade.php, resources/views/components/ui/table.blade.php, routes/web.php
+  - Result: the monitoring page became more structured and filter-driven.
+- 2026-05-27 (77f10f6): A supporting screenshot asset was added.
+  - Added: public/images/assets/entry-exit.png
+  - Result: the monitoring page documentation/design reference gained an image asset.
+- 2026-05-27 (ac165df): The monitoring layout was adjusted again alongside the doc cleanup.
+  - Modified: resources/views/admin-modules/monitoring/entry-exit.blade.php
+  - Result: the page was kept consistent with the simplified documentation set.
+
+Added / deleted / modified summary for this page:
+- Added a screenshot asset for the page.
+- Modified the page layout to use cards and filters.
+- Kept the page aligned with the admin layout and table component changes.
+
+5) TEACHER / SECTION MANAGEMENT
+Dates covered: 2026-06-16 current local work
+
+What changed locally and is not yet committed:
+- app/Models/Teacher.php
+  - Added: advisedSections() relationship to Section using advisor_id.
+  - Existing user() relationship was reformatted.
+- database/migrations/2026_04_28_075708_create_teachers_table.php
+  - Removed: a blank line before the index definition.
+- app/Http/Controllers/SectionController.php
+  - Added: store, update, and destroy actions for sections.
+  - Added: validation for name, level, grade_level, and advisor_id.
+  - Added: JSON success and error responses for create/update/delete operations.
+  - Added: duplicate-section handling through QueryException.
+- app/Models/Section.php
+  - Added: new Section model with fillable fields for name, level, grade_level, and advisor_id.
+  - Added: advisor() relationship back to Teacher.
+- database/migrations/2026_06_16_093708_create_sections_table.php
+  - Added: sections table with name, enum level, grade_level, nullable advisor_id foreign key, timestamps, and a unique constraint on name + level + grade_level.
+
+Added / deleted / modified summary for this page/module:
+- Added a brand new section management workflow.
+- Added the section model and sections table migration.
+- Added a teacher-to-section advisor relationship.
+- No code was deleted here beyond a minor formatting cleanup in the teacher migration.
+
+6) PROJECT INFRASTRUCTURE / REALTIME SUPPORT / DOCUMENTATION
+Dates covered: 2026-05-24, 2026-05-27, 2026-05-31, 2026-06-02
+
+What changed:
+- 2026-05-24 (85ad32f): Large refactor documentation files were added for the email-log work.
+- 2026-05-27 (72d9c32, 4772c9d, e541a50): README cleanup happened, including removal of the old qr-feature.txt reference and deletion of an obsolete password reset blade.
+- 2026-05-31 (e2237d3): Realtime/broadcasting infrastructure was added.
+  - Added: config/broadcasting.php, config/reverb.php, resources/js/echo.js, routes/channels.php, app/Events/TableUpdated.php
+  - Modified: bootstrap/app.php, composer.json, composer.lock, package.json, package-lock.json, resources/js/app.js, resources/js/student.js, resources/views/components/modal.blade.php, routes/api.php, routes/web.php
+- 2026-06-02 (8f4cf15): School-year migrations and supporting model updates were added.
+  - Added: app/Models/SchoolYear.php and the school-year enrollment migrations listed in the enrollment section.
+
+Added / deleted / modified summary for this area:
+- Added realtime/broadcasting support files and package updates.
+- Added and later trimmed refactor documentation files.
+- Removed obsolete or no-longer-needed view/documentation files during cleanup.
+
+NOTES
+- This file includes both pushed history and local work that has not been pushed yet.
+- The current working tree still contains uncommitted changes, so this report should be treated as a snapshot as of 2026-06-16.
+- If you want a narrower version later, this can be split into separate txt files by page (for example: enrollment, email logs, monitoring, student profile, and section management).
