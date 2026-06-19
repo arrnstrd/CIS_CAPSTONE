@@ -37,7 +37,7 @@ Route::post('/students', [StudentController::class, 'store'])->name('student.sto
 Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
 Route::put('/students/{id}' , [StudentController::class, 'update'])->name('students.update');
 
-
+//qr code and search
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
 Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
 

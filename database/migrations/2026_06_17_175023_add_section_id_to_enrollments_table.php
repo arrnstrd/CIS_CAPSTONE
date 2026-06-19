@@ -9,17 +9,23 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-     public function up(): void
+    public function up(): void
     {
         Schema::table('enrollments', function (Blueprint $table) {
-            $table->dropUnique('enrollments_school_year_id_unique');
+            $table->foreignId('section_id')
+                    ->nullable()
+                    ->constrained('sections')
+                    ->nullOnDelete();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('enrollments', function (Blueprint $table) {
-            $table->unique('school_year_id');
+            $table->dropConstrainedForeignId('section_id');
         });
     }
 };

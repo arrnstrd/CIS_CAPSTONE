@@ -114,8 +114,8 @@
 
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">
-                                No logs yet
+                            <td colspan="8" class="text-center text-muted">
+                                No records yet
                             </td>
                         </tr>
 

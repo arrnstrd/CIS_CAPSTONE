@@ -19,5 +19,10 @@ class Section extends Model
     {
         return $this->belongsTo(Teacher::class, 'advisor_id');
     }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
+    }
     
 }

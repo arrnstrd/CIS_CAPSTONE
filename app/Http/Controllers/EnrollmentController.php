@@ -46,8 +46,7 @@ class EnrollmentController extends Controller
             ->orderBy('first_name')
             ->paginate(10)
             ->withQueryString();
-
-
+            
         return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years', 'statusCounts', 'studentWithoutEnrollment', 'notEnrolledStudents', 'activeSchoolYear'));
     }
 

@@ -12,6 +12,7 @@ class Enrollment extends Model
 
     protected $fillable = [
         'student_id',
+        'section_id',
         'school_year_id',
         'level',
         'grade_level',
@@ -33,6 +34,11 @@ class Enrollment extends Model
     public function schoolYear()
     {
         return $this->belongsTo(SchoolYear::class, 'school_year_id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id');
     }
 
     

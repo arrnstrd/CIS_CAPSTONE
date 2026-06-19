@@ -3,9 +3,9 @@
         Student List
     </x-slot>
 
-<x-slot name="subtitle">
-    Manage and view student records such as profiles and enrollments.
-</x-slot>
+    <x-slot name="subtitle">
+        Manage and view student records such as profiles and enrollments.
+    </x-slot>
 
     <x-slot name="pageName">
         Student
@@ -95,21 +95,17 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item"
-                                            href="{{ url('/student-profile/' . $student->id) }}" target="_blank">View</a>
+                                        <a class="dropdown-item" href="{{ url('/student-profile/' . $student->id) }}"
+                                            target="_blank">View</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="#editStudentModal" data-bs-toggle="modal"
-                                            data-bs-target="#editStudentModal"
-                                            data-id="{{ $student->id }}"
-                                            data-lrn="{{ $student->lrn }}" 
-                                            data-first_name="{{ $student->first_name }}"
+                                            data-bs-target="#editStudentModal" data-id="{{ $student->id }}"
+                                            data-lrn="{{ $student->lrn }}" data-first_name="{{ $student->first_name }}"
                                             data-last_name="{{ $student->last_name }}"
-                                            data-middle_name="{{ $student->middle_name }}" 
-                                            data-sex="{{ $student->sex }}"
+                                            data-middle_name="{{ $student->middle_name }}" data-sex="{{ $student->sex }}"
                                             data-address="{{ $student->address }}"
-                                            data-birthdate="{{ $student->birthdate }}" 
-                                            data-status="{{ $student->status }}"
+                                            data-birthdate="{{ $student->birthdate }}" data-status="{{ $student->status }}"
                                             data-name="{{ $student->guardian->name ?? '' }}"
                                             data-relationship="{{ $student->guardian->relationship ?? '' }}"
                                             data-email="{{ $student->guardian->email ?? '' }}">
@@ -131,13 +127,20 @@
                         </td>
 
                     </tr>
-                </tbody>
+
+                    @empty
+                    <tr>
+                          <td colspan="6" class="text-center text-muted py-5">
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                <i class="fas fa-folder-open fa-2x mb-3 opacity-50"></i>
+                                <p class="mb-0">No student found for the selected criteria</p>
+                            </div>
+                        </td>
+                    </tr>
+                 @endforelse
+            </tbody>
 
 
-            @empty
-                <p class="small text-muted"> No student on the records yet</p>
-
-            @endforelse
 
         </x-slot>
 

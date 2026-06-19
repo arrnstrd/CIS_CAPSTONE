@@ -25,18 +25,40 @@ class SectionController extends Controller
                         ->where('grade_level', request('grade_level')))
             ],
             'level' => ['required', 'in:elementary,highschool,senior_high_school'],
-            'grade_level' => ['required', 'integer', 'between:1,12'],
+            'grade_level' => [
+                'required',
+                'integer',
+                function ($attribute, $value, $fail) {
+
+                    $level = request('level');
+
+                    $isValid = match ($level) {
+                        'elementary' => $value >= 1 && $value <= 6,
+                        'highschool' => $value >= 7 && $value <= 10,
+                        'senior_high_school' => $value >= 11 && $value <= 12,
+                        default => false,
+                    };
+
+                    if (!$isValid) {
+                        $fail('The selected grade level is invalid for the chosen level.');
+                    }
+                }
+            ]
+            ,
             'advisor_id' => ['nullable', 'exists:teachers,id'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
             'status' => ['required', 'in:active,inactive'],
         ];
     }
+
+
+
+
     public function store(Request $request)
     {
         $validatedData = $request->validate(
             $this->validationRules()
         );
-
 
         try {
             $section = Section::create($validatedData);
@@ -60,7 +82,6 @@ class SectionController extends Controller
         $validatedData = $request->validate(
             $this->validationRules($section)
         );
-
 
         try {
             $section->update($validatedData);

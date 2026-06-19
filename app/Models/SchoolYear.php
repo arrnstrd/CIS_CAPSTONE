@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use PhpParser\Node\Expr\Cast;
 
 class SchoolYear extends Model
 {
@@ -19,4 +20,8 @@ class SchoolYear extends Model
     {
         return $query->where('is_active', true);
     }
+
+    protected $casts = [
+        'is_active' => 'boolean'
+    ];
 }

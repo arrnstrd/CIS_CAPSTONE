@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('enrollments', function (Blueprint $table) {
-             $table->string('school_year_id')->unique()->nullable();
+             $table->foreignId('school_year_id')
+                    ->nullable()
+                    ->constrained('school_years')
+                    ->nullOnDelete();
 
         });
     }
@@ -23,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('enrollments', function (Blueprint $table) {
-            $table->dropColumn('school_year_id');
+            $table->dropConstrainedForeignId('school_year_id');
         });
     }
 };
