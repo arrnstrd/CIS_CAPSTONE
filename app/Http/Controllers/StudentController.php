@@ -86,6 +86,9 @@ class StudentController extends Controller
             //     'student_number' => $studentNumber
             // ]);
 
+
+            
+
             // 3. create guardian linked to student
             Guardian::create([
                 'student_id' => $student->id,

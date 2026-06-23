@@ -19,7 +19,7 @@ class ScheduleConfigController extends Controller
     {
         $validatedData = $request->validate([
             'level' => ['required', 'in:elementary,hs,shs'],
-            'session_type' => ['required', 'in:morning,afternoon'],
+            'session_type' => ['required', 'in:morning,afternoon', 'whole_day'],
             'in_start' => ['required', 'date_format:H:i'],
             'in_end' => ['required', 'date_format:H:i', 'after:in_start'],
             'late_threshold' => ['required', 'date_format:H:i'],
@@ -50,7 +50,7 @@ class ScheduleConfigController extends Controller
 
         $validatedData = $request->validate([
             'level' => ['required', 'in:elementary,hs,shs'],
-            'session_type' => ['required', 'in:morning,afternoon'],
+            'session_type' => ['required', 'in:morning,afternoon', 'whole_day'],
             'in_start' => ['required', 'date_format:H:i'],
             'in_end' => ['required', 'date_format:H:i', 'after:in_start'],
             'late_threshold' => ['required', 'date_format:H:i'],

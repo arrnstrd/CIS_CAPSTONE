@@ -6,6 +6,7 @@ use App\Http\Controllers\ScheduleConfigController;
 use App\Http\Controllers\SchoolYearController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,12 @@ Route::post('/enrollment/{id}' , [ EnrollmentController::class , 'update']);
 Route::delete('/enrollment/{id}' , [EnrollmentController::class , 'destroy']);
 
 
+
+// users
+Route::post('/users', [UserController::class, 'store']);
+Route::put('/users/{id}', [UserController::class, 'update']);
+Route::delete('/users/{id}', [UserController::class, 'archive']);
+Route::patch('/users/{id}/restore', [UserController::class, 'restore']);
 //
 Route::post('/schedule-configuration' , [ScheduleConfigController::class , 'store']);
 Route::post('/schedule-configuration/{id}' , [ScheduleConfigController::class , 'update']);
@@ -44,7 +51,6 @@ Route::patch('/sections/{id}' , [SectionController::class, 'restore']);
 
 
 //school year
-
 Route::post('/school-year', [SchoolYearController::class, 'store']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'update']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'destroy']);

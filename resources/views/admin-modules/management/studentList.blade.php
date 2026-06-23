@@ -66,13 +66,24 @@
 
             <thead class="text-uppercase">
                 <tr>
-                    <th style="width: 10%">Student No.</th>
-                    <th style="width: 11%">Full Name</th>
-
-                    <th style="width: 13%">LRN</th>
-                    <th style="width: 14%">Sex</th>
-                    <th style="width: 10%">Status</th>
-                    <th style="width: 8%">Actions</th>
+                    <th style="width: 10%">
+                        <span class="fas fa-id-card me-1"></span> Student No.
+                    </th>
+                    <th style="width: 11%">
+                        <span class="fas fa-user me-1"></span> Full Name
+                    </th>
+                    <th style="width: 13%">
+                        <span class="fas fa-hashtag me-1"></span> LRN
+                    </th>
+                    <th style="width: 14%">
+                        <span class="fas fa-venus-mars me-1"></span> Sex
+                    </th>
+                    <th style="width: 10%">
+                        <span class="fas fa-circle me-1"></span> Status
+                    </th>
+                    <th style="width: 8%">
+                        <span class="fas fa-sliders-h me-1"></span> Actions
+                    </th>
                 </tr>
             </thead>
             @forelse($students as $student)
@@ -128,16 +139,16 @@
 
                     </tr>
 
-                    @empty
+            @empty
                     <tr>
-                          <td colspan="6" class="text-center text-muted py-5">
+                        <td colspan="6" class="text-center text-muted py-5">
                             <div class="d-flex flex-column align-items-center justify-content-center">
                                 <i class="fas fa-folder-open fa-2x mb-3 opacity-50"></i>
                                 <p class="mb-0">No student found for the selected criteria</p>
                             </div>
                         </td>
                     </tr>
-                 @endforelse
+                @endforelse
             </tbody>
 
 

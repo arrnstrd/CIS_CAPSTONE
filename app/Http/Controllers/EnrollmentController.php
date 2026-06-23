@@ -71,7 +71,7 @@ class EnrollmentController extends Controller
                 ])
             ],
             'section' => ['required', 'string', 'max:255'],
-            'session_type' => ['required', 'in:morning,afternoon'],
+            'session_type' => ['required', 'in:morning,afternoon' , 'whole_day'],
             'status' => ['required', 'in:active,inactive'],
         ]);
 
@@ -108,7 +108,7 @@ class EnrollmentController extends Controller
                 ])
             ],
             'section' => ['required', 'string', 'max:255'],
-            'session_type' => ['required', 'in:morning,afternoon'],
+            'session_type' => ['required', 'in:morning,afternoon', 'whole_day'],
             'status' => ['required', 'in:active,inactive'],
         ]);
 

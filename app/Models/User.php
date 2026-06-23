@@ -8,12 +8,15 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use Override;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+   
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * Get the attributes that should be cast.
@@ -35,7 +38,7 @@ class User extends Authenticatable
 
 
     protected $fillable = [
-        'user_id',
+        
         'first_name',
         'last_name',
         'role',
@@ -54,7 +57,7 @@ class User extends Authenticatable
     protected static function booted()
     {
           static::created(function($user){
-            $user->user_id = 'STU-' . now()->year . '-' . str_pad($user->id, 4, '0' , STR_PAD_LEFT);
+            $user->user_id = 'USR-' . now()->year . '-' . str_pad($user->id, 4, '0' , STR_PAD_LEFT);
             $user->save();
         });
     }
