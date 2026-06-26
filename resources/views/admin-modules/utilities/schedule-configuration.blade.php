@@ -154,6 +154,7 @@
                         <option value="" disabled selected>Select session type</option>
                         <option value="morning">Morning Session</option>
                         <option value="afternoon">Afternoon Session</option>
+                         <option value="whole_day">Wholeday Session</option>
                     </select>
                 </div>
             </div>

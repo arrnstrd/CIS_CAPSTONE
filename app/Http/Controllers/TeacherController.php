@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 
 class TeacherController extends Controller
 {
-    public function store(Request $request)
-    {
-        $validatedData = $request->validate([
+    // public function store(Request $request)
+    // {
+    //     $validatedData = $request->validate([
             
-        ])
-    }
+    //     ])
+    // }
 }
