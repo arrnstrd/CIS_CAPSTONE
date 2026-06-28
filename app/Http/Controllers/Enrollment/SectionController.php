@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Enrollment;
 
+use App\Http\Controllers\Controller;
 use App\Models\Section;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -9,8 +10,23 @@ use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
 {
+    public function index(Request $request)
+    {
+        $sections = Section::with('advisor')
+            ->filterGradeLevel($request->grade_level)
+            ->filterStatus($request->status)
+            ->search($request->search)
+            ->orderBy('grade_level')
+            ->orderBy('name')
+            ->paginate(25)
+            ->withQueryString();
 
-    //for validation rules for the store and update
+        return view('enrollment.sections.index', [
+            'sections' => $sections,
+        ]);
+    }
+
+    // for validation rules for the store and update
     private function validationRules(?Section $section = null): array
     {
         return [
@@ -43,16 +59,12 @@ class SectionController extends Controller
                         $fail('The selected grade level is invalid for the chosen level.');
                     }
                 }
-            ]
-            ,
+            ],
             'advisor_id' => ['nullable', 'exists:teachers,id'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
             'status' => ['required', 'in:active,inactive'],
         ];
     }
-
-
-
 
     public function store(Request $request)
     {
@@ -62,6 +74,7 @@ class SectionController extends Controller
 
         try {
             $section = Section::create($validatedData);
+
             return response()->json([
                 'message' => 'Section created successfully',
                 'data' => $section
@@ -69,10 +82,8 @@ class SectionController extends Controller
         } catch (QueryException $e) {
             return response()->json([
                 'message' => 'Unable to create section.',
-
             ], 422);
         }
-
     }
 
     public function update(Request $request, string $id)
@@ -97,7 +108,6 @@ class SectionController extends Controller
         }
     }
 
-
     public function destroy(string $id)
     {
         $section = Section::findOrFail($id);
@@ -107,6 +117,7 @@ class SectionController extends Controller
                 'message' => 'Section is already inactive.'
             ], 422);
         }
+
         try {
             $section->update([
                 'status' => 'inactive'
@@ -115,12 +126,10 @@ class SectionController extends Controller
             return response()->json([
                 'message' => 'Section archived successfully',
                 'data' => $section->fresh()
-
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to archive the section',
-
             ], 500);
         }
     }

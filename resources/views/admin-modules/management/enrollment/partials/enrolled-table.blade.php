@@ -35,9 +35,9 @@
                     <td>{{ $enrollment->student->first_name ?? ''}}
                         {{ $enrollment->student->last_name ?? '' }}
                     </td>
-                    <td> {{ $enrollment->level }}</td>
-                    <td>{{$enrollment->grade_level  }}</td>
-                    <td> {{ $enrollment->section }}</td>
+                    <td> {{ $enrollment->section->level }}</td>
+                    <td>{{$enrollment->section->grade_level  }}</td>
+                    <td> {{ $enrollment->section->name }}</td>
                     <td> {{ $enrollment->status }}</td>
                     <td class="whitespace-nowrap">
                         <div class="dropdown position-static">
@@ -79,7 +79,7 @@
                                 </li>
                                 <li>
                                     <form action="{{ route('enrollment.destroy', $enrollment->id) }}" method="POST"
-                                        onsubmit="return confirm('Are you sure?');">
+                                        data-ajax-delete="enrollment">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger">Delete</button>

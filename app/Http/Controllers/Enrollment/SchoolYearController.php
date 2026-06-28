@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Enrollment;
 
+use App\Http\Controllers\Controller;
 use App\Models\SchoolYear;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;

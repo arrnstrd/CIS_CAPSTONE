@@ -3,10 +3,12 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 
 
+import './ajax-crud.js';
 import './enrollment.js';
 import './sidebar.js';
 import './layout.js';
 import './student.js';
+import './schedule-config.js';
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting

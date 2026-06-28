@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -185,7 +186,6 @@ class UserController extends Controller
         return $validatedData;
     }
 }
-
 
 
 

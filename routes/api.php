@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\EnrollmentController;
-use App\Http\Controllers\ScanController;
+use App\Http\Controllers\Enrollment\EnrollmentController;
+use App\Http\Controllers\Enrollment\SchoolYearController;
+use App\Http\Controllers\Enrollment\SectionController;
+use App\Http\Controllers\Management\StudentController;
+use App\Http\Controllers\Management\UserController;
+use App\Http\Controllers\Scanner\ScanController;
 use App\Http\Controllers\ScheduleConfigController;
-use App\Http\Controllers\SchoolYearController;
-use App\Http\Controllers\SectionController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

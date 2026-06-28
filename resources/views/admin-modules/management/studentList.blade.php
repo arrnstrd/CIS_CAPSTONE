@@ -127,7 +127,8 @@
                                         <hr class="dropdown-divider">
                                     </li>
                                     <li>
-                                        <form action="" method="POST" onsubmit="return confirm('Are you sure?');">
+                                        <form action="{{ route('students.destroy', $student->id) }}" method="POST"
+                                            data-ajax-delete="student">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item text-danger">Delete</button>
@@ -173,7 +174,7 @@
             Add Student
         </x-slot>
 
-        <form action=" {{ route('student.store') }}" method="POST">
+        <form id="addStudentForm" action="{{ route('student.store') }}" method="POST">
             @csrf
 
             <div class="row">

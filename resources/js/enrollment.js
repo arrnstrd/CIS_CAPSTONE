@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+function initializeEnrollmentForm() {
 
     // ─── Elements ───────────────────────────────────────────
     const addModal = document.getElementById('addEnrollmentModal');
@@ -42,6 +42,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ─── Live Search ─────────────────────────────────────────
+    if (!searchInput || !resultsBox || !hiddenInput || !selectedBox || !selectedName || !clearBtn || !enrollForm) {
+        return;
+    }
+
     searchInput.addEventListener('input', function () {
         const q = this.value.trim();
 
@@ -135,49 +139,18 @@ document.addEventListener('DOMContentLoaded', function () {
         searchInput.value = '';
     });
 
-    // ─── Form Submit ─────────────────────────────────────────
-    enrollForm.addEventListener('submit', function (e) {
-        e.preventDefault();
+}
 
-        // guard: student must be selected
-        if (!hiddenInput.value) {
-            searchInput.classList.add('is-invalid');
-            searchInput.focus();
-            return;
-        }
-        searchInput.classList.remove('is-invalid');
-
-        const formData = new FormData(enrollForm);
-
-        fetch('/enrollment', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-            },
-            body: formData
-        })
-            .then(res => res.json().then(data => ({ ok: res.ok, data })))
-            .then(({ ok, data }) => {
-                if (ok) {
-                    // close modal
-                    bootstrap.Modal.getInstance(modal).hide();
-                    // reload table to show new enrollment
-                    window.location.reload();
-                } else {
-                    alert(data.message ?? 'Something went wrong.');
-                }
-            })
-            .catch(() => alert('Network error. Please try again.'));
-    });
-
-});
+document.addEventListener('DOMContentLoaded', initializeEnrollmentForm);
+document.addEventListener('ajax:content-refreshed', initializeEnrollmentForm);
 
 
 
-const editEnrollmentModal = document.getElementById('editEnrollmentModal');
-if (editEnrollmentModal) {
-editEnrollmentModal.addEventListener('show.bs.modal', function (event) {
+document.addEventListener('show.bs.modal', function (event) {
+    if (event.target?.id !== 'editEnrollmentModal') {
+        return;
+    }
+
     const btn = event.relatedTarget;
 
     document.getElementById('edit_level').value = btn.dataset.level;
@@ -195,11 +168,43 @@ editEnrollmentModal.addEventListener('show.bs.modal', function (event) {
     document.getElementById('editStudentLrn').textContent =
         btn.dataset.studentLrn;
 });
-}
 
-const viewEnrollmentModal = document.getElementById('viewEnrollmentModal');
-if (viewEnrollmentModal) {
-    viewEnrollmentModal.addEventListener('show.bs.modal', function (event) {
+document.addEventListener('submit', function (event) {
+    const form = event.target;
+
+    if (form?.id === 'enrollmentForm') {
+        event.preventDefault();
+        window.ajaxCrud.clearFormErrors(form);
+
+        const studentInput = form.querySelector('#enrollmentStudentId');
+        const searchField = form.querySelector('#enrollmentStudentSearch');
+
+        if (!studentInput?.value) {
+            searchField?.classList.add('is-invalid');
+            searchField?.focus();
+            return;
+        }
+
+        searchField?.classList.remove('is-invalid');
+        window.ajaxCrud.submitAjaxForm(form);
+    }
+
+    if (form?.id === 'editEnrollmentForm') {
+        event.preventDefault();
+        window.ajaxCrud.submitAjaxForm(form);
+    }
+
+    if (form?.matches('[data-ajax-delete="enrollment"]')) {
+        event.preventDefault();
+        window.ajaxCrud.submitAjaxDelete(form);
+    }
+});
+
+document.addEventListener('show.bs.modal', function (event) {
+    if (event.target?.id !== 'viewEnrollmentModal') {
+        return;
+    }
+
         const btn = event.relatedTarget;
 
         document.getElementById('viewStudentName').textContent = btn.dataset.studentName || '-';
@@ -212,7 +217,3 @@ if (viewEnrollmentModal) {
         document.getElementById('viewCreatedAt').textContent = btn.dataset.createdAt || '-';
         document.getElementById('viewDetailStatus').textContent = btn.dataset.status || '-';
     });
-}
-
-
-

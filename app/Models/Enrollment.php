@@ -14,9 +14,6 @@ class Enrollment extends Model
         'student_id',
         'section_id',
         'school_year_id',
-        'level',
-        'grade_level',
-        'section',
         'session_type',
         'status'
     ];
@@ -46,22 +43,33 @@ class Enrollment extends Model
 
     public static function getEnrollmentStatistics(int $schoolYearId): array
     {
+        $baseQuery = static::query()->where('school_year_id', $schoolYearId);
+
         return [
-            'total' => static::query()->where('school_year_id', $schoolYearId)->count(),
+            'total' => (clone $baseQuery)->count(),
 
-            'elementary' => static::query()
-                ->where('school_year_id', $schoolYearId)
-                ->where('level', 'elementary')
+            'elementary' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->whereHas('section', function ($sectionQuery) {
+                        $sectionQuery->where('level', 'elementary');
+                    });
+                })
                 ->count(),
 
-            'hs' => static::query()
-                ->where('school_year_id', $schoolYearId)
-                ->where('level', 'hs')
+            'hs' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->whereHas('section', function ($sectionQuery) {
+                        $sectionQuery->where('level', 'highschool');
+                    });
+                })
                 ->count(),
 
-            'shs' => static::query()
-                ->where('school_year_id', $schoolYearId)
-                ->where('level', 'shs')
+            'shs' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->whereHas('section', function ($sectionQuery) {
+                        $sectionQuery->where('level', 'senior_high_school');
+                    });
+                })
                 ->count(),
         ];
     }

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Monitoring;
 
+use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use Illuminate\Http\Request;
 

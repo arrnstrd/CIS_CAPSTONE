@@ -23,10 +23,17 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3 class="fw-semibold text-dark m-0 fs-5">Enrollment Records</h3>
                     <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
-                        data-bs-toggle="modal" data-bs-target="#addEnrollmentModal">
+                        data-bs-toggle="modal" data-bs-target="#addEnrollmentModal"
+                        @disabled(! $activeSchoolYear)>
                         <span>+ Add Enrollment</span>
                     </button>
                 </div>
+
+                @if (! $activeSchoolYear)
+                    <div class="alert alert-warning mb-4">
+                        No active school year found. Create or activate a school year before adding enrollments.
+                    </div>
+                @endif
 
                 <div class="row g-3 align-items-center">
                     <form action="{{ route('enrollment.index') }}" method="GET">
@@ -44,9 +51,13 @@
                             <div class="col-6 col-md-2.5 col-lg-2">
                                 <select name="school_year_id" class="form-select rounded-3 py-2 border-light-subtle"
                                     onchange="this.form.submit()">
-                                    <option value="{{ $activeSchoolYear->id }}" selected>
-                                        {{ $activeSchoolYear->school_year }}
-                                    </option>
+                                    @if ($activeSchoolYear)
+                                        <option value="{{ $activeSchoolYear->id }}" selected>
+                                            {{ $activeSchoolYear->school_year }}
+                                        </option>
+                                    @else
+                                        <option value="" selected>No active school year</option>
+                                    @endif
                                 </select>
                             </div>
 

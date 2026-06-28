@@ -134,7 +134,7 @@
         <x-slot name="id">addScheduleModal</x-slot>
         <x-slot name="modalTitle">Add Schedule Configuration</x-slot>
 
-        <form action="{{ route('schedconfig.store') }}" method="POST">
+        <form id="addScheduleForm" action="{{ route('schedconfig.store') }}" method="POST">
             @csrf
 
             <div class="row">

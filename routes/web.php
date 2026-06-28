@@ -1,14 +1,15 @@
 <?php
 
 // use App\Events\TableUpdated;
-use App\Http\Controllers\AttendanceLogController;
-use App\Http\Controllers\EmailLogController;
-use App\Http\Controllers\EnrollmentController;
+use App\Http\Controllers\Enrollment\EnrollmentController;
+use App\Http\Controllers\Enrollment\SectionController;
+use App\Http\Controllers\Management\StudentController;
+use App\Http\Controllers\Monitoring\AttendanceLogController;
+use App\Http\Controllers\Monitoring\EmailLogController;
 use App\Http\Controllers\QrCodeController;
-use App\Http\Controllers\ScanController;
+use App\Http\Controllers\Scanner\ScanController;
 use App\Http\Controllers\ScheduleConfigController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentProfileController;
 // use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,7 @@ Route::get('/student-management', [StudentController::class, 'index'])->name('ad
 Route::post('/students', [StudentController::class, 'store'])->name('student.store');
 Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
 Route::put('/students/{id}' , [StudentController::class, 'update'])->name('students.update');
+Route::delete('/students/{id}' , [StudentController::class, 'destroy'])->name('students.destroy');
 
 //qr code and search
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
@@ -62,9 +64,14 @@ Route::get('/users', fn() => view('admin-modules.management.users'));
 // testing
 Route::get('/scanner', fn() => view('scanner.index'));
 
+//settings
 
 
 
+//login
+Route::get('/admin-login' , function(){
+    return view ('login.admin-login');
+});
 
 
 Route::get('/student-profile' , function(){
