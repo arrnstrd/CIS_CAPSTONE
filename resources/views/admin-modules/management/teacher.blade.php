@@ -91,17 +91,28 @@
                                             <hr class="dropdown-divider">
                                         </li>
                                         <li>
-                                            <form action="#" method="POST">
+                                            <form action="{{ route('teachers.destroy', $teacher->id) }}" method="POST"
+                                                data-ajax-delete="teacher">
+
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="dropdown-item text-danger">Archive</button>
+
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    Archive
+                                                </button>
                                             </form>
                                         </li>
                                     @else
                                         <li>
-                                            <form action="#" method="POST">
+                                            <form action="{{ route('teachers.restore', $teacher->id) }}" method="POST"
+                                                data-ajax-restore="teacher">
+
                                                 @csrf
-                                                <button class="dropdown-item text-success">Restore</button>
+                                                @method('PATCH')
+
+                                                <button type="submit" class="dropdown-item text-success">
+                                                    Restore
+                                                </button>
                                             </form>
                                         </li>
                                     @endif
@@ -131,12 +142,8 @@
 
 
     <x-modal id="addTeacherModal" modalTitle="Add Teacher" size="modal-md">
-        <form
-            id="addTeacherForm"
-            action="{{ route('teachers.store') }}"
-            method="POST"
-            data-ajax-form="teacher">
-            
+        <form id="addTeacherForm" action="{{ route('teachers.store') }}" method="POST" data-ajax-form="teacher">
+
             @csrf
 
             <div data-ajax-errors></div>

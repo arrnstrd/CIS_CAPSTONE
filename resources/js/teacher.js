@@ -1,14 +1,24 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+    initializeEditModal();
+    initializeAddForm();
+    initializeTableActions();
+});
 
-    const editTeacherModal = document.getElementById('editTeacherModal');
-    const editForm = document.getElementById('editTeacherForm');
+/*
+|--------------------------------------------------------------------------
+| Edit Teacher
+|--------------------------------------------------------------------------
+*/
+
+function initializeEditModal() {
+    const editTeacherModal = document.getElementById("editTeacherModal");
+    const editForm = document.getElementById("editTeacherForm");
 
     if (!editTeacherModal || !editForm) {
         return;
     }
 
-    editTeacherModal.addEventListener('show.bs.modal', (event) => {
-
+    editTeacherModal.addEventListener("show.bs.modal", (event) => {
         const button = event.relatedTarget;
 
         const id = button.dataset.id;
@@ -16,35 +26,62 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastName = button.dataset.last_name;
         const email = button.dataset.email;
 
-        // Update form action
-        editForm.action = editForm.dataset.updateUrl.replace(':id', id);
+        editForm.action = editForm.dataset.updateUrl.replace(":id", id);
 
-        // Populate inputs
         editForm.querySelector('[name="first_name"]').value = firstName;
         editForm.querySelector('[name="last_name"]').value = lastName;
         editForm.querySelector('[name="email"]').value = email;
-
     });
 
-    //for edit form
-    editForm.addEventListener('submit', function (event) {
-
+    editForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
         ajaxCrud.submitAjaxForm(this);
-
     });
+}
 
+/*
+|--------------------------------------------------------------------------
+| Add Teacher
+|--------------------------------------------------------------------------
+*/
 
-    //for add form ajax
-    const addForm = document.getElementById('addTeacherForm');
+function initializeAddForm() {
+    const addForm = document.getElementById("addTeacherForm");
 
-    if (addForm) {
-        addForm.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            ajaxCrud.submitAjaxForm(this);
-        });
+    if (!addForm) {
+        return;
     }
 
-});
+    addForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        ajaxCrud.submitAjaxForm(this);
+    });
+}
+
+/*
+|--------------------------------------------------------------------------
+| Archive & Restore
+|--------------------------------------------------------------------------
+*/
+
+function initializeTableActions() {
+    document.addEventListener("submit", function (event) {
+        const form = event.target;
+
+        if (form.matches('[data-ajax-delete="teacher"]')) {
+            event.preventDefault();
+
+            ajaxCrud.submitAjaxDelete(form);
+
+            return;
+        }
+
+        if (form.matches('[data-ajax-restore="teacher"]')) {
+            event.preventDefault();
+
+            ajaxCrud.submitAjaxDelete(form);
+        }
+    });
+}
