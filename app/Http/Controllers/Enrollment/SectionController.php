@@ -21,9 +21,7 @@ class SectionController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        return view('enrollment.sections.index', [
-            'sections' => $sections,
-        ]);
+       return view('admin-modules.management.sections', compact('sections'));
     }
 
     // for validation rules for the store and update

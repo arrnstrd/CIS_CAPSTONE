@@ -129,14 +129,24 @@ async function submitAjaxForm(form, options = {}) {
         const modalElement = form.closest('.modal');
         const modal = modalElement ? bootstrap.Modal.getInstance(modalElement) : null;
 
+        console.log('1. Hide modal');
         modal?.hide();
+
+        console.log('2. Reset form');
         form.reset();
+
+        console.log('3. Refresh table');
         await refreshTables();
+
+        console.log('4. Success callback');
         options.onSuccess?.(data, response);
+
+        console.log('5. Done');
 
         return true;
     } catch (error) {
-        showFormErrors(form, { message: 'Network error. Please try again.' });
+        
+        showFormErrors(form, { message: 'Something went wrong' });
         options.onError?.(error);
         return false;
     } finally {

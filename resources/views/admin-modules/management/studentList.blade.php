@@ -86,9 +86,9 @@
                     </th>
                 </tr>
             </thead>
-            @forelse($students as $student)
+           
                 <tbody>
-
+                     @forelse($students as $student)
                     <tr>
                         <td>{{  $student->student_number  }} </td>
                         <td> {{  $student->last_name }},

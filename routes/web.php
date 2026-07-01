@@ -1,9 +1,9 @@
 <?php
 
-// use App\Events\TableUpdated;
 use App\Http\Controllers\Enrollment\EnrollmentController;
 use App\Http\Controllers\Enrollment\SectionController;
 use App\Http\Controllers\Management\StudentController;
+use App\Http\Controllers\Management\TeacherController;
 use App\Http\Controllers\Monitoring\AttendanceLogController;
 use App\Http\Controllers\Monitoring\EmailLogController;
 use App\Http\Controllers\QrCodeController;
@@ -11,75 +11,133 @@ use App\Http\Controllers\Scanner\ScanController;
 use App\Http\Controllers\ScheduleConfigController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StudentProfileController;
-// use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/' , fn() => view('admin-modules.monitoring.entry-exit'))
 
+// ============================================================
+// MONITORING
+// ============================================================
 
-// misc
-Route::get('/layout', fn() => view('components.layouts.admin'));
-Route::get('/dashboard', fn() => view('admin-modules.dashboard'));
-Route::get('/role-selection', fn() => view('login.role_selection'));
-
-// monitoring
+// entry-exit
 Route::get('/entry_exit', fn() => view('admin-modules.monitoring.entry-exit'))->name('entryExit');
-Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
 Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.index');
 
-//emails
+// class attendance
+Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
+
+// email
 Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
-Route::post('/emails/{id}/retry' , [EmailLogController::class, 'retry'])->name('retry.email');
-Route::post('/emails' , [EmailLogController::class , 'retryAll'])->name('retryAll.email');
+Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
+Route::post('/emails', [EmailLogController::class, 'retryAll'])->name('retryAll.email');
 
-// students
-Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');
-Route::post('/students', [StudentController::class, 'store'])->name('student.store');
-Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
-Route::put('/students/{id}' , [StudentController::class, 'update'])->name('students.update');
-Route::delete('/students/{id}' , [StudentController::class, 'destroy'])->name('students.destroy');
 
-//qr code and search
-Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
-Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
+// ============================================================
+// MANAGEMENT
+// ============================================================
+
+// teacher
+Route::prefix('teachers')->group(function () {
+
+    // Display teacher list
+    Route::get('/', [TeacherController::class, 'index'])
+        ->name('teachers.index');
+
+    // Create teacher
+    Route::post('/', [TeacherController::class, 'store'])
+        ->name('teachers.store');
+
+    // Update teacher
+    Route::put('/{id}', [TeacherController::class, 'update'])
+        ->name('teachers.update');
+
+    // Archive teacher
+    Route::delete('/{id}', [TeacherController::class, 'destroy'])
+        ->name('teachers.destroy');
+
+    // Restore teacher
+    Route::patch('/{id}/restore', [TeacherController::class, 'restore'])
+        ->name('teachers.restore');
+
+});
+
+// users
+Route::get('/users', fn() => view('admin-modules.management.users'));
+
+// grade
+// Route::get('/grades', [GradeController::class, 'index'])->name('grades.index');                // TODO
+
+
+// ============================================================
+// ENROLLMENT MANAGEMENT
+// ============================================================
 
 // enrollment
 Route::get('/enrollment', [EnrollmentController::class, 'index'])->name('enrollment.index');
 Route::post('/enrollment', [EnrollmentController::class, 'store'])->name('enrollment.store');
-Route::put('/enrollment/{id}' ,[EnrollmentController::class, 'update'])->name('enrollment.update');
+Route::put('/enrollment/{id}', [EnrollmentController::class, 'update'])->name('enrollment.update');
 Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy'])->name('enrollment.destroy');
 
+// student
+Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');
+Route::post('/students', [StudentController::class, 'store'])->name('student.store');
+Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
+Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
+Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
+Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
+Route::get('/student-profile', fn() => view('admin-modules.management.student-profile'));
+Route::get('/student-profile/{student}', [StudentProfileController::class, 'show'])->name('student.profile');
+
+// section
+Route::get('/sections', [SectionController::class, 'index'])->name('sections.index');         
+Route::post('/sections', [SectionController::class, 'store'])->name('sections.store');       
+Route::put('/sections/{id}', [SectionController::class, 'update'])->name('sections.update');  
+Route::delete('/sections/{id}', [SectionController::class, 'destroy'])->name('sections.destroy');
+Route::patch('/sections/{section}/restore', [SectionController::class, 'restore'])->name('sections.restore');
+    
+
+// ============================================================
+// UTILITIES
+// ============================================================
 
 // schedule configuration
 Route::get('/schedule-configuration', [ScheduleConfigController::class, 'index']);
 Route::post('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.store');
 Route::put('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.update');
 
-// scanner
+// qr generation
+Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
 Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
 
-// management
-Route::get('/users', fn() => view('admin-modules.management.users'));
 
-// testing
+// ============================================================
+// SETTINGS
+// ============================================================
+
+// school year
+// Route::get('/school-year', [SchoolYearController::class, 'index'])->name('schoolyear.index');  // TODO
+
+
+// ============================================================
+// OTHERS
+// ============================================================
+
+// dashboard
+Route::get('/dashboard', fn() => view('admin-modules.dashboard'));
+
+// auth / login
+Route::get('/role-selection', fn() => view('login.role_selection'));
+Route::get('/admin-login', fn() => view('login.admin-login'));
+
+// layout preview
+Route::get('/layout', fn() => view('components.layouts.admin'));
+
+// scanner UI (testing)
 Route::get('/scanner', fn() => view('scanner.index'));
 
-//settings
 
 
 
-//login
-Route::get('/admin-login' , function(){
-    return view ('login.admin-login');
-});
 
-
-Route::get('/student-profile' , function(){
-    return view('admin-modules.management.student-profile');
-});
-
-
-Route::get('/student-profile/{student}' , [StudentProfileController::class, 'show'])->name('student.profile');
 
 
 // Route::post('/items/store', function (Request $request) {
