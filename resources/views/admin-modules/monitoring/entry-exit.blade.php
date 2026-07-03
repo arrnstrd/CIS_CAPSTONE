@@ -202,16 +202,27 @@
             @endphp
             <tr>
                 <td>{{ $attendance_log->scan_time?->format('Y-m-d') ?? '-' }}</td>
-                <td>{{ trim(($student?->first_name ?? '') . ' ' .  ($student?->last_name ?? '')) ?: '-' }}</td>
+                <td class="fw-semibold">{{ trim(($student?->first_name ?? '') . ' ' .  ($student?->last_name ?? '')) ?: '-' }}</td>
                 <td>
                     Grade {{ $attendance_log->enrollment?->section->grade_level ?? '-' }} 
                     
                 </td>
                 <td>{{ $attendance_log->enrollment?->section?->name ?? '-' }}</td>
-                <td><span class="badge bg-light text-dark">{{ $attendance_log->scan_type }}</span></td>
+                <td>
+                    @php
+                    $scanTypeColors = [
+                        'IN' => 'success',
+                        'OUT' => 'primary',
+                        'RE_ENTRY' => 'info',
+                        'RE_EXIT' => 'warning'
+                    ];
+                    $scanTypeColors =$scanTypeColors[$attendance_log->scan_type] ?? 'light';
+                    @endphp
+                    <span class="badge bg-{{$scanTypeColors}} bg-opacity-25 border border-{{ $scanTypeColors }}  border-opacity-50 text-dark">{{ $attendance_log->scan_type }}</span>
+                </td>
                 <td>{{ $attendance_log->session_type ?? '-' }}</td>
                 <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
-                <td>{{ $flagTypes !== '' ? $flagTypes : '-' }}</td>
+                <td class="fw-semibold text-danger">{{ $flagTypes !== '' ? $flagTypes : '-' }}</td>
             </tr>
         @empty
             <tr>

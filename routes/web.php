@@ -107,6 +107,7 @@ Route::delete('/schedule-configuration/{id}', [ScheduleConfigController::class, 
 
 // qr generation
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
+
 Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
 
 

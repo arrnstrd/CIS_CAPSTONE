@@ -58,12 +58,13 @@
                         <span>User Management</span>
                     </a>
                 </li>
-                <li>
+                {{-- uncomment after building the grade management on teacher side --}}
+                {{-- <li>
                     <a href="/grades">
                         <i class="fas fa-award"></i>
                         <span>Grade Management</span>
                     </a>
-                </li>
+                </li> --}}
 
                   <li class="sidebar-section-label">
                     <small>Enrollment</small>
