@@ -151,3 +151,16 @@ Route::get('/scanner', fn() => view('scanner.index'));
 
 //     return response()->json(['success' => true]);
 // });
+
+
+
+
+
+
+
+
+
+//
+Route::get('/grades', function(){
+    return view('admin-modules.management.grade.grades');
+});

@@ -51,7 +51,7 @@ class EmailLogController extends Controller
         // Apply sorting and pagination
         $emailLogs = $baseQuery->orderBy('last_attempt_at', 'desc')
             ->orderBy('student_id')
-            ->paginate(25)
+            ->paginate(20)
             ->withQueryString();
 
         return view('admin-modules.monitoring.emails', compact(

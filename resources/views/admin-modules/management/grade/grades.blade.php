@@ -1,6 +1,6 @@
 <x-layouts.admin>
     <x-slot name="pageName">
-        Room Attendance Monitoring
+
     </x-slot>
 
     <x-slot name="subtitle">

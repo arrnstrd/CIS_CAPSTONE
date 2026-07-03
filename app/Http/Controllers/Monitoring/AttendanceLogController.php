@@ -44,7 +44,7 @@ class AttendanceLogController extends Controller
 
         $attendance_logs = $attendanceLogsQuery
             ->orderBy('scan_time', 'desc')
-            ->paginate(25)
+            ->paginate(20)
             ->withQueryString();
 
         return view(

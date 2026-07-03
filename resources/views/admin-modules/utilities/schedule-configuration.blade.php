@@ -149,6 +149,9 @@
                     @endforelse
                 </tbody>
             </x-ui.table>
+            <div class="d-flex justify-content-end mx-3 mt-3 mb-3">
+                {{ $scheduleConfigs->links() }}
+            </div>
         </div>
 
     </div>

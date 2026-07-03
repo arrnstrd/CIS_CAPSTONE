@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Enrollment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Section;
+use App\Models\Teacher;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -12,7 +13,7 @@ class SectionController extends Controller
 {
     public function index(Request $request)
     {
-        $sections = Section::with('advisor')
+        $sections = Section::with('advisor.user')
             ->filterGradeLevel($request->grade_level)
             ->filterStatus($request->status)
             ->search($request->search)
@@ -21,7 +22,13 @@ class SectionController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-       return view('admin-modules.management.sections', compact('sections'));
+        $teachers = Teacher::with('user')
+            ->where('status', 'active')
+            ->get()
+            ->sortBy('full_name')
+            ->values();
+
+       return view('admin-modules.management.sections', compact('sections', 'teachers'));
     }
 
     // for validation rules for the store and update
