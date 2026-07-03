@@ -15,14 +15,6 @@
         <!-- Navigation Menu -->
         <div class="sidebar-menu">
             <ul>
-{{-- 
-                <!-- Dashboard -->
-                <li>
-                    <a href="/dashboard">
-                        <i class="fa fa-th-large"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li> --}}
 
                 <!-- MONITORING SECTION -->
                 <li class="sidebar-section-label">
@@ -30,25 +22,20 @@
                 </li>
                 <li>
                     <a href="/entry-exit">
-                        <i class="fa fa-exchange-alt"></i>
+                        <i class="fas fa-exchange-alt"></i>
                         <span>Entry/Exit Monitoring</span>
                     </a>
                 </li>
                 <li>
                     <a href="/attendance">
-                        <i class="fa fa-user-check"></i>
+                        <i class="fas fa-user-check"></i>
                         <span>Class Attendance</span>
                     </a>
                 </li>
-                {{-- <li>
-                    <a href="/flagged">
-                        <i class="fa fa-exclamation-triangle"></i>
-                        <span>Flagged Scans</span>
-                    </a>
-                </li> --}}
+              
                 <li>
                     <a href="/emails">
-                        <i class="fa fa-envelope-open-text"></i>
+                        <i class="fas fa-envelope"></i>
                         <span>Email Monitoring</span>
                     </a>
                 </li>
@@ -57,34 +44,46 @@
                 <li class="sidebar-section-label">
                     <small>MANAGEMENT</small>
                 </li>
-                <li>
-                    <a href="/student-management">
-                        <i class="fa fa-user-graduate"></i>
-                        <span>Student Management</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/enrollment">
-                        <i class="fa fa-user-graduate"></i>
-                        <span>Enrollment Management</span>
-                    </a>
-                </li>
+               
+                
                 <li>
                     <a href="/teachers">
-                        <i class="fa fa-chalkboard-teacher"></i>
+                        <i class="fas fa-chalkboard-teacher"></i>
                         <span>Teacher Management</span>
                     </a>
                 </li>
                 <li>
                     <a href="/users">
-                        <i class="fa fa-user-shield"></i>
+                        <i class="fas fa-user-shield"></i>
                         <span>User Management</span>
                     </a>
                 </li>
                 <li>
                     <a href="/grades">
-                        <i class="fa fa-file-signature"></i>
+                        <i class="fas fa-award"></i>
                         <span>Grade Management</span>
+                    </a>
+                </li>
+
+                  <li class="sidebar-section-label">
+                    <small>Enrollment</small>
+                </li>
+                <li>
+                    <a href="/enrollment">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Enrollment Management</span>
+                    </a>
+                </li>
+                 <li>
+                    <a href="/student-management">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Student List</span>
+                    </a>
+                </li>
+                 <li>
+                    <a href="/sections">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Section List</span>
                     </a>
                 </li>
 
@@ -95,20 +94,20 @@
 
                 <li>
                     <a href="/schedule-configuration">
-                        <i class="fa fa-barcode"></i>
+                        <i class="fas fa-calendar-alt"></i>
                         <span>Schedule Configuration</span>
                     </a>
                 </li>
           
                 <li>
                     <a href="/qr-generation">
-                        <i class="fa fa-qrcode"></i>
+                        <i class="fas fa-qrcode"></i>
                         <span>QR Generation</span>
                     </a>
                 </li>
                 <li>
                     <a href="/reports">
-                        <i class="fa fa-file-contract"></i>
+                        <i class="fas fa-chart-bar"></i>
                         <span>Report Generation</span>
                     </a>
                 </li>
@@ -119,7 +118,7 @@
                 </li>
                 <li>
                     <a href="/settings">
-                        <i class="fa fa-cog"></i>
+                        <i class="fas fa-sliders-h"></i>
                         <span>Settings</span>
                     </a>
                 </li>
@@ -135,7 +134,7 @@
            data-bs-toggle="modal"
            data-bs-target="#logoutModal"
            class="btn-logout-action w-100 d-flex align-items-center justify-content-center gap-2">
-            <i class="fa fa-sign-out-alt"></i>
+            <i class="fas fa-sign-out-alt"></i>
             <span>Log Out</span>
         </a>
     </div>

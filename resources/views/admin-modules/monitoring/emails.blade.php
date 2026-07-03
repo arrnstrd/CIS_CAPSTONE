@@ -27,7 +27,7 @@
 
         <!-- Filters and Controls Section -->
         <div class="col mb-4 mx-2">
-            <div class="bg-white rounded p-4 shadow-sm">
+            <div class="bg-white rounded p-4 border">
 
                 {{-- Main GET filter form --}}
                 <form action="{{ route('emails.index') }}" method="GET" id="filterForm">
@@ -35,7 +35,7 @@
                     {{-- ROW 1: Search (col-7) | Status (col-2) | Scan Type (col-2) --}}
                     <div class="row g-2 pt-2 align-items-center mb-3">
                         <div class="col-12 col-lg-8">
-                             <label class="form-label text-muted text-uppercase small fw-bold">Search</label>
+                            <label class="form-label text-muted text-uppercase small fw-bold">Search</label>
                             <div class="input-group">
                                 <input type="search" name="query" class="form-control"
                                     placeholder="Search by student, email..." value="{{ request('query') }}" />
@@ -46,7 +46,7 @@
                         </div>
 
                         <div class="col-6 col-lg-2">
-                              <label class="form-label text-muted text-uppercase small fw-bold">status</label>
+                            <label class="form-label text-muted text-uppercase small fw-bold">status</label>
                             <select class="form-select" name="status" onchange="this.form.submit()">
                                 <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>All Status
                                 </option>
@@ -59,7 +59,7 @@
                         </div>
 
                         <div class="col-6 col-lg-2">
-                              <label class="form-label text-muted text-uppercase small fw-bold">scan type</label>
+                            <label class="form-label text-muted text-uppercase small fw-bold">scan type</label>
                             <select class="form-select" name="scan_type" onchange="this.form.submit()">
                                 <option value="all" {{ request('scan_type', 'all') === 'all' ? 'selected' : '' }}>All Scan
                                     Type</option>
@@ -96,7 +96,8 @@
                                         value="{{ $value }}" @checked($currentFilter === $value)
                                         onchange="this.form.submit()">
 
-                                    <label class="btn btn-outline-primary nav-pill rounded px-3 me-2" for="date_{{ $value }}">
+                                    <label class="btn btn-outline-primary nav-pill rounded px-3 me-2"
+                                        for="date_{{ $value }}">
                                         {{ $label }}
                                     </label>
                                 @endforeach
@@ -120,17 +121,17 @@
 
                         {{-- Help button (right side, ms-auto pushes it to the end) --}}
                         <div class="col ms-auto d-flex gap-2 justify-content-end">
-                          
-                        <a href="{{ route('emails.index') }}" class="btn btn-outline-secondary">
-                            Reset
-                        </a>
+
+                            <a href="{{ route('emails.index') }}" class="btn btn-outline-secondary">
+                                Reset
+                            </a>
                             {{-- Resend All — triggers a separate hidden POST form via JS to avoid form nesting --}}
                             <button type="button" class="btn btn-outline-danger" onclick="confirmResendAll()">
                                 <i class="bi bi-arrow-clockwise"></i> Resend All
                             </button>
                         </div>
 
-                        
+
 
                     </div>
 
@@ -156,13 +157,27 @@
         <x-ui.table>
             <thead>
                 <tr>
-                    <th style="width: 12%">Date</th>
-                    <th style="width: 15%">Student Name</th>
-                    <th style="width: 20%">Recipient Email</th>
-                    <th style="width: 12%">Scan Type</th>
-                    <th style="width: 12%">Status</th>
-                    <th style="width: 12%">Time</th>
-                    <th style="width: 15%">Actions</th>
+                    <th style="width: 12%">
+                        <span class="fas fa-calendar me-1"></span> Date
+                    </th>
+                    <th style="width: 15%">
+                        <span class="fas fa-user me-1"></span> Student Name
+                    </th>
+                    <th style="width: 20%">
+                        <span class="fas fa-envelope me-1"></span> Recipient Email
+                    </th>
+                    <th style="width: 12%">
+                        <span class="fas fa-qrcode me-1"></span> Scan Type
+                    </th>
+                    <th style="width: 12%">
+                        <span class="fas fa-circle me-1"></span> Status
+                    </th>
+                    <th style="width: 12%">
+                        <span class="fas fa-clock me-1"></span> Time
+                    </th>
+                    <th style="width: 15%">
+                        <span class="fas fa-sliders-h me-1"></span> Actions
+                    </th>
                 </tr>
             </thead>
 

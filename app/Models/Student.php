@@ -19,7 +19,7 @@ class Student extends Model
         'address',
         'birthdate',
         'status',
-         'student_number'
+        'student_number'
     ];
 
 
@@ -28,10 +28,7 @@ class Student extends Model
     {
         static::created(function($student){
             $student->student_number = 'STU-' . now()->year . '-' . str_pad($student->id, 4, '0' , STR_PAD_LEFT);
-
-
-
-        $student->save();
+            $student->save();
         });
 
     }
@@ -48,7 +45,16 @@ class Student extends Model
         return $this->hasOne(Guardian::class);
     }
 
-    public function enrollment(){
-        return $this->hasOne(Enrollment::class);
+    public function enrollments(){
+        return $this->hasMany(Enrollment::class);
     }
+
+     // for overview cards in enrollment webpage
+    public function scopeWithoutCurrentEnrollment($query, $school_year_id){
+        return $query->whereDoesntHave('enrollments', function($q) use($school_year_id){
+            $q->where('school_year_id' , $school_year_id);
+        } );
+    }
+ 
+
 }

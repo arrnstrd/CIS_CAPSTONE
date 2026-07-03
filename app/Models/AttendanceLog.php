@@ -168,4 +168,4 @@ class AttendanceLog extends Model
                 ->count(),
         ];
     }
-}
+}       

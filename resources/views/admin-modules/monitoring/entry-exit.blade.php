@@ -40,7 +40,7 @@
     <div class="row g-3 mb-4 px-3">
         @foreach ($overviewCards as $card)
             <div class="col-6 col-md-4 col-xl-2">
-                <div class="card border-0 shadow-sm h-100">
+                <div class="card border h-100">
                     <div class="card-body d-flex align-items-center gap-3">
                         <div class="rounded-circle bg-{{ $card['variant'] }}  text-light  d-flex align-items-center justify-content-center"
                             style="width: 3rem; height: 3rem; flex-shrink: 0;">
@@ -57,7 +57,7 @@
     </div>
 
 
-    <div class="card border-0 shadow-sm mx-3 mb-3">
+    <div class="card border mx-3 mb-3">
         <div class="card-body p-4">
             <form action="{{ route('attendance.index') }}" method="GET">
 
@@ -105,60 +105,58 @@
                     </div>
                 </div>
 
-               {{-- ROW 2: Date filter (left) | Custom range (expands inline) | Help + Resend All (right, fixed)
-                    --}}
-                    <div class="row g-2 align-items-center">
+                {{-- ROW 2: Date filter (left) | Custom range (expands inline) | Help + Resend All (right, fixed)
+                --}}
+                <div class="row g-2 align-items-center">
 
-                        {{-- Configuration --}}
-                        @php
-                            $filters = [
-                                'today' => 'Today',
-                                'week' => 'This Week',
-                                'month' => 'This Month',
-                                'custom' => 'Custom'
-                            ];
-                            $currentFilter = request('date_filter', 'today');
-                        @endphp
+                    {{-- Configuration --}}
+                    @php
+                        $filters = [
+                            'today' => 'Today',
+                            'week' => 'This Week',
+                            'month' => 'This Month',
+                            'custom' => 'Custom'
+                        ];
+                        $currentFilter = request('date_filter', 'today');
+                    @endphp
 
-                        {{-- Date Filter Pills --}}
-                        <div class="col-12 col-md-auto">
-                            <div class="btn-group" role="group" aria-label="Date Filter">
-                                @foreach($filters as $value => $label)
-                                    <input type="radio" class="btn-check" name="date_filter" id="date_{{ $value }}"
-                                        value="{{ $value }}" @checked($currentFilter === $value)
-                                        onchange="this.form.submit()">
+                    {{-- Date Filter Pills --}}
+                    <div class="col-12 col-md-auto">
+                        <div class="btn-group" role="group" aria-label="Date Filter">
+                            @foreach($filters as $value => $label)
+                                <input type="radio" class="btn-check" name="date_filter" id="date_{{ $value }}"
+                                    value="{{ $value }}" @checked($currentFilter === $value) onchange="this.form.submit()">
 
-                                    <label class="btn btn-outline-primary nav-pill rounded px-3 me-2" for="date_{{ $value }}">
-                                        {{ $label }}
-                                    </label>
-                                @endforeach
-                            </div>
+                                <label class="btn btn-outline-primary nav-pill rounded px-3 me-2" for="date_{{ $value }}">
+                                    {{ $label }}
+                                </label>
+                            @endforeach
                         </div>
+                    </div>
 
-                        {{-- Custom Range Fields --}}
-                        @if ($currentFilter === 'custom')
-                            <div class="col-12 col-md-auto d-flex gap-2 animate__animated animate__fadeIn">
-                                <input type="date" name="custom_start_date" class="form-control nav-pill"
-                                    value="{{ request('custom_start_date') }}" required />
+                    {{-- Custom Range Fields --}}
+                    @if ($currentFilter === 'custom')
+                        <div class="col-12 col-md-auto d-flex gap-2 animate__animated animate__fadeIn">
+                            <input type="date" name="custom_start_date" class="form-control nav-pill"
+                                value="{{ request('custom_start_date') }}" required />
 
-                                <input type="date" name="custom_end_date" class="form-control nav-pill"
-                                    value="{{ request('custom_end_date') }}" required />
+                            <input type="date" name="custom_end_date" class="form-control nav-pill"
+                                value="{{ request('custom_end_date') }}" required />
 
-                                <button type="submit" class="btn btn-success nav-pill px-3">
-                                    <i class="bi bi-funnel"></i> Apply
-                                </button>
-                            </div>
-                        @endif
+                            <button type="submit" class="btn btn-success nav-pill px-3">
+                                <i class="bi bi-funnel"></i> Apply
+                            </button>
+                        </div>
+                    @endif
 
                     <div class="col-12 col-lg-auto ms-lg-auto d-flex gap-2">
 
                         <a href="{{ route('attendance.index') }}" class="btn btn-outline-secondary">
                             Reset
                         </a>
-                           <button type="button" class="btn btn-dark" data-bs-toggle="modal"
-                                data-bs-target="#">
-                                <i class="fas fa-download"></i> Download Excel
-                            </button>
+                        <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#">
+                            <i class="fas fa-download"></i> Download Excel
+                        </button>
                     </div>
                 </div>
 
@@ -167,51 +165,68 @@
     </div>
 
 
-    <x-ui.table>
-        <thead class=" text-uppercase small">
+<x-ui.table>
+    <thead class="text-uppercase small">
+        <tr>
+            <th style="width: 10%">
+                <span class="fas fa-calendar me-1"></span> Date
+            </th>
+            <th style="width: 18%">
+                <span class="fas fa-user me-1"></span> Student Name
+            </th>
+            <th style="width: 10%">
+                <span class="fas fa-chart-simple me-1"></span> Grade 
+            </th>
+            <th style="width: 10%">
+                Section
+            </th>
+            <th style="width: 12%">
+                <span class="fas fa-qrcode me-1"></span> Scan Type
+            </th>
+            <th style="width: 10%">
+                <span class="fas fa-clock me-1"></span> Session
+            </th>
+            <th style="width: 12%">
+                <span class="fas fa-hourglass me-1"></span> Gate Time
+            </th>
+            <th style="width: 7%">
+                <span class="fas fa-flag me-1"></span> Flag Type
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse ($attendance_logs as $attendance_log)
+            @php
+                $student = $attendance_log->enrollment?->student;
+                $flagTypes = $attendance_log->flagged_scans->pluck('flag_type')->filter()->unique()->join(', ');
+            @endphp
             <tr>
-                <th>Date</th>
-                <th>Student No.</th>
-                <th>Student Name</th>
-                <th>Grade</th>
-                <th>Section</th>
-                <th>Scan Type</th>
-                <th>Session</th>
-                <th>Gate Time</th>
-                <th>Flag Type</th>
+                <td>{{ $attendance_log->scan_time?->format('Y-m-d') ?? '-' }}</td>
+                <td>{{ trim(($student?->first_name ?? '') . ' ' .  ($student?->last_name ?? '')) ?: '-' }}</td>
+                <td>
+                    Grade {{ $attendance_log->enrollment?->section->grade_level ?? '-' }} 
+                    
+                </td>
+                <td>{{ $attendance_log->enrollment?->section?->name ?? '-' }}</td>
+                <td><span class="badge bg-light text-dark">{{ $attendance_log->scan_type }}</span></td>
+                <td>{{ $attendance_log->session_type ?? '-' }}</td>
+                <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
+                <td>{{ $flagTypes !== '' ? $flagTypes : '-' }}</td>
             </tr>
-        </thead>
-        <tbody>
-            @forelse ($attendance_logs as $attendance_log)
-                @php
-                    $student = $attendance_log->enrollment?->student;
-                    $flagTypes = $attendance_log->flagged_scans->pluck('flag_type')->filter()->unique()->join(', ');
-                @endphp
-                <tr>
-                    <td>{{ $attendance_log->scan_time?->format('Y-m-d') ?? '-' }}</td>
-                    <td>{{ $student?->student_number ?? '-' }}</td>
-                    <td>{{ trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-' }}</td>
-                    <td>{{ $attendance_log->enrollment?->grade_level ?? '-' }}</td>
-                    <td>{{ $attendance_log->enrollment?->section ?? '-' }}</td>
-                    <td><span class="badge bg-light text-dark">{{ $attendance_log->scan_type }}</span></td>
-                    <td>{{ $attendance_log->session_type ?? '-' }}</td>
-                    <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
-                    <td>{{ $flagTypes !== '' ? $flagTypes : '-' }}</td>
-                </tr>
-            @empty
-                <tr>
-                        <td colspan="9" class="text-center text-muted py-5">
-                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
-                                <p class="mb-0">No gate scan logs found for the selected criteria</p>
-                            </div>
-                        </td>
-                    </tr>
-            @endforelse
-        </tbody>
-    </x-ui.table>
+        @empty
+            <tr>
+                <td colspan="7" class="text-center text-muted py-5">
+                    <div class="d-flex flex-column align-items-center justify-content-center">
+                        <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
+                        <p class="mb-0">No gate scan logs found for the selected criteria</p>
+                    </div>
+                </td>
+            </tr>
+        @endforelse
+    </tbody>
+</x-ui.table>
 
-    <div class="d-flex justify-content-end mx-3 mt-3 mb-3">
+    <div class=" mx-3 mt-3 mb-3">
         {{ $attendance_logs->links() }}
     </div>
 

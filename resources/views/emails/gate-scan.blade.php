@@ -9,7 +9,7 @@
                 
                 <!-- Main Container -->
                 <div style="max-width: 500px; background: #ffffff; border: 1px solid #dee2e6; text-align: left;">
-                    
+                    d
                     <!-- Header -->
                     <div style="padding: 20px 25px 0 25px;">
                         <h2 style="color: #0d6efd; margin: 0; font-size: 20px; font-weight: bold;">

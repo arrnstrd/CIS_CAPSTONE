@@ -3,6 +3,9 @@
         Student List
     </x-slot>
 
+    <x-slot name="subtitle">
+        Manage and view student records such as profiles and enrollments.
+    </x-slot>
 
     <x-slot name="pageName">
         Student
@@ -12,7 +15,7 @@
 
 
     <div class="col mb-3 mx-2">
-        <div class="bg-white rounded p-4 shadow-sm">
+        <div class="bg-white rounded p-4 border">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="fw-semibold text-dark m-0 fs-5">Student Records</h3>
                 <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
@@ -63,18 +66,29 @@
 
             <thead class="text-uppercase">
                 <tr>
-                    <th style="width: 10%">Student No.</th>
-                    <th style="width: 11%">Full Name</th>
-
-                    <th style="width: 13%">LRN</th>
-                    <th style="width: 14%">Sex</th>
-                    <th style="width: 10%">Status</th>
-                    <th style="width: 8%">Actions</th>
+                    <th style="width: 10%">
+                        <span class="fas fa-id-card me-1"></span> Student No.
+                    </th>
+                    <th style="width: 11%">
+                        <span class="fas fa-user me-1"></span> Full Name
+                    </th>
+                    <th style="width: 13%">
+                        <span class="fas fa-hashtag me-1"></span> LRN
+                    </th>
+                    <th style="width: 14%">
+                        <span class="fas fa-venus-mars me-1"></span> Sex
+                    </th>
+                    <th style="width: 10%">
+                        <span class="fas fa-circle me-1"></span> Status
+                    </th>
+                    <th style="width: 8%">
+                        <span class="fas fa-sliders-h me-1"></span> Actions
+                    </th>
                 </tr>
             </thead>
-            @forelse($students as $student)
+           
                 <tbody>
-
+                     @forelse($students as $student)
                     <tr>
                         <td>{{  $student->student_number  }} </td>
                         <td> {{  $student->last_name }},
@@ -92,21 +106,17 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item"
-                                            href="{{ url('/student-profile/' . $student->id) }}">View</a>
+                                        <a class="dropdown-item" href="{{ url('/student-profile/' . $student->id) }}"
+                                            target="_blank">View</a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="#editStudentModal" data-bs-toggle="modal"
-                                            data-bs-target="#editStudentModal"
-                                            data-id="{{ $student->id }}"
-                                            data-lrn="{{ $student->lrn }}" 
-                                            data-first_name="{{ $student->first_name }}"
+                                            data-bs-target="#editStudentModal" data-id="{{ $student->id }}"
+                                            data-lrn="{{ $student->lrn }}" data-first_name="{{ $student->first_name }}"
                                             data-last_name="{{ $student->last_name }}"
-                                            data-middle_name="{{ $student->middle_name }}" 
-                                            data-sex="{{ $student->sex }}"
+                                            data-middle_name="{{ $student->middle_name }}" data-sex="{{ $student->sex }}"
                                             data-address="{{ $student->address }}"
-                                            data-birthdate="{{ $student->birthdate }}" 
-                                            data-status="{{ $student->status }}"
+                                            data-birthdate="{{ $student->birthdate }}" data-status="{{ $student->status }}"
                                             data-name="{{ $student->guardian->name ?? '' }}"
                                             data-relationship="{{ $student->guardian->relationship ?? '' }}"
                                             data-email="{{ $student->guardian->email ?? '' }}">
@@ -117,7 +127,8 @@
                                         <hr class="dropdown-divider">
                                     </li>
                                     <li>
-                                        <form action="" method="POST" onsubmit="return confirm('Are you sure?');">
+                                        <form action="{{ route('students.destroy', $student->id) }}" method="POST"
+                                            data-ajax-delete="student">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item text-danger">Delete</button>
@@ -128,13 +139,20 @@
                         </td>
 
                     </tr>
-                </tbody>
-
 
             @empty
-                <p class="small text-muted"> No student on the records yet</p>
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                <i class="fas fa-folder-open fa-2x mb-3 opacity-50"></i>
+                                <p class="mb-0">No student found for the selected criteria</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
 
-            @endforelse
+
 
         </x-slot>
 
@@ -156,7 +174,7 @@
             Add Student
         </x-slot>
 
-        <form action=" {{ route('student.store') }}" method="POST">
+        <form id="addStudentForm" action="{{ route('student.store') }}" method="POST">
             @csrf
 
             <div class="row">

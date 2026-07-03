@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Scanner;
 
+use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\EmailLog;
 use App\Models\Enrollment;
@@ -45,6 +46,12 @@ class ScanController extends Controller
             return response()->json(['message' => 'No active enrollment'], 404);
         }
 
+        $enrollment->loadMissing('section');
+
+        if (!$enrollment->section) {
+            return response()->json(['message' => 'Enrollment section not found'], 404);
+        }
+
         // Current time
         $now = now();
         $currentTime = $now->format('H:i');
@@ -52,7 +59,7 @@ class ScanController extends Controller
         // Resolve schedule
         $resolver = new ScheduleResolver();
         $activeSchedule = $resolver->resolve(
-            $enrollment->level,
+            $enrollment->section->level,
             $enrollment->session_type,
             $currentTime
         );
@@ -245,7 +252,7 @@ class ScanController extends Controller
                     'id' => $student->id,
                     'name' => "{$student->first_name} {$student->last_name}",
                     'student_number' => $student->student_number,
-                    'level' => $enrollment->level,
+                    'level' => $activeSchedule->level,
                     'session_type' => $enrollment->session_type,
                 ],
                 'attendance_log' => [

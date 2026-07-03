@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 use App\Models\Student; 
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class QrCodeController extends Controller
@@ -33,6 +32,6 @@ class QrCodeController extends Controller
         ]);
 
         // 4. Download PDF
-        return $pdf->download('student-qr-' . $student->student_number . '.pdf');
+        return $pdf->stream('student-qr-' . $student->student_number . '.pdf');
     }
 }

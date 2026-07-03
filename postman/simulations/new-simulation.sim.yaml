@@ -1,4 +1,6 @@
+id: 019eabc7-bdd0-7068-abc2-5c4c6a9acb0b
 simulation: new-simulation
+routing: header
 mocks:
   - file: ../mocks/mock-1.js
     scenarios:
