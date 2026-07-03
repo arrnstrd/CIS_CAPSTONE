@@ -35,9 +35,9 @@
                     <td>{{ $enrollment->student->first_name ?? ''}}
                         {{ $enrollment->student->last_name ?? '' }}
                     </td>
-                    <td> {{ $enrollment->section->level }}</td>
-                    <td>{{$enrollment->section->grade_level  }}</td>
-                    <td> {{ $enrollment->section->name }}</td>
+                    <td> {{ $enrollment->section?->level ?? '-' }}</td>
+                    <td>{{ $enrollment->section?->grade_level ?? '-' }}</td>
+                    <td> {{ $enrollment->section?->name ?? '-' }}</td>
                     <td> {{ $enrollment->status }}</td>
                     <td class="whitespace-nowrap">
                         <div class="dropdown position-static">
@@ -52,9 +52,12 @@
                                         data-student-name="{{ $enrollment->student->first_name ?? '' }} {{ $enrollment->student->last_name ?? '' }}"
                                         data-student-lrn="{{ $enrollment->student->lrn ?? '' }}"
                                         data-school-year="{{ $enrollment->schoolYear->school_year ?? '' }}"
-                                        data-level="{{ $enrollment->level }}"
-                                        data-grade-level="{{ $enrollment->grade_level }}"
-                                        data-section="{{ $enrollment->section }}"
+                                        data-section-id="{{ $enrollment->section_id }}"
+                                        data-section-name="{{ $enrollment->section?->name ?? '-' }}"
+                                        data-section-grade-level="{{ $enrollment->section?->grade_level ?? '-' }}"
+                                        data-section-level="{{ $enrollment->section?->level ?? '-' }}"
+                                        data-section-adviser="{{ $enrollment->section?->advisor?->full_name ?? '-' }}"
+                                        data-section-capacity="{{ $enrollment->section?->capacity ?? '-' }}"
                                         data-session-type="{{ $enrollment->session_type }}"
                                         data-status="{{ $enrollment->status }}"
                                         data-created-at="{{ $enrollment->created_at?->format('Y-m-d') ?? '' }}">View
@@ -65,9 +68,7 @@
                                         data-bs-target="#editEnrollmentModal" data-id="{{ $enrollment->id }}"
                                         data-student-name="{{ $enrollment->student->first_name }} {{ $enrollment->student->last_name ?? 'N/A'}}"
                                         data-student-lrn="{{ $enrollment->student->lrn }}"
-                                        data-level="{{ $enrollment->level }}"
-                                        data-grade-level="{{ $enrollment->grade_level }}"
-                                        data-section="{{ $enrollment->section }}"
+                                        data-section-id="{{ $enrollment->section_id }}"
                                         data-session-type="{{ $enrollment->session_type }}"
                                         data-status="{{ $enrollment->status }}"
                                         data-update-url="{{ route('enrollment.update', $enrollment->id) }}">
@@ -150,34 +151,26 @@
             <div class="invalid-feedback">Please select a student from the list.</div>
         </div>
 
-        {{-- School Year & Level --}}
-        <div class="row">
-
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Level</label>
-                <select class="form-select" name="level" required>
-                    <option value="" disabled selected>Select level</option>
-                    <option value="elementary">Elementary</option>
-                    <option value="hs">High School</option>
-                    <option value="shs">Senior High School</option>
-                </select>
-            </div>
-        </div>
-
-        {{-- Grade Level & Section --}}
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">Grade Level</label>
-                <select class="form-select" name="grade_level" required>
-                    <option value="" disabled selected>Select grade</option>
-                    @foreach(['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'] as $grade)
-                        <option value="{{ $grade }}">{{ $grade }}</option>
+                <select class="form-select" id="add_grade_level">
+                    <option value="" selected disabled>Select grade level</option>
+                    @foreach (range(1, 12) as $gradeLevel)
+                        <option value="{{ $gradeLevel }}">Grade {{ $gradeLevel }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-md-6 mb-3">
                 <label class="form-label">Section</label>
-                <input type="text" class="form-control" name="section" placeholder="e.g. Rizal, Section A" required />
+                <select class="form-select" name="section_id" id="add_section_id" required disabled>
+                    <option value="" disabled selected>Select section</option>
+                    @foreach ($activeSections as $section)
+                        <option value="{{ $section->id }}" data-grade-level="{{ $section->grade_level }}">
+                            Grade {{ $section->grade_level }} — {{ $section->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
@@ -237,33 +230,25 @@
             </div>
         </div>
         <div class="row">
-
-            <div class="col-md-6 mb-3">
-                <label class="form-label">Level</label>
-                <select class="form-select" name="level" id="edit_level" required>
-                    <option value="" disabled selected>Select level</option>
-                    <option value="elementary">Elementary</option>
-                    <option value="hs">High School</option>
-                    <option value="shs">Senior High School</option>
-                </select>
-            </div>
-        </div>
-
-        {{-- Grade Level & Section --}}
-        <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">Grade Level</label>
-                <select class="form-select" name="grade_level" id="edit_grade_level" required>
-                    <option value="" disabled selected>Select grade</option>
-                    @foreach(['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'] as $grade)
-                        <option value="{{ $grade }}">{{ $grade }}</option>
+                <select class="form-select" id="edit_grade_level">
+                    <option value="" selected disabled>Select grade level</option>
+                    @foreach (range(1, 12) as $gradeLevel)
+                        <option value="{{ $gradeLevel }}">Grade {{ $gradeLevel }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-md-6 mb-3">
                 <label class="form-label">Section</label>
-                <input type="text" class="form-control" name="section" placeholder="e.g. Rizal, Section A"
-                    id="edit_section" required />
+                <select class="form-select" name="section_id" id="edit_section_id" required disabled>
+                    <option value="" disabled selected>Select section</option>
+                    @foreach ($activeSections as $section)
+                        <option value="{{ $section->id }}" data-grade-level="{{ $section->grade_level }}">
+                            Grade {{ $section->grade_level }} — {{ $section->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
         </div>
 
@@ -337,6 +322,13 @@
         </div>
         <div class="col-6">
             <div class="bg-light rounded-3 px-3 py-2">
+                <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Section
+                    name</p>
+                <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewSectionName">-</p>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="bg-light rounded-3 px-3 py-2">
                 <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Grade
                     level</p>
                 <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewGradeLevel">-</p>
@@ -344,16 +336,20 @@
         </div>
         <div class="col-6">
             <div class="bg-light rounded-3 px-3 py-2">
-                <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Section
-                </p>
-                <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewSection">-</p>
+                <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Level</p>
+                <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewLevel">-</p>
             </div>
         </div>
         <div class="col-6">
             <div class="bg-light rounded-3 px-3 py-2">
-                <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;"> Class
-                    Adviser</p>
-                <p class="mb-0 fw-medium" style="font-size: 14px;">Adviser here</p>
+                <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Adviser</p>
+                <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewAdviser">-</p>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="bg-light rounded-3 px-3 py-2">
+                <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Capacity</p>
+                <p class="mb-0 fw-medium" style="font-size: 14px;" id="viewCapacity">-</p>
             </div>
         </div>
     </div>
@@ -367,11 +363,6 @@
             <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;"> Date Enrolled
             </p>
             <p class="mb-0" style="font-size: 14px;" id="viewCreatedAt">-</p>
-        </div>
-        <div class="col-6">
-            <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Department Level
-            </p>
-            <p class="mb-0" style="font-size: 14px;" id="viewLevel">-</p>
         </div>
         <div class="col-6">
             <p class="text-uppercase text-muted mb-1" style="font-size: 10px; letter-spacing: 0.06em;">Enrolled by

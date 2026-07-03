@@ -19,7 +19,7 @@ class ScheduleConfigController extends Controller
     {
         $validatedData = $request->validate([
             'level' => ['required', 'in:elementary,hs,shs'],
-            'session_type' => ['required', 'in:morning,afternoon,whole_day '],
+            'session_type' => ['required', 'in:morning,afternoon,whole_day'],
             'in_start' => ['required', 'date_format:H:i'],
             'in_end' => ['required', 'date_format:H:i', 'after:in_start'],
             'late_threshold' => ['required', 'date_format:H:i'],
@@ -50,7 +50,7 @@ class ScheduleConfigController extends Controller
 
         $validatedData = $request->validate([
             'level' => ['required', 'in:elementary,hs,shs'],
-            'session_type' => ['required', 'in:morning,afternoon', 'whole_day'],
+            'session_type' => ['required', 'in:morning,afternoon,whole_day'],
             'in_start' => ['required', 'date_format:H:i'],
             'in_end' => ['required', 'date_format:H:i', 'after:in_start'],
             'late_threshold' => ['required', 'date_format:H:i'],
@@ -58,8 +58,8 @@ class ScheduleConfigController extends Controller
             'out_end' => ['required', 'date_format:H:i', 'after:out_start'],
         ]);
 
-        $exists = ScheduleConfig::where('level', $request->level)
-            ->where('session_type', $request->session_type)
+        $exists = ScheduleConfig::where('level', $validatedData['level'])
+            ->where('session_type', $validatedData['session_type'])
             ->where('id', '!=', $id)
             ->first();
 

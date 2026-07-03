@@ -102,7 +102,8 @@ Route::patch('/sections/{section}/restore', [SectionController::class, 'restore'
 // schedule configuration
 Route::get('/schedule-configuration', [ScheduleConfigController::class, 'index']);
 Route::post('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.store');
-Route::put('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.update');
+Route::put('/schedule-configuration/{id}', [ScheduleConfigController::class, 'update'])->name('schedconfig.update');
+Route::delete('/schedule-configuration/{id}', [ScheduleConfigController::class, 'destroy'])->name('schedconfig.destroy');
 
 // qr generation
 Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);

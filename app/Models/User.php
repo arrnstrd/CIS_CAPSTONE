@@ -60,6 +60,14 @@ class User extends Authenticatable
         return $this->hasOne(Teacher::class);
     }
 
+
+
+    // for future expansion on scanner operator
+    // public function scannerOperator()
+    // {
+    //     return $this->hasOne(ScannerOperator::class);
+    // }
+
     /*
     |--------------------------------------------------------------------------
     | Model Events

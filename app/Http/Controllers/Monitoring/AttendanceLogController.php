@@ -23,6 +23,7 @@ class AttendanceLogController extends Controller
 
         $attendanceLogsQuery = AttendanceLog::with([
             'enrollment.student',
+            'enrollment.section',
             'flagged_scans'
         ]);
 

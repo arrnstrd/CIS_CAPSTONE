@@ -34,6 +34,11 @@ class EnrollmentController extends Controller
         $query = $request->input('query');
         $grade_level = $request->input('grade_level');
         $activeSchoolYear = SchoolYear::query()->where('is_active', true)->first();
+        $activeSections = Section::with('advisor')
+            ->where('status', 'active')
+            ->orderBy('grade_level')
+            ->orderBy('name')
+            ->get();
 
         $school_years = SchoolYear::orderBy('school_year', 'desc')
             ->get(['id', 'school_year']);
@@ -49,10 +54,10 @@ class EnrollmentController extends Controller
             ];
             $studentWithoutEnrollment = 0;
 
-            return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years', 'statusCounts', 'studentWithoutEnrollment', 'notEnrolledStudents', 'activeSchoolYear'));
+            return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years', 'statusCounts', 'studentWithoutEnrollment', 'notEnrolledStudents', 'activeSchoolYear', 'activeSections'));
         }
 
-        $enrollments = Enrollment::with(['student', 'schoolYear', 'section'])
+        $enrollments = Enrollment::with(['student', 'schoolYear', 'section.advisor'])
             ->where('school_year_id', $activeSchoolYear->id)
             ->when($query, function ($q) use ($query) {
                 $q->whereHas('student', function ($q) use ($query) {
@@ -62,7 +67,9 @@ class EnrollmentController extends Controller
                 });
             })
             ->when($grade_level && $grade_level !== 'all', function ($q) use ($grade_level) {
-                $q->where('grade_level', $grade_level);
+                $q->whereHas('section', function ($sectionQuery) use ($grade_level) {
+                    $sectionQuery->where('grade_level', $grade_level);
+                });
             })
             ->orderBy('student_id')
             ->paginate(25)
@@ -78,7 +85,7 @@ class EnrollmentController extends Controller
             ->paginate(10)
             ->withQueryString();
             
-        return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years', 'statusCounts', 'studentWithoutEnrollment', 'notEnrolledStudents', 'activeSchoolYear'));
+        return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years', 'statusCounts', 'studentWithoutEnrollment', 'notEnrolledStudents', 'activeSchoolYear', 'activeSections'));
     }
 
 

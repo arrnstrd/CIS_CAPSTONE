@@ -176,10 +176,9 @@
                     <span class="fas fa-user me-1"></span> Student Name
                 </th>
                 <th>
-                    <span class="fas fa-chart-simple me-1"></span> Grade 
-                </th>
-                <th>
-                    <span class="fas fa-users me-1"></span> Section
+                    <span class="fas fa-chart-simple me-1"></span> Grade &
+                
+                   Section
                 </th>
                 <th>
                     <span class="fas fa-qrcode me-1"></span> Scan Type
@@ -204,8 +203,11 @@
                 <tr>
                     <td>{{ $attendance_log->scan_time?->format('Y-m-d') ?? '-' }}</td>
                     <td>{{ trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-' }}</td>
-                    <td>{{ $attendance_log->enrollment?->grade_level ?? '-' }}</td>
-                    <td>{{ $attendance_log->enrollment?->section ?? '-' }}</td>
+                    <td>
+                        {{ $attendance_log->enrollment?->section->grade_level?? '-' }}  &nbsp;
+                        {{ $attendance_log->enrollment?->section?->name ?? '-' }}
+                    </td>
+
                     <td><span class="badge bg-light text-dark">{{ $attendance_log->scan_type }}</span></td>
                     <td>{{ $attendance_log->session_type ?? '-' }}</td>
                     <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
@@ -213,7 +215,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center text-muted py-5">
+                    <td colspan="7" class="text-center text-muted py-5">
                         <div class="d-flex flex-column align-items-center justify-content-center">
                             <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
                             <p class="mb-0">No gate scan logs found for the selected criteria</p>
