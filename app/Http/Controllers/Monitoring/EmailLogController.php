@@ -82,6 +82,9 @@ class EmailLogController extends Controller
                 case 'yesterday':
                     return $q->yesterdayOnly();
 
+                case 'week':
+                    return $q->thisWeekOnly();
+
                 case 'last_7_days':
                     return $q->last7Days();
 

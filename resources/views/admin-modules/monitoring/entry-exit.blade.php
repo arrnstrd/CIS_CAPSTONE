@@ -27,14 +27,14 @@
         ];
 
 
-        $overviewCards = [
-            ['label' => 'Total logs', 'value' => $statusCounts['TOTAL'] ?? 0, 'icon' => 'fa-solid fa-clipboard-list', 'variant' => 'dark'],
-            ['label' => 'Entry scans', 'value' => $statusCounts['IN'] ?? 0, 'icon' => 'fa-solid fa-right-to-bracket', 'variant' => 'success'],
-            ['label' => 'Exit scans', 'value' => $statusCounts['OUT'] ?? 0, 'icon' => 'fa-solid fa-right-from-bracket', 'variant' => 'primary'],
-            ['label' => 'Re-entry', 'value' => $statusCounts['RE_ENTRY'] ?? 0, 'icon' => 'fa-solid fa-rotate-right', 'variant' => 'info'],
-            ['label' => 'Re-exit', 'value' => $statusCounts['RE_EXIT'] ?? 0, 'icon' => 'fa-solid fa-rotate-left', 'variant' => 'warning'],
-            ['label' => 'Flagged scans', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger'],
-        ];
+       $overviewCards = [
+    ['label' => 'Total logs', 'value' => $statusCounts['TOTAL'] ?? 0, 'icon' => 'fa-solid fa-clipboard-list', 'variant' => 'dark', 'textVariant' => 'dark'],
+    ['label' => 'Entry scans', 'value' => $statusCounts['IN'] ?? 0, 'icon' => 'fa-solid fa-right-to-bracket', 'variant' => 'success', 'textVariant' => 'success'],
+    ['label' => 'Exit scans', 'value' => $statusCounts['OUT'] ?? 0, 'icon' => 'fa-solid fa-right-from-bracket', 'variant' => 'primary', 'textVariant' => 'primary'],
+    ['label' => 'Re-entry', 'value' => $statusCounts['RE_ENTRY'] ?? 0, 'icon' => 'fa-solid fa-rotate-right', 'variant' => 'info', 'textVariant' => 'info'],
+    ['label' => 'Re-exit', 'value' => $statusCounts['RE_EXIT'] ?? 0, 'icon' => 'fa-solid fa-rotate-left', 'variant' => 'warning', 'textVariant' => 'warning-emphasis'],
+    ['label' => 'Flagged scans', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
+];
     @endphp
 
     <div class="row g-3 mb-4 px-3">
@@ -48,7 +48,7 @@
                         </div>
                         <div>
                             <div class="text-uppercase text-muted small fw-bold">{{ $card['label'] }}</div>
-                            <div class="fs-3 fw-bold lh-1">{{ $card['value'] }}</div>
+                            <div class="fs-3 fw-bold lh-1 text-{{ $card['textVariant'] }}">{{ $card['value'] }}</div>
                         </div>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
                             'month' => 'This Month',
                             'custom' => 'Custom'
                         ];
-                        $currentFilter = request('date_filter', 'today');
+                        $currentFilter = $dateFilter ?? request('date_filter', 'today');
                     @endphp
 
                     {{-- Date Filter Pills --}}
@@ -165,77 +165,79 @@
     </div>
 
 
-<x-ui.table>
-    <thead class="text-uppercase small">
-        <tr>
-            <th style="width: 10%">
-                <span class="fas fa-calendar me-1"></span> Date
-            </th>
-            <th style="width: 18%">
-                <span class="fas fa-user me-1"></span> Student Name
-            </th>
-            <th style="width: 10%">
-                <span class="fas fa-chart-simple me-1"></span> Grade 
-            </th>
-            <th style="width: 10%">
-                Section
-            </th>
-            <th style="width: 12%">
-                <span class="fas fa-qrcode me-1"></span> Scan Type
-            </th>
-            <th style="width: 10%">
-                <span class="fas fa-clock me-1"></span> Session
-            </th>
-            <th style="width: 12%">
-                <span class="fas fa-hourglass me-1"></span> Gate Time
-            </th>
-            <th style="width: 7%">
-                <span class="fas fa-flag me-1"></span> Flag Type
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse ($attendance_logs as $attendance_log)
-            @php
-                $student = $attendance_log->enrollment?->student;
-                $flagTypes = $attendance_log->flagged_scans->pluck('flag_type')->filter()->unique()->join(', ');
-            @endphp
+    <x-ui.table>
+        <thead class="text-uppercase small">
             <tr>
-                <td>{{ $attendance_log->scan_time?->format('Y-m-d') ?? '-' }}</td>
-                <td class="fw-semibold">{{ trim(($student?->first_name ?? '') . ' ' .  ($student?->last_name ?? '')) ?: '-' }}</td>
-                <td>
-                    Grade {{ $attendance_log->enrollment?->section->grade_level ?? '-' }} 
-                    
-                </td>
-                <td>{{ $attendance_log->enrollment?->section?->name ?? '-' }}</td>
-                <td>
-                    @php
-                    $scanTypeColors = [
-                        'IN' => 'success',
-                        'OUT' => 'primary',
-                        'RE_ENTRY' => 'info',
-                        'RE_EXIT' => 'warning'
-                    ];
-                    $scanTypeColors =$scanTypeColors[$attendance_log->scan_type] ?? 'light';
-                    @endphp
-                    <span class="badge bg-{{$scanTypeColors}} bg-opacity-25 border border-{{ $scanTypeColors }}  border-opacity-50 text-dark">{{ $attendance_log->scan_type }}</span>
-                </td>
-                <td>{{ $attendance_log->session_type ?? '-' }}</td>
-                <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
-                <td class="fw-semibold text-danger">{{ $flagTypes !== '' ? $flagTypes : '-' }}</td>
+                <th style="width: 10%">
+                    <span class="fas fa-calendar me-1"></span> Date
+                </th>
+                <th style="width: 18%">
+                    <span class="fas fa-user me-1"></span> Student Name
+                </th>
+                <th style="width: 10%">
+                    <span class="fas fa-chart-simple me-1"></span> Grade
+                </th>
+                <th style="width: 10%">
+                    Section
+                </th>
+                <th style="width: 12%">
+                    <span class="fas fa-qrcode me-1"></span> Scan Type
+                </th>
+                <th style="width: 10%">
+                    <span class="fas fa-clock me-1"></span> Session
+                </th>
+                <th style="width: 12%">
+                    <span class="fas fa-hourglass me-1"></span> Gate Time
+                </th>
+                <th style="width: 7%">
+                    <span class="fas fa-flag me-1"></span> Flag Type
+                </th>
             </tr>
-        @empty
-            <tr>
-                <td colspan="7" class="text-center text-muted py-5">
-                    <div class="d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
-                        <p class="mb-0">No gate scan logs found for the selected criteria</p>
-                    </div>
-                </td>
-            </tr>
-        @endforelse
-    </tbody>
-</x-ui.table>
+        </thead>
+        <tbody>
+            @forelse ($attendance_logs as $attendance_log)
+                @php
+                    $student = $attendance_log->enrollment?->student;
+                    $flagTypes = $attendance_log->flagged_scans->pluck('flag_type')->filter()->unique()->join(', ');
+                @endphp
+                <tr>
+                    <td>{{ $attendance_log->scan_time?->format('Y-m-d') ?? '-' }}</td>
+                    <td class="fw-semibold">
+                        {{ trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-' }}</td>
+                    <td>
+                        Grade {{ $attendance_log->enrollment?->section->grade_level ?? '-' }}
+
+                    </td>
+                    <td>{{ $attendance_log->enrollment?->section?->name ?? '-' }}</td>
+                    <td>
+                        @php
+                            $scanTypeColors = [
+                                'IN' => 'success',
+                                'OUT' => 'primary',
+                                'RE_ENTRY' => 'info',
+                                'RE_EXIT' => 'warning'
+                            ];
+                            $scanTypeColors = $scanTypeColors[$attendance_log->scan_type] ?? 'light';
+                        @endphp
+                        <span
+                            class="badge bg-{{$scanTypeColors}} bg-opacity-25 border border-{{ $scanTypeColors }}  border-opacity-50 text-dark">{{ $attendance_log->scan_type }}</span>
+                    </td>
+                    <td>{{ $attendance_log->session_type ?? '-' }}</td>
+                    <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
+                    <td class="fw-semibold text-danger">{{ $flagTypes !== '' ? $flagTypes : '-' }}</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-5">
+                        <div class="d-flex flex-column align-items-center justify-content-center">
+                            <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
+                            <p class="mb-0">No gate scan logs found for the selected criteria</p>
+                        </div>
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </x-ui.table>
 
     <div class=" mx-3 mt-3 mb-3">
         {{ $attendance_logs->links() }}

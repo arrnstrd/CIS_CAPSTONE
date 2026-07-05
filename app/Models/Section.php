@@ -32,6 +32,19 @@ class Section extends Model
         return $this->hasMany(Enrollment::class);
     }
 
+
+        public function students()
+    {
+        return $this->hasManyThrough(
+            Student::class,
+            Enrollment::class,
+            'section_id', // Foreign key on enrollments
+            'id',         // Foreign key on students
+            'id',         // Local key on sections
+            'student_id'  // Local key on enrollments
+        );
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Query Scopes
@@ -66,4 +79,8 @@ class Section extends Model
             }
         );
     }
+
+
+
+
 }
