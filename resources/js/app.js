@@ -11,6 +11,23 @@ import "./student.js";
 import "./section.js";
 import "./schedule-config.js";
 import "./teacher.js";
+
+
+// teacher modules
+import "./teacherSide/sidebar.js"
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting

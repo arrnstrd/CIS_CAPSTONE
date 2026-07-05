@@ -105,15 +105,38 @@ Route::post('/schedule-configuration', [ScheduleConfigController::class, 'store'
 Route::put('/schedule-configuration/{id}', [ScheduleConfigController::class, 'update'])->name('schedconfig.update');
 Route::delete('/schedule-configuration/{id}', [ScheduleConfigController::class, 'destroy'])->name('schedconfig.destroy');
 
-// qr generation
-Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
+//==================================================
+// scanner
+//===========================================
 Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
 
+
+
+// qr generation ==============================================================
+// Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
+Route::get('/students/{id}/qr', [QrCodeController::class, 'show'])->name('students.qr.show');
+
+
+//download per student
+Route::get( '/students/{id}/qr/download', [QrCodeController::class, 'download'])->name('students.qr.download');
+
+//show for UI
+Route::get(
+    '/qr-generation',
+    [QrCodeController::class, 'index']
+)->name('qr.index');
+
+Route::get(
+    '/sections/{section}/qr/download',
+    [QrCodeController::class, 'downloadSection']
+)->name('sections.qr.download');
 
 // ============================================================
 // SETTINGS
 // ============================================================
-
+Route::get('/settings', function(){
+    return view('admin-modules.utilities.settings');
+});
 // school year
 // Route::get('/school-year', [SchoolYearController::class, 'index'])->name('schoolyear.index');  // TODO
 
@@ -164,3 +187,17 @@ Route::get('/scanner', fn() => view('scanner.index'));
 Route::get('/grades', function(){
     return view('admin-modules.management.grade.grades');
 });
+
+
+
+
+
+
+
+
+
+
+//==============================================
+//            TEACHER SIDE
+//==============================================
+

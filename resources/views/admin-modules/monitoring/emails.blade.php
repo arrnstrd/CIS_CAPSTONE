@@ -85,7 +85,7 @@
                                 'month' => 'This Month',
                                 'custom' => 'Custom'
                             ];
-                            $currentFilter = request('date_filter', 'today');
+                            $currentFilter = $dateFilter ?? request('date_filter', 'today');
                         @endphp
 
                         {{-- Date Filter Pills --}}

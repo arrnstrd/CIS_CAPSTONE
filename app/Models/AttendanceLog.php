@@ -88,6 +88,14 @@ class AttendanceLog extends Model
         );
     }
 
+    public function scopeThisWeekOnly(Builder $query)
+    {
+        return $query->filterByDateRange(
+            Carbon::now()->startOfWeek(),
+            Carbon::now()->endOfWeek()
+        );
+    }
+
     public function scopeFilterByScanType(
         Builder $query,
         $scanType

@@ -17,9 +17,10 @@ class SectionController extends Controller
             ->filterGradeLevel($request->grade_level)
             ->filterStatus($request->status)
             ->search($request->search)
+            ->withCount('students')
             ->orderBy('grade_level')
             ->orderBy('name')
-            ->paginate(25)
+            ->paginate(10)
             ->withQueryString();
 
         $teachers = Teacher::with('user')

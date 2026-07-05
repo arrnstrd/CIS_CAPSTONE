@@ -92,6 +92,14 @@ class EmailLog extends Model
         return $query->filterByDateRange($startDate, Carbon::today());
     }
 
+    public function scopeThisWeekOnly(Builder $query)
+    {
+        return $query->filterByDateRange(
+            Carbon::now()->startOfWeek(),
+            Carbon::now()->endOfWeek()
+        );
+    }
+
     /**
      * Scope: Filter logs by status
      * @param Builder $query

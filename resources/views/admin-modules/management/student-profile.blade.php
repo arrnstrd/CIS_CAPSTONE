@@ -4,12 +4,8 @@
         {{ $student->middle_name ? $student->middle_name . ' ' : '' }}{{ $student->last_name }}
     </x-slot>
 
-    <x-slot name="pageName">
-        Student Profile
-    </x-slot>
-    <x-slot name="subtitle">
-
-    </x-slot>
+    <x-slot name="pageName">Student Profile</x-slot>
+    <x-slot name="subtitle"></x-slot>
 
     <div class="container-fluid pb-4">
 
@@ -47,35 +43,23 @@
                 </div>
 
                 {{-- Right: Quick stats --}}
-                <div class="d-flex align-items-center gap-2 flex-wrap  ">
-
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     <div class="border rounded-3 px-3 py-2 text-center" style="min-width: 90px;">
-                        <p class="mb-0 fw-bold text-primary">
-                            {{ $currentEnrollment?->schoolYear?->school_year ?? '—' }}
+                        <p class="mb-0 fw-bold text-primary">{{ $currentEnrollment?->schoolYear?->school_year ?? '—' }}
                         </p>
-                        <small class="text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">
-                            School Year
-                        </small>
+                        <small class="text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">School
+                            Year</small>
                     </div>
-
                     <div class="border rounded-3 px-3 py-2 text-center" style="min-width: 90px;">
-                        <p class="mb-0 fw-bold">
-                            {{ $currentEnrollment?->section?->grade_level ?? '—' }}
-                        </p>
-                        <small class="text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">
-                            Grade Level
-                        </small>
+                        <p class="mb-0 fw-bold">{{ $currentEnrollment?->section?->grade_level ?? '—' }}</p>
+                        <small class="text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Grade
+                            Level</small>
                     </div>
-
                     <div class="border rounded-3 px-3 py-2 text-center" style="min-width: 90px;">
-                        <p class="mb-0 fw-bold">
-                            {{ $currentEnrollment?->section?->name ?? '—' }}
-                        </p>
-                        <small class="text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">
-                            Section
-                        </small>
+                        <p class="mb-0 fw-bold">{{ $currentEnrollment?->section?->name ?? '—' }}</p>
+                        <small class="text-muted text-uppercase"
+                            style="font-size: 10px; letter-spacing: 0.05em;">Section</small>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -111,9 +95,7 @@
                         <div class="col-6">
                             <p class="text-muted mb-1 small text-uppercase fw-semibold"
                                 style="font-size: 10px; letter-spacing: 0.06em;">Birthdate</p>
-                            <p class="mb-0">
-                                {{ \Carbon\Carbon::parse($student->birthdate)->format('M d, Y') }}
-                            </p>
+                            <p class="mb-0">{{ \Carbon\Carbon::parse($student->birthdate)->format('M d, Y') }}</p>
                         </div>
                     </div>
 
@@ -160,150 +142,50 @@
 
                     {{-- Tabs --}}
                     <ul class="nav nav-tabs border-bottom mb-0" id="studentTabs" role="tablist">
+
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active px-3 py-2" id="academic-tab" data-bs-toggle="tab"
-                                data-bs-target="#academic" type="button" role="tab">
-                                <i class="fa-solid fa-graduation-cap me-2"></i> Academic
+                                data-bs-target="#academic" type="button">
+
+                                <i class="fa-solid fa-graduation-cap me-2"></i>
+                                Academic
                             </button>
                         </li>
+
                         <li class="nav-item" role="presentation">
                             <button class="nav-link px-3 py-2" id="attendance-tab" data-bs-toggle="tab"
-                                data-bs-target="#attendance" type="button" role="tab">
-                                <i class="fa-solid fa-calendar-check me-2"></i> Attendance
+                                data-bs-target="#attendance" type="button">
+
+                                <i class="fa-solid fa-calendar-check me-2"></i>
+                                Attendance
                             </button>
                         </li>
+
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link px-3 py-2" id="qr-tab" data-bs-toggle="tab" data-bs-target="#qr"
+                                type="button">
+
+                                <i class="fa-solid fa-qrcode me-2"></i>
+                                QR Code
+                            </button>
+                        </li>
+
                     </ul>
 
                     {{-- Tab Content --}}
                     <div class="tab-content flex-grow-1 overflow-auto pt-4">
 
-                        {{-- ACADEMIC TAB --}}
-                        <div class="tab-pane fade show active" id="academic" role="tabpanel">
+                        <x-student-profile.academic-tab :student="$student" :current-enrollment="$currentEnrollment" />
 
-                            {{-- IDs row --}}
-                            <p class="text-uppercase text-muted fw-semibold mb-2"
-                                style="font-size: 10px; letter-spacing: 0.07em;">
-                                Student IDs
-                            </p>
-                            <div class="row g-3 mb-4">
-                                <div class="col-sm-6">
-                                    <div class="bg-light rounded-3 px-3 py-2">
-                                        <p class="text-muted mb-1 text-uppercase"
-                                            style="font-size: 10px; letter-spacing: 0.06em;">Student number</p>
-                                        <p class="mb-0 fw-medium">{{ $student->student_number }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="bg-light rounded-3 px-3 py-2">
-                                        <p class="text-muted mb-1 text-uppercase"
-                                            style="font-size: 10px; letter-spacing: 0.06em;">LRN</p>
-                                        <p class="mb-0 fw-medium">{{ $student->lrn }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <x-student-profile.attendance-tab :student="$student" />
 
-                            {{-- Enrollment row --}}
-                            <p class="text-uppercase text-muted fw-semibold mb-2"
-                                style="font-size: 10px; letter-spacing: 0.07em;">
-                                Current enrollment
-                            </p>
-                            <div class="row g-3 mb-4">
-                                <div class="col-sm-6">
-                                    <div class="bg-light rounded-3 px-3 py-2">
-                                        <p class="text-muted mb-1 text-uppercase"
-                                            style="font-size: 10px; letter-spacing: 0.06em;">Status</p>
-                                        @if($currentEnrollment)
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                                {{ $currentEnrollment->status ?? '-' }}
-                                            </span>
-                                        @else
-                                            <span
-                                                class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
-                                                No active enrollment
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="bg-light rounded-3 px-3 py-2">
-                                        <p class="text-muted mb-1 text-uppercase"
-                                            style="font-size: 10px; letter-spacing: 0.06em;">School year</p>
-                                        <p class="mb-0 fw-medium">
-                                            {{ $currentEnrollment?->schoolYear?->school_year ?? '—' }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="bg-light rounded-3 px-3 py-2">
-                                        <p class="text-muted mb-1 text-uppercase"
-                                            style="font-size: 10px; letter-spacing: 0.06em;">Session type</p>
-                                        <p class="mb-0 fw-medium">{{ $currentEnrollment?->session_type ?? '—' }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="bg-light rounded-3 px-3 py-2">
-                                        <p class="text-muted mb-1 text-uppercase"
-                                            style="font-size: 10px; letter-spacing: 0.06em;">Adviser</p>
-                                        <p class="mb-0 fw-medium">
-                                            {{ $currentEnrollment?->adviser?->full_name ?? $currentEnrollment?->section?->advisor?->full_name ?? '—' }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="bg-light rounded-3 px-3 py-2">
-                                        <p class="text-muted mb-1 text-uppercase"
-                                            style="font-size: 10px; letter-spacing: 0.06em;">Grade level</p>
-                                        <p class="mb-0 fw-medium">
-                                            {{ $currentEnrollment?->section?->grade_level ?? $currentEnrollment?->grade_level ?? '—' }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="bg-light rounded-3 px-3 py-2">
-                                        <p class="text-muted mb-1 text-uppercase"
-                                            style="font-size: 10px; letter-spacing: 0.06em;">Section</p>
-                                        <p class="mb-0 fw-medium">{{ $currentEnrollment?->section?->name ?? '—' }}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        {{-- ATTENDANCE TAB --}}
-                        <div class="tab-pane fade" id="attendance" role="tabpanel">
-
-                            <p class="text-uppercase text-muted fw-semibold mb-3"
-                                style="font-size: 10px; letter-spacing: 0.07em;">
-                                Attendance Summary
-                            </p>
-
-                            <x-ui.table>
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Time In</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- Loop attendance logs here --}}
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted py-4">
-                                            <i class="fa-regular fa-calendar-xmark me-2"></i>
-                                            No attendance records found.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </x-ui.table>
-
-                        </div>
+                        <x-student-profile.qr-tab :student="$student" :current-enrollment="$currentEnrollment" />
 
                     </div>
+
                 </div>
             </div>
 
         </div>
     </div>
-
-    ```
-
 </x-layouts.admin>

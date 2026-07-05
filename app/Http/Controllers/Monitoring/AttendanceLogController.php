@@ -79,6 +79,9 @@ class AttendanceLogController extends Controller
             case 'yesterday':
                 return $query->yesterdayOnly();
 
+            case 'week':
+                return $query->thisWeekOnly();
+
             case 'last_7_days':
                 return $query->last7Days();
 
