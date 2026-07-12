@@ -8,7 +8,6 @@
     <title> {{$title ?? 'CIS'  }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -16,15 +15,14 @@
 
     <div class="page-wrapper toggled">
 
+        {{-- sidebar --}}
         <x-layouts.admin.sidebar />
 
         <header class="top-nav">
-
             <button id="sidebarToggle" class="btn-sidebar-toggle" title="Toggle Sidebar">
                 <i class="fa fa-bars"></i>
                 <span>Toggle Sidebar</span>
             </button>
-
         </header>
 
 
@@ -44,10 +42,6 @@
                         <i class="fa-regular fa-calendar-check text-primary me-2"></i>
                         <span class="fw-bold small text-uppercase" id="liveDate"> </span>
                     </div>
-
-
-
-
                 </div>
             </div>
 

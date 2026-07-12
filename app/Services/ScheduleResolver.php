@@ -12,6 +12,8 @@ class ScheduleResolver
         string $time
     ): ?ScheduleConfig {
 
+        $level = $this->normalizeLevel($level);
+
         // Normalize current time
         $time = date('H:i', strtotime($time));
 
@@ -34,5 +36,14 @@ class ScheduleResolver
         }
 
         return $schedule;
+    }
+
+    private function normalizeLevel(string $level): string
+    {
+        return match ($level) {
+            'highschool' => 'hs',
+            'senior_high_school' => 'shs',
+            default => $level,
+        };
     }
 }

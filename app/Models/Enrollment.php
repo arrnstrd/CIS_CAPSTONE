@@ -2,32 +2,76 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Student;
 use App\Models\Teacher;
+use Illuminate\Database\Eloquent\Model;
 
 
 class Enrollment extends Model
 {
-    //
 
     protected $fillable = [
         'student_id',
-        'school_year',
-        'level',
-        'grade_level',
-        'section',
+        'section_id',
+        'school_year_id',
         'session_type',
         'status'
     ];
 
     public function student()
     {
-        return $this->belongsTo(Student::class , 'student_id');
+        return $this->belongsTo(Student::class, 'student_id');
     }
 
-    public function adviser(){
-        return $this->belongsTo(Teacher::class , 'adviser_id');
+    public function adviser()
+    {
+        return $this->belongsTo(Teacher::class, 'adviser_id');
+    }
+
+    public function schoolYear()
+    {
+        return $this->belongsTo(SchoolYear::class, 'school_year_id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id');
+    }
+
+    
+
+
+    public static function getEnrollmentStatistics(int $schoolYearId): array
+    {
+        $baseQuery = static::query()->where('school_year_id', $schoolYearId);
+
+        return [
+            'total' => (clone $baseQuery)->count(),
+
+            'elementary' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->whereHas('section', function ($sectionQuery) {
+                        $sectionQuery->where('level', 'elementary');
+                    });
+                })
+                ->count(),
+
+            'hs' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->whereHas('section', function ($sectionQuery) {
+                        $sectionQuery->where('level', 'highschool');
+                    });
+                })
+                ->count(),
+
+            'shs' => (clone $baseQuery)
+                ->where(function ($query) {
+                    $query->whereHas('section', function ($sectionQuery) {
+                        $sectionQuery->where('level', 'senior_high_school');
+                    });
+                })
+                ->count(),
+        ];
     }
 
 

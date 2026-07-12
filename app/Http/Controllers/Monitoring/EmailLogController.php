@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Monitoring;
 
+use App\Http\Controllers\Controller;
 use App\Models\EmailLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -50,7 +51,7 @@ class EmailLogController extends Controller
         // Apply sorting and pagination
         $emailLogs = $baseQuery->orderBy('last_attempt_at', 'desc')
             ->orderBy('student_id')
-            ->paginate(25)
+            ->paginate(20)
             ->withQueryString();
 
         return view('admin-modules.monitoring.emails', compact(
@@ -80,6 +81,9 @@ class EmailLogController extends Controller
 
                 case 'yesterday':
                     return $q->yesterdayOnly();
+
+                case 'week':
+                    return $q->thisWeekOnly();
 
                 case 'last_7_days':
                     return $q->last7Days();

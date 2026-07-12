@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
 
 use App\Http\Controllers\Controller;
 use App\Models\Guardian;
 use App\Models\QrCode;
+use App\Models\SchoolYear;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,7 @@ class StudentController extends Controller
             ->orderBy('student_number', 'desc')
             ->paginate(25)
             ->withQueryString();
+
 
 
         return view('admin-modules.management.studentList', compact('students'));
@@ -84,6 +86,9 @@ class StudentController extends Controller
             //     'student_number' => $studentNumber
             // ]);
 
+
+            
+
             // 3. create guardian linked to student
             Guardian::create([
                 'student_id' => $student->id,
@@ -115,7 +120,7 @@ class StudentController extends Controller
             'message' => 'Student and guardian created successfully',
             'student' => $student->load(['guardian', 'qrCode']),
 
-            // 'qr_code' => $qrCode
+           
         ]);
     }
 
@@ -166,6 +171,7 @@ class StudentController extends Controller
                 ]
             );
         });
+        
 
         return response()->json([
             'message' => 'Student information updated successfully',
@@ -202,13 +208,25 @@ class StudentController extends Controller
     public function search(Request $request)
     {
         $q = $request->query('q', '');
+        $activeSchoolYearId = SchoolYear::query()->where('is_active', true)->value('id');
 
         $students = Student::where('student_number', 'like', "%{$q}%")
             ->orWhere('first_name', 'like', "%{$q}%")
             ->orWhere('last_name', 'like', "%{$q}%")
             ->limit(10)
-            ->get(['id', 'student_number', 'first_name', 'last_name']);
+            ->get(['id', 'student_number', 'first_name', 'last_name'])
+            ->map(function ($student) use ($activeSchoolYearId) {
+                $student->is_enrolled = $activeSchoolYearId
+                    ? $student->enrollments()->where('school_year_id', $activeSchoolYearId)->exists()
+                    : false;
+
+                return $student;
+            });
 
         return response()->json($students);
+    }
+
+    public function show($id){
+        return Student::with('guardian')->findOrFail($id);
     }
 }

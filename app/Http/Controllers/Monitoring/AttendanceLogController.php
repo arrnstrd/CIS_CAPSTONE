@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Monitoring;
 
+use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use Illuminate\Http\Request;
 
@@ -22,6 +23,7 @@ class AttendanceLogController extends Controller
 
         $attendanceLogsQuery = AttendanceLog::with([
             'enrollment.student',
+            'enrollment.section',
             'flagged_scans'
         ]);
 
@@ -42,7 +44,7 @@ class AttendanceLogController extends Controller
 
         $attendance_logs = $attendanceLogsQuery
             ->orderBy('scan_time', 'desc')
-            ->paginate(25)
+            ->paginate(20)
             ->withQueryString();
 
         return view(
@@ -76,6 +78,9 @@ class AttendanceLogController extends Controller
 
             case 'yesterday':
                 return $query->yesterdayOnly();
+
+            case 'week':
+                return $query->thisWeekOnly();
 
             case 'last_7_days':
                 return $query->last7Days();
