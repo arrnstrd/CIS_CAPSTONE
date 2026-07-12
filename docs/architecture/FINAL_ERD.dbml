@@ -1,0 +1,243 @@
+Table users {
+  id bigint [pk]
+  teacher_id bigint [ref: > teachers.id, null]
+  username varchar
+  email varchar
+  password varchar
+  role enum
+  status enum
+  last_login_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table teachers {
+  id bigint [pk]
+  employee_no varchar
+  first_name varchar
+  middle_name varchar
+  last_name varchar
+  suffix varchar
+  sex enum
+  email varchar
+  phone varchar
+  position varchar
+  employment_status enum
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table guardians {
+  id bigint [pk]
+  first_name varchar
+  middle_name varchar
+  last_name varchar
+  relationship varchar
+  phone varchar
+  email varchar
+  address text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table students {
+  id bigint [pk]
+  student_no varchar
+  guardian_id bigint [ref: > guardians.id]
+  first_name varchar
+  middle_name varchar
+  last_name varchar
+  suffix varchar
+  sex enum
+  birth_date date
+  address text
+  status enum
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table school_years {
+  id bigint [pk]
+  school_year varchar
+  is_active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table sections {
+  id bigint [pk]
+  school_year_id bigint [ref: > school_years.id]
+  advisor_id bigint [ref: > teachers.id]
+  grade_level tinyint
+  name varchar
+  capacity int
+  status enum
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table subjects {
+  id bigint [pk]
+  code varchar
+  name varchar
+  level enum
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table enrollments {
+  id bigint [pk]
+  student_id bigint [ref: > students.id]
+  section_id bigint [ref: > sections.id]
+  school_year_id bigint [ref: > school_years.id]
+  status enum
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table teaching_assignments {
+  id bigint [pk]
+  teacher_id bigint [ref: > teachers.id]
+  subject_id bigint [ref: > subjects.id]
+  section_id bigint [ref: > sections.id]
+  school_year_id bigint [ref: > school_years.id]
+
+  session_type enum
+  in_start time
+  late_threshold time
+  out_end time
+
+  status enum
+
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table qr_codes {
+  id bigint [pk]
+  student_id bigint [ref: > students.id]
+  code varchar
+  image_path varchar
+  is_active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table attendance_logs {
+  id bigint [pk]
+  enrollment_id bigint [ref: > enrollments.id]
+  qr_code_id bigint [ref: > qr_codes.id]
+  type enum
+  scanned_at datetime
+  remarks varchar
+  created_at timestamp
+}
+
+Table room_attendance {
+  id bigint [pk]
+  teaching_assignment_id bigint [ref: > teaching_assignments.id]
+  enrollment_id bigint [ref: > enrollments.id]
+  attendance_date date
+  time_in datetime
+  time_out datetime
+  remarks varchar
+  created_at timestamp
+}
+
+Table flagged_scans {
+  id bigint [pk]
+  qr_code_id bigint [ref: > qr_codes.id]
+  reason varchar
+  scanned_at datetime
+}
+
+Table email_logs {
+  id bigint [pk]
+  attendance_log_id bigint [ref: > attendance_logs.id]
+  recipient varchar
+  status enum
+  sent_at datetime
+}
+
+//////////////////////////////////////////////////
+// LOOKUP TABLES
+//////////////////////////////////////////////////
+
+Table grading_periods {
+  id bigint [pk]
+  name varchar
+  sequence tinyint
+  is_active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table assessment_categories {
+  id bigint [pk]
+  name varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+//////////////////////////////////////////////////
+// GRADING
+//////////////////////////////////////////////////
+
+Table assessments {
+  id bigint [pk]
+
+  teaching_assignment_id bigint [ref: > teaching_assignments.id]
+
+  assessment_category_id bigint [ref: > assessment_categories.id]
+
+  grading_period_id bigint [ref: > grading_periods.id]
+
+  title varchar
+
+  total_items int
+
+  assessment_date date
+
+  status enum
+
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table student_assessment_scores {
+  id bigint [pk]
+
+  assessment_id bigint [ref: > assessments.id]
+
+  enrollment_id bigint [ref: > enrollments.id]
+
+  score decimal
+
+  remarks varchar
+
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table quarterly_grades {
+  id bigint [pk]
+
+  teaching_assignment_id bigint [ref: > teaching_assignments.id]
+
+  enrollment_id bigint [ref: > enrollments.id]
+
+  grading_period_id bigint [ref: > grading_periods.id]
+
+  written_work_grade decimal
+
+  performance_task_grade decimal
+
+  quarterly_assessment_grade decimal
+
+  initial_grade decimal
+
+  transmuted_grade decimal
+
+  created_at timestamp
+  updated_at timestamp
+}
