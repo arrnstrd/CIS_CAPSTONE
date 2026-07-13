@@ -37,6 +37,11 @@ class AttendanceLog extends Model
         );
     }
 
+    public function emailLog()
+    {
+        return $this->hasOne(EmailLog::class, 'attendance_log_id');
+    }
+
     public function flagged_scans()
     {
         return $this->hasMany(

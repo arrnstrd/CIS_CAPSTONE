@@ -23,11 +23,6 @@ class Enrollment extends Model
         return $this->belongsTo(Student::class, 'student_id');
     }
 
-    public function adviser()
-    {
-        return $this->belongsTo(Teacher::class, 'adviser_id');
-    }
-
     public function schoolYear()
     {
         return $this->belongsTo(SchoolYear::class, 'school_year_id');
@@ -36,6 +31,21 @@ class Enrollment extends Model
     public function section()
     {
         return $this->belongsTo(Section::class, 'section_id');
+    }
+
+    public function roomAttendances()
+    {
+        return $this->hasMany(RoomAttendance::class);
+    }
+
+    public function studentAssessmentScores()
+    {
+        return $this->hasMany(StudentAssessmentScore::class);
+    }
+
+    public function quarterlyGrades()
+    {
+        return $this->hasMany(QuarterlyGrade::class);
     }
 
     

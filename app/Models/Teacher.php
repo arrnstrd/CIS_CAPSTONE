@@ -28,6 +28,11 @@ class Teacher extends Model
         return $this->hasMany(Section::class, 'advisor_id');
     }
 
+    public function teachingAssignments()
+    {
+        return $this->hasMany(TeachingAssignment::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Query Scopes

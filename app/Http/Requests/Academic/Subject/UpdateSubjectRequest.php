@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Http\Requests\Academic\Subject;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UpdateSubjectRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        $subject = $this->route('subject');
+        $subjectId = is_object($subject) ? $subject->id : $subject;
+        $subjectId = $subjectId ?? $this->id;
+
+        return [
+            'code' => ['required', 'string', 'max:255', Rule::unique('subjects', 'code')->ignore($subjectId)],
+            'name' => ['required', 'string', 'max:255'],
+            'level' => ['required', 'string', 'in:elementary,hs,shs'],
+        ];
+    }
+}
