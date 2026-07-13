@@ -1,56 +1,47 @@
 Table users {
   id bigint [pk]
-  teacher_id bigint [ref: > teachers.id, null]
-  username varchar
-  email varchar
-  password varchar
+  employee_id varchar [unique, null]
+  first_name varchar
+  last_name varchar
   role enum
   status enum
-  last_login_at timestamp
+  email varchar [unique]
+  email_verified_at timestamp [null]
+  password varchar
+  remember_token varchar [null]
+  deleted_at timestamp [null]
   created_at timestamp
   updated_at timestamp
 }
 
 Table teachers {
   id bigint [pk]
-  employee_no varchar
-  first_name varchar
-  middle_name varchar
-  last_name varchar
-  suffix varchar
-  sex enum
-  email varchar
-  phone varchar
-  position varchar
-  employment_status enum
+  user_id bigint [ref: > users.id, unique]
+  status enum
   created_at timestamp
   updated_at timestamp
 }
 
 Table guardians {
   id bigint [pk]
-  first_name varchar
-  middle_name varchar
-  last_name varchar
-  relationship varchar
-  phone varchar
+  student_id bigint [ref: > students.id]
+  name varchar
+  relationship enum
   email varchar
-  address text
   created_at timestamp
   updated_at timestamp
 }
 
 Table students {
   id bigint [pk]
-  student_no varchar
-  guardian_id bigint [ref: > guardians.id]
+  student_number varchar [unique, null]
+  lrn varchar [unique]
   first_name varchar
-  middle_name varchar
+  middle_name varchar [null]
   last_name varchar
-  suffix varchar
   sex enum
-  birth_date date
-  address text
+  birthdate date
+  address varchar
   status enum
   created_at timestamp
   updated_at timestamp
@@ -66,10 +57,10 @@ Table school_years {
 
 Table sections {
   id bigint [pk]
-  school_year_id bigint [ref: > school_years.id]
-  advisor_id bigint [ref: > teachers.id]
-  grade_level tinyint
   name varchar
+  level enum
+  grade_level int
+  advisor_id bigint [ref: > teachers.id, null]
   capacity int
   status enum
   created_at timestamp
@@ -90,6 +81,8 @@ Table enrollments {
   student_id bigint [ref: > students.id]
   section_id bigint [ref: > sections.id]
   school_year_id bigint [ref: > school_years.id]
+  level enum
+  session_type enum
   status enum
   created_at timestamp
   updated_at timestamp
@@ -126,11 +119,13 @@ Table qr_codes {
 Table attendance_logs {
   id bigint [pk]
   enrollment_id bigint [ref: > enrollments.id]
-  qr_code_id bigint [ref: > qr_codes.id]
-  type enum
-  scanned_at datetime
-  remarks varchar
+  scan_type enum
+  session_type enum
+  scan_time datetime
+  scanned_by_user_id bigint [ref: > users.id, null]
+  device_id varchar [null]
   created_at timestamp
+  updated_at timestamp
 }
 
 Table room_attendance {
@@ -139,24 +134,32 @@ Table room_attendance {
   enrollment_id bigint [ref: > enrollments.id]
   attendance_date date
   time_in datetime
-  time_out datetime
+  time_out datetime [null]
   remarks varchar
   created_at timestamp
 }
 
 Table flagged_scans {
   id bigint [pk]
-  qr_code_id bigint [ref: > qr_codes.id]
-  reason varchar
-  scanned_at datetime
+  attendance_log_id bigint [ref: > attendance_logs.id, null]
+  flag_type enum
+  description text [null]
+  created_at timestamp
+  updated_at timestamp
 }
 
 Table email_logs {
   id bigint [pk]
-  attendance_log_id bigint [ref: > attendance_logs.id]
-  recipient varchar
+  attendance_log_id bigint [ref: > attendance_logs.id, null]
+  student_id bigint [ref: > students.id]
+  email varchar
+  scan_type enum
   status enum
+  attempt_count int
+  last_attempt_at datetime
   sent_at datetime
+  created_at timestamp
+  updated_at timestamp
 }
 
 //////////////////////////////////////////////////

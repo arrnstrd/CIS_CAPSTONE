@@ -2,7 +2,7 @@
 
 ## Project Title
 
-Web-Based QR Student Attendance Monitoring with Centralized Academic Management System
+WEB-BASED QR STUDENT ATTENDANCE MONITORING WITH CENTRALIZED ACADEMIC MANAGEMENT SYSTEM FOR CONCEPTION INTEGRATED SCHOOL
 
 ## Technology Stack
 
@@ -22,7 +22,6 @@ The project already contains an existing implementation for:
 - Academic Setup
 - QR Code Generation
 - Gate Attendance
-- Classroom Attendance (Partial)
 - Teacher Management
 - Teaching Assignments
 

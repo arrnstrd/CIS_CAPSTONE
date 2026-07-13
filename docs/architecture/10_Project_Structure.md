@@ -1,5 +1,3 @@
-# 10_PROJECT_STRUCTURE.md
-
 # Project Structure
 
 ## Purpose

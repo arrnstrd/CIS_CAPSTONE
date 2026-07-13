@@ -10,10 +10,10 @@ This document should be used together with the following files:
 
 - CURRENT_DATABASE.json
 - FINAL_ERD.dbml
-- DATABASE_ARCHITECTURE.md
-- BUSINESS_RULES.md
+- 02_Database_Architecture.md
+- 03_Business_Rules.md
 
-The JSON file represents the current implementation.
+The JSON file is a phpMyAdmin export of the current implementation.
 
 This document represents the target implementation.
 

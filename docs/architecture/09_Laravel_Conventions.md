@@ -480,21 +480,12 @@ Prefer readability over clever code.
 
 When generating Laravel code:
 
-- Follow this document before writing code.
-- Follow CURRENT_DATABASE.json as the current implementation.
-- Follow FINAL_ERD.dbml as the target architecture.
-- Follow DATABASE_ARCHITECTURE.md for migration planning.
-- Follow DATABASE_SPECIFICATION.md for schema details.
-- Follow BUSINESS_RULES.md for application behavior.
-- Follow FEATURE_ARCHITECTURE.md for module organization.
-- Follow GRADING_SPECIFICATION.md for grading implementation.
-
-Never redesign the architecture.
-
-Never invent tables or columns.
-
-Preserve existing functionality.
-
-Maintain backward compatibility unless explicitly instructed otherwise.
-
-When uncertain, prioritize consistency with the existing project over introducing new patterns.
+- Start with `06_AI_Implementation_Instructions.md`.
+- Follow `CURRENT_DATABASE.json` as the current implementation.
+- Follow `FINAL_ERD.dbml` as the target architecture.
+- Follow `02_Database_Architecture.md` for migration planning.
+- Follow `08_Database_Specification.md` for schema details.
+- Follow `03_Business_Rules.md` for application behavior.
+- Follow `04_Feature_Architecture.md` for module organization.
+- Follow `11_Implementation_Order.md` for implementation sequence.
+- Follow `12_Development_Rules.md` for project guardrails.

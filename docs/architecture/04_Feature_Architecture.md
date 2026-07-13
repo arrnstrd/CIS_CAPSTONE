@@ -1,6 +1,6 @@
 # Feature Architecture
 
-Dashboard (soon, undevelop for now)
+Dashboard (planned, not implemented yet)
 
 Student Management
 
