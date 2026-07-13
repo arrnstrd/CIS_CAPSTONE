@@ -1,80 +1,27 @@
 <?php
 
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Enrollment\EnrollmentController;
-use App\Http\Controllers\Enrollment\SectionController;
-use App\Http\Controllers\Grading\AssessmentController;
-use App\Http\Controllers\Grading\AssessmentCategoryController;
-use App\Http\Controllers\Grading\GradingPeriodController;
-use App\Http\Controllers\Management\StudentController;
-use App\Http\Controllers\Management\TeacherController;
-use App\Http\Controllers\Monitoring\AttendanceLogController;
-use App\Http\Controllers\Monitoring\EmailLogController;
-use App\Http\Controllers\QrCodeController;
-use App\Http\Controllers\QrSystem\RoomAttendanceController;
-use App\Http\Controllers\Scanner\ScanController;
-use App\Http\Controllers\ScheduleConfigController;
-use App\Http\Controllers\SearchController;
+use App\Http\Controllers\AcademicFeature\EnrollmentController;
+use App\Http\Controllers\AcademicFeature\SectionController;
+use App\Http\Controllers\AcademicFeature\SubjectController;
+use App\Http\Controllers\GradingSystemFeature\AssessmentController;
+use App\Http\Controllers\GradingSystemFeature\AssessmentCategoryController;
+use App\Http\Controllers\GradingSystemFeature\GradingPeriodController;
+use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
+use App\Http\Controllers\QrSystemFeature\Logs\AttendanceLogController;
+use App\Http\Controllers\QrSystemFeature\Logs\EmailLogController;
+use App\Http\Controllers\QrSystemFeature\Logs\RoomAttendanceController;
+use App\Http\Controllers\QrSystemFeature\QrCode\QrCodeController;
+use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
+use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
 
 // ============================================================
-// MONITORING
-// ============================================================
-
-// entry-exit
-Route::get('/entry_exit', fn() => view('admin-modules.monitoring.entry-exit'))->name('entryExit');
-Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.index');
-
-// class attendance
-Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
-
-// email
-Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
-Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
-Route::post('/emails', [EmailLogController::class, 'retryAll'])->name('retryAll.email');
-
-
-// ============================================================
-// MANAGEMENT
-// ============================================================
-
-// teacher
-Route::prefix('teachers')->group(function () {
-
-    // Display teacher list
-    Route::get('/', [TeacherController::class, 'index'])
-        ->name('teachers.index');
-
-    // Create teacher
-    Route::post('/', [TeacherController::class, 'store'])
-        ->name('teachers.store');
-
-    // Update teacher
-    Route::put('/{id}', [TeacherController::class, 'update'])
-        ->name('teachers.update');
-
-    // Archive teacher
-    Route::delete('/{id}', [TeacherController::class, 'destroy'])
-        ->name('teachers.destroy');
-
-    // Restore teacher
-    Route::patch('/{id}/restore', [TeacherController::class, 'restore'])
-        ->name('teachers.restore');
-
-});
-
-// users
-Route::get('/users', fn() => view('admin-modules.management.users'));
-
-// grade
-// Route::get('/grades', [GradeController::class, 'index'])->name('grades.index');                // TODO
-
-
-// ============================================================
-// ENROLLMENT MANAGEMENT
+// ACADEMIC FEATURE
 // ============================================================
 
 // enrollment
@@ -82,16 +29,6 @@ Route::get('/enrollment', [EnrollmentController::class, 'index'])->name('enrollm
 Route::post('/enrollment', [EnrollmentController::class, 'store'])->name('enrollment.store');
 Route::put('/enrollment/{id}', [EnrollmentController::class, 'update'])->name('enrollment.update');
 Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy'])->name('enrollment.destroy');
-
-// student
-Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');
-Route::post('/students', [StudentController::class, 'store'])->name('student.store');
-Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
-Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
-Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
-Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
-Route::get('/student-profile', fn() => view('admin-modules.management.student-profile'));
-Route::get('/student-profile/{student}', [StudentProfileController::class, 'show'])->name('student.profile');
 
 // section
 Route::get('/sections', [SectionController::class, 'index'])->name('sections.index');         
@@ -120,71 +57,9 @@ Route::delete('/teaching-assignments/{teachingAssignment}', [TeachingAssignmentC
 Route::get('/teachers/{teacher}/teaching-assignments', [TeachingAssignmentController::class, 'byTeacher'])->name('teachers.teaching-assignments');
 Route::get('/sections/{section}/teaching-assignments', [TeachingAssignmentController::class, 'bySection'])->name('sections.teaching-assignments');
 
-// ============================================================
-// UTILITIES
-// ============================================================
-
-// schedule configuration
-Route::get('/schedule-configuration', [ScheduleConfigController::class, 'index']);
-Route::post('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.store');
-Route::put('/schedule-configuration/{id}', [ScheduleConfigController::class, 'update'])->name('schedconfig.update');
-Route::delete('/schedule-configuration/{id}', [ScheduleConfigController::class, 'destroy'])->name('schedconfig.destroy');
-
-//==================================================
-// scanner
-//===========================================
-Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
-
-
-
-// qr generation ==============================================================
-// Route::get('/students/{id}/qr-pdf', [QrCodeController::class, 'generate']);
-Route::get('/students/{id}/qr', [QrCodeController::class, 'show'])->name('students.qr.show');
-
-
-//download per student
-Route::get( '/students/{id}/qr/download', [QrCodeController::class, 'download'])->name('students.qr.download');
-
-//show for UI
-Route::get(
-    '/qr-generation',
-    [QrCodeController::class, 'index']
-)->name('qr.index');
-
-Route::get(
-    '/sections/{section}/qr/download',
-    [QrCodeController::class, 'downloadSection']
-)->name('sections.qr.download');
 
 // ============================================================
-// SETTINGS
-// ============================================================
-Route::get('/settings', function(){
-    return view('admin-modules.utilities.settings');
-});
-// school year
-// Route::get('/school-year', [SchoolYearController::class, 'index'])->name('schoolyear.index');  // TODO
-
-
-// ============================================================
-// OTHERS
-// ============================================================
-
-// dashboard
-Route::get('/dashboard', fn() => view('admin-modules.dashboard'));
-
-// auth / login
-Route::get('/role-selection', fn() => view('login.role_selection'));
-Route::get('/admin-login', fn() => view('login.admin-login'));
-
-// layout preview
-Route::get('/layout', fn() => view('components.layouts.admin'));
-
-// scanner UI (testing)
-Route::get('/scanner', fn() => view('scanner.index'));
-
-// ============================================================
-// GRADING
+// GRADING SYSTEM FEATURE
 // ============================================================
 
 // assessment categories
@@ -216,9 +91,18 @@ Route::delete('/assessments/{assessment}', [AssessmentController::class, 'destro
 Route::get('/teaching-assignments/{teachingAssignment}/assessments', [AssessmentController::class, 'byTeachingAssignment'])->name('teaching-assignments.assessments');
 Route::get('/teaching-assignments/{teachingAssignment}/grading-periods/{gradingPeriod}/assessments', [AssessmentController::class, 'byTeachingAssignmentAndGradingPeriod'])->name('teaching-assignments.grading-periods.assessments');
 
+
 // ============================================================
-// QR SYSTEM - ROOM ATTENDANCE
+// QR SYSTEM FEATURE
 // ============================================================
+
+// monitoring logs
+Route::get('/entry_exit', fn() => view('admin-modules.monitoring.entry-exit'))->name('entryExit');
+Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.index');
+Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
+Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
+Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
+Route::post('/emails', [EmailLogController::class, 'retryAll'])->name('retryAll.email');
 
 // room attendance
 Route::get('/room-attendance', [RoomAttendanceController::class, 'index'])->name('room-attendance.index');
@@ -232,42 +116,70 @@ Route::get('/teaching-assignments/{teachingAssignment}/room-attendance', [RoomAt
 Route::get('/teaching-assignments/{teachingAssignment}/room-attendance/bulk-create', [RoomAttendanceController::class, 'bulkCreateForm'])->name('teaching-assignments.room-attendance.bulk-create');
 Route::post('/teaching-assignments/{teachingAssignment}/room-attendance/bulk', [RoomAttendanceController::class, 'bulkStore'])->name('teaching-assignments.room-attendance.bulk-store');
 
+// qr code generation
+Route::get('/students/{id}/qr', [QrCodeController::class, 'show'])->name('students.qr.show');
+Route::get('/students/{id}/qr/download', [QrCodeController::class, 'download'])->name('students.qr.download');
+Route::get('/qr-generation', [QrCodeController::class, 'index'])->name('qr.index');
+Route::get('/sections/{section}/qr/download', [QrCodeController::class, 'downloadSection'])->name('sections.qr.download');
+
+// scanner
+Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
+Route::get('/scanner', fn() => view('scanner.index'));
+
+// schedule configuration
+Route::get('/schedule-configuration', [ScheduleConfigController::class, 'index']);
+Route::post('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.store');
+Route::put('/schedule-configuration/{id}', [ScheduleConfigController::class, 'update'])->name('schedconfig.update');
+Route::delete('/schedule-configuration/{id}', [ScheduleConfigController::class, 'destroy'])->name('schedconfig.destroy');
 
 
+// ============================================================
+// TEACHER FEATURE
+// ============================================================
 
-
-
-// Route::post('/items/store', function (Request $request) {
-//     // Save to DB
-//     Item::create($request->all());
-
-//     // Broadcast update
-//     $allItems = Item::all();
-//     event(new TableUpdated($allItems));
-
-//     return response()->json(['success' => true]);
-// });
-
-
-
-
-
-
-
-
-
-//
-Route::get('/grades', function(){
-    return view('admin-modules.management.grade.grades');
+Route::prefix('teachers')->group(function () {
+    Route::get('/', [TeacherController::class, 'index'])->name('teachers.index');
+    Route::post('/', [TeacherController::class, 'store'])->name('teachers.store');
+    Route::put('/{id}', [TeacherController::class, 'update'])->name('teachers.update');
+    Route::delete('/{id}', [TeacherController::class, 'destroy'])->name('teachers.destroy');
+    Route::patch('/{id}/restore', [TeacherController::class, 'restore'])->name('teachers.restore');
 });
 
 
+// ============================================================
+// STUDENT FEATURE
+// ============================================================
+
+Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');
+Route::post('/students', [StudentController::class, 'store'])->name('student.store');
+Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
+Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
+Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
+Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
+Route::get('/student-profile', fn() => view('admin-modules.management.student-profile'));
+Route::get('/student-profile/{student}', [StudentProfileController::class, 'show'])->name('student.profile');
 
 
+// ============================================================
+// GENERAL ROUTES
+// ============================================================
 
+// dashboard
+Route::get('/dashboard', fn() => view('admin-modules.dashboard'));
 
+// settings
+Route::get('/settings', fn() => view('admin-modules.utilities.settings'));
+Route::get('/users', fn() => view('admin-modules.management.users'));
 
+// auth / login
+Route::get('/role-selection', fn() => view('login.role_selection'));
+Route::get('/admin-login', fn() => view('login.admin-login'));
 
+// layout preview
+Route::get('/layout', fn() => view('components.layouts.admin'));
+
+// grades (placeholder)
+Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
 
 
 //==============================================

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Scanner;
+namespace App\Http\Controllers\QrSystemFeature\Scanner;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;

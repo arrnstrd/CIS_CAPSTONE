@@ -25,26 +25,26 @@ major system features rather than database tables.
 
 ```
 app/Http/Controllers/
-├── Academic/
+├── AcademicFeature/
 │   ├── Enrollment/
 │   ├── SchoolYear/
 │   ├── Section/
 │   └── Subject/
 ├── Student/
 ├── Teacher/
-├── QrSystem/
+├── QrSystemFeature/
 │   ├── Attendance/
 │   ├── Scanner/
 │   ├── QrCode/
 │   ├── Configuration/
 │   └── EmailLog/
-├── Grading/
+├── GradingSystemFeature/
 │   ├── Assessment/
 │   ├── AssessmentCategory/
 │   ├── StudentScore/
 │   ├── QuarterlyGrade/
 │   └── GradingPeriod/
-├── Administration/
+├── AdministrationFeature/
 │   ├── User/
 │   ├── Authentication/
 │   ├── Authorization/

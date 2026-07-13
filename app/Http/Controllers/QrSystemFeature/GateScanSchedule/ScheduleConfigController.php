@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
-use Illuminate\Database\QueryException;
+namespace App\Http\Controllers\QrSystemFeature\GateScanSchedule;
 
-
+use App\Http\Controllers\Controller;
 use App\Models\ScheduleConfig;
 use Illuminate\Http\Request;
 

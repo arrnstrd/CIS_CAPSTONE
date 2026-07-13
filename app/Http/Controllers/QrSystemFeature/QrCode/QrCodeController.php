@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\QrSystemFeature\QrCode;
 
+use App\Http\Controllers\Controller;
 use App\Models\QrCode;
 use App\Models\Section;
 use App\Models\Student;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Grading;
+namespace App\Http\Controllers\GradingSystemFeature;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Grading\Assessment\StoreAssessmentRequest;

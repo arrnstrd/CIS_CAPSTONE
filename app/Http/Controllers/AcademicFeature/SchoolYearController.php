@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Enrollment;
+namespace App\Http\Controllers\AcademicFeature;
 
 use App\Http\Controllers\Controller;
 use App\Models\SchoolYear;

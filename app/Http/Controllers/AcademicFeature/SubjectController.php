@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Academic;
+namespace App\Http\Controllers\AcademicFeature;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Academic\Subject\StoreSubjectRequest;
