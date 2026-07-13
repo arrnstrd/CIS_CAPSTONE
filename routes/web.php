@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdministrationFeature\Authentication\AuthController;
 use App\Http\Controllers\AcademicFeature\EnrollmentController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AcademicFeature\SubjectController;
@@ -18,6 +19,19 @@ use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
+
+
+// ============================================================
+// AUTHENTICATION
+// ============================================================
+
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login.attempt')
+    ->middleware('throttle:5,1');
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->name('logout')
+    ->middleware('auth');
 
 
 // ============================================================
