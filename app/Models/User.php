@@ -12,6 +12,10 @@ use Override;
 
 class User extends Authenticatable
 {
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_TEACHER = 'teacher';
+    public const ROLE_SCANNER_OPERATOR = 'scanner_operator';
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
@@ -60,7 +64,25 @@ class User extends Authenticatable
         return $this->hasOne(Teacher::class);
     }
 
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role, $roles, true);
+    }
 
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(self::ROLE_ADMIN);
+    }
+
+    public function isTeacher(): bool
+    {
+        return $this->hasRole(self::ROLE_TEACHER);
+    }
+
+    public function isScannerOperator(): bool
+    {
+        return $this->hasRole(self::ROLE_SCANNER_OPERATOR);
+    }
 
     // for future expansion on scanner operator
     // public function scannerOperator()

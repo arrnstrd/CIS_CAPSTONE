@@ -21,9 +21,9 @@ class EnsureUserHasRole
             return redirect()->route('login');
         }
 
-        $userRole = Auth::user()->role;
+        $user = Auth::user();
 
-        if (!in_array($userRole, $roles)) {
+        if (!$user->hasRole(...$roles)) {
             abort(403, 'You do not have permission to access this resource.');
         }
 

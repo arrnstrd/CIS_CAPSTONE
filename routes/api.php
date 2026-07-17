@@ -8,6 +8,7 @@ use App\Http\Controllers\Management\UserController;
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
 use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeachingAssignmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -57,3 +58,12 @@ Route::post('/school-year', [SchoolYearController::class, 'store']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'update']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'destroy']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'restore']);
+
+
+
+
+Route::apiResource('teaching-assignments', TeachingAssignmentController::class);
+
+
+
+

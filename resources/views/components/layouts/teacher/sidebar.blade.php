@@ -51,7 +51,7 @@
   
 
                 <li>
-                    <a href="#">
+                    <a href="{{ route('teaching-assignments.index') }}">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Schedule Configuration</span>
                     </a>

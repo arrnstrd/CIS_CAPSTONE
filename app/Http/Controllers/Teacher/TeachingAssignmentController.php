@@ -30,7 +30,7 @@ class TeachingAssignmentController extends Controller
         $teachingAssignments = TeachingAssignment::with(['teacher', 'subject', 'section', 'schoolYear'])
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('teacher.teaching-assignments.index', compact('teachingAssignments'));
+        return view('teacher-modules.schedule-config', compact('teachingAssignments'));
     }
 
     /**
