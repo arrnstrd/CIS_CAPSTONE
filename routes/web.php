@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdministrationFeature\Authentication\AuthController;
+use App\Http\Controllers\AcademicFeature\AcademicController;
 use App\Http\Controllers\AcademicFeature\EnrollmentController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AcademicFeature\SubjectController;
@@ -14,7 +15,7 @@ use App\Http\Controllers\QrSystemFeature\Logs\RoomAttendanceController;
 use App\Http\Controllers\QrSystemFeature\QrCode\QrCodeController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
 use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
 use App\Http\Controllers\SearchController;
@@ -37,6 +38,10 @@ Route::post('/logout', [AuthController::class, 'logout'])
 // ============================================================
 // ACADEMIC FEATURE
 // ============================================================
+
+//academic
+Route::get('/academic', [AcademicController::class, 'index'])->name('academic.index');
+
 
 // enrollment
 Route::get('/enrollment', [EnrollmentController::class, 'index'])->name('enrollment.index');
@@ -111,7 +116,6 @@ Route::get('/teaching-assignments/{teachingAssignment}/grading-periods/{gradingP
 // ============================================================
 
 // monitoring logs
-Route::get('/entry_exit', fn() => view('admin-modules.monitoring.entry-exit'))->name('entryExit');
 Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.index');
 Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
 Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
@@ -119,16 +123,16 @@ Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('r
 Route::post('/emails', [EmailLogController::class, 'retryAll'])->name('retryAll.email');
 
 // room attendance
-Route::get('/room-attendance', [RoomAttendanceController::class, 'index'])->name('room-attendance.index');
-Route::get('/room-attendance/create', [RoomAttendanceController::class, 'create'])->name('room-attendance.create');
-Route::post('/room-attendance', [RoomAttendanceController::class, 'store'])->name('room-attendance.store');
-Route::get('/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'show'])->name('room-attendance.show');
-Route::get('/room-attendance/{roomAttendance}/edit', [RoomAttendanceController::class, 'edit'])->name('room-attendance.edit');
-Route::put('/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'update'])->name('room-attendance.update');
-Route::delete('/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'destroy'])->name('room-attendance.destroy');
-Route::get('/teaching-assignments/{teachingAssignment}/room-attendance', [RoomAttendanceController::class, 'byTeachingAssignmentAndDate'])->name('teaching-assignments.room-attendance');
-Route::get('/teaching-assignments/{teachingAssignment}/room-attendance/bulk-create', [RoomAttendanceController::class, 'bulkCreateForm'])->name('teaching-assignments.room-attendance.bulk-create');
-Route::post('/teaching-assignments/{teachingAssignment}/room-attendance/bulk', [RoomAttendanceController::class, 'bulkStore'])->name('teaching-assignments.room-attendance.bulk-store');
+Route::get('/teacher/room-attendance', [RoomAttendanceController::class, 'index'])->name('room-attendance.index');
+Route::get('/teacher/room-attendance/create', [RoomAttendanceController::class, 'create'])->name('room-attendance.create');
+Route::post('/teacher', [RoomAttendanceController::class, 'store'])->name('room-attendance.store');
+Route::get('/teacher/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'show'])->name('room-attendance.show');
+Route::get('/teacher/room-attendance/{roomAttendance}/edit', [RoomAttendanceController::class, 'edit'])->name('room-attendance.edit');
+Route::put('/teacher/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'update'])->name('room-attendance.update');
+Route::delete('/teacher/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'destroy'])->name('room-attendance.destroy');
+Route::get('/teacher/teaching-assignments/{teachingAssignment}/room-attendance', [RoomAttendanceController::class, 'byTeachingAssignmentAndDate'])->name('teaching-assignments.room-attendance');
+Route::get('/teacher/teaching-assignments/{teachingAssignment}/room-attendance/bulk-create', [RoomAttendanceController::class, 'bulkCreateForm'])->name('teaching-assignments.room-attendance.bulk-create');
+Route::post('/teacher/teaching-assignments/{teachingAssignment}/room-attendance/bulk', [RoomAttendanceController::class, 'bulkStore'])->name('teaching-assignments.room-attendance.bulk-store');
 
 // qr code generation
 Route::get('/students/{id}/qr', [QrCodeController::class, 'show'])->name('students.qr.show');
@@ -187,10 +191,16 @@ Route::get('/users', fn() => view('admin-modules.management.users'));
 
 // auth / login
 Route::get('/role-selection', fn() => view('login.role_selection'));
-Route::get('/admin-login', fn() => view('login.admin-login'));
+Route::get('/user-login', fn() => view('login.admin-login'));
 
 // layout preview
 Route::get('/layout', fn() => view('components.layouts.admin'));
+
+Route::get('/layout/teacher', function(){
+    return view('components.layouts.teacher');
+});
+
+
 
 // grades (placeholder)
 Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
@@ -200,3 +210,6 @@ Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
 //            TEACHER SIDE
 //==============================================
 
+Route::get('/room-attendance', function(){
+    return view('teacher-modules.room-attendance');
+})->name('room-attendance');

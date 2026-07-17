@@ -10,11 +10,43 @@ use App\Models\Student;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class EnrollmentController extends Controller
 
 {
+    private function enrollmentLevelForSection(Section $section): string
+    {
+        return match ($section->level) {
+            'elementary' => 'elementary',
+            'highschool' => 'hs',
+            'senior_high_school' => 'shs',
+            default => $section->level,
+        };
+    }
+
+    private function isDuplicateEnrollmentError(QueryException $exception): bool
+    {
+        return $exception->getCode() === '23000'
+            && str_contains($exception->getMessage(), 'enrollments_student_school_year_unique');
+    }
+
+    private function applySectionSnapshot(array $data, Section $section): array
+    {
+        $data['level'] = $this->enrollmentLevelForSection($section);
+
+        if (Schema::hasColumn('enrollments', 'grade_level')) {
+            $data['grade_level'] = (string) $section->grade_level;
+        }
+
+        if (Schema::hasColumn('enrollments', 'section')) {
+            $data['section'] = $section->name;
+        }
+
+        return $data;
+    }
+
     private function sectionHasCapacity(Section $section, int $schoolYearId, ?int $ignoreEnrollmentId = null): bool
     {
         $query = Enrollment::query()
@@ -84,6 +116,8 @@ class EnrollmentController extends Controller
             ->orderBy('first_name')
             ->paginate(10)
             ->withQueryString();
+
+            // return view('admin-modules.academic.enrollment');
             
         return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years', 'statusCounts', 'studentWithoutEnrollment', 'notEnrolledStudents', 'activeSchoolYear', 'activeSections'));
     }
@@ -126,6 +160,7 @@ class EnrollmentController extends Controller
         }
 
         $validatedData['school_year_id'] = $currentSchoolYear->id;
+        $validatedData = $this->applySectionSnapshot($validatedData, $section);
     
 
         try {
@@ -136,6 +171,15 @@ class EnrollmentController extends Controller
                 'data' => $enrollment
             ]);
         } catch (QueryException $e) {
+            if (! $this->isDuplicateEnrollmentError($e)) {
+                report($e);
+
+                return response()->json([
+                    'message' => 'Unable to create enrollment. Please check the selected student and section.',
+                    // 'error' => $e->getMessage()
+                ], 422);
+            }
+
             return response()->json([
                 'message' => 'Student is already enrolled for this school year'
             ], 422);
@@ -175,6 +219,8 @@ class EnrollmentController extends Controller
                 'message' => 'Selected section has reached its capacity.'
             ], 422);
         }
+
+        $validatedData = $this->applySectionSnapshot($validatedData, $section);
 
         $exists = Enrollment::where('student_id', $enrollment->student_id)
             ->where('school_year_id', $schoolYearId)

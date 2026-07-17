@@ -6,13 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\QrCode;
 use App\Models\Section;
 use App\Models\Student;
+use App\Services\QrSystem\QRCodeService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode as QrGenerator;
 
 class QrCodeController extends Controller
 {
+    public function __construct(private QRCodeService $qrCodeService)
+    {
+    }
+
     public function index(Request $request)
     {
            $sections = Section::with('advisor.user')
@@ -37,15 +40,7 @@ class QrCodeController extends Controller
      */
     private function generateQrImage(QrCode $qrCode): void
     {
-        if ($qrCode->image_path && Storage::disk('public')->exists($qrCode->image_path)) {
-            return;
-        }
-
-        $image = QrGenerator::format('png')->size(300)->margin(1)->generate($qrCode->code);
-        $path = "qr-codes/student-{$qrCode->student_id}.png";
-
-        Storage::disk('public')->put($path, $image);
-        $qrCode->update(['image_path' => $path]);
+        $this->qrCodeService->ensureImage($qrCode);
     }
 
     /**
@@ -53,9 +48,7 @@ class QrCodeController extends Controller
      */
     private function getQrImageBase64(QrCode $qrCode): string
     {
-        $path = storage_path('app/public/' . $qrCode->image_path);
-
-        return base64_encode(file_get_contents($path));
+        return $this->qrCodeService->imageBase64($qrCode);
     }
 
     /**

@@ -19,7 +19,7 @@ class SubjectService
             return Subject::create([
                 'code' => $data['code'],
                 'name' => $data['name'],
-                'level' => $data['level'],
+                'level' => Subject::normalizeLevel($data['level']),
             ]);
         });
     }
@@ -34,6 +34,10 @@ class SubjectService
     public function update(Subject $subject, array $data): Subject
     {
         return DB::transaction(function () use ($subject, $data) {
+            if (array_key_exists('level', $data)) {
+                $data['level'] = Subject::normalizeLevel($data['level']);
+            }
+
             $subject->update(array_filter($data, fn($value) => $value !== null));
             return $subject->fresh();
         });

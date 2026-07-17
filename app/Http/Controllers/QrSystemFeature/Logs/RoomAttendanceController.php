@@ -28,7 +28,7 @@ class RoomAttendanceController extends Controller
             ->orderBy('attendance_date', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('qr-system.attendance.room-attendance.index', compact('roomAttendance'));
+        return view('teacher-modules.room-attendance', compact('roomAttendance'));
     }
 
     /**

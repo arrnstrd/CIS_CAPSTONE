@@ -14,6 +14,9 @@ class Enrollment extends Model
         'student_id',
         'section_id',
         'school_year_id',
+        'grade_level',
+        'section',
+        'level',
         'session_type',
         'status'
     ];
@@ -29,6 +32,11 @@ class Enrollment extends Model
     }
 
     public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id');
+    }
+
+    public function sectionModel()
     {
         return $this->belongsTo(Section::class, 'section_id');
     }

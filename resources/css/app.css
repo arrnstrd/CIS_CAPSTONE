@@ -6,4 +6,10 @@
 @import './layout.css';
 @import './table.css';
 @import './gradeLevel.css';
-@import './teacherSide/sidebar.css';
+
+
+/* @import './teacher-modules/t-layout.css';
+@import './teacher-modules/t-sidebar.css'; */
+
+
+@import './academic.css';

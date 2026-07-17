@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign In - Concepcion Integrated School</title>
       <meta name="csrf-token" content="{{ csrf_token() }}">
+          <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 </head>
 
@@ -165,33 +166,6 @@ img.logo {
   text-decoration: none;
 }
 
-.alert {
-  padding: 12px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
-.alert-danger {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
-}
-
-.alert-danger ul {
-  list-style: none;
-  padding-left: 0;
-  margin: 0;
-}
-
-.alert-danger li {
-  margin-top: 4px;
-}
-
-.alert-danger li:first-child {
-  margin-top: 0;
-}
-
 
 </style>
 <body>
@@ -231,7 +205,7 @@ img.logo {
             </div>
         @endif
 
-    <form action="{{route('login.attempt')}}" method="POST" accept-charset="utf-8">
+    <form action="{{route('login.attempt')}}" method="POST" >
       @csrf
            <h1 class="form-title">Sign In</h1>
         <p class="form-subtitle">Admin Access</p>

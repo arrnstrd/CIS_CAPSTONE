@@ -32,7 +32,7 @@
                         <span>Class Attendance</span>
                     </a>
                 </li>
-              
+
                 <li>
                     <a href="/emails">
                         <i class="fas fa-envelope"></i>
@@ -44,8 +44,8 @@
                 <li class="sidebar-section-label">
                     <small>MANAGEMENT</small>
                 </li>
-               
-                
+
+
                 <li>
                     <a href="/teachers">
                         <i class="fas fa-chalkboard-teacher"></i>
@@ -66,27 +66,40 @@
                     </a>
                 </li> --}}
 
-                  <li class="sidebar-section-label">
-                    <small>Enrollment</small>
-                </li>
+
                 <li>
+                    <a href="/student-management">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Students</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-section-label">
+                    <small>setup</small>
+                </li>
+
+
+                <li>
+                    <a href="/academic">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Academic</span>
+                    </a>
+                </li>
+
+
+                {{-- <li>
                     <a href="/enrollment">
                         <i class="fas fa-user-plus"></i>
                         <span>Enrollment Management</span>
                     </a>
                 </li>
-                 <li>
-                    <a href="/student-management">
-                        <i class="fas fa-user-graduate"></i>
-                        <span>Student List</span>
-                    </a>
-                </li>
-                 <li>
+
+                <li>
                     <a href="/sections">
                         <i class="fas fa-layer-group"></i>
                         <span>Section List</span>
                     </a>
-                </li>
+                </li> --}}
 
                 <!-- OTHERS SECTION -->
                 <li class="sidebar-section-label">
@@ -99,7 +112,7 @@
                         <span>Schedule Configuration</span>
                     </a>
                 </li>
-          
+
                 <li>
                     <a href="/qr-generation">
                         <i class="fas fa-qrcode"></i>
@@ -131,10 +144,8 @@
 
     <!-- Logout -->
     <div class="sidebar-footer p-3">
-        <a href="#"
-           data-bs-toggle="modal"
-           data-bs-target="#logoutModal"
-           class="btn-logout-action w-100 d-flex align-items-center justify-content-center gap-2">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
+            class="btn-logout-action w-100 d-flex align-items-center justify-content-center gap-2">
             <i class="fas fa-sign-out-alt"></i>
             <span>Log Out</span>
         </a>

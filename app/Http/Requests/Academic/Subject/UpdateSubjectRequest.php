@@ -4,9 +4,17 @@ namespace App\Http\Requests\Academic\Subject;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\Subject;
 
 class UpdateSubjectRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'level' => Subject::normalizeLevel($this->input('level')),
+        ]);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -29,7 +37,7 @@ class UpdateSubjectRequest extends FormRequest
         return [
             'code' => ['required', 'string', 'max:255', Rule::unique('subjects', 'code')->ignore($subjectId)],
             'name' => ['required', 'string', 'max:255'],
-            'level' => ['required', 'string', 'in:elementary,hs,shs'],
+            'level' => ['required', 'string', Rule::in(array_keys(Subject::levelOptions()))],
         ];
     }
 }

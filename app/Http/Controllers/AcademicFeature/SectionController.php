@@ -5,23 +5,33 @@ namespace App\Http\Controllers\AcademicFeature;
 use App\Http\Controllers\Controller;
 use App\Models\Section;
 use App\Models\Teacher;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class SectionController extends Controller
 {
-    public function index(Request $request)
+    public static function sectionIndexQuery(?string $search = null, ?string $status = null, $gradeLevel = null): Builder
     {
-        $sections = Section::with('advisor.user')
-            ->filterGradeLevel($request->grade_level)
-            ->filterStatus($request->status)
-            ->search($request->search)
+        return Section::with('advisor.user')
+            ->filterGradeLevel($gradeLevel)
+            ->filterStatus($status)
+            ->search($search)
             ->withCount('students')
             ->orderBy('grade_level')
-            ->orderBy('name')
+            ->orderBy('name');
+    }
+
+    public function index(Request $request)
+    {
+        $sections = self::sectionIndexQuery(
+            $request->query('search'),
+            $request->query('status'),
+            $request->query('grade_level')
+        )
             ->paginate(10)
-            ->withQueryString();
+            ->appends($request->only('search', 'status', 'grade_level'));
 
         $teachers = Teacher::with('user')
             ->where('status', 'active')

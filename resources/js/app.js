@@ -14,8 +14,8 @@ import "./teacher.js";
 
 
 // teacher modules
-import "./teacherSide/sidebar.js"
-
+import "./teacher-modules/t-sidebar.js";
+import './teacher-modules/t-sidebar.js'
 
 
 

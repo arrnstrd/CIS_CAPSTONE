@@ -25,7 +25,7 @@
             </div>
             <form action="{{ route('addStudent') }}" method="GET">
                 <div class="row g-3 align-items-center">
-                    <div class="col-10 col-md-7 col-lg-8">
+                    <div class="col-10 col-md-7 col-lg-4">
                         <div class="input-group">
                             <input type="search" name="query" class="form-control"
                                 placeholder="Search by name or student number..." value="{{ request('query') }}">

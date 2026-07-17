@@ -1,4 +1,10 @@
 function initializeEnrollmentForm() {
+    if (window.__enrollmentFormInitialized) {
+        return;
+    }
+
+    window.__enrollmentFormInitialized = true;
+
     // ─── Elements ───────────────────────────────────────────
     const addModal = document.getElementById("addEnrollmentModal");
     const addGradeLevel = document.getElementById("add_grade_level");
@@ -104,12 +110,20 @@ function initializeEnrollmentForm() {
 
     function resetSelectedStudent() {
         hiddenInput.value = "";
+        if (searchInput) {
+            searchInput.value = "";
+            searchInput.classList.remove("is-invalid");
+        }
         selectedBox.style.display = "none";
+        resultsBox.style.display = "none";
+        resultsBox.innerHTML = "";
     }
 
     if (addModal) {
         addModal.addEventListener("show.bs.modal", function (event) {
             const trigger = event.relatedTarget;
+
+            resetSelectedStudent();
 
             if (addSectionSelect) {
                 cacheSectionOptions(addSectionSelect);
@@ -126,9 +140,6 @@ function initializeEnrollmentForm() {
                     trigger.dataset.studentNumber || "",
                     trigger.dataset.studentName || "",
                 );
-                searchInput.classList.remove("is-invalid");
-                resultsBox.style.display = "none";
-                resultsBox.innerHTML = "";
             }
         });
     }
@@ -313,17 +324,23 @@ document.addEventListener("submit", function (event) {
         }
 
         searchField?.classList.remove("is-invalid");
-        window.ajaxCrud.submitAjaxForm(form);
+        window.ajaxCrud.submitAjaxForm(form, {
+            scope: form.dataset.ajaxScope || "#enrollment-table-pane",
+        });
     }
 
     if (form?.id === "editEnrollmentForm") {
         event.preventDefault();
-        window.ajaxCrud.submitAjaxForm(form);
+        window.ajaxCrud.submitAjaxForm(form, {
+            scope: form.dataset.ajaxScope || "#enrollment-table-pane",
+        });
     }
 
     if (form?.matches('[data-ajax-delete="enrollment"]')) {
         event.preventDefault();
-        window.ajaxCrud.submitAjaxDelete(form);
+        window.ajaxCrud.submitAjaxDelete(form, {
+            scope: form.dataset.ajaxScope || "#enrollment-table-pane",
+        });
     }
 });
 

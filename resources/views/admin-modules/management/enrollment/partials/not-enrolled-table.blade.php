@@ -19,6 +19,7 @@
                         class="btn btn-sm btn-dark"
                         data-bs-toggle="modal"
                         data-bs-target="#addEnrollmentModal"
+                        data-ajax-scope="#not-enrolled-tab"
                         data-student-id="{{ $student->id }}"
                         data-student-number="{{ $student->student_number ?? '' }}"
                         data-student-name="{{ $student->first_name }} {{ $student->last_name }}"

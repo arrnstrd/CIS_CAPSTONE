@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Student;
+use Illuminate\Support\Facades\Storage;
+
 class QrCode extends Model
 {
     //
@@ -23,7 +25,8 @@ class QrCode extends Model
     
     public function hasImage(): bool
     {
-        return !empty($this->image_path);
+        return !empty($this->image_path)
+            && Storage::disk('public')->exists($this->image_path);
     }
 
 

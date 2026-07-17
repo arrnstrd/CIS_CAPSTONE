@@ -41,10 +41,10 @@ class AuthController extends Controller
         // Redirect to role-based dashboard
         $user = $result['user'];
         return match ($user->role) {
-            'admin' => redirect()->route('admin.dashboard'),
+            'admin' => redirect()->route('attendance.index'),
             'teacher' => redirect()->route('teacher.dashboard'),
             'scanner_operator' => redirect()->route('scanner.dashboard'),
-            default => redirect()->route('dashboard'),
+            // default => redirect()->route('dashboard'),
         };
     }
 

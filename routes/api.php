@@ -1,12 +1,13 @@
 <?php
 
-use App\Http\Controllers\Enrollment\EnrollmentController;
-use App\Http\Controllers\Enrollment\SchoolYearController;
-use App\Http\Controllers\Enrollment\SectionController;
-use App\Http\Controllers\Management\StudentController;
+
+use App\Http\Controllers\AcademicFeature\EnrollmentController;
+use App\Http\Controllers\AcademicFeature\SchoolYearController;
+use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\Management\UserController;
-use App\Http\Controllers\Scanner\ScanController;
-use App\Http\Controllers\ScheduleConfigController;
+use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
+use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
+use App\Http\Controllers\Student\StudentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,7 @@ Route::get('/user', function (Request $request) {
 
 
 Route::post('/scan', [ScanController::class, 'scan']);
+
 
 
 //storing
