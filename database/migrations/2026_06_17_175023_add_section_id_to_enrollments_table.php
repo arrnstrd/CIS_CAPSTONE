@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('enrollments', function (Blueprint $table) {
-            $table->foreignId('section_id')
+        if (!Schema::hasColumn('enrollments', 'section_id')) {
+            Schema::table('enrollments', function (Blueprint $table) {
+                $table->foreignId('section_id')
                     ->nullable()
                     ->constrained('sections')
                     ->nullOnDelete();
-        });
+            });
+        }
     }
 
     /**
@@ -24,8 +26,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('enrollments', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('section_id');
-        });
+        if (Schema::hasColumn('enrollments', 'section_id')) {
+            Schema::table('enrollments', function (Blueprint $table) {
+                $table->dropConstrainedForeignId('section_id');
+            });
+        }
     }
 };

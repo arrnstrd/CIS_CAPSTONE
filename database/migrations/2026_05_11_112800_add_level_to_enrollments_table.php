@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('enrollments', function (Blueprint $table) {
-            $table->enum('level' , ['elementary', 'hs' ,'shs'])->after('school_year');
-        });
+        if (!Schema::hasColumn('enrollments', 'level')) {
+            Schema::table('enrollments', function (Blueprint $table) {
+                $table->string('level')->nullable();
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('enrollments', function (Blueprint $table) {
-            $table->dropColumn('level');
-        });
+        if (Schema::hasColumn('enrollments', 'level')) {
+            Schema::table('enrollments', function (Blueprint $table) {
+                $table->dropColumn('level');
+            });
+        }
     }
 };

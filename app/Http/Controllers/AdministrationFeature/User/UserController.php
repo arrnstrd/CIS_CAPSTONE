@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Management;
+namespace App\Http\Controllers\AdministrationFeature\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -16,7 +16,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate(array_merge(
-            $this->sharedValidationRules(),
+            $this->sharedValidationRules($request),
             [
                 'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
                 'password' => [
@@ -60,7 +60,7 @@ class UserController extends Controller
         }
 
         $validatedData = $request->validate(array_merge(
-            $this->sharedValidationRules(),
+            $this->sharedValidationRules($request),
             [
                 'email' => [
                     'required',
@@ -153,9 +153,9 @@ class UserController extends Controller
         }
     }
 
-    private function sharedValidationRules(): array
+    private function sharedValidationRules(Request $request): array
     {
-        return [
+        $rules = [
             'first_name' => [
                 'required',
                 'string',
@@ -177,6 +177,12 @@ class UserController extends Controller
                 'in:active,inactive,suspended',
             ],
         ];
+
+        if (Auth::check() && Auth::user()?->isAdmin()) {
+            $rules['current_password'] = ['required', 'current_password'];
+        }
+
+        return $rules;
     }
 
     private function normalizeEmail(array $validatedData): array
@@ -186,16 +192,3 @@ class UserController extends Controller
         return $validatedData;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

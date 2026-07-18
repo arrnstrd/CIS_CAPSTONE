@@ -2,18 +2,39 @@
 
 namespace App\Services\Administration;
 
-use App\Models\User;
 use App\Models\LoginLog;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthService
 {
     public function attemptLogin(string $email, string $password, string $ip, ?string $userAgent): array
     {
+        $key = 'login:' . $ip . ':' . strtolower($email);
+        $limitKey = 'login-lock:' . $ip . ':' . strtolower($email);
+
+        if (RateLimiter::tooManyAttempts($limitKey, 5)) {
+            LoginLog::create([
+                'user_id' => null,
+                'email_attempted' => $email,
+                'status' => 'locked_out',
+                'ip_address' => $ip,
+                'user_agent' => $userAgent,
+                'attempted_at' => now(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Too many failed attempts. Please try again later.',
+            ];
+        }
+
+        RateLimiter::hit($key, 60);
+
         $user = User::where('email', $email)->first();
 
-        // If no user found, log failed attempt with null user_id
         if (!$user) {
             LoginLog::create([
                 'user_id' => null,
@@ -30,7 +51,6 @@ class AuthService
             ];
         }
 
-        // If user found but status is not active, log locked_out
         if ($user->status !== 'active') {
             LoginLog::create([
                 'user_id' => $user->id,
@@ -47,8 +67,9 @@ class AuthService
             ];
         }
 
-        // If user is active, verify password
         if (!Hash::check($password, $user->password)) {
+            RateLimiter::hit($limitKey, 300);
+
             LoginLog::create([
                 'user_id' => $user->id,
                 'email_attempted' => $email,
@@ -64,7 +85,9 @@ class AuthService
             ];
         }
 
-        // Password is correct - log success and login
+        RateLimiter::clear($key);
+        RateLimiter::clear($limitKey);
+
         LoginLog::create([
             'user_id' => $user->id,
             'email_attempted' => $email,

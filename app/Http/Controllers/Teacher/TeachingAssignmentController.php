@@ -42,7 +42,7 @@ class TeachingAssignmentController extends Controller
         $subjects = Subject::orderBy('name')->get();
         $sections = Section::where('status', 'active')->orderBy('name')->get();
         $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get();
-        
+
         return view('teacher.teaching-assignments.create', compact('teachers', 'subjects', 'sections', 'schoolYears'));
     }
 
@@ -75,7 +75,7 @@ class TeachingAssignmentController extends Controller
         $subjects = Subject::orderBy('name')->get();
         $sections = Section::where('status', 'active')->orderBy('name')->get();
         $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get();
-        
+
         return view('teacher.teaching-assignments.edit', compact('teachingAssignment', 'teachers', 'subjects', 'sections', 'schoolYears'));
     }
 
@@ -105,7 +105,7 @@ class TeachingAssignmentController extends Controller
     public function byTeacher(Request $request, Teacher $teacher)
     {
         $schoolYearId = $request->query('school_year_id');
-        
+
         if ($schoolYearId) {
             $teachingAssignments = $this->teachingAssignmentService->getByTeacherAndSchoolYear($teacher->id, $schoolYearId);
         } else {
@@ -115,7 +115,7 @@ class TeachingAssignmentController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
-        
+
         return view('teacher.teaching-assignments.by-teacher', compact('teacher', 'teachingAssignments'));
     }
 
@@ -125,7 +125,7 @@ class TeachingAssignmentController extends Controller
     public function bySection(Request $request, Section $section)
     {
         $schoolYearId = $request->query('school_year_id');
-        
+
         if ($schoolYearId) {
             $teachingAssignments = $this->teachingAssignmentService->getBySectionAndSchoolYear($section->id, $schoolYearId);
         } else {
@@ -135,7 +135,7 @@ class TeachingAssignmentController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
         }
-        
+
         return view('teacher.teaching-assignments.by-section', compact('section', 'teachingAssignments'));
     }
 }

@@ -6,24 +6,31 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
- public function up(): void
-{
-    Schema::table('enrollments', function (Blueprint $table) {
-        $table->dropUnique('student_id_school_year_unique');
+    public function up(): void
+    {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
 
-        $table->dropColumn('school_year');
-    });
-}
+        Schema::table('enrollments', function (Blueprint $table) {
+            $table->dropUnique('student_id_school_year_unique');
+            $table->dropColumn('school_year');
+        });
+    }
 
-public function down(): void
-{
-    Schema::table('enrollments', function (Blueprint $table) {
-        $table->string('school_year')->nullable();
+    public function down(): void
+    {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
 
-        $table->unique(
-            ['student_id', 'school_year'],
-            'student_id_school_year_unique'
-        );
-    });
-}
+        Schema::table('enrollments', function (Blueprint $table) {
+            $table->string('school_year')->nullable();
+
+            $table->unique(
+                ['student_id', 'school_year'],
+                'student_id_school_year_unique'
+            );
+        });
+    }
 };

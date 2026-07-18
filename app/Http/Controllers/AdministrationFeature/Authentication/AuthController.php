@@ -4,6 +4,7 @@ namespace App\Http\Controllers\AdministrationFeature\Authentication;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Administration\Authentication\LoginRequest;
+use App\Models\User;
 use App\Services\Administration\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -38,13 +39,18 @@ class AuthController extends Controller
                 ->with('error', $result['message']);
         }
 
-        // Redirect to role-based dashboard
         $user = $result['user'];
-        return match ($user->role) {
-            'admin' => redirect()->route('attendance.index'),
-            'teacher' => redirect()->route('teacher.dashboard'),
-            'scanner_operator' => redirect()->route('scanner.dashboard'),
-            // default => redirect()->route('dashboard'),
+
+        return $this->redirectBasedOnRole($user);
+    }
+
+    protected function redirectBasedOnRole(User $user)
+    {
+        return match (true) {
+            $user->isAdmin() => redirect()->route('admin.dashboard'),
+            $user->isTeacher() => redirect()->route('teacher.dashboard'),
+            $user->isScannerOperator() => redirect()->route('scanner.dashboard'),
+            default => redirect()->route('login'),
         };
     }
 

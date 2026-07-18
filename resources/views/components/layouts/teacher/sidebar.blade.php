@@ -4,20 +4,20 @@
 
     <div class="sidebar-content">
 
-          <div class="sidebar-brand  ">
-              <!-- Brand -->
-           <div class="sidebar-teacher-info">
-        <div class="sidebar-teacher-avatar">
-            <i class="fa-solid fa-circle-user"></i>
+        <div class="sidebar-brand  ">
+            <!-- Brand -->
+            <div class="sidebar-teacher-info">
+                <div class="sidebar-teacher-avatar">
+                    <i class="fa-solid fa-circle-user"></i>
+                </div>
+                <div class="sidebar-teacher-details">
+                    <span class="sidebar-teacher-name">Ms. Maria Santos</span>
+                    <span class="sidebar-teacher-email">ms.santos@school.edu</span>
+                    <span class="sidebar-teacher-class">Grade 8 - Rizal</span>
+                </div>
+            </div>
+
         </div>
-        <div class="sidebar-teacher-details">
-            <span class="sidebar-teacher-name">Ms. Maria Santos</span>
-            <span class="sidebar-teacher-email">ms.santos@school.edu</span>
-            <span class="sidebar-teacher-class">Grade 8 - Rizal</span>
-        </div>
-          </div>
-      
-    </div>
 
 
         <!-- Navigation Menu -->
@@ -29,34 +29,32 @@
                     <small>General</small>
                 </li>
                 <li>
-                    <a href="/room-attendance">
+                    <a href="{{ route('teacher.dashboard') }}">
                         <i class="fas fa-exchange-alt"></i>
                         <span>Room Attendance</span>
                     </a>
                 </li>
 
-                
                 <li>
-                    <a href="/teacher/student-management">
+                    <a href="{{ route('teacher.student-management') }}">
                         <i class="fas fa-chalkboard-teacher"></i>
                         <span>Student Management</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ route('teacher.grading-system') }}">
                         <i class="fas fa-user-shield"></i>
                         <span>Grading System</span>
                     </a>
                 </li>
-  
 
                 <li>
-                    <a href="{{ route('teaching-assignments.index') }}">
+                    <a href="{{ route('teacher.schedule-config') }}">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Schedule Configuration</span>
                     </a>
                 </li>
-          
+
                 {{-- <li>
                     <a href="#">
                         <i class="fas fa-qrcode"></i>
@@ -88,10 +86,8 @@
 
     <!-- Logout -->
     <div class="sidebar-footer p-3">
-        <a href="#"
-           data-bs-toggle="modal"
-           data-bs-target="#logoutModal"
-           class="btn-logout-action w-100 d-flex align-items-center justify-content-center gap-2">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
+            class="btn-logout-action w-100 d-flex align-items-center justify-content-center gap-2">
             <i class="fas fa-sign-out-alt"></i>
             <span>Log Out</span>
         </a>

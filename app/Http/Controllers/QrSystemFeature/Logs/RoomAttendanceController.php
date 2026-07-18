@@ -10,6 +10,7 @@ use App\Models\TeachingAssignment;
 use App\Services\QrSystem\RoomAttendanceService;
 use Illuminate\Http\Request;
 
+
 class RoomAttendanceController extends Controller
 {
     protected RoomAttendanceService $roomAttendanceService;
@@ -40,7 +41,7 @@ class RoomAttendanceController extends Controller
             ->where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         return view('qr-system.attendance.room-attendance.create', compact('teachingAssignments'));
     }
 
@@ -99,7 +100,7 @@ class RoomAttendanceController extends Controller
     {
         $date = $request->query('date', now()->toDateString());
         $roomAttendance = $this->roomAttendanceService->getByTeachingAssignmentAndDate($teachingAssignment->id, $date);
-        
+
         return view('qr-system.attendance.room-attendance.by-assignment-date', compact('teachingAssignment', 'date', 'roomAttendance'));
     }
 
@@ -110,7 +111,7 @@ class RoomAttendanceController extends Controller
     {
         $teachingAssignment->load(['section.enrollments.student']);
         $date = now()->toDateString();
-        
+
         return view('qr-system.attendance.room-attendance.bulk-create', compact('teachingAssignment', 'date'));
     }
 
