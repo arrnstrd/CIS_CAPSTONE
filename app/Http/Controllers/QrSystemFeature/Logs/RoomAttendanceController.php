@@ -22,14 +22,87 @@ class RoomAttendanceController extends Controller
 
     /**
      * Display a listing of room attendance records.
+     * Scoped to the logged-in teacher, with search, classroom, and date filters.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roomAttendance = RoomAttendance::with(['teachingAssignment', 'enrollment.student', 'enrollment.section'])
-            ->orderBy('attendance_date', 'desc')
+        $query = RoomAttendance::with([
+            'teachingAssignment.subject',
+            'teachingAssignment.section',
+            'enrollment.student',
+            'enrollment.section',
+        ]);
+
+        // Scope to the logged-in teacher's own classes
+        // NOTE: assumes TeachingAssignment has a `teacher_id` column — adjust if named differently
+        if (auth()->check()) {
+            $query->whereHas('teachingAssignment', function ($q) {
+                $q->where('teacher_id', auth()->id());
+            });
+        }
+
+        // Search by student number or name
+        $search = $request->query('query');
+        if ($search) {
+            $query->whereHas('enrollment.student', function ($q) use ($search) {
+                $q->where('student_number', 'like', "%{$search}%")
+                  ->orWhere('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by classroom/section
+        $sectionId = $request->query('section_id');
+        if ($sectionId) {
+            $query->whereHas('enrollment.section', fn($q) => $q->where('id', $sectionId));
+        }
+
+        // Date filter
+        $dateFilter = $request->query('date_filter', 'today');
+        switch ($dateFilter) {
+            case 'today':
+                $query->whereDate('attendance_date', now()->toDateString());
+                break;
+            case 'week':
+                $query->whereBetween('attendance_date', [now()->startOfWeek(), now()->endOfWeek()]);
+                break;
+            case 'month':
+                $query->whereMonth('attendance_date', now()->month)
+                      ->whereYear('attendance_date', now()->year);
+                break;
+            case 'custom':
+                if ($request->query('custom_start_date') && $request->query('custom_end_date')) {
+                    $query->whereBetween('attendance_date', [
+                        $request->query('custom_start_date'),
+                        $request->query('custom_end_date'),
+                    ]);
+                }
+                break;
+        }
+
+        $roomAttendance = $query->orderBy('attendance_date', 'desc')
             ->orderBy('created_at', 'desc')
-            ->get();
-        return view('teacher-modules.room-attendance', compact('roomAttendance'));
+            ->paginate(15)
+            ->withQueryString();
+
+        // Sections for the classroom filter dropdown, scoped to this teacher
+        $sections = TeachingAssignment::with('section')
+            ->where('teacher_id', auth()->id())
+            ->get()
+            ->pluck('section')
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        return view('teacher-modules.room-attendance', [
+            'roomAttendance' => $roomAttendance,
+            'sections' => $sections,
+            'dateFilter' => $dateFilter,
+            'query' => $search,
+            'sectionId' => $sectionId,
+            'customStartDate' => $request->query('custom_start_date'),
+            'customEndDate' => $request->query('custom_end_date'),
+        ]);
     }
 
     /**

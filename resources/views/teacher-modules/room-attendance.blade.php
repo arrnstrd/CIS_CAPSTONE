@@ -9,7 +9,7 @@
 
     <div class="card border mx-3 mb-3">
         <div class="card-body p-4">
-            <form action="{{ route('attendance.index') }}" method="GET">
+            <form action="{{ route('room-attendance.index') }}" method="GET">
 
                 <div class="row g-3 align-items-end mb-3">
                     <div class="col-12 col-lg-6">
@@ -22,12 +22,12 @@
                         </div>
                     </div>
 
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <label class="form-label text-muted text-uppercase small fw-bold">Scan type</label>
-                        <select class="form-select" name="scan_type" onchange="this.form.submit()">
-                            <option value="all">Teaching Loads</option>
-        
-                            <option value="RE_EXIT">Select</option>
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <label class="form-label text-muted text-uppercase small fw-bold">Classroom</label>
+                        <select class="form-select" name="section_id" onchange="this.form.submit()">
+                            <option value="">All Sections</option>
+                            <option value="1">Grade 8 - Rizal</option>
+                            <option value="2">Grade 8 - Bonifacio</option>
                         </select>
                     </div>
 
@@ -39,18 +39,9 @@
                             <option value="afternoon">Afternoon</option>
                         </select>
                     </div>
-
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <label class="form-label text-muted text-uppercase small fw-bold">Flag type</label>
-                        <select class="form-select" name="flag_type" onchange="this.form.submit()">
-                            <option value="all">All</option>
-                            <option value="late_arrival">Late arrival</option>
-                            <option value="invalid_checkout">Invalid checkout</option>
-                        </select>
-                    </div>
                 </div>
 
-                {{-- ROW 2: Date filter (left) | Custom range (expands inline) | Help + Resend All (right, fixed)
+                {{-- ROW 2: Date filter (left) | Custom range (expands inline) | Reset + Download (right, fixed)
                 --}}
                 <div class="row g-2 align-items-center">
 
@@ -96,7 +87,7 @@
 
                     <div class="col-12 col-lg-auto ms-lg-auto d-flex gap-2">
 
-                        <a href="{{ route('attendance.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('room-attendance.index') }}" class="btn btn-outline-secondary">
                             Reset
                         </a>
                         <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#">

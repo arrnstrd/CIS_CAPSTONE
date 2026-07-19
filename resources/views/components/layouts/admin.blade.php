@@ -58,6 +58,7 @@
     </div>
 
 
+    @include('components.logout-modal')
 
 </body>
 

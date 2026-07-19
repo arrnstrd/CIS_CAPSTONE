@@ -81,17 +81,20 @@ img.logo {
   font-weight: bold;
   text-align: center;
   color: #1f2937;
+  margin-bottom: 8px;
 }
 
 .form-subtitle {
   text-align: center;
   color: #6b7280;
   font-size: 14px;
-  margin-bottom: 32px;
+  line-height: 1.5;
+  padding: 0 20px;
+  margin-bottom: 36px;
 }
 
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .input-group label {
@@ -103,7 +106,7 @@ img.logo {
 
 .input-group input {
   width: 100%;
-  padding: 12px;
+  padding: 13px 14px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 14px;
@@ -114,12 +117,13 @@ img.logo {
   font-size: 13px;
   color: #6b7280;
   text-decoration: none;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
+  text-align: left;
 }
 
 .btn-signin {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   background-color: #3b82f6;
   color: white;
   font-size: 16px;
@@ -127,6 +131,7 @@ img.logo {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  letter-spacing: 0.3px;
 }
 
 .divider {
@@ -234,7 +239,7 @@ img.logo {
     <form action="{{route('login.attempt')}}" method="POST" accept-charset="utf-8">
       @csrf
            <h1 class="form-title">Sign In</h1>
-        <p class="form-subtitle">Admin Access</p>
+        <p class="form-subtitle">Enter your credentials to access your assigned dashboard.</p>
 
         <div class="input-group">
       <label for="email" class="form-label">Email</label>
@@ -251,12 +256,14 @@ img.logo {
 
         <button type="submit" class="btn-signin">Sign In</button>
 
+        {{--
         <div class="divider">
           <span>OR</span>
         </div>
 
         <p class="not-admin">Not an administrator?</p>
         <a href="#" class="switch-portal">⇄ Switch to Teacher Portal</a>
+        --}}
     </form>
      
       </div>
