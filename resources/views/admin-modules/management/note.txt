@@ -1,0 +1,12 @@
+The webpages located under:
+
+* `views/admin-modules/management/enrollment`
+* `views/admin-modules/management/sections.blade.php`
+
+are the original files. These files represent the previously separated or dedicated webpages for each feature.
+
+The features were later consolidated into a single webpage located under:
+
+* `views/admin-modules/academic/`
+
+The original files are intentionally retained as backup/reference files and should not be modified or deleted unless explicitly instructed.

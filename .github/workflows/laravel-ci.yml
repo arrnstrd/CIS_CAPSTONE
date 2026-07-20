@@ -1,0 +1,63 @@
+name: Capstone CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+
+    # 1. THE DATABASE: Spin up a native MySQL service
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: attendance_db
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3' 
+        extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
+
+    - name: Install Composer Dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    # 4. ENVIRONMENT: Create the .env file
+    - name: Copy .env
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+    # 5. LARAVEL SETUP: Generate the app key
+    - name: Generate Application Key
+      run: php artisan key:generate
+
+    # 6. DATABASE: Run your migrations to build your tables
+    - name: Run Migrations
+      env:
+        DB_CONNECTION: mysql
+        DB_DATABASE: CIS_CAPSTONE
+        DB_PORT: 3306
+        DB_USERNAME: root
+        DB_PASSWORD: admin
+      run: php artisan migrate --force
+
+    # 7. TESTS: Run your automated tests
+    - name: Execute tests
+      env:
+        DB_CONNECTION: mysql
+        DB_DATABASE: CIS_CAPSTONE
+        DB_PORT: 3306
+        DB_USERNAME: root
+        DB_PASSWORD: admin
+      run: php artisan test
