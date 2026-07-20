@@ -31,8 +31,26 @@ jobs:
         php-version: '8.5' 
         extensions: mbstring, dom, fileinfo, mysql, pdo_mysql
 
+
+      # node js to compile bootstrap
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '24' # Set this to match your v24.14.0
+
+    
+
     - name: Install Composer Dependencies
       run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      # NEW: Install and Build Frontend (Fixes Vite Manifest Error)
+    - name: Install NPM Packages
+      run: npm install
+
+    - name: Build Assets
+      run: npm run build
+
+
 
     # 4. ENVIRONMENT: Create the .env file
     - name: Copy .env
