@@ -10,6 +10,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Override;
 
+use Laravel\Sanctum\HasApiTokens;
+
 class User extends Authenticatable
 {
     public const ROLE_ADMIN = 'admin';
@@ -17,8 +19,7 @@ class User extends Authenticatable
     public const ROLE_SCANNER_OPERATOR = 'scanner_operator';
 
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
-
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
     /**
      * The attributes that are mass assignable.
      */
