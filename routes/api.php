@@ -8,6 +8,7 @@ use App\Http\Controllers\QrSystemFeature\ClassroomScanner\ClassroomScanControlle
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
 use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -53,3 +54,14 @@ Route::post('/school-year/{id}', [SchoolYearController::class, 'destroy']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'restore']);
 
 Route::apiResource('teaching-assignments', TeachingAssignmentController::class);
+
+
+
+        // teacher feature
+        Route::prefix('teachers')->group(function () {
+            Route::get('/', [TeacherController::class, 'index'])->name('teachers.index');
+            Route::post('/', [TeacherController::class, 'store'])->name('teachers.store');
+            Route::put('/{id}', [TeacherController::class, 'update'])->name('teachers.update');
+            Route::delete('/{id}', [TeacherController::class, 'destroy'])->name('teachers.destroy');
+            Route::patch('/{id}/restore', [TeacherController::class, 'restore'])->name('teachers.restore');
+        });
