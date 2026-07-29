@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\Guardian;
-use App\Models\QrCode;
 use App\Models\SchoolYear;
 use App\Models\Student;
+use App\Services\StudentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 
 class StudentController extends Controller
 {
+    public function __construct(
+        private readonly StudentService $studentService,
+    ) {}
+
 
     public function index(Request $request)
     {
@@ -61,66 +62,29 @@ class StudentController extends Controller
         ]);
 
 
-        $student = DB::transaction(function () use ($validatedData) {
-
-            // 1. create student first (without student_number)
-            $student = Student::create([
+        $student = $this->studentService->createStudent(
+            studentData: [
                 'lrn' => $validatedData['lrn'],
-                'first_name' => strip_tags($validatedData['first_name']),
-                'last_name' => strip_tags($validatedData['last_name']),
-
-                'middle_name' => isset($validatedData['middle_name'])
-                    ? strip_tags($validatedData['middle_name'])
-                    : null,
-
-                'sex'  => $validatedData['sex'],
-                'address' => strip_tags($validatedData['address']),
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'middle_name' => $validatedData['middle_name'] ?? null,
+                'sex' => $validatedData['sex'],
+                'address' => $validatedData['address'],
                 'birthdate' => $validatedData['birthdate'],
                 'status' => $validatedData['status'],
-            ]);
-
-            // // 2. generate student number using real DB ID
-            // $studentNumber = 'STU-' . now()->year . '-' . str_pad($student->id, 4, '0', STR_PAD_LEFT);
-
-            // $student->update([
-            //     'student_number' => $studentNumber
-            // ]);
-
-
-            
-
-            // 3. create guardian linked to student
-            Guardian::create([
-                'student_id' => $student->id,
-                'name' => strip_tags($validatedData['name']),
+            ],
+            guardianData: [
+                'name' => $validatedData['name'],
                 'relationship' => $validatedData['relationship'],
-                'email' => strip_tags($validatedData['email']),
-            ]);
-
-            //4. generate Unique qr code 
-            do {
-                $qrCode = Str::upper(Str::random(32));
-            } while (QrCode::where('code', $qrCode)->exists());
-
-            //5/ stoer qr
-
-            QrCode::create([
-                'student_id' => $student->id,
-                'code' => $qrCode,
-                'is_active' => true
-            ]);
-
-
-            return $student;
-        });
-
-
+                'email' => $validatedData['email'],
+            ],
+        );
 
         return response()->json([
             'message' => 'Student and guardian created successfully',
             'student' => $student->load(['guardian', 'qrCode']),
 
-           
+
         ]);
     }
 
@@ -145,33 +109,24 @@ class StudentController extends Controller
             'email' => ['required', 'email']
         ]);
 
-        DB::transaction(function () use ($student, $validatedData) {
-
-            // update student
-            $student->update([
+        $student = $this->studentService->updateStudent(
+            student: $student,
+            studentData: [
                 'lrn' => $validatedData['lrn'],
-                'first_name' => strip_tags($validatedData['first_name']),
-                'last_name' => strip_tags($validatedData['last_name']),
-                'middle_name' => isset($validatedData['middle_name'])
-                    ? strip_tags($validatedData['middle_name'])
-                    : null,
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'middle_name' => $validatedData['middle_name'] ?? null,
                 'sex' => $validatedData['sex'],
-                'address' => strip_tags($validatedData['address']),
+                'address' => $validatedData['address'],
                 'birthdate' => $validatedData['birthdate'],
                 'status' => $validatedData['status'],
-            ]);
-
-            // update guardian (1:1)
-            $student->guardian()->updateOrCreate(
-                ['student_id' => $student->id],
-                [
-                    'name' => strip_tags($validatedData['name']),
-                    'relationship' => $validatedData['relationship'],
-                    'email' => strip_tags($validatedData['email'])
-                ]
-            );
-        });
-        
+            ],
+            guardianData: [
+                'name' => $validatedData['name'],
+                'relationship' => $validatedData['relationship'],
+                'email' => $validatedData['email'],
+            ],
+        );
 
         return response()->json([
             'message' => 'Student information updated successfully',
@@ -226,7 +181,8 @@ class StudentController extends Controller
         return response()->json($students);
     }
 
-    public function show($id){
+    public function show($id)
+    {
         return Student::with('guardian')->findOrFail($id);
     }
 }

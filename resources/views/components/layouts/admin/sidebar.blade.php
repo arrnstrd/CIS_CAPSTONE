@@ -73,6 +73,12 @@
                         <span>Students</span>
                     </a>
                 </li>
+                <li>
+                    <a href="/bulk-import">
+                        <i class="fas fa-file-import"></i>
+                        <span>Bulk Import</span>
+                    </a>
+                </li>
 
                 <li class="sidebar-section-label">
                     <small>setup</small>

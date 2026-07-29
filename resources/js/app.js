@@ -11,6 +11,7 @@ import "./student.js";
 import "./section.js";
 import "./schedule-config.js";
 import "./teacher.js";
+import "./import.js";
 
 
 // teacher modules

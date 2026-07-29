@@ -7,59 +7,17 @@ use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Student;
+use App\Services\EnrollmentService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 
 class EnrollmentController extends Controller
-
 {
-    private function enrollmentLevelForSection(Section $section): string
-    {
-        return match ($section->level) {
-            'elementary' => 'elementary',
-            'highschool' => 'hs',
-            'senior_high_school' => 'shs',
-            default => $section->level,
-        };
-    }
-
-    private function isDuplicateEnrollmentError(QueryException $exception): bool
-    {
-        return $exception->getCode() === '23000'
-            && str_contains($exception->getMessage(), 'enrollments_student_school_year_unique');
-    }
-
-    private function applySectionSnapshot(array $data, Section $section): array
-    {
-        $data['level'] = $this->enrollmentLevelForSection($section);
-
-        if (Schema::hasColumn('enrollments', 'grade_level')) {
-            $data['grade_level'] = (string) $section->grade_level;
-        }
-
-        if (Schema::hasColumn('enrollments', 'section')) {
-            $data['section'] = $section->name;
-        }
-
-        return $data;
-    }
-
-    private function sectionHasCapacity(Section $section, int $schoolYearId, ?int $ignoreEnrollmentId = null): bool
-    {
-        $query = Enrollment::query()
-            ->where('section_id', $section->id)
-            ->where('school_year_id', $schoolYearId)
-            ->where('status', 'active');
-
-        if ($ignoreEnrollmentId !== null) {
-            $query->where('id', '!=', $ignoreEnrollmentId);
-        }
-
-        return $query->count() < $section->capacity;
-    }
+    public function __construct(
+        private readonly EnrollmentService $enrollmentService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -117,8 +75,8 @@ class EnrollmentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-            // return view('admin-modules.academic.enrollment');
-            
+        // return view('admin-modules.academic.enrollment');
+
         return view('admin-modules.management.enrollment.index', compact('enrollments', 'school_years', 'statusCounts', 'studentWithoutEnrollment', 'notEnrolledStudents', 'activeSchoolYear', 'activeSections'));
     }
 
@@ -138,50 +96,34 @@ class EnrollmentController extends Controller
                 'required',
                 'exists:students,id',
                 Rule::unique('enrollments', 'student_id')
-                    ->where(fn ($query) => $query->where('school_year_id', $currentSchoolYear->id)),
+                    ->where(fn($query) => $query->where('school_year_id', $currentSchoolYear->id)),
             ],
             'section_id' => ['required', 'exists:sections,id'],
             'session_type' => ['required', 'in:morning,afternoon,whole_day'],
             'status' => ['required', 'in:active,inactive'],
         ]);
 
-        $section = Section::findOrFail($validatedData['section_id']);
-
-        if ($section->status !== 'active') {
-            return response()->json([
-                'message' => 'Selected section is inactive.'
-            ], 422);
-        }
-
-        if (! $this->sectionHasCapacity($section, $currentSchoolYear->id)) {
-            return response()->json([
-                'message' => 'Selected section has reached its capacity.'
-            ], 422);
-        }
-
-        $validatedData['school_year_id'] = $currentSchoolYear->id;
-        $validatedData = $this->applySectionSnapshot($validatedData, $section);
-    
-
         try {
-            $enrollment = Enrollment::create($validatedData)->load(['student', 'schoolYear', 'section']);
+            $enrollment = $this->enrollmentService->createEnrollment(
+                $validatedData,
+                $currentSchoolYear->id
+            );
+
+            $enrollment->load(['student', 'schoolYear', 'section']);
 
             return response()->json([
                 'message' => 'Enrollment created successfully',
-                'data' => $enrollment
+                'data' => $enrollment,
             ]);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (QueryException $e) {
-            if (! $this->isDuplicateEnrollmentError($e)) {
-                report($e);
-
-                return response()->json([
-                    'message' => 'Unable to create enrollment. Please check the selected student and section.',
-                    // 'error' => $e->getMessage()
-                ], 422);
-            }
+            report($e);
 
             return response()->json([
-                'message' => 'Student is already enrolled for this school year'
+                'message' => 'Unable to create enrollment. Please check the selected student and section.',
             ], 422);
         }
     }
@@ -198,47 +140,27 @@ class EnrollmentController extends Controller
             ], 422);
         }
 
-        $schoolYearId = $enrollment->school_year_id ?? $currentSchoolYear->id;
-
         $validatedData = $request->validate([
             'section_id' => ['required', 'exists:sections,id'],
             'session_type' => ['required', 'in:morning,afternoon,whole_day'],
             'status' => ['required', 'in:active,inactive'],
         ]);
 
-        $section = Section::findOrFail($validatedData['section_id']);
+        try {
+            $enrollment = $this->enrollmentService->updateEnrollment(
+                $enrollment,
+                $validatedData
+            );
 
-        if ($section->status !== 'active') {
             return response()->json([
-                'message' => 'Selected section is inactive.'
+                'message' => 'Enrollment updated successfully',
+                'data' => $enrollment->fresh()->load(['student', 'schoolYear', 'section']),
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
             ], 422);
         }
-
-        if (! $this->sectionHasCapacity($section, $schoolYearId, $enrollment->id)) {
-            return response()->json([
-                'message' => 'Selected section has reached its capacity.'
-            ], 422);
-        }
-
-        $validatedData = $this->applySectionSnapshot($validatedData, $section);
-
-        $exists = Enrollment::where('student_id', $enrollment->student_id)
-            ->where('school_year_id', $schoolYearId)
-            ->where('id', '!=', $id)
-            ->exists();
-
-        if ($exists) {
-            return response()->json([
-                'message' => 'This student is already enrolled for this school year'
-            ], 422);
-        }
-
-        $enrollment->update($validatedData);
-
-        return response()->json([
-            'message' => 'Enrollment updated successfully',
-            'data' => $enrollment->fresh()->load(['student', 'schoolYear', 'section'])
-        ]);
     }
 
 
@@ -272,10 +194,4 @@ class EnrollmentController extends Controller
             ], 500);
         }
     }
-
-
-
-
-
-    
 }

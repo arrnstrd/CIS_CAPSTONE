@@ -183,6 +183,28 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/schedule-configuration', [ScheduleConfigController::class, 'store'])->name('schedconfig.store');
         Route::put('/schedule-configuration/{id}', [ScheduleConfigController::class, 'update'])->name('schedconfig.update');
         Route::delete('/schedule-configuration/{id}', [ScheduleConfigController::class, 'destroy'])->name('schedconfig.destroy');
+
+        // bulk import
+        Route::get('/bulk-import', fn() => view('admin-modules.management.bulk-import'))->name('bulk-import');
+
+        Route::prefix('import')->name('import.')->group(function () {
+            Route::post('/upload', [\App\Http\Controllers\Import\BulkImportController::class, 'upload'])->name('upload');
+            Route::get('/active', [\App\Http\Controllers\Import\BulkImportController::class, 'active'])->name('active');
+            Route::get('/history/list', [\App\Http\Controllers\Import\BulkImportController::class, 'history'])->name('history');
+            Route::get('/template/download', [\App\Http\Controllers\Import\BulkImportController::class, 'downloadTemplate'])->name('template');
+
+            Route::get('/{import}', [\App\Http\Controllers\Import\BulkImportController::class, 'show'])->name('show');
+            Route::get('/{import}/status', [\App\Http\Controllers\Import\BulkImportController::class, 'status'])->name('status');
+            Route::post('/{import}/validate', [\App\Http\Controllers\Import\BulkImportController::class, 'validate'])->name('validate');
+            Route::post('/{import}/replace-file', [\App\Http\Controllers\Import\BulkImportController::class, 'replaceFile'])->name('replace-file');
+            Route::post('/{import}/confirm', [\App\Http\Controllers\Import\BulkImportController::class, 'confirm'])->name('confirm');
+            Route::post('/{import}/cancel', [\App\Http\Controllers\Import\BulkImportController::class, 'cancel'])->name('cancel');
+            Route::get('/{import}/issues', [\App\Http\Controllers\Import\BulkImportController::class, 'issues'])->name('issues');
+            Route::post('/{import}/issues/acknowledge-all', [\App\Http\Controllers\Import\BulkImportController::class, 'acknowledgeAll'])->name('issues.acknowledge-all');
+            Route::get('/{import}/export-errors', [\App\Http\Controllers\Import\BulkImportController::class, 'exportErrors'])->name('export-errors');
+
+            Route::post('/issues/{issue}/acknowledge', [\App\Http\Controllers\Import\BulkImportController::class, 'acknowledge'])->name('issues.acknowledge');
+        });
     });
 
     // ============================================================
