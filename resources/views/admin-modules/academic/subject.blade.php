@@ -3,8 +3,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3">
             <h3 class="fw-semibold text-dark m-0 fs-5">Subject Records</h3>
             <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
-                data-bs-toggle="modal" data-bs-target="#addSubjectModal"
-                data-ajax-scope="#subject-table-pane">
+                data-bs-toggle="modal" data-bs-target="#addSubjectModal" data-ajax-scope="#subject-table-pane">
                 <span>+ Add Subject</span>
             </button>
         </div>
@@ -16,22 +15,14 @@
         <div class="p-3 border-bottom">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-8">
-                    <input type="search"
-                        class="form-control"
-                        name="subject_search"
-                        value="{{ request('subject_search') }}"
-                        placeholder="Search subject code, name, or level..."
-                        data-tab-filter
-                        data-tab-scope="#subject-table-pane"
-                        data-page-param="subject_page">
+                    <input type="search" class="form-control" name="subject_search"
+                        value="{{ request('subject_search') }}" placeholder="Search subject code, name, or level..."
+                        data-tab-filter data-tab-scope="#subject-table-pane" data-page-param="subject_page">
                 </div>
 
                 <div class="col-lg-4">
-                    <select name="subject_level"
-                        class="form-select"
-                        data-tab-filter
-                        data-tab-scope="#subject-table-pane"
-                        data-page-param="subject_page">
+                    <select name="subject_level" class="form-select" data-tab-filter
+                        data-tab-scope="#subject-table-pane" data-page-param="subject_page">
                         <option value="">All Levels</option>
                         @foreach (\App\Models\Subject::levelOptions() as $value => $label)
                             <option value="{{ $value }}" {{ \App\Models\Subject::normalizeLevel(request('subject_level')) === $value ? 'selected' : '' }}>
@@ -67,21 +58,21 @@
 
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <button type="button" class="dropdown-item js-edit-subject"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editSubjectModal"
-                                            data-id="{{ $subject->id }}"
-                                            data-code="{{ $subject->code }}"
-                                            data-name="{{ $subject->name }}"
+                                        <button type="button" class="dropdown-item js-edit-subject" data-bs-toggle="modal"
+                                            data-bs-target="#editSubjectModal" data-id="{{ $subject->id }}"
+                                            data-code="{{ $subject->code }}" data-name="{{ $subject->name }}"
                                             data-level="{{ $subject->level }}"
                                             data-update-url="{{ route('subjects.update', $subject) }}"
                                             data-ajax-scope="#subject-table-pane">
                                             Edit
                                         </button>
                                     </li>
-                                    <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form action="{{ route('subjects.destroy', $subject) }}" method="POST" data-ajax-delete="subject" data-ajax-scope="#subject-table-pane">
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li>
+                                        <form action="{{ route('subjects.destroy', $subject) }}" method="POST"
+                                            data-ajax-delete="subject" data-ajax-scope="#subject-table-pane">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item text-danger">Delete</button>
@@ -93,20 +84,22 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-5">No subjects found for the selected criteria.</td>
+                        <td colspan="4" class="text-center text-muted py-5">No subjects found for the selected criteria.
+                        </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
 
-        <div class="pagination px-3 py-3">
+        <div class="px-3 py-3">
             {{ $subjects->links() }}
         </div>
     </div>
 </div>
 
 <x-modal id="addSubjectModal" modalTitle="Add Subject" size="modal-md">
-    <form id="addSubjectForm" action="{{ route('subjects.store') }}" method="POST" data-ajax-form="subject" data-ajax-scope="#subject-table-pane">
+    <form id="addSubjectForm" action="{{ route('subjects.store') }}" method="POST" data-ajax-form="subject"
+        data-ajax-scope="#subject-table-pane">
         @csrf
         <div data-ajax-errors></div>
 

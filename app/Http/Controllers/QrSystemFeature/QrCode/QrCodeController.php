@@ -12,20 +12,18 @@ use Illuminate\Http\Request;
 
 class QrCodeController extends Controller
 {
-    public function __construct(private QRCodeService $qrCodeService)
-    {
-    }
+    public function __construct(private QRCodeService $qrCodeService) {}
 
     public function index(Request $request)
     {
-           $sections = Section::with('advisor.user')
+        $sections = Section::with('advisor.user')
             ->filterGradeLevel($request->grade_level)
-          
+
             ->search($request->search)
             ->withCount('students')
             ->orderBy('grade_level')
             ->orderBy('name')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
         return view(
             'admin-modules.utilities.qr-generation',

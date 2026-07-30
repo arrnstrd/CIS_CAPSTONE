@@ -32,16 +32,16 @@ class EmailLogController extends Controller
                     ->orWhere('first_name', 'like', "%{$query}%")
                     ->orWhere('last_name', 'like', "%{$query}%");
             })
-            ->orWhere('email', 'like', "%{$query}%");
+                ->orWhere('email', 'like', "%{$query}%");
         });
 
         // Apply scan type filter
-        $baseQuery = $baseQuery->when($scan_type && $scan_type !== 'all', function($q) use ($scan_type) {
+        $baseQuery = $baseQuery->when($scan_type && $scan_type !== 'all', function ($q) use ($scan_type) {
             $q->where('scan_type', $scan_type);
         });
 
         // Apply status filter
-        $baseQuery = $baseQuery->when($status && $status !== 'all', function($q) use ($status) {
+        $baseQuery = $baseQuery->when($status && $status !== 'all', function ($q) use ($status) {
             $q->where('status', $status);
         });
 
@@ -51,7 +51,7 @@ class EmailLogController extends Controller
         // Apply sorting and pagination
         $emailLogs = $baseQuery->orderBy('last_attempt_at', 'desc')
             ->orderBy('student_id')
-            ->paginate(20)
+            ->paginate(15)
             ->withQueryString();
 
         return view('admin-modules.monitoring.emails', compact(
@@ -89,7 +89,7 @@ class EmailLogController extends Controller
                     return $q->last7Days();
 
                 case 'month':
-                    return $q->where('created_at' , '>=' , now()->subMonth());
+                    return $q->where('created_at', '>=', now()->subMonth());
 
                 case 'custom':
                     if ($customStartDate && $customEndDate) {
@@ -157,7 +157,6 @@ class EmailLogController extends Controller
             ]);
 
             return true;
-
         } catch (\Exception $e) {
 
             $emailLog->update([

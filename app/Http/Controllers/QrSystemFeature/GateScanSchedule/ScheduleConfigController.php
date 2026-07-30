@@ -7,11 +7,12 @@ use App\Models\ScheduleConfig;
 use Illuminate\Http\Request;
 
 class ScheduleConfigController extends Controller
-{       
-    public function index(){
+{
+    public function index()
+    {
         $scheduleConfigs = ScheduleConfig::orderBy('level')
             ->orderBy('session_type')
-            ->paginate(20)
+            ->paginate(15)
             ->withQueryString();
 
         return view('admin-modules.utilities.schedule-configuration', compact('scheduleConfigs'));

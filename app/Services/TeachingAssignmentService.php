@@ -35,7 +35,7 @@ class TeachingAssignmentService
         return $query
             ->orderBy('school_year_id')
             ->orderBy('section_id')
-            ->paginate(20)
+            ->paginate(15)
             ->withQueryString();
     }
 
@@ -95,7 +95,7 @@ class TeachingAssignmentService
         $assignment = TeachingAssignment::findOrFail($id);
 
         try {
-            DB::transaction(fn () => $assignment->delete());
+            DB::transaction(fn() => $assignment->delete());
 
             return ['success' => true, 'data' => $assignment];
         } catch (QueryException $e) {

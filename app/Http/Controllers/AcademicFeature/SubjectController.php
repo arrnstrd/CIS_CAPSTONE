@@ -34,7 +34,7 @@ class SubjectController extends Controller
                         ->orWhere('level', 'like', "%{$search}%");
                 });
             })
-            ->when(filled($level), fn (Builder $query) => $query->where('level', $level))
+            ->when(filled($level), fn(Builder $query) => $query->where('level', $level))
             ->orderBy('name');
     }
 
@@ -44,7 +44,7 @@ class SubjectController extends Controller
             $request->query('subject_search'),
             $request->query('subject_level')
         )
-            ->paginate(10, ['*'], 'subject_page')
+            ->paginate(15, ['*'], 'subject_page')
             ->appends($request->only('subject_search', 'subject_level'));
 
         return view('academic.subjects.index', compact('subjects'));

@@ -195,7 +195,7 @@ function initializeEnrollmentForm() {
 
                         if (student.is_enrolled) {
                             const badge = document.createElement("span");
-                            badge.className = "badge rounded-pill bg-secondary";
+                            badge.className = "badge-dot dot-secondary";
                             badge.textContent = "Enrolled";
                             item.appendChild(badge);
                             item.classList.add("text-muted", "pe-none");

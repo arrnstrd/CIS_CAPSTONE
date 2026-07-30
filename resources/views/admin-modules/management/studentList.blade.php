@@ -86,9 +86,9 @@
                     </th>
                 </tr>
             </thead>
-           
-                <tbody>
-                     @forelse($students as $student)
+
+            <tbody>
+                @forelse($students as $student)
                     <tr>
                         <td>{{  $student->student_number  }} </td>
                         <td> {{  $student->last_name }},
@@ -140,7 +140,7 @@
 
                     </tr>
 
-            @empty
+                @empty
                     <tr>
                         <td colspan="6" class="text-center text-muted py-5">
                             <div class="d-flex flex-column align-items-center justify-content-center">
@@ -157,9 +157,9 @@
         </x-slot>
 
     </x-ui.table>
-    <div class="pagination">
+    <!-- Pagination -->
+    <div class="px-3 py-3">
         {{ $students->links() }}
-
     </div>
 
 

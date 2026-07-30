@@ -30,7 +30,7 @@ class SectionController extends Controller
             $request->query('status'),
             $request->query('grade_level')
         )
-            ->paginate(10)
+            ->paginate(15)
             ->appends($request->only('search', 'status', 'grade_level'));
 
         $teachers = Teacher::with('user')
@@ -39,7 +39,7 @@ class SectionController extends Controller
             ->sortBy('full_name')
             ->values();
 
-       return view('admin-modules.management.sections', compact('sections', 'teachers'));
+        return view('admin-modules.management.sections', compact('sections', 'teachers'));
     }
 
     // for validation rules for the store and update

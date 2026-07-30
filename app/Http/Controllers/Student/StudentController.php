@@ -34,7 +34,7 @@ class StudentController extends Controller
                 $q->where('sex', $sex);
             })
             ->orderBy('student_number', 'desc')
-            ->paginate(25)
+            ->paginate(15)
             ->withQueryString();
 
 

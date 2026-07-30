@@ -62,7 +62,7 @@ class EnrollmentController extends Controller
                 });
             })
             ->orderBy('student_id')
-            ->paginate(25)
+            ->paginate(15)
             ->withQueryString();
 
         $statusCounts = Enrollment::getEnrollmentStatistics($activeSchoolYear->id);
@@ -72,7 +72,7 @@ class EnrollmentController extends Controller
         $notEnrolledStudents = Student::withoutCurrentEnrollment($activeSchoolYear->id)
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         // return view('admin-modules.academic.enrollment');

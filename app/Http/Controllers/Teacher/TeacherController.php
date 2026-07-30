@@ -49,10 +49,10 @@ class TeacherController extends Controller
             ->search($request->search)
             ->filterStatus($request->status)
             ->latest('created_at')
-            ->paginate(25)
+            ->paginate(15)
             ->withQueryString();
 
-       return view('admin-modules.management.teacher', compact('teachers'));
+        return view('admin-modules.management.teacher', compact('teachers'));
     }
 
 

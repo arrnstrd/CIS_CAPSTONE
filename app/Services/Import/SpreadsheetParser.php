@@ -301,22 +301,22 @@ class SpreadsheetParser
         ['last' => $last, 'first' => $first, 'middle' => $middle] = $this->parseName($learnerNameRaw);
 
         return new ImportRowData(
-            rowNumber:            $rowNumber,
-            lrn:                  $this->cellToString($raw['lrn'] ?? null),
-            learnerName:          $learnerNameRaw,
-            firstName:            $first,
-            lastName:             $last,
-            middleName:           $middle,
-            sex:                  $this->normalizeSex($raw['sex'] ?? null),
-            birthdate:            $this->normalizeDate($raw['birth date'] ?? null),
-            address:              $this->cellToString($raw['complete address'] ?? null),
-            guardianName:         $this->cellToString($raw['guardian name'] ?? null),
+            rowNumber: $rowNumber,
+            lrn: $this->cellToString($raw['lrn'] ?? null),
+            learnerName: $learnerNameRaw,
+            firstName: $first,
+            lastName: $last,
+            middleName: $middle,
+            sex: $this->normalizeSex($raw['sex'] ?? null),
+            birthdate: $this->normalizeDate($raw['birth date'] ?? null),
+            address: $this->cellToString($raw['complete address'] ?? null),
+            guardianName: $this->cellToString($raw['guardian name'] ?? null),
             guardianRelationship: $this->normalizeGuardianRelationship($raw['guardian relationship'] ?? null),
-            guardianEmail:        $this->normalizeEmail($raw['guardian email'] ?? null),
-            departmentLevel:      $this->normalizeDepartmentLevel($raw['department level'] ?? null),
-            gradeLevel:           $this->cellToString($raw['grade level'] ?? null),
-            sectionName:          $this->cellToString($raw['section'] ?? null),
-            sessionType:          $this->normalizeSessionType($raw['session type'] ?? null),
+            guardianEmail: $this->normalizeEmail($raw['guardian email'] ?? null),
+            departmentLevel: $this->normalizeDepartmentLevel($raw['department level'] ?? null),
+            gradeLevel: $this->cellToString($raw['grade level'] ?? null),
+            sectionName: $this->cellToString($raw['section'] ?? null),
+            sessionType: $this->normalizeSessionType($raw['session type'] ?? null),
         );
     }
 

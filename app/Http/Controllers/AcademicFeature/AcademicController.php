@@ -63,7 +63,7 @@ class AcademicController extends Controller
             })
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->paginate(10, ['*'], 'enrollment_page')
+            ->paginate(15, ['*'], 'enrollment_page')
             ->appends($request->only('enrollment_search'));
     }
 
@@ -74,7 +74,7 @@ class AcademicController extends Controller
             $request->query('section_status'),
             $request->query('section_grade_level')
         )
-            ->paginate(10, ['*'], 'section_page')
+            ->paginate(15, ['*'], 'section_page')
             ->appends($request->only('section_search', 'section_status', 'section_grade_level'));
     }
 
@@ -84,7 +84,7 @@ class AcademicController extends Controller
             $request->query('subject_search'),
             $request->query('subject_level')
         )
-            ->paginate(10, ['*'], 'subject_page')
+            ->paginate(15, ['*'], 'subject_page')
             ->appends($request->only('subject_search', 'subject_level'));
     }
 }

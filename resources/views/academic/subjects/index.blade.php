@@ -55,7 +55,8 @@
                             <td>{{ $subject->name }}</td>
                             <td>{{ $subject->level_label }}</td>
                             <td>
-                                <a href="{{ route('subjects.edit', $subject) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a href="{{ route('subjects.edit', $subject) }}"
+                                    class="btn btn-sm btn-outline-secondary">Edit</a>
                             </td>
                         </tr>
                     @empty
@@ -66,7 +67,7 @@
                 </tbody>
             </table>
 
-            <div class="pagination px-3 py-3">
+            <div class="px-3 py-3">
                 {{ $subjects->links() }}
             </div>
         </div>

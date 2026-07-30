@@ -64,14 +64,32 @@ class ImportProcessor
                 if ($sectionId !== null && $row->hasEnrollmentData()) {
                     $enrollmentData = $row->toEnrollmentData();
                     $enrollmentData['section_id'] = $sectionId;
+                    $enrollmentData['student_id'] = $student->id;
 
                     try {
                         $this->enrollmentService->createEnrollment($enrollmentData, $schoolYearId);
                     } catch (\RuntimeException $e) {
                         $this->logIssue($import, $row, $this->classifyEnrollmentError($e), 'warning', $e->getMessage());
                     }
-                }
+                } elseif ($sectionId === null && $row->hasEnrollmentData()) {
+                    // Only log if no section_not_found issue already exists for this row
+                    // (validation may have already created one)
+                    $alreadyLogged = $import->issues()
+                        ->where('row_number', $row->rowNumber)
+                        ->where('issue_type', 'section_not_found')
+                        ->exists();
 
+                    if (!$alreadyLogged) {
+                        $this->logIssue(
+                            $import,
+                            $row,
+                            'section_not_found',
+                            'warning',
+                            "Enrollment skipped because section \"{$row->sectionName}\" could not be found " .
+                                "for {$row->departmentLevel} grade {$row->gradeLevel}.",
+                        );
+                    }
+                }
             } catch (\Throwable $e) {
                 $failedCount++;
 

@@ -149,7 +149,7 @@ class BulkImportController extends Controller
             $query->where('issue_type', $request->issue_type);
         }
 
-        $perPage = min((int) $request->get('per_page', 20), 100);
+        $perPage = min((int) $request->get('per_page', 15), 100);
         $issues  = $query->paginate($perPage);
 
         return response()->json($issues);
@@ -191,7 +191,7 @@ class BulkImportController extends Controller
             $query->where('status', $request->status);
         }
 
-        $perPage = min((int) $request->get('per_page', 20), 100);
+        $perPage = min((int) $request->get('per_page', 15), 100);
         $imports = $query->paginate($perPage);
 
         return response()->json([

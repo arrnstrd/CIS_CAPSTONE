@@ -3,8 +3,7 @@
         <div class="d-flex justify-content-between align-items-center gap-3">
             <h3 class="fw-semibold text-dark m-0 fs-5">Section Records</h3>
             <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
-                data-bs-toggle="modal" data-bs-target="#addSectionModal"
-                data-ajax-scope="#section-table-pane">
+                data-bs-toggle="modal" data-bs-target="#addSectionModal" data-ajax-scope="#section-table-pane">
                 <span>+ Add Section</span>
             </button>
         </div>
@@ -16,22 +15,14 @@
         <div class="p-3 border-bottom">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-6">
-                    <input type="search"
-                        class="form-control"
-                        name="section_search"
-                        value="{{ request('section_search') }}"
-                        placeholder="Search by section name or grade level..."
-                        data-tab-filter
-                        data-tab-scope="#section-table-pane"
-                        data-page-param="section_page">
+                    <input type="search" class="form-control" name="section_search"
+                        value="{{ request('section_search') }}" placeholder="Search by section name or grade level..."
+                        data-tab-filter data-tab-scope="#section-table-pane" data-page-param="section_page">
                 </div>
 
                 <div class="col-lg-3">
-                    <select name="section_grade_level"
-                        class="form-select"
-                        data-tab-filter
-                        data-tab-scope="#section-table-pane"
-                        data-page-param="section_page">
+                    <select name="section_grade_level" class="form-select" data-tab-filter
+                        data-tab-scope="#section-table-pane" data-page-param="section_page">
                         <option value="">All Grade Levels</option>
                         @for ($grade = 1; $grade <= 12; $grade++)
                             <option value="{{ $grade }}" {{ request('section_grade_level') == $grade ? 'selected' : '' }}>
@@ -42,14 +33,13 @@
                 </div>
 
                 <div class="col-lg-3">
-                    <select name="section_status"
-                        class="form-select"
-                        data-tab-filter
-                        data-tab-scope="#section-table-pane"
-                        data-page-param="section_page">
+                    <select name="section_status" class="form-select" data-tab-filter
+                        data-tab-scope="#section-table-pane" data-page-param="section_page">
                         <option value="">All Status</option>
-                        <option value="active" {{ request('section_status') === 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="inactive" {{ request('section_status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        <option value="active" {{ request('section_status') === 'active' ? 'selected' : '' }}>Active
+                        </option>
+                        <option value="inactive" {{ request('section_status') === 'inactive' ? 'selected' : '' }}>Inactive
+                        </option>
                     </select>
                 </div>
             </div>
@@ -78,9 +68,9 @@
                         <td>{{ $section->students_count }} / {{ $section->capacity }}</td>
                         <td>
                             @if ($section->status === 'active')
-                                <span class="badge bg-success">Active</span>
+                                <span class="badge-dot dot-success">Active</span>
                             @else
-                                <span class="badge bg-secondary">Inactive</span>
+                                <span class="badge-dot dot-secondary">Inactive</span>
                             @endif
                         </td>
                         <td>
@@ -101,11 +91,14 @@
                                             Edit
                                         </button>
                                     </li>
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
 
                                     @if ($section->status === 'active')
                                         <li>
-                                            <form action="{{ route('sections.destroy', $section->id) }}" method="POST" data-ajax-delete="section" data-ajax-scope="#section-table-pane">
+                                            <form action="{{ route('sections.destroy', $section->id) }}" method="POST"
+                                                data-ajax-delete="section" data-ajax-scope="#section-table-pane">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="dropdown-item text-danger">Archive</button>
@@ -113,7 +106,8 @@
                                         </li>
                                     @else
                                         <li>
-                                            <form action="{{ route('sections.restore', $section->id) }}" method="POST" data-ajax-restore="section" data-ajax-scope="#section-table-pane">
+                                            <form action="{{ route('sections.restore', $section->id) }}" method="POST"
+                                                data-ajax-restore="section" data-ajax-scope="#section-table-pane">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit" class="dropdown-item text-success">Restore</button>
@@ -126,20 +120,22 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-5">No sections found for the selected criteria.</td>
+                        <td colspan="7" class="text-center text-muted py-5">No sections found for the selected criteria.
+                        </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
 
-        <div class="pagination px-3 py-3">
+        <div class="px-3 py-3">
             {{ $sections->links() }}
         </div>
     </div>
 </div>
 
 <x-modal id="addSectionModal" modalTitle="Add Section" size="modal-md">
-    <form id="addSectionForm" action="{{ route('sections.store') }}" method="POST" data-ajax-scope="#section-table-pane">
+    <form id="addSectionForm" action="{{ route('sections.store') }}" method="POST"
+        data-ajax-scope="#section-table-pane">
         @csrf
         <div data-ajax-errors></div>
 
@@ -203,7 +199,8 @@
 </x-modal>
 
 <x-modal id="editSectionModal" modalTitle="Edit Section" size="modal-md">
-    <form id="editSectionForm" method="POST" data-update-url="{{ route('sections.update', ':id') }}" data-ajax-scope="#section-table-pane">
+    <form id="editSectionForm" method="POST" data-update-url="{{ route('sections.update', ':id') }}"
+        data-ajax-scope="#section-table-pane">
         @csrf
         @method('PUT')
         <div data-ajax-errors></div>
@@ -246,7 +243,8 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Capacity</label>
-                <input type="number" name="capacity" id="edit_section_capacity" class="form-control" min="1" max="100" required>
+                <input type="number" name="capacity" id="edit_section_capacity" class="form-control" min="1" max="100"
+                    required>
             </div>
 
             <div class="col-md-6 mb-3">

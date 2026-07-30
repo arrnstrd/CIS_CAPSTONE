@@ -200,19 +200,19 @@
                         </td>
 
                         <td>
-                            <span class="badge bg-light text-dark">{{ $emailLog->scan_type }}</span>
+                            <span class="badge-dot dot-secondary">{{ $emailLog->scan_type }}</span>
                         </td>
 
                         <td>
                             @php
-                                $statusColors = [
+                                $statusDotMap = [
                                     'sent' => 'success',
                                     'failed' => 'danger',
                                     'pending' => 'warning'
                                 ];
-                                $statusColor = $statusColors[$emailLog->status] ?? 'secondary';
+                                $dotStatus = $statusDotMap[$emailLog->status] ?? 'secondary';
                             @endphp
-                            <span class="badge bg-{{ $statusColor }} bg-opacity-10 text-{{ $statusColor }}">
+                            <span class="badge-dot dot-{{ $dotStatus }}">
                                 {{ ucfirst($emailLog->status) }}
                             </span>
                         </td>
@@ -249,7 +249,7 @@
         </x-ui.table>
 
         <!-- Pagination -->
-        <div class=" mx-2 mt-3 ">
+        <div class="px-3 py-3">
             {{ $emailLogs->links() }}
         </div>
 

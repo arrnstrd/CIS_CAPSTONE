@@ -135,7 +135,8 @@
         </x-slot>
     </x-ui.table>
 
-    <div class="pagination">
+    <!-- Pagination -->
+    <div class="px-3 py-3">
         {{ $teachers->links() }}
     </div>
 
