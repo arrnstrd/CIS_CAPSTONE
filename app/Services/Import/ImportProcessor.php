@@ -8,6 +8,7 @@ use App\Models\BulkImportIssue;
 use App\Services\EnrollmentService;
 use App\Services\StudentService;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Processes validated rows one by one through existing services.
@@ -69,7 +70,22 @@ class ImportProcessor
                     try {
                         $this->enrollmentService->createEnrollment($enrollmentData, $schoolYearId);
                     } catch (\RuntimeException $e) {
-                        $this->logIssue($import, $row, $this->classifyEnrollmentError($e), 'warning', $e->getMessage());
+                        $issueType = $this->classifyEnrollmentError($e);
+                        $friendlyMessage = match ($issueType) {
+                            'section_inactive' => 'Enrollment skipped because the assigned section is no longer active.',
+                            'section_full' => 'Enrollment skipped because the section has reached its maximum capacity.',
+                            'already_enrolled' => 'Enrollment skipped because this student is already enrolled for the current school year.',
+                            default => 'Enrollment could not be completed due to an unexpected error.',
+                        };
+
+                        Log::error('Bulk import enrollment failed', [
+                            'import_id' => $import->id,
+                            'row_number' => $row->rowNumber,
+                            'issue_type' => $issueType,
+                            'exception' => $e->getMessage(),
+                        ]);
+
+                        $this->logIssue($import, $row, $issueType, 'warning', $friendlyMessage);
                     }
                 } elseif ($sectionId === null && $row->hasEnrollmentData()) {
                     // Only log if no section_not_found issue already exists for this row
@@ -93,12 +109,26 @@ class ImportProcessor
             } catch (\Throwable $e) {
                 $failedCount++;
 
+                $issueType = $this->classifyStudentError($e);
+                $friendlyMessage = match ($issueType) {
+                    'duplicate_lrn' => 'A student with this LRN already exists in the system.',
+                    default => 'An unexpected system error occurred while processing this row. Please contact the system administrator.',
+                };
+
+                Log::error('Bulk import row processing failed', [
+                    'import_id' => $import->id,
+                    'row_number' => $row->rowNumber,
+                    'issue_type' => $issueType,
+                    'exception' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
                 $this->logIssue(
                     $import,
                     $row,
-                    $this->classifyStudentError($e),
+                    $issueType,
                     'error',
-                    $e->getMessage(),
+                    $friendlyMessage,
                 );
             }
 

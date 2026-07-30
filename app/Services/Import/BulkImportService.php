@@ -8,6 +8,7 @@ use App\Models\SchoolYear;
 use App\Models\User;
 use App\Enums\ImportStatus;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -299,8 +300,14 @@ class BulkImportService
         try {
             $this->processor->process($import, $validRows, $sectionIds, $schoolYear->id);
         } catch (\Throwable $e) {
+            Log::error('Bulk import processing failed', [
+                'import_id' => $import->id,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             $import->update(['status' => 'failed']);
-            throw new \RuntimeException('Import processing failed: ' . $e->getMessage(), 0, $e);
+            throw new \RuntimeException('Import processing failed. Please check the import issues for details.');
         }
 
         return $import->fresh();

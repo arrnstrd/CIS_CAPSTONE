@@ -23,7 +23,7 @@
     {{-- Tabs: History (default) + Issues --}}
     <div class="row">
         <div class="col-12">
-            <ul class="nav nav-tabs nav-fill mx-3 mb-4" id="mainTabs" role="tablist">
+            <ul class="nav nav-pills modern-nav-pills mx-3 mb-4" id="mainTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#historyPane"
                         type="button" role="tab">
@@ -34,7 +34,7 @@
                     <button class="nav-link" id="issues-tab" data-bs-toggle="tab" data-bs-target="#issuesPane"
                         type="button" role="tab">
                         <i class="fas fa-exclamation-triangle me-1"></i> Issues
-                        <span class="badge-dot dot-danger ms-1 d-none" id="issuesBadge">0</span>
+                        <span class="badge bg-danger-soft ms-1 d-none" id="issuesBadge">0</span>
                     </button>
                 </li>
             </ul>
@@ -285,4 +285,7 @@
             </div>
         </div>
     </div>
+
+
+    
 </x-layouts.admin>
