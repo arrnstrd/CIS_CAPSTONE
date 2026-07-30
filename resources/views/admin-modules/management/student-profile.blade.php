@@ -51,12 +51,16 @@
                             Year</small>
                     </div>
                     <div class="border rounded-3 px-3 py-2 text-center" style="min-width: 90px;">
-                        <p class="mb-0 fw-bold">{{ $currentEnrollment?->sectionModel?->grade_level ?? $currentEnrollment?->grade_level ?? '—' }}</p>
+                        <p class="mb-0 fw-bold">
+                            {{ $currentEnrollment?->sectionModel?->grade_level ?? $currentEnrollment?->grade_level ?? '—' }}
+                        </p>
                         <small class="text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Grade
                             Level</small>
                     </div>
                     <div class="border rounded-3 px-3 py-2 text-center" style="min-width: 90px;">
-                        <p class="mb-0 fw-bold">{{ $currentEnrollment?->sectionModel?->name ?? $currentEnrollment?->getAttribute('section') ?? '—' }}</p>
+                        <p class="mb-0 fw-bold">
+                            {{ $currentEnrollment?->sectionModel?->name ?? $currentEnrollment?->getAttribute('section') ?? '—' }}
+                        </p>
                         <small class="text-muted text-uppercase"
                             style="font-size: 10px; letter-spacing: 0.05em;">Section</small>
                     </div>
@@ -175,11 +179,13 @@
                     {{-- Tab Content --}}
                     <div class="tab-content flex-grow-1 overflow-auto pt-4">
 
-                        <x-student-profile.academic-tab :student="$student" :current-enrollment="$currentEnrollment" :enrollment-history="$enrollmentHistory" />
+                        <x-student-profile.academic-tab :student="$student" :current-enrollment="$currentEnrollment"
+                            :enrollment-history="$enrollmentHistory" />
 
                         <x-student-profile.attendance-tab :student="$student" />
 
-                        <x-student-profile.qr-tab :student="$student" :current-enrollment="$currentEnrollment" :qr-code-url="$qrCodeUrl" />
+                        <x-student-profile.qr-tab :student="$student" :current-enrollment="$currentEnrollment"
+                            :qr-code-url="$qrCodeUrl" />
 
                     </div>
 
