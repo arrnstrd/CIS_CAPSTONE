@@ -15,12 +15,7 @@ use Illuminate\Http\Request;
 
 class TeachingAssignmentController extends Controller
 {
-    protected TeachingAssignmentService $teachingAssignmentService;
-
-    public function __construct(TeachingAssignmentService $teachingAssignmentService)
-    {
-        $this->teachingAssignmentService = $teachingAssignmentService;
-    }
+    public function __construct(protected TeachingAssignmentService $teachingAssignmentService) {}
 
     /**
      * Display a listing of teaching assignments.
@@ -29,8 +24,15 @@ class TeachingAssignmentController extends Controller
     {
         $teachingAssignments = TeachingAssignment::with(['teacher', 'subject', 'section', 'schoolYear'])
             ->orderBy('created_at', 'desc')
-            ->get();
-        return view('teacher-modules.schedule-config', compact('teachingAssignments'));
+            ->paginate(15)
+            ->withQueryString();
+
+        $teachers = Teacher::with('user')->where('status', 'active')->get();
+        $subjects = Subject::orderBy('name')->get();
+        $sections = Section::where('status', 'active')->orderBy('name')->get();
+        $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get();
+
+        return view('teacher-modules.schedule-config', compact('teachingAssignments', 'teachers', 'subjects', 'sections', 'schoolYears'));
     }
 
     /**
@@ -51,9 +53,25 @@ class TeachingAssignmentController extends Controller
      */
     public function store(StoreTeachingAssignmentRequest $request)
     {
-        $teachingAssignment = $this->teachingAssignmentService->create($request->validated());
-        return redirect()->route('teaching-assignments.index')
-            ->with('success', 'Teaching assignment created successfully.');
+        try {
+            $teachingAssignment = $this->teachingAssignmentService->create($request->validated());
+            $teachingAssignment->load(['teacher', 'subject', 'section', 'schoolYear']);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Teaching assignment created successfully.',
+                    'data' => $teachingAssignment,
+                ], 201);
+            }
+
+            return redirect()->route('teaching-assignments.index')
+                ->with('success', 'Teaching assignment created successfully.');
+        } catch (\InvalidArgumentException $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $e->getMessage(), 'errors' => []], 422);
+            }
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -84,17 +102,38 @@ class TeachingAssignmentController extends Controller
      */
     public function update(UpdateTeachingAssignmentRequest $request, TeachingAssignment $teachingAssignment)
     {
-        $teachingAssignment = $this->teachingAssignmentService->update($teachingAssignment, $request->validated());
-        return redirect()->route('teaching-assignments.index')
-            ->with('success', 'Teaching assignment updated successfully.');
+        try {
+            $teachingAssignment = $this->teachingAssignmentService->update($teachingAssignment, $request->validated());
+            $teachingAssignment->load(['teacher', 'subject', 'section', 'schoolYear']);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Teaching assignment updated successfully.',
+                    'data' => $teachingAssignment,
+                ]);
+            }
+
+            return redirect()->route('teaching-assignments.index')
+                ->with('success', 'Teaching assignment updated successfully.');
+        } catch (\InvalidArgumentException $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $e->getMessage(), 'errors' => []], 422);
+            }
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     /**
      * Remove the specified teaching assignment.
      */
-    public function destroy(TeachingAssignment $teachingAssignment)
+    public function destroy(Request $request, TeachingAssignment $teachingAssignment)
     {
         $this->teachingAssignmentService->delete($teachingAssignment);
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Teaching assignment deleted successfully.']);
+        }
+
         return redirect()->route('teaching-assignments.index')
             ->with('success', 'Teaching assignment deleted successfully.');
     }

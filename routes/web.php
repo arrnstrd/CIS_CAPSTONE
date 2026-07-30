@@ -225,13 +225,16 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/teacher/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'destroy'])->name('room-attendance.destroy');
 
         Route::get('/teacher/teaching-assignments', [TeachingAssignmentController::class, 'index'])->name('teacher.teaching-assignments.index');
+        Route::post('/teacher/teaching-assignments', [TeachingAssignmentController::class, 'store'])->name('teacher.teaching-assignments.store');
+        Route::put('/teacher/teaching-assignments/{teachingAssignment}', [TeachingAssignmentController::class, 'update'])->name('teacher.teaching-assignments.update');
+        Route::delete('/teacher/teaching-assignments/{teachingAssignment}', [TeachingAssignmentController::class, 'destroy'])->name('teacher.teaching-assignments.destroy');
         Route::get('/teacher/teaching-assignments/{teachingAssignment}/room-attendance', [RoomAttendanceController::class, 'byTeachingAssignmentAndDate'])->name('teaching-assignments.room-attendance');
         Route::get('/teacher/teaching-assignments/{teachingAssignment}/room-attendance/bulk-create', [RoomAttendanceController::class, 'bulkCreateForm'])->name('teaching-assignments.room-attendance.bulk-create');
         Route::post('/teacher/teaching-assignments/{teachingAssignment}/room-attendance/bulk', [RoomAttendanceController::class, 'bulkStore'])->name('teaching-assignments.room-attendance.bulk-store');
 
         Route::get('/teacher/student-management', fn() => view('teacher-modules.student-management'))->name('teacher.student-management');
         Route::get('/teacher/grading-system', fn() => view('teacher-modules.grading-system'))->name('teacher.grading-system');
-        Route::get('/teacher/schedule-config', fn() => view('teacher-modules.schedule-config'))->name('teacher.schedule-config');
+        Route::get('/teacher/schedule-config', [TeachingAssignmentController::class, 'index'])->name('teacher.schedule-config');
     });
 
     // ============================================================
