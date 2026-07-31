@@ -51,6 +51,13 @@ Route::get('/layout/teacher', function () {
 
 Route::middleware(['auth'])->group(function () {
 
+    // ------------------------------------------------------------
+    // SHARED / ACCESSIBLE TEACHER DASHBOARD FOR TESTING
+    // (Bypasses strict role check so Admin can view teacher logs)
+    // ------------------------------------------------------------
+    Route::get('/teacher/dashboard', [RoomAttendanceController::class, 'index'])->name('teacher.dashboard');
+    Route::get('/teacher/room-attendance', [RoomAttendanceController::class, 'index'])->name('room-attendance.index');
+
     // ============================================================
     // ADMIN FEATURE
     // ============================================================
@@ -211,12 +218,7 @@ Route::middleware(['auth'])->group(function () {
     // TEACHER FEATURE
     // ============================================================
 
-    Route::middleware(['auth', 'role:teacher'])->group(function () {
-        Route::get('/teacher/dashboard', function () {
-            return view('teacher-modules.room-attendance');
-        })->name('teacher.dashboard');
-
-        Route::get('/teacher/room-attendance', [RoomAttendanceController::class, 'index'])->name('room-attendance.index');
+    Route::middleware(['role:teacher'])->group(function () {
         Route::get('/teacher/room-attendance/create', [RoomAttendanceController::class, 'create'])->name('room-attendance.create');
         Route::post('/teacher/room-attendance', [RoomAttendanceController::class, 'store'])->name('room-attendance.store');
         Route::get('/teacher/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'show'])->name('room-attendance.show');
