@@ -74,7 +74,7 @@
 
     {{-- Teaching Assignment Modal --}}
     <x-modal id="assignmentModal" modalTitle="Teaching Assignment">
-        <form id="assignmentForm" data-ajax-form>
+        <form id="assignmentForm" method="POST" data-ajax-form>
             @csrf
             <input type="hidden" name="_method" value="POST" id="formMethod">
             <input type="hidden" name="assignment_id" id="assignmentId">

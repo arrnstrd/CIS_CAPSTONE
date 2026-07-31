@@ -46,9 +46,9 @@ class ScanController extends Controller
             return response()->json(['message' => 'No active enrollment'], 404);
         }
 
-        $enrollment->loadMissing('section');
+        $enrollment->loadMissing('sectionModel');
 
-        if (!$enrollment->section) {
+        if (!$enrollment->sectionModel) {
             return response()->json(['message' => 'Enrollment section not found'], 404);
         }
 
@@ -59,7 +59,7 @@ class ScanController extends Controller
         // Resolve schedule
         $resolver = new ScheduleResolver();
         $activeSchedule = $resolver->resolve(
-            $enrollment->section->level,
+            $enrollment->sectionModel->level,
             $enrollment->session_type,
             $currentTime
         );
