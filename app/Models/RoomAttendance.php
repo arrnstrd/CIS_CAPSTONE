@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class RoomAttendance extends Model
 {
-    protected $table = 'room_attendance';
+    use HasFactory;
 
-    public const UPDATED_AT = null;
+    /**
+     * Explicitly specify the table name.
+     * Overrides Laravel's default pluralization ('room_attendances').
+     */
+    protected $table = 'room_attendance';
 
     protected $fillable = [
         'teaching_assignment_id',
@@ -16,13 +21,8 @@ class RoomAttendance extends Model
         'attendance_date',
         'time_in',
         'time_out',
+        'status',
         'remarks',
-    ];
-
-    protected $casts = [
-        'attendance_date' => 'date',
-        'time_in' => 'datetime',
-        'time_out' => 'datetime',
     ];
 
     public function teachingAssignment()

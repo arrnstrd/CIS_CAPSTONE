@@ -10,7 +10,6 @@ use App\Models\TeachingAssignment;
 use App\Services\QrSystem\RoomAttendanceService;
 use Illuminate\Http\Request;
 
-
 class RoomAttendanceController extends Controller
 {
     protected RoomAttendanceService $roomAttendanceService;
@@ -22,92 +21,21 @@ class RoomAttendanceController extends Controller
 
     /**
      * Display a listing of room attendance records.
-     * Scoped to the logged-in teacher, with search, classroom, and date filters.
      */
     public function index(Request $request)
     {
-        $query = RoomAttendance::with([
+        // Pinalitan mula $attendances papuntang $roomAttendance para mag-match sa Blade template
+        $roomAttendance = RoomAttendance::with([
             'teachingAssignment.subject',
             'teachingAssignment.section',
-            'enrollment.student',
-            'enrollment.section',
-        ]);
+            'enrollment.student'
+        ])
+        ->latest()
+        ->paginate(20);
 
-        // Scope to the logged-in teacher's own classes
-        // NOTE: assumes TeachingAssignment has a `teacher_id` column — adjust if named differently
-        if (auth()->check()) {
-            $query->whereHas('teachingAssignment', function ($q) {
-                $q->where('teacher_id', auth()->id());
-            });
-        }
-
-        // Search by student number or name
-        $search = $request->query('query');
-        if ($search) {
-            $query->whereHas('enrollment.student', function ($q) use ($search) {
-                $q->where('student_number', 'like', "%{$search}%")
-                  ->orWhere('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter by classroom/section
-        $sectionId = $request->query('section_id');
-        if ($sectionId) {
-            $query->whereHas('enrollment.section', fn($q) => $q->where('id', $sectionId));
-        }
-
-        // Date filter
-        $dateFilter = $request->query('date_filter', 'today');
-        switch ($dateFilter) {
-            case 'today':
-                $query->whereDate('attendance_date', now()->toDateString());
-                break;
-            case 'week':
-                $query->whereBetween('attendance_date', [now()->startOfWeek(), now()->endOfWeek()]);
-                break;
-            case 'month':
-                $query->whereMonth('attendance_date', now()->month)
-                      ->whereYear('attendance_date', now()->year);
-                break;
-            case 'custom':
-                if ($request->query('custom_start_date') && $request->query('custom_end_date')) {
-                    $query->whereBetween('attendance_date', [
-                        $request->query('custom_start_date'),
-                        $request->query('custom_end_date'),
-                    ]);
-                }
-                break;
-        }
-
-        $roomAttendance = $query->orderBy('attendance_date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15)
-            ->withQueryString();
-
-        // Sections for the classroom filter dropdown, scoped to this teacher
-        $sections = TeachingAssignment::with('section')
-            ->where('teacher_id', auth()->id())
-            ->get()
-            ->pluck('section')
-            ->filter()
-            ->unique('id')
-            ->values();
-
-        return view('teacher-modules.room-attendance', [
-            'roomAttendance' => $roomAttendance,
-            'sections' => $sections,
-            'dateFilter' => $dateFilter,
-            'query' => $search,
-            'sectionId' => $sectionId,
-            'customStartDate' => $request->query('custom_start_date'),
-            'customEndDate' => $request->query('custom_end_date'),
-        ]);
+        return view('teacher-modules.room-attendance', compact('roomAttendance'));
     }
 
-    /**
-     * Show the form for creating a new room attendance record.
-     */
     public function create()
     {
         $teachingAssignments = TeachingAssignment::with(['subject', 'section', 'schoolYear'])
@@ -118,9 +46,6 @@ class RoomAttendanceController extends Controller
         return view('qr-system.attendance.room-attendance.create', compact('teachingAssignments'));
     }
 
-    /**
-     * Store a newly created room attendance record.
-     */
     public function store(StoreRoomAttendanceRequest $request)
     {
         $roomAttendance = $this->roomAttendanceService->create($request->validated());
@@ -128,27 +53,18 @@ class RoomAttendanceController extends Controller
             ->with('success', 'Room attendance recorded successfully.');
     }
 
-    /**
-     * Display the specified room attendance record.
-     */
     public function show(RoomAttendance $roomAttendance)
     {
         $roomAttendance->load(['teachingAssignment', 'enrollment.student', 'enrollment.section']);
         return view('qr-system.attendance.room-attendance.show', compact('roomAttendance'));
     }
 
-    /**
-     * Show the form for editing the specified room attendance record.
-     */
     public function edit(RoomAttendance $roomAttendance)
     {
         $roomAttendance->load(['teachingAssignment', 'enrollment.student', 'enrollment.section']);
         return view('qr-system.attendance.room-attendance.edit', compact('roomAttendance'));
     }
 
-    /**
-     * Update the specified room attendance record.
-     */
     public function update(UpdateRoomAttendanceRequest $request, RoomAttendance $roomAttendance)
     {
         $roomAttendance = $this->roomAttendanceService->update($roomAttendance, $request->validated());
@@ -156,9 +72,6 @@ class RoomAttendanceController extends Controller
             ->with('success', 'Room attendance updated successfully.');
     }
 
-    /**
-     * Remove the specified room attendance record.
-     */
     public function destroy(RoomAttendance $roomAttendance)
     {
         $this->roomAttendanceService->delete($roomAttendance);
@@ -166,9 +79,6 @@ class RoomAttendanceController extends Controller
             ->with('success', 'Room attendance deleted successfully.');
     }
 
-    /**
-     * Display room attendance for a specific teaching assignment on a specific date.
-     */
     public function byTeachingAssignmentAndDate(Request $request, TeachingAssignment $teachingAssignment)
     {
         $date = $request->query('date', now()->toDateString());
@@ -177,9 +87,6 @@ class RoomAttendanceController extends Controller
         return view('qr-system.attendance.room-attendance.by-assignment-date', compact('teachingAssignment', 'date', 'roomAttendance'));
     }
 
-    /**
-     * Show the form for bulk creating room attendance for a class.
-     */
     public function bulkCreateForm(TeachingAssignment $teachingAssignment)
     {
         $teachingAssignment->load(['section.enrollments.student']);
@@ -188,9 +95,6 @@ class RoomAttendanceController extends Controller
         return view('qr-system.attendance.room-attendance.bulk-create', compact('teachingAssignment', 'date'));
     }
 
-    /**
-     * Bulk create room attendance records for a class.
-     */
     public function bulkStore(Request $request, TeachingAssignment $teachingAssignment)
     {
         $request->validate([
