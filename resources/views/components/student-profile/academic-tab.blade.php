@@ -1,6 +1,6 @@
 @props(['student', 'currentEnrollment', 'enrollmentHistory' => collect()])
 
-<div class="tab-pane fade show active" id="academic" role="tabpanel">
+<div class="tab-pane fade mx-4 show active" id="academic" role="tabpanel">
 
     {{-- IDs row --}}
     <p class="text-uppercase text-muted fw-semibold mb-2" style="font-size: 10px; letter-spacing: 0.07em;">
@@ -82,7 +82,7 @@
             </div>
         </div>
     </div>
-
+{{-- 
     <p class="text-uppercase text-muted fw-semibold mb-2" style="font-size: 10px; letter-spacing: 0.07em;">
         Enrollment records
     </p>
@@ -119,6 +119,6 @@
                 @endforelse
             </tbody>
         </table>
-    </div>
+    </div> --}}
 
 </div>
