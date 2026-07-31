@@ -20,7 +20,7 @@ function resetForm() {
 window.openCreateModal = function () {
     resetForm();
     methodInput.value = "POST";
-    form.action = "/teacher/teaching-assignments";
+    form.action = "/teaching-assignments";
     submitText.textContent = "Create";
     modalEl.querySelector(".modal-title").textContent =
         "New Teaching Assignment";
@@ -33,7 +33,7 @@ window.openEditModal = function (id) {
     if (!row) return;
 
     methodInput.value = "PUT";
-    form.action = `/teacher/teaching-assignments/${id}`;
+    form.action = `/teaching-assignments/${id}`;
     submitText.textContent = "Update";
     modalEl.querySelector(".modal-title").textContent =
         "Edit Teaching Assignment";

@@ -32,7 +32,7 @@ class TeachingAssignmentController extends Controller
         $sections = Section::where('status', 'active')->orderBy('name')->get();
         $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get();
 
-        return view('teacher-modules.schedule-config', compact('teachingAssignments', 'teachers', 'subjects', 'sections', 'schoolYears'));
+        return view('admin-modules.academic.teaching-assignments', compact('teachingAssignments', 'teachers', 'subjects', 'sections', 'schoolYears'));
     }
 
     /**

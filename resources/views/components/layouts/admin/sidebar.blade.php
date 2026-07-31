@@ -92,6 +92,13 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('teaching-assignments.index') }}">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Teaching Assignments</span>
+                    </a>
+                </li>
+
 
                 {{-- <li>
                     <a href="/enrollment">

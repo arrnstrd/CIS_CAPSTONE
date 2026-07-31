@@ -1,6 +1,6 @@
-<x-layouts.teacher>
+<x-layouts.admin>
     <x-slot name="pageName">
-        Schedule Configuration
+        Teaching Assignments
     </x-slot>
 
     <div class="d-flex justify-content-end mb-3">
@@ -47,7 +47,7 @@
                             data-bs-target="#assignmentModal" onclick="openEditModal({{ $assignment->id }})">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <form action="{{ route('teacher.teaching-assignments.destroy', $assignment->id) }}" method="POST"
+                        <form action="{{ route('teaching-assignments.destroy', $assignment->id) }}" method="POST"
                             data-ajax-delete="assignment" class="d-inline">
                             @csrf
                             @method('DELETE')
@@ -157,4 +157,4 @@
     </x-modal>
 
     @vite(['resources/js/teaching-assignments.js'])
-</x-layouts.teacher>
+</x-layouts.admin>

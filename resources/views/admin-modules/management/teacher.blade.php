@@ -164,11 +164,11 @@
                 <input type="email" name="email" class="form-control" required>
             </div>
 
-            <div class="alert alert-info">
+            {{-- <div class="alert alert-info">
                 <strong>Default Password:</strong> Password123
                 <br>
                 <small>The teacher should change this password after their first login.</small>
-            </div>
+            </div> --}}
 
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-outline-secondary " data-bs-dismiss="modal">Cancel</button>

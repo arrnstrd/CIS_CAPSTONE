@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-dynamic-component :component="auth()->user()?->isTeacher() ? 'layouts.teacher' : 'layouts.admin'">
     <x-slot name="title">
         {{ $student->first_name }}
         {{ $student->middle_name ? $student->middle_name . ' ' : '' }}{{ $student->last_name }}
@@ -194,4 +194,4 @@
 
         </div>
     </div>
-</x-layouts.admin>
+</x-dynamic-component>

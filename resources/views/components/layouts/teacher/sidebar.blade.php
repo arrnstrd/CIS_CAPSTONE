@@ -60,13 +60,6 @@
                     </a>
                 </li>
 
-                <li>
-                    <a href="{{ route('teacher.schedule-config') }}">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Schedule Configuration</span>
-                    </a>
-                </li>
-
                 {{-- <li>
                     <a href="#">
                         <i class="fas fa-qrcode"></i>
