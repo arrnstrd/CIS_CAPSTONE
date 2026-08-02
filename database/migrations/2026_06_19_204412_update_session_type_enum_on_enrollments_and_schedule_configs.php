@@ -11,28 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::getConnection()->getDriverName() === 'sqlite') {
-            return;
-        }
+           // No action needed.
 
-        DB::statement("
-            ALTER TABLE enrollments
-            MODIFY session_type ENUM (
-            'morning',
-            'afternoon',
-            'whole_day'
-             ) NOT NULL
-        ");
-
-        DB::statement("
-            ALTER TABLE schedule_configs
-            MODIFY session_type ENUM (
-            'morning',
-            'afternoon',
-            'whole_day'
-            ) NOT NULL
-        
-        ");
     }
 
     /**
@@ -40,24 +20,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::getConnection()->getDriverName() === 'sqlite') {
-            return;
-        }
+           // No action needed.
 
-        DB::statement("
-            ALTER TABLE enrollments
-            MODIFY session_type ENUM(
-                'morning',
-                'afternoon'
-            ) NOT NULL
-        ");
-
-        DB::statement("
-            ALTER TABLE schedule_configs
-            MODIFY session_type ENUM(
-                'morning',
-                'afternoon'
-            ) NOT NULL
-        ");
     }
 };
