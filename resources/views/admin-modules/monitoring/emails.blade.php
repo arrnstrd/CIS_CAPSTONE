@@ -145,10 +145,96 @@
             </div>
         </div>
 
+        <div id="emailNotification" class="d-none"></div>
+
         <script>
+            function showEmailAlert(type, message) {
+                const container = document.getElementById('emailNotification');
+                if (!container) {
+                    return;
+                }
+                container.innerHTML =
+                    '<div class="alert alert-' + type + ' alert-dismissible fade show d-flex align-items-center" role="alert">' +
+                    '<span>' + message + '</span>' +
+                    '<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                    '</div>';
+                container.classList.remove('d-none');
+
+                setTimeout(() => {
+                    const alertEl = container.querySelector('.alert');
+                    if (alertEl && window.bootstrap) {
+                        bootstrap.Alert.getOrCreateInstance(alertEl).close();
+                    }
+                }, 4000);
+            }
+
+            async function sendResendRequest(form, successMessage) {
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrf,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: new FormData(form),
+                    });
+                    const data = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        showEmailAlert('danger', data.message || 'Resend request failed.');
+                        return;
+                    }
+
+                    // Single retry: the response includes the updated log status.
+                    if (data.data?.status) {
+                        if (data.data.status === 'sent') {
+                            showEmailAlert('success', 'Email resent successfully.');
+                        } else {
+                            showEmailAlert('danger', 'The email could not be resent. Please try again.');
+                        }
+                    } else if (typeof data.success_count === 'number') {
+                        // Bulk resend: response includes success/failed counts.
+                        if (data.failed_count > 0 && data.success_count === 0) {
+                            showEmailAlert('danger', 'Resend failed for ' + data.failed_count + ' email(s).');
+                        } else {
+                            showEmailAlert('success', 'Retry completed: ' + data.success_count + ' sent, ' + data.failed_count + ' failed.');
+                        }
+                    } else {
+                        showEmailAlert('success', successMessage || data.message || 'Emails resent successfully.');
+                    }
+
+                    // Refresh the table so statuses update and Retry buttons disappear once sent.
+                    if (window.ajaxCrud?.refreshTables) {
+                        window.ajaxCrud.refreshTables({ scope: null });
+                    }
+                } catch (error) {
+                    showEmailAlert('danger', 'Something went wrong while resending.');
+                }
+            }
+
+            // Single Retry buttons (one per failed row)
+            document.addEventListener('submit', function (event) {
+                const form = event.target;
+                if (!form?.matches('[data-ajax-retry="email"]')) {
+                    return;
+                }
+                event.preventDefault();
+                if (!confirm('Retry sending this email?')) {
+                    return;
+                }
+                sendResendRequest(form, 'Email resent successfully.');
+            });
+
+            // Resend All failed emails
             function confirmResendAll() {
-                if (confirm('Are you sure you want to resend all failed emails?')) {
-                    document.getElementById('resendAllForm').submit();
+                if (!confirm('Are you sure you want to resend all failed emails?')) {
+                    return;
+                }
+                const form = document.getElementById('resendAllForm');
+                if (form) {
+                    sendResendRequest(form, 'All failed emails have been reprocessed.');
                 }
             }
         </script>
@@ -200,19 +286,19 @@
                         </td>
 
                         <td>
-                            <span class="badge bg-light text-dark">{{ $emailLog->scan_type }}</span>
+                            <span class="badge-dot dot-secondary">{{ $emailLog->scan_type }}</span>
                         </td>
 
                         <td>
                             @php
-                                $statusColors = [
+                                $statusDotMap = [
                                     'sent' => 'success',
                                     'failed' => 'danger',
                                     'pending' => 'warning'
                                 ];
-                                $statusColor = $statusColors[$emailLog->status] ?? 'secondary';
+                                $dotStatus = $statusDotMap[$emailLog->status] ?? 'secondary';
                             @endphp
-                            <span class="badge bg-{{ $statusColor }} bg-opacity-10 text-{{ $statusColor }}">
+                            <span class="badge-dot dot-{{ $dotStatus }}">
                                 {{ ucfirst($emailLog->status) }}
                             </span>
                         </td>
@@ -223,10 +309,10 @@
 
                         <td>
                             @if ($emailLog->status === 'failed')
-                                <form action="{{ route('retry.email', $emailLog->id) }}" method="POST" class="d-inline">
+                                <form action="{{ route('retry.email', $emailLog->id) }}" method="POST"
+                                    class="d-inline" data-ajax-retry="email">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3"
-                                        onclick="return confirm('Retry sending this email?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3">
                                         <i class="bi bi-arrow-repeat"></i> Retry
                                     </button>
                                 </form>
@@ -249,7 +335,7 @@
         </x-ui.table>
 
         <!-- Pagination -->
-        <div class=" mx-2 mt-3 ">
+        <div class="px-3 py-3">
             {{ $emailLogs->links() }}
         </div>
 

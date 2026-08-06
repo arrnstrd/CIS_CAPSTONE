@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->string('first_name', 100);
+            $table->string('last_name', 100);
             $table->enum('role' , ['admin' , 'teacher' , 'scanner_operator']);
             $table->enum('status' , ['active' , 'inactive' , 'suspended'])->default('active');
             $table->string('email')->unique();
@@ -24,8 +24,6 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
 
-
-            $table->index(['first_name', 'last_name']);
             $table->index('role');
             $table->index('status');
         });

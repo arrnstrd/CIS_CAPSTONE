@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-dynamic-component :component="auth()->user()?->isTeacher() ? 'layouts.teacher' : 'layouts.admin'">
     <x-slot name="title">
         {{ $student->first_name }}
         {{ $student->middle_name ? $student->middle_name . ' ' : '' }}{{ $student->last_name }}
@@ -26,9 +26,9 @@
                         </h5>
                         <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
                             <span
-                                class="badge rounded-pill bg-success-subtle text-success border border-success-subtle">
+                                class="badge rounded-pill {{ $currentEnrollment?->status === 'active' ? 'bg-success-subtle text-success border-success-subtle' : 'bg-secondary-subtle text-secondary border-secondary-subtle' }} border">
                                 <i class="fa-solid fa-circle-check me-2" style="font-size: 10px;"></i>
-                                {{ $currentEnrollment?->status ?? '-' }}
+                                {{ $currentEnrollment?->status ? Str::headline($currentEnrollment->status) : 'Not Enrolled' }}
                             </span>
                             <span class="text-muted small">
                                 <i class="fa-solid fa-hashtag me-1" style="font-size: 10px;"></i>
@@ -51,12 +51,16 @@
                             Year</small>
                     </div>
                     <div class="border rounded-3 px-3 py-2 text-center" style="min-width: 90px;">
-                        <p class="mb-0 fw-bold">{{ $currentEnrollment?->section?->grade_level ?? '—' }}</p>
+                        <p class="mb-0 fw-bold">
+                            {{ $currentEnrollment?->sectionModel?->grade_level ?? $currentEnrollment?->grade_level ?? '—' }}
+                        </p>
                         <small class="text-muted text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Grade
                             Level</small>
                     </div>
                     <div class="border rounded-3 px-3 py-2 text-center" style="min-width: 90px;">
-                        <p class="mb-0 fw-bold">{{ $currentEnrollment?->section?->name ?? '—' }}</p>
+                        <p class="mb-0 fw-bold">
+                            {{ $currentEnrollment?->sectionModel?->name ?? $currentEnrollment?->getAttribute('section') ?? '—' }}
+                        </p>
                         <small class="text-muted text-uppercase"
                             style="font-size: 10px; letter-spacing: 0.05em;">Section</small>
                     </div>
@@ -175,11 +179,13 @@
                     {{-- Tab Content --}}
                     <div class="tab-content flex-grow-1 overflow-auto pt-4">
 
-                        <x-student-profile.academic-tab :student="$student" :current-enrollment="$currentEnrollment" />
+                        <x-student-profile.academic-tab :student="$student" :current-enrollment="$currentEnrollment"
+                            :enrollment-history="$enrollmentHistory" />
 
                         <x-student-profile.attendance-tab :student="$student" />
 
-                        <x-student-profile.qr-tab :student="$student" :current-enrollment="$currentEnrollment" />
+                        <x-student-profile.qr-tab :student="$student" :current-enrollment="$currentEnrollment"
+                            :qr-code-url="$qrCodeUrl" />
 
                     </div>
 
@@ -188,4 +194,4 @@
 
         </div>
     </div>
-</x-layouts.admin>
+</x-dynamic-component>

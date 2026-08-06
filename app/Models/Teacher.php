@@ -10,7 +10,10 @@ class Teacher extends Model
     protected $fillable = [
         'user_id',
         'status',
+        'email',
     ];
+
+    protected $guarded = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -28,6 +31,11 @@ class Teacher extends Model
         return $this->hasMany(Section::class, 'advisor_id');
     }
 
+    public function teachingAssignments()
+    {
+        return $this->hasMany(TeachingAssignment::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Query Scopes
@@ -41,9 +49,9 @@ class Teacher extends Model
             function (Builder $query) use ($search) {
                 $query->whereHas('user', function (Builder $query) use ($search) {
                     $query->where('first_name', 'like', "%{$search}%")
-                          ->orWhere('last_name', 'like', "%{$search}%")
-                          ->orWhere('email', 'like', "%{$search}%")
-                          ->orWhere('employee_id', 'like', "%{$search}%");
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('employee_id', 'like', "%{$search}%");
                 });
             }
         );
@@ -53,7 +61,7 @@ class Teacher extends Model
     {
         return $query->when(
             filled($status),
-            fn (Builder $query) => $query->where('status', $status)
+            fn(Builder $query) => $query->where('status', $status)
         );
     }
 
@@ -67,7 +75,28 @@ class Teacher extends Model
     {
         return trim(
             ($this->user?->first_name ?? '') . ' ' .
-            ($this->user?->last_name ?? '')
+                ($this->user?->last_name ?? '')
         );
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $teacher) {
+            try {
+                if (empty($teacher->getAttribute('first_name')) || empty($teacher->getAttribute('last_name'))) {
+                    $user = \App\Models\User::find($teacher->user_id);
+                    if ($user !== null) {
+                        if (empty($teacher->getAttribute('first_name'))) {
+                            $teacher->setAttribute('first_name', $user->first_name);
+                        }
+                        if (empty($teacher->getAttribute('last_name'))) {
+                            $teacher->setAttribute('last_name', $user->last_name);
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // ignore in test DBs where teachers table schema may differ
+            }
+        });
     }
 }

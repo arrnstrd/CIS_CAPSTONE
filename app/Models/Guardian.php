@@ -19,6 +19,6 @@ class Guardian extends Model
     // Student → Guardian (1:1)
     public function student()
     {
-        return $this->hasOne(Student::class);
+        return $this->belongsTo(Student::class, 'student_id');
     }
 }

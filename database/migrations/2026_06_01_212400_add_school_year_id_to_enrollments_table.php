@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('enrollments', function (Blueprint $table) {
-             $table->foreignId('school_year_id')
+        if (!Schema::hasColumn('enrollments', 'school_year_id')) {
+            Schema::table('enrollments', function (Blueprint $table) {
+                $table->foreignId('school_year_id')
                     ->nullable()
                     ->constrained('school_years')
                     ->nullOnDelete();
-
-        });
+            });
+        }
     }
 
     /**
@@ -25,8 +26,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('enrollments', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('school_year_id');
-        });
+        if (Schema::hasColumn('enrollments', 'school_year_id')) {
+            Schema::table('enrollments', function (Blueprint $table) {
+                $table->dropConstrainedForeignId('school_year_id');
+            });
+        }
     }
 };

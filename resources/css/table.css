@@ -15,7 +15,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 7px 8px;           /* Reduced from 16px — tighter rows */
-    font-size: 0.85rem;
+    font-size: 0.80rem;
     vertical-align: middle;
     border-bottom: 1px solid #dddddd; /* Subtle row divider */
 }
@@ -44,5 +44,5 @@
 
 /* Hover row highlight */
 .table-hover tbody tr:hover {
-    background-color: #ffffff;
+    background-color: #f8f8f8;
 }

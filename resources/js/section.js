@@ -43,7 +43,9 @@ document.addEventListener("submit", function (event) {
 
     if (form?.id === "addSectionForm" || form?.id === "editSectionForm") {
         event.preventDefault();
-        window.ajaxCrud.submitAjaxForm(form);
+        window.ajaxCrud.submitAjaxForm(form, {
+            scope: form.dataset.ajaxScope || "#section-table-pane",
+        });
         return;
     }
 
@@ -52,6 +54,8 @@ document.addEventListener("submit", function (event) {
         form?.matches('[data-ajax-restore="section"]')
     ) {
         event.preventDefault();
-        window.ajaxCrud.submitAjaxDelete(form);
+        window.ajaxCrud.submitAjaxDelete(form, {
+            scope: form.dataset.ajaxScope || "#section-table-pane",
+        });
     }
 });

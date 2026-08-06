@@ -1,0 +1,49 @@
+.modern-tabs {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 4px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modern-tabs__item {
+  margin: 0;
+}
+
+.modern-tabs__link {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modern-tabs__link:hover {
+  color: #1f2937;
+}
+
+.modern-tabs__link::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: -1px;
+  height: 2px;
+  background-color: #3b82f6;
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.modern-tabs__link.active {
+  color: #1e3a8a;
+}
+
+.modern-tabs__link.active::after {
+  transform: scaleX(1);
+}

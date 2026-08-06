@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -10,24 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("
-            ALTER TABLE enrollments
-            MODIFY session_type ENUM (
-            'morning',
-            'afternoon',
-            'whole_day'
-             ) NOT NULL
-        ");
+           // No action needed.
 
-        DB::statement("
-            ALTER TABLE schedule_configs
-            MODIFY session_type ENUM (
-            'morning',
-            'afternoon',
-            'whole_day'
-            ) NOT NULL
-        
-        ");
     }
 
     /**
@@ -35,20 +20,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-            DB::statement("
-            ALTER TABLE enrollments
-            MODIFY session_type ENUM(
-                'morning',
-                'afternoon'
-            ) NOT NULL
-        ");
+           // No action needed.
 
-        DB::statement("
-            ALTER TABLE schedule_configs
-            MODIFY session_type ENUM(
-                'morning',
-                'afternoon'
-            ) NOT NULL
-        ");
     }
 };

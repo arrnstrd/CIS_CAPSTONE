@@ -1,0 +1,1146 @@
+2026-08-06T06:36:06.1371792Z Current runner version: '2.336.0'
+2026-08-06T06:36:06.1396830Z ##[group]Runner Image Provisioner
+2026-08-06T06:36:06.1397697Z Hosted Compute Agent
+2026-08-06T06:36:06.1398213Z Version: 20260707.563
+2026-08-06T06:36:06.1398802Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+2026-08-06T06:36:06.1399465Z Build Date: 2026-07-07T19:33:50Z
+2026-08-06T06:36:06.1400048Z Worker ID: {9806fe8c-bd97-4546-90ad-c5084ad2dc78}
+2026-08-06T06:36:06.1400738Z Azure Region: westus3
+2026-08-06T06:36:06.1401249Z ##[endgroup]
+2026-08-06T06:36:06.1402819Z ##[group]Operating System
+2026-08-06T06:36:06.1403403Z Ubuntu
+2026-08-06T06:36:06.1403898Z 24.04.4
+2026-08-06T06:36:06.1404382Z LTS
+2026-08-06T06:36:06.1404830Z ##[endgroup]
+2026-08-06T06:36:06.1405321Z ##[group]Runner Image
+2026-08-06T06:36:06.1405915Z Image: ubuntu-24.04
+2026-08-06T06:36:06.1406419Z Version: 20260720.247.2
+2026-08-06T06:36:06.1407604Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260720.247/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-06T06:36:06.1408923Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260720.247
+2026-08-06T06:36:06.1409810Z ##[endgroup]
+2026-08-06T06:36:06.1410836Z ##[group]GITHUB_TOKEN Permissions
+2026-08-06T06:36:06.1413014Z Contents: read
+2026-08-06T06:36:06.1413541Z Metadata: read
+2026-08-06T06:36:06.1414081Z Packages: read
+2026-08-06T06:36:06.1414601Z ##[endgroup]
+2026-08-06T06:36:06.1417109Z Secret source: Actions
+2026-08-06T06:36:06.1418117Z Prepare workflow directory
+2026-08-06T06:36:06.1883767Z Prepare all required actions
+2026-08-06T06:36:06.1933119Z Getting action download info
+2026-08-06T06:36:06.5103777Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-08-06T06:36:07.2318637Z Download action repository 'shivammathur/setup-php@v2' (SHA:f3e473d116dcccaddc5834248c87452386958240)
+2026-08-06T06:36:07.7398659Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-08-06T06:36:07.9696623Z Complete job name: laravel-tests
+2026-08-06T06:36:08.0359033Z ##[group]Checking docker version
+2026-08-06T06:36:08.0373850Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2026-08-06T06:36:08.1586240Z '1.48'
+2026-08-06T06:36:08.1598869Z Docker daemon API version: '1.48'
+2026-08-06T06:36:08.1600456Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2026-08-06T06:36:08.1803892Z '1.48'
+2026-08-06T06:36:08.1813690Z Docker client API version: '1.48'
+2026-08-06T06:36:08.1819666Z ##[endgroup]
+2026-08-06T06:36:08.1823775Z ##[group]Clean up resources from previous jobs
+2026-08-06T06:36:08.1829878Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=837966"
+2026-08-06T06:36:08.1977990Z ##[command]/usr/bin/docker network prune --force --filter "label=837966"
+2026-08-06T06:36:08.2239613Z ##[endgroup]
+2026-08-06T06:36:08.2241198Z ##[group]Create local container network
+2026-08-06T06:36:08.2259717Z ##[command]/usr/bin/docker network create --label 837966 github_network_2d080a49ac99418fa0e622a1d5e44481
+2026-08-06T06:36:08.2756843Z 9f01bd8fea789b46d86d1c24bbc8e1caf61040ba6fb5d1f9cd87da94a55560b3
+2026-08-06T06:36:08.2775659Z ##[endgroup]
+2026-08-06T06:36:08.2804714Z ##[group]Starting postgres service container
+2026-08-06T06:36:08.2826675Z ##[command]/usr/bin/docker pull postgres:17
+2026-08-06T06:36:09.1656672Z 17: Pulling from library/postgres
+2026-08-06T06:36:09.4120218Z 26c307b5e35a: Pulling fs layer
+2026-08-06T06:36:09.4120654Z c7ce579d92bc: Pulling fs layer
+2026-08-06T06:36:09.4121202Z 57b3b7f0e8be: Pulling fs layer
+2026-08-06T06:36:09.4121729Z 639f0ce3e131: Pulling fs layer
+2026-08-06T06:36:09.4122022Z 315760abeb8e: Pulling fs layer
+2026-08-06T06:36:09.4122336Z 1e27b4f5b34f: Pulling fs layer
+2026-08-06T06:36:09.4122767Z 7feaef9a63ac: Pulling fs layer
+2026-08-06T06:36:09.4123275Z 4fa43b3f35bd: Pulling fs layer
+2026-08-06T06:36:09.4123860Z ccc368eb7cc7: Pulling fs layer
+2026-08-06T06:36:09.4124298Z f5991d0b8b5b: Pulling fs layer
+2026-08-06T06:36:09.4124723Z 3b520f7c783b: Pulling fs layer
+2026-08-06T06:36:09.4125634Z b33915915b51: Pulling fs layer
+2026-08-06T06:36:09.4125950Z 881078803fc8: Pulling fs layer
+2026-08-06T06:36:09.4126260Z 99adb42d27ad: Pulling fs layer
+2026-08-06T06:36:09.4126555Z ccc368eb7cc7: Waiting
+2026-08-06T06:36:09.4126819Z 639f0ce3e131: Waiting
+2026-08-06T06:36:09.4127073Z 315760abeb8e: Waiting
+2026-08-06T06:36:09.4127319Z f5991d0b8b5b: Waiting
+2026-08-06T06:36:09.4127569Z 1e27b4f5b34f: Waiting
+2026-08-06T06:36:09.4127810Z 3b520f7c783b: Waiting
+2026-08-06T06:36:09.4128054Z 7feaef9a63ac: Waiting
+2026-08-06T06:36:09.4128306Z b33915915b51: Waiting
+2026-08-06T06:36:09.4128544Z 881078803fc8: Waiting
+2026-08-06T06:36:09.4128790Z 4fa43b3f35bd: Waiting
+2026-08-06T06:36:09.4129030Z 99adb42d27ad: Waiting
+2026-08-06T06:36:09.6404886Z c7ce579d92bc: Download complete
+2026-08-06T06:36:09.6695966Z 57b3b7f0e8be: Verifying Checksum
+2026-08-06T06:36:09.6697206Z 57b3b7f0e8be: Download complete
+2026-08-06T06:36:09.7192527Z 26c307b5e35a: Verifying Checksum
+2026-08-06T06:36:09.7193015Z 26c307b5e35a: Download complete
+2026-08-06T06:36:09.8718513Z 639f0ce3e131: Verifying Checksum
+2026-08-06T06:36:09.8720270Z 639f0ce3e131: Download complete
+2026-08-06T06:36:09.9244785Z 315760abeb8e: Download complete
+2026-08-06T06:36:09.9341400Z 1e27b4f5b34f: Verifying Checksum
+2026-08-06T06:36:09.9353280Z 1e27b4f5b34f: Download complete
+2026-08-06T06:36:10.0763892Z 7feaef9a63ac: Verifying Checksum
+2026-08-06T06:36:10.0764632Z 7feaef9a63ac: Download complete
+2026-08-06T06:36:10.1249854Z 4fa43b3f35bd: Verifying Checksum
+2026-08-06T06:36:10.1250723Z 4fa43b3f35bd: Download complete
+2026-08-06T06:36:10.2818693Z f5991d0b8b5b: Verifying Checksum
+2026-08-06T06:36:10.2819147Z f5991d0b8b5b: Download complete
+2026-08-06T06:36:10.3332183Z 3b520f7c783b: Verifying Checksum
+2026-08-06T06:36:10.3338808Z 3b520f7c783b: Download complete
+2026-08-06T06:36:10.4463476Z ccc368eb7cc7: Download complete
+2026-08-06T06:36:10.4848112Z b33915915b51: Download complete
+2026-08-06T06:36:10.5447074Z 881078803fc8: Verifying Checksum
+2026-08-06T06:36:10.5447972Z 881078803fc8: Download complete
+2026-08-06T06:36:10.6211979Z 26c307b5e35a: Pull complete
+2026-08-06T06:36:10.6489429Z 99adb42d27ad: Verifying Checksum
+2026-08-06T06:36:10.6490054Z 99adb42d27ad: Download complete
+2026-08-06T06:36:12.0824782Z c7ce579d92bc: Pull complete
+2026-08-06T06:36:12.2399279Z 57b3b7f0e8be: Pull complete
+2026-08-06T06:36:12.2757523Z 639f0ce3e131: Pull complete
+2026-08-06T06:36:12.5151154Z 315760abeb8e: Pull complete
+2026-08-06T06:36:12.5850625Z 1e27b4f5b34f: Pull complete
+2026-08-06T06:36:12.5922283Z 7feaef9a63ac: Pull complete
+2026-08-06T06:36:12.6010257Z 4fa43b3f35bd: Pull complete
+2026-08-06T06:36:15.2497534Z ccc368eb7cc7: Pull complete
+2026-08-06T06:36:15.2621966Z f5991d0b8b5b: Pull complete
+2026-08-06T06:36:15.2722233Z 3b520f7c783b: Pull complete
+2026-08-06T06:36:15.2795216Z b33915915b51: Pull complete
+2026-08-06T06:36:15.2862636Z 881078803fc8: Pull complete
+2026-08-06T06:36:15.2934248Z 99adb42d27ad: Pull complete
+2026-08-06T06:36:15.2965517Z Digest: sha256:7958605b474b3d264a969cb3a123d6aa00ad1e1fe9da8a69984dabb704d93317
+2026-08-06T06:36:15.2977253Z Status: Downloaded newer image for postgres:17
+2026-08-06T06:36:15.2997889Z docker.io/library/postgres:17
+2026-08-06T06:36:15.3055103Z ##[command]/usr/bin/docker create --name 784b444aa90941d4b66da9b30d9e2b2d_postgres17_92d960 --label 837966 --network github_network_2d080a49ac99418fa0e622a1d5e44481 --network-alias postgres -p 5432:5432 --health-cmd="pg_isready -U postgres -d CIS_CAPSTONE" --health-interval=10s --health-timeout=5s --health-retries=5 -e "POSTGRES_DB=CIS_CAPSTONE" -e "POSTGRES_USER=postgres" -e "POSTGRES_PASSWORD=postgres" -e GITHUB_ACTIONS=true -e CI=true postgres:17
+2026-08-06T06:36:15.3294404Z 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:15.3313228Z ##[command]/usr/bin/docker start 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:15.5967805Z 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:15.5990236Z ##[command]/usr/bin/docker ps --all --filter id=50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2026-08-06T06:36:15.6111897Z 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686 Up Less than a second (health: starting)
+2026-08-06T06:36:15.6128641Z ##[command]/usr/bin/docker port 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:15.6275773Z 5432/tcp -> 0.0.0.0:5432
+2026-08-06T06:36:15.6276686Z 5432/tcp -> [::]:5432
+2026-08-06T06:36:15.6327206Z ##[endgroup]
+2026-08-06T06:36:15.6336524Z ##[group]Waiting for all services to be ready
+2026-08-06T06:36:15.6350936Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:15.6480589Z starting
+2026-08-06T06:36:15.6499046Z postgres service is starting, waiting 2 seconds before checking again.
+2026-08-06T06:36:17.6494822Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:17.6628025Z starting
+2026-08-06T06:36:17.6636462Z postgres service is starting, waiting 4 seconds before checking again.
+2026-08-06T06:36:21.9543239Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:21.9677763Z starting
+2026-08-06T06:36:21.9687013Z postgres service is starting, waiting 8 seconds before checking again.
+2026-08-06T06:36:30.9503260Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:30.9641045Z healthy
+2026-08-06T06:36:30.9654498Z postgres service is healthy.
+2026-08-06T06:36:30.9655226Z ##[endgroup]
+2026-08-06T06:36:30.9928384Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-06T06:36:30.9936489Z ##[group]Run actions/checkout@v4
+2026-08-06T06:36:30.9936922Z with:
+2026-08-06T06:36:30.9937156Z   repository: arrnstrd/CIS_CAPSTONE
+2026-08-06T06:36:30.9940076Z   token: ***
+2026-08-06T06:36:30.9940291Z   ssh-strict: true
+2026-08-06T06:36:30.9940504Z   ssh-user: git
+2026-08-06T06:36:30.9940726Z   persist-credentials: true
+2026-08-06T06:36:30.9940974Z   clean: true
+2026-08-06T06:36:30.9941192Z   sparse-checkout-cone-mode: true
+2026-08-06T06:36:30.9941590Z   fetch-depth: 1
+2026-08-06T06:36:30.9941787Z   fetch-tags: false
+2026-08-06T06:36:30.9941985Z   show-progress: true
+2026-08-06T06:36:30.9942190Z   lfs: false
+2026-08-06T06:36:30.9942436Z   submodules: false
+2026-08-06T06:36:30.9942656Z   set-safe-directory: true
+2026-08-06T06:36:30.9942894Z   allow-unsafe-pr-checkout: false
+2026-08-06T06:36:30.9943310Z ##[endgroup]
+2026-08-06T06:36:31.0939550Z Syncing repository: arrnstrd/CIS_CAPSTONE
+2026-08-06T06:36:31.0941808Z ##[group]Getting Git version info
+2026-08-06T06:36:31.0942494Z Working directory is '/home/runner/work/CIS_CAPSTONE/CIS_CAPSTONE'
+2026-08-06T06:36:31.0943501Z [command]/usr/bin/git version
+2026-08-06T06:36:31.1017855Z git version 2.54.0
+2026-08-06T06:36:31.1037587Z ##[endgroup]
+2026-08-06T06:36:31.1055068Z Temporarily overriding HOME='/home/runner/work/_temp/3e8afc76-9a41-46f5-b472-566b7b1cd09e' before making global git config changes
+2026-08-06T06:36:31.1056501Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-06T06:36:31.1061303Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/CIS_CAPSTONE/CIS_CAPSTONE
+2026-08-06T06:36:31.1116879Z Deleting the contents of '/home/runner/work/CIS_CAPSTONE/CIS_CAPSTONE'
+2026-08-06T06:36:31.1120475Z ##[group]Initializing the repository
+2026-08-06T06:36:31.1124934Z [command]/usr/bin/git init /home/runner/work/CIS_CAPSTONE/CIS_CAPSTONE
+2026-08-06T06:36:31.1229340Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-08-06T06:36:31.1229894Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-08-06T06:36:31.1230387Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-08-06T06:36:31.1231042Z hint: call:
+2026-08-06T06:36:31.1231254Z hint:
+2026-08-06T06:36:31.1231793Z hint: 	git config --global init.defaultBranch <name>
+2026-08-06T06:36:31.1232107Z hint:
+2026-08-06T06:36:31.1232410Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-08-06T06:36:31.1232887Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-08-06T06:36:31.1233239Z hint:
+2026-08-06T06:36:31.1233469Z hint: 	git branch -m <name>
+2026-08-06T06:36:31.1233704Z hint:
+2026-08-06T06:36:31.1234021Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-08-06T06:36:31.1242329Z Initialized empty Git repository in /home/runner/work/CIS_CAPSTONE/CIS_CAPSTONE/.git/
+2026-08-06T06:36:31.1252264Z [command]/usr/bin/git remote add origin https://github.com/arrnstrd/CIS_CAPSTONE
+2026-08-06T06:36:31.1296431Z ##[endgroup]
+2026-08-06T06:36:31.1297083Z ##[group]Disabling automatic garbage collection
+2026-08-06T06:36:31.1301813Z [command]/usr/bin/git config --local gc.auto 0
+2026-08-06T06:36:31.1329468Z ##[endgroup]
+2026-08-06T06:36:31.1330035Z ##[group]Setting up auth
+2026-08-06T06:36:31.1337134Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-06T06:36:31.1370453Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-06T06:36:31.1766780Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-06T06:36:31.1808221Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-06T06:36:31.2008720Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-06T06:36:31.2042620Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-06T06:36:31.2226527Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-08-06T06:36:31.2259551Z ##[endgroup]
+2026-08-06T06:36:31.2260211Z ##[group]Fetching the repository
+2026-08-06T06:36:31.2269792Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +3f1bced8ea43ff20394c18835d07135e9f6e1747:refs/remotes/pull/21/merge
+2026-08-06T06:36:32.4474940Z From https://github.com/arrnstrd/CIS_CAPSTONE
+2026-08-06T06:36:32.4475751Z  * [new ref]         3f1bced8ea43ff20394c18835d07135e9f6e1747 -> pull/21/merge
+2026-08-06T06:36:32.4509859Z ##[endgroup]
+2026-08-06T06:36:32.4510451Z ##[group]Determining the checkout info
+2026-08-06T06:36:32.4513246Z ##[endgroup]
+2026-08-06T06:36:32.4518811Z [command]/usr/bin/git sparse-checkout disable
+2026-08-06T06:36:32.4565111Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-08-06T06:36:32.4599360Z ##[group]Checking out the ref
+2026-08-06T06:36:32.4603887Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/21/merge
+2026-08-06T06:36:32.4823822Z Note: switching to 'refs/remotes/pull/21/merge'.
+2026-08-06T06:36:32.4824248Z 
+2026-08-06T06:36:32.4824600Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-08-06T06:36:32.4825386Z changes and commit them, and you can discard any commits you make in this
+2026-08-06T06:36:32.4826525Z state without impacting any branches by switching back to a branch.
+2026-08-06T06:36:32.4826919Z 
+2026-08-06T06:36:32.4827160Z If you want to create a new branch to retain commits you create, you may
+2026-08-06T06:36:32.4827580Z do so (now or later) by using -c with the switch command. Example:
+2026-08-06T06:36:32.4827832Z 
+2026-08-06T06:36:32.4827949Z   git switch -c <new-branch-name>
+2026-08-06T06:36:32.4828106Z 
+2026-08-06T06:36:32.4828216Z Or undo this operation with:
+2026-08-06T06:36:32.4828363Z 
+2026-08-06T06:36:32.4828455Z   git switch -
+2026-08-06T06:36:32.4828581Z 
+2026-08-06T06:36:32.4828785Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-08-06T06:36:32.4829060Z 
+2026-08-06T06:36:32.4829381Z HEAD is now at 3f1bced Merge e574707b1c4fcf82188aa3000119606d6ca573f8 into d7f9ea5b7980df3f7314360f6e73e41a66690cca
+2026-08-06T06:36:32.4870941Z ##[endgroup]
+2026-08-06T06:36:32.4874556Z [command]/usr/bin/git log -1 --format=%H
+2026-08-06T06:36:32.4896154Z 3f1bced8ea43ff20394c18835d07135e9f6e1747
+2026-08-06T06:36:32.5083431Z ##[group]Run shivammathur/setup-php@v2
+2026-08-06T06:36:32.5083717Z with:
+2026-08-06T06:36:32.5083917Z   php-version: 8.5
+2026-08-06T06:36:32.5084396Z   extensions: bcmath, curl, dom, fileinfo, gd, imagick, intl, mbstring, pdo_pgsql, pgsql, simplexml, xml, xmlreader, xmlwriter, zip
+
+2026-08-06T06:36:32.5084923Z   ini-file: production
+2026-08-06T06:36:32.5087308Z   github-token: ***
+2026-08-06T06:36:32.5087514Z ##[endgroup]
+2026-08-06T06:36:32.5475540Z [command]/usr/bin/bash /home/runner/work/_actions/shivammathur/setup-php/v2/src/scripts/run.sh
+2026-08-06T06:36:32.5879058Z 
+2026-08-06T06:36:32.5879969Z [90;1m==> [0m[37;1mSetup PHP[0m
+2026-08-06T06:36:38.1578847Z [32;1m✓ [0m[34;1mPHP [0m[90;1mInstalled PHP 8.5.9[0m
+2026-08-06T06:36:38.1579639Z 
+2026-08-06T06:36:38.1580103Z [90;1m==> [0m[37;1mSetup Extensions[0m
+2026-08-06T06:36:38.2053480Z [32;1m✓ [0m[34;1mbcmath [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2078167Z [32;1m✓ [0m[34;1mcurl [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2103746Z [32;1m✓ [0m[34;1mdom [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2132251Z [32;1m✓ [0m[34;1mfileinfo [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2157449Z [32;1m✓ [0m[34;1mgd [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2183214Z [32;1m✓ [0m[34;1mimagick [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2208734Z [32;1m✓ [0m[34;1mintl [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2232702Z [32;1m✓ [0m[34;1mmbstring [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2245653Z [32;1m✓ [0m[34;1mpdo_pgsql [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2269340Z [32;1m✓ [0m[34;1mpgsql [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2294923Z [32;1m✓ [0m[34;1msimplexml [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2318428Z [32;1m✓ [0m[34;1mxml [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2342961Z [32;1m✓ [0m[34;1mxmlreader [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2367331Z [32;1m✓ [0m[34;1mxmlwriter [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2390583Z [32;1m✓ [0m[34;1mzip [0m[90;1mEnabled[0m
+2026-08-06T06:36:38.2390981Z 
+2026-08-06T06:36:38.2391230Z [90;1m==> [0m[37;1mSetup Tools[0m
+2026-08-06T06:36:38.7836231Z [32;1m✓ [0m[34;1mcomposer [0m[90;1mAdded composer 2.10.2[0m
+2026-08-06T06:36:38.7836911Z 
+2026-08-06T06:36:38.7838052Z [90;1m==> [0m[37;1mSponsor setup-php[0m
+2026-08-06T06:36:38.7838554Z [32;1m✓ [0m[34;1msetup-php [0m[90;1mhttps://setup-php.com/sponsor[0m
+2026-08-06T06:36:38.8027316Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-06T06:36:38.8028475Z ##[group]Run actions/setup-node@v4
+2026-08-06T06:36:38.8028728Z with:
+2026-08-06T06:36:38.8028922Z   node-version: 24
+2026-08-06T06:36:38.8029119Z   cache: npm
+2026-08-06T06:36:38.8029305Z   always-auth: false
+2026-08-06T06:36:38.8029647Z   check-latest: false
+2026-08-06T06:36:38.8032135Z   token: ***
+2026-08-06T06:36:38.8032332Z env:
+2026-08-06T06:36:38.8032528Z   COMPOSER_PROCESS_TIMEOUT: 0
+2026-08-06T06:36:38.8032773Z   COMPOSER_NO_INTERACTION: 1
+2026-08-06T06:36:38.8033007Z   COMPOSER_NO_AUDIT: 1
+2026-08-06T06:36:38.8033214Z ##[endgroup]
+2026-08-06T06:36:38.9457269Z Found in cache @ /opt/hostedtoolcache/node/24.18.0/x64
+2026-08-06T06:36:38.9462594Z (node:3034) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-06T06:36:38.9463696Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-06T06:36:38.9465221Z ##[group]Environment details
+2026-08-06T06:36:41.1235212Z node: v24.18.0
+2026-08-06T06:36:41.1235651Z npm: 11.16.0
+2026-08-06T06:36:41.1235905Z yarn: 1.22.22
+2026-08-06T06:36:41.1237070Z ##[endgroup]
+2026-08-06T06:36:41.1255875Z [command]/opt/hostedtoolcache/node/24.18.0/x64/bin/npm config get cache
+2026-08-06T06:36:41.3526202Z /home/runner/.npm
+2026-08-06T06:36:41.5994427Z npm cache is not found
+2026-08-06T06:36:41.6111035Z ##[group]Run composer install --no-interaction --prefer-dist --no-progress
+2026-08-06T06:36:41.6111910Z [36;1mcomposer install --no-interaction --prefer-dist --no-progress[0m
+2026-08-06T06:36:41.6179001Z shell: /usr/bin/bash -e {0}
+2026-08-06T06:36:41.6179267Z env:
+2026-08-06T06:36:41.6179469Z   COMPOSER_PROCESS_TIMEOUT: 0
+2026-08-06T06:36:41.6179725Z   COMPOSER_NO_INTERACTION: 1
+2026-08-06T06:36:41.6179958Z   COMPOSER_NO_AUDIT: 1
+2026-08-06T06:36:41.6180171Z ##[endgroup]
+2026-08-06T06:36:41.8081653Z Installing dependencies from lock file (including require-dev)
+2026-08-06T06:36:41.8130195Z Verifying lock file contents can be installed on current platform.
+2026-08-06T06:36:42.0377696Z Package operations: 138 installs, 0 updates, 0 removals
+2026-08-06T06:36:42.0383989Z   - Downloading voku/portable-ascii (2.1.0)
+2026-08-06T06:36:42.0387868Z   - Downloading symfony/polyfill-php80 (v1.36.0)
+2026-08-06T06:36:42.0390114Z   - Downloading symfony/polyfill-mbstring (v1.36.0)
+2026-08-06T06:36:42.0392318Z   - Downloading symfony/polyfill-ctype (v1.36.0)
+2026-08-06T06:36:42.0394852Z   - Downloading phpoption/phpoption (1.9.5)
+2026-08-06T06:36:42.0397239Z   - Downloading graham-campbell/result-type (v1.1.4)
+2026-08-06T06:36:42.0399688Z   - Downloading vlucas/phpdotenv (v5.6.3)
+2026-08-06T06:36:42.0401991Z   - Downloading symfony/css-selector (v8.0.8)
+2026-08-06T06:36:42.0404466Z   - Downloading tijsverkoyen/css-to-inline-styles (v2.4.0)
+2026-08-06T06:36:42.0406410Z   - Downloading symfony/var-dumper (v8.0.8)
+2026-08-06T06:36:42.0408578Z   - Downloading symfony/polyfill-uuid (v1.36.0)
+2026-08-06T06:36:42.0410598Z   - Downloading symfony/uid (v8.0.8)
+2026-08-06T06:36:42.0412995Z   - Downloading symfony/deprecation-contracts (v3.6.0)
+2026-08-06T06:36:42.0413827Z   - Downloading symfony/routing (v8.0.8)
+2026-08-06T06:36:42.0415570Z   - Downloading symfony/process (v8.0.8)
+2026-08-06T06:36:42.0416495Z   - Downloading symfony/polyfill-php85 (v1.36.0)
+2026-08-06T06:36:42.0417941Z   - Downloading symfony/polyfill-php84 (v1.36.0)
+2026-08-06T06:36:42.0419109Z   - Downloading symfony/polyfill-intl-normalizer (v1.36.0)
+2026-08-06T06:36:42.0420297Z   - Downloading symfony/polyfill-intl-idn (v1.36.0)
+2026-08-06T06:36:42.0421396Z   - Downloading symfony/mime (v8.0.8)
+2026-08-06T06:36:42.0423484Z   - Downloading psr/container (2.0.2)
+2026-08-06T06:36:42.0424514Z   - Downloading symfony/service-contracts (v3.6.1)
+2026-08-06T06:36:42.0425892Z   - Downloading psr/event-dispatcher (1.0.0)
+2026-08-06T06:36:42.0427098Z   - Downloading symfony/event-dispatcher-contracts (v3.6.0)
+2026-08-06T06:36:42.0428332Z   - Downloading symfony/event-dispatcher (v8.0.8)
+2026-08-06T06:36:42.0429602Z   - Downloading psr/log (3.0.2)
+2026-08-06T06:36:42.0431629Z   - Downloading doctrine/lexer (3.0.1)
+2026-08-06T06:36:42.0432835Z   - Downloading egulias/email-validator (4.0.4)
+2026-08-06T06:36:42.0434057Z   - Downloading symfony/mailer (v8.0.8)
+2026-08-06T06:36:42.0435304Z   - Downloading symfony/http-foundation (v8.0.8)
+2026-08-06T06:36:42.0436516Z   - Downloading symfony/error-handler (v8.0.8)
+2026-08-06T06:36:42.0437712Z   - Downloading symfony/http-kernel (v8.0.8)
+2026-08-06T06:36:42.0439339Z   - Downloading symfony/finder (v8.0.8)
+2026-08-06T06:36:42.0440377Z   - Downloading symfony/polyfill-intl-grapheme (v1.36.0)
+2026-08-06T06:36:42.0441618Z   - Downloading symfony/string (v8.0.8)
+2026-08-06T06:36:42.0442964Z   - Downloading symfony/console (v8.0.8)
+2026-08-06T06:36:42.0444861Z   - Downloading ramsey/collection (2.1.1)
+2026-08-06T06:36:42.0445961Z   - Downloading brick/math (0.14.8)
+2026-08-06T06:36:42.0447278Z   - Downloading ramsey/uuid (4.9.2)
+2026-08-06T06:36:42.0448413Z   - Downloading psr/simple-cache (3.0.0)
+2026-08-06T06:36:42.0453825Z   - Downloading nunomaduro/termwind (v2.4.0)
+2026-08-06T06:36:42.0454603Z   - Downloading symfony/translation-contracts (v3.6.1)
+2026-08-06T06:36:42.0456044Z   - Downloading symfony/translation (v8.0.8)
+2026-08-06T06:36:42.0457067Z   - Downloading psr/clock (1.0.0)
+2026-08-06T06:36:42.0458858Z   - Downloading symfony/clock (v8.0.8)
+2026-08-06T06:36:42.0459904Z   - Downloading carbonphp/carbon-doctrine-types (3.2.0)
+2026-08-06T06:36:42.0461704Z   - Downloading nesbot/carbon (3.11.4)
+2026-08-06T06:36:42.0463129Z   - Downloading monolog/monolog (3.10.0)
+2026-08-06T06:36:42.0464755Z   - Downloading psr/http-message (2.0)
+2026-08-06T06:36:42.0465715Z   - Downloading psr/http-factory (1.1.0)
+2026-08-06T06:36:42.0467531Z   - Downloading league/uri-interfaces (7.8.1)
+2026-08-06T06:36:42.0468390Z   - Downloading league/uri (7.8.1)
+2026-08-06T06:36:42.0469997Z   - Downloading league/mime-type-detection (1.16.0)
+2026-08-06T06:36:42.0470970Z   - Downloading league/flysystem-local (3.31.0)
+2026-08-06T06:36:42.0472791Z   - Downloading league/flysystem (3.33.0)
+2026-08-06T06:36:42.0473925Z   - Downloading nette/utils (v4.1.3)
+2026-08-06T06:36:42.0475264Z   - Downloading nette/schema (v1.3.5)
+2026-08-06T06:36:42.0476985Z   - Downloading dflydev/dot-access-data (v3.0.3)
+2026-08-06T06:36:42.0477856Z   - Downloading league/config (v1.2.0)
+2026-08-06T06:36:42.0479248Z   - Downloading league/commonmark (2.8.2)
+2026-08-06T06:36:42.0480969Z   - Downloading laravel/serializable-closure (v2.0.12)
+2026-08-06T06:36:42.0481891Z   - Downloading laravel/prompts (v0.3.16)
+2026-08-06T06:36:42.0483818Z   - Downloading guzzlehttp/uri-template (v1.0.5)
+2026-08-06T06:36:42.0484791Z   - Downloading guzzlehttp/promises (2.3.0)
+2026-08-06T06:36:42.0486242Z   - Downloading psr/http-client (1.0.3)
+2026-08-06T06:36:42.0487776Z   - Downloading ralouphie/getallheaders (3.0.3)
+2026-08-06T06:36:42.0488822Z   - Downloading guzzlehttp/psr7 (2.9.0)
+2026-08-06T06:36:42.0490496Z   - Downloading guzzlehttp/guzzle (7.10.0)
+2026-08-06T06:36:42.0492182Z   - Downloading fruitcake/php-cors (v1.4.0)
+2026-08-06T06:36:42.0493892Z   - Downloading dragonmantank/cron-expression (v3.6.0)
+2026-08-06T06:36:42.0494751Z   - Downloading doctrine/inflector (2.1.0)
+2026-08-06T06:36:42.0496453Z   - Downloading laravel/framework (v13.5.0)
+2026-08-06T06:36:42.0497760Z   - Downloading masterminds/html5 (2.10.0)
+2026-08-06T06:36:42.0499251Z   - Downloading thecodingmachine/safe (v3.4.0)
+2026-08-06T06:36:42.0501014Z   - Downloading sabberworm/php-css-parser (v9.3.0)
+2026-08-06T06:36:42.0502326Z   - Downloading dompdf/php-svg-lib (1.0.2)
+2026-08-06T06:36:42.0503867Z   - Downloading dompdf/php-font-lib (1.0.2)
+2026-08-06T06:36:42.0504848Z   - Downloading dompdf/dompdf (v3.1.5)
+2026-08-06T06:36:42.0506825Z   - Downloading barryvdh/laravel-dompdf (v3.1.2)
+2026-08-06T06:36:42.0507925Z   - Downloading clue/redis-protocol (v0.3.2)
+2026-08-06T06:36:42.0509806Z   - Downloading dasprid/enum (1.0.7)
+2026-08-06T06:36:42.0510501Z   - Downloading psr/cache (3.0.0)
+2026-08-06T06:36:42.0512279Z   - Downloading doctrine/deprecations (1.1.6)
+2026-08-06T06:36:42.0513167Z   - Downloading doctrine/dbal (4.4.3)
+2026-08-06T06:36:42.0514989Z   - Downloading fakerphp/faker (v1.24.1)
+2026-08-06T06:36:42.0515931Z   - Downloading laravel/pail (v1.2.6)
+2026-08-06T06:36:42.0517177Z   - Downloading laravel/pint (v1.29.0)
+2026-08-06T06:36:42.0518970Z   - Downloading react/event-loop (v1.6.0)
+2026-08-06T06:36:42.0520378Z   - Downloading evenement/evenement (v3.0.2)
+2026-08-06T06:36:42.0521633Z   - Downloading react/stream (v1.4.0)
+2026-08-06T06:36:42.0523236Z   - Downloading react/promise (v3.3.0)
+2026-08-06T06:36:42.0524218Z   - Downloading react/cache (v1.2.0)
+2026-08-06T06:36:42.0525918Z   - Downloading react/dns (v1.14.0)
+2026-08-06T06:36:42.0527012Z   - Downloading react/socket (v1.17.0)
+2026-08-06T06:36:42.0528819Z   - Downloading react/promise-timer (v1.11.0)
+2026-08-06T06:36:42.0530010Z   - Downloading ratchet/rfc6455 (v0.4.0)
+2026-08-06T06:36:42.0531980Z   - Downloading pusher/pusher-php-server (7.2.8)
+2026-08-06T06:36:42.0532993Z   - Downloading clue/redis-react (v2.8.0)
+2026-08-06T06:36:42.0534358Z   - Downloading laravel/reverb (v1.10.2)
+2026-08-06T06:36:42.0535419Z   - Downloading laravel/sanctum (v4.3.2)
+2026-08-06T06:36:42.0537399Z   - Downloading nikic/php-parser (v5.7.0)
+2026-08-06T06:36:42.0538794Z   - Downloading psy/psysh (v0.12.22)
+2026-08-06T06:36:42.0539839Z   - Downloading laravel/tinker (v3.0.2)
+2026-08-06T06:36:42.0541887Z   - Downloading hamcrest/hamcrest-php (v2.1.1)
+2026-08-06T06:36:42.0543044Z   - Downloading mockery/mockery (1.6.12)
+2026-08-06T06:36:42.0544889Z   - Downloading filp/whoops (2.18.4)
+2026-08-06T06:36:42.0545820Z   - Downloading nunomaduro/collision (v8.9.3)
+2026-08-06T06:36:42.0547636Z   - Downloading markbaker/matrix (3.0.1)
+2026-08-06T06:36:42.0548539Z   - Downloading markbaker/complex (3.0.2)
+2026-08-06T06:36:42.0550442Z   - Downloading maennchen/zipstream-php (3.2.2)
+2026-08-06T06:36:42.0551356Z   - Downloading composer/pcre (3.4.0)
+2026-08-06T06:36:42.0553406Z   - Downloading phpoffice/phpspreadsheet (5.9.0)
+2026-08-06T06:36:42.0554545Z   - Downloading staabm/side-effects-detector (1.0.5)
+2026-08-06T06:36:42.0556339Z   - Downloading sebastian/version (6.0.0)
+2026-08-06T06:36:42.0557302Z   - Downloading sebastian/type (6.0.3)
+2026-08-06T06:36:42.0559049Z   - Downloading sebastian/recursion-context (7.0.1)
+2026-08-06T06:36:42.0559921Z   - Downloading sebastian/object-reflector (5.0.0)
+2026-08-06T06:36:42.0561370Z   - Downloading sebastian/object-enumerator (7.0.0)
+2026-08-06T06:36:42.0562591Z   - Downloading sebastian/global-state (8.0.2)
+2026-08-06T06:36:42.0564249Z   - Downloading sebastian/exporter (7.0.2)
+2026-08-06T06:36:42.0565208Z   - Downloading sebastian/environment (8.1.0)
+2026-08-06T06:36:42.0566871Z   - Downloading sebastian/diff (7.0.0)
+2026-08-06T06:36:42.0571379Z   - Downloading sebastian/comparator (7.1.6)
+2026-08-06T06:36:42.0572143Z   - Downloading sebastian/cli-parser (4.2.0)
+2026-08-06T06:36:42.0582358Z   - Downloading phpunit/php-timer (8.0.0)
+2026-08-06T06:36:42.0583400Z   - Downloading phpunit/php-text-template (5.0.0)
+2026-08-06T06:36:42.0584339Z   - Downloading phpunit/php-invoker (6.0.0)
+2026-08-06T06:36:42.0585253Z   - Downloading phpunit/php-file-iterator (6.0.1)
+2026-08-06T06:36:42.0586145Z   - Downloading theseer/tokenizer (2.0.1)
+2026-08-06T06:36:42.0587023Z   - Downloading sebastian/lines-of-code (4.0.0)
+2026-08-06T06:36:42.0587909Z   - Downloading sebastian/complexity (5.0.0)
+2026-08-06T06:36:42.0588803Z   - Downloading phpunit/php-code-coverage (12.5.6)
+2026-08-06T06:36:42.0589668Z   - Downloading phar-io/version (3.2.1)
+2026-08-06T06:36:42.0590459Z   - Downloading phar-io/manifest (2.0.4)
+2026-08-06T06:36:42.0591306Z   - Downloading myclabs/deep-copy (1.13.4)
+2026-08-06T06:36:42.0592252Z   - Downloading phpunit/phpunit (12.5.22)
+2026-08-06T06:36:42.0593071Z   - Downloading bacon/bacon-qr-code (2.0.8)
+2026-08-06T06:36:42.0593855Z   - Downloading simplesoftwareio/simple-qrcode (4.2.0)
+2026-08-06T06:36:46.2504505Z   - Installing voku/portable-ascii (2.1.0): Extracting archive
+2026-08-06T06:36:46.2524547Z   - Installing symfony/polyfill-php80 (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2530398Z   - Installing symfony/polyfill-mbstring (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2536200Z   - Installing symfony/polyfill-ctype (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2541048Z   - Installing phpoption/phpoption (1.9.5): Extracting archive
+2026-08-06T06:36:46.2547835Z   - Installing graham-campbell/result-type (v1.1.4): Extracting archive
+2026-08-06T06:36:46.2551127Z   - Installing vlucas/phpdotenv (v5.6.3): Extracting archive
+2026-08-06T06:36:46.2557129Z   - Installing symfony/css-selector (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2562763Z   - Installing tijsverkoyen/css-to-inline-styles (v2.4.0): Extracting archive
+2026-08-06T06:36:46.2567389Z   - Installing symfony/var-dumper (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2577871Z   - Installing symfony/polyfill-uuid (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2579347Z   - Installing symfony/uid (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2581706Z   - Installing symfony/deprecation-contracts (v3.6.0): Extracting archive
+2026-08-06T06:36:46.2583540Z   - Installing symfony/routing (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2585206Z   - Installing symfony/process (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2586662Z   - Installing symfony/polyfill-php85 (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2588317Z   - Installing symfony/polyfill-php84 (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2589884Z   - Installing symfony/polyfill-intl-normalizer (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2591299Z   - Installing symfony/polyfill-intl-idn (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2593597Z   - Installing symfony/mime (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2595105Z   - Installing psr/container (2.0.2): Extracting archive
+2026-08-06T06:36:46.2596580Z   - Installing symfony/service-contracts (v3.6.1): Extracting archive
+2026-08-06T06:36:46.2614188Z   - Installing psr/event-dispatcher (1.0.0): Extracting archive
+2026-08-06T06:36:46.2615315Z   - Installing symfony/event-dispatcher-contracts (v3.6.0): Extracting archive
+2026-08-06T06:36:46.2616365Z   - Installing symfony/event-dispatcher (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2617133Z   - Installing psr/log (3.0.2): Extracting archive
+2026-08-06T06:36:46.2617804Z   - Installing doctrine/lexer (3.0.1): Extracting archive
+2026-08-06T06:36:46.2618454Z   - Installing egulias/email-validator (4.0.4): Extracting archive
+2026-08-06T06:36:46.2618927Z   - Installing symfony/mailer (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2619635Z   - Installing symfony/http-foundation (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2620467Z   - Installing symfony/error-handler (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2621291Z   - Installing symfony/http-kernel (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2622419Z   - Installing symfony/finder (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2623482Z   - Installing symfony/polyfill-intl-grapheme (v1.36.0): Extracting archive
+2026-08-06T06:36:46.2624344Z   - Installing symfony/string (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2652317Z   - Installing symfony/console (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2653363Z   - Installing ramsey/collection (2.1.1): Extracting archive
+2026-08-06T06:36:46.2666652Z   - Installing brick/math (0.14.8): Extracting archive
+2026-08-06T06:36:46.2667580Z   - Installing ramsey/uuid (4.9.2): Extracting archive
+2026-08-06T06:36:46.2668486Z   - Installing psr/simple-cache (3.0.0): Extracting archive
+2026-08-06T06:36:46.2669512Z   - Installing nunomaduro/termwind (v2.4.0): Extracting archive
+2026-08-06T06:36:46.2670694Z   - Installing symfony/translation-contracts (v3.6.1): Extracting archive
+2026-08-06T06:36:46.2672130Z   - Installing symfony/translation (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2674307Z   - Installing psr/clock (1.0.0): Extracting archive
+2026-08-06T06:36:46.2723486Z   - Installing symfony/clock (v8.0.8): Extracting archive
+2026-08-06T06:36:46.2724369Z   - Installing carbonphp/carbon-doctrine-types (3.2.0): Extracting archive
+2026-08-06T06:36:46.2725171Z   - Installing nesbot/carbon (3.11.4): Extracting archive
+2026-08-06T06:36:46.2725989Z   - Installing monolog/monolog (3.10.0): Extracting archive
+2026-08-06T06:36:46.2726373Z   - Installing psr/http-message (2.0): Extracting archive
+2026-08-06T06:36:46.2726753Z   - Installing psr/http-factory (1.1.0): Extracting archive
+2026-08-06T06:36:46.2727154Z   - Installing league/uri-interfaces (7.8.1): Extracting archive
+2026-08-06T06:36:46.2727535Z   - Installing league/uri (7.8.1): Extracting archive
+2026-08-06T06:36:46.2727948Z   - Installing league/mime-type-detection (1.16.0): Extracting archive
+2026-08-06T06:36:46.2728392Z   - Installing league/flysystem-local (3.31.0): Extracting archive
+2026-08-06T06:36:46.2728798Z   - Installing league/flysystem (3.33.0): Extracting archive
+2026-08-06T06:36:46.2729166Z   - Installing nette/utils (v4.1.3): Extracting archive
+2026-08-06T06:36:46.2729522Z   - Installing nette/schema (v1.3.5): Extracting archive
+2026-08-06T06:36:46.2729924Z   - Installing dflydev/dot-access-data (v3.0.3): Extracting archive
+2026-08-06T06:36:46.2730331Z   - Installing league/config (v1.2.0): Extracting archive
+2026-08-06T06:36:46.2730793Z   - Installing league/commonmark (2.8.2): Extracting archive
+2026-08-06T06:36:46.2731233Z   - Installing laravel/serializable-closure (v2.0.12): Extracting archive
+2026-08-06T06:36:46.2731971Z   - Installing laravel/prompts (v0.3.16): Extracting archive
+2026-08-06T06:36:46.2732397Z   - Installing guzzlehttp/uri-template (v1.0.5): Extracting archive
+2026-08-06T06:36:46.2732826Z   - Installing guzzlehttp/promises (2.3.0): Extracting archive
+2026-08-06T06:36:46.2733217Z   - Installing psr/http-client (1.0.3): Extracting archive
+2026-08-06T06:36:46.2733650Z   - Installing ralouphie/getallheaders (3.0.3): Extracting archive
+2026-08-06T06:36:46.2734060Z   - Installing guzzlehttp/psr7 (2.9.0): Extracting archive
+2026-08-06T06:36:46.2734452Z   - Installing guzzlehttp/guzzle (7.10.0): Extracting archive
+2026-08-06T06:36:46.2734848Z   - Installing fruitcake/php-cors (v1.4.0): Extracting archive
+2026-08-06T06:36:46.2735303Z   - Installing dragonmantank/cron-expression (v3.6.0): Extracting archive
+2026-08-06T06:36:46.2735741Z   - Installing doctrine/inflector (2.1.0): Extracting archive
+2026-08-06T06:36:46.2736130Z   - Installing laravel/framework (v13.5.0): Extracting archive
+2026-08-06T06:36:46.2736516Z   - Installing masterminds/html5 (2.10.0): Extracting archive
+2026-08-06T06:36:46.2736917Z   - Installing thecodingmachine/safe (v3.4.0): Extracting archive
+2026-08-06T06:36:46.2737353Z   - Installing sabberworm/php-css-parser (v9.3.0): Extracting archive
+2026-08-06T06:36:46.2737775Z   - Installing dompdf/php-svg-lib (1.0.2): Extracting archive
+2026-08-06T06:36:46.2738167Z   - Installing dompdf/php-font-lib (1.0.2): Extracting archive
+2026-08-06T06:36:46.2738548Z   - Installing dompdf/dompdf (v3.1.5): Extracting archive
+2026-08-06T06:36:46.2738951Z   - Installing barryvdh/laravel-dompdf (v3.1.2): Extracting archive
+2026-08-06T06:36:46.2739375Z   - Installing clue/redis-protocol (v0.3.2): Extracting archive
+2026-08-06T06:36:46.2739751Z   - Installing dasprid/enum (1.0.7): Extracting archive
+2026-08-06T06:36:46.2740104Z   - Installing psr/cache (3.0.0): Extracting archive
+2026-08-06T06:36:46.2740481Z   - Installing doctrine/deprecations (1.1.6): Extracting archive
+2026-08-06T06:36:46.2740863Z   - Installing doctrine/dbal (4.4.3): Extracting archive
+2026-08-06T06:36:46.2761932Z   - Installing fakerphp/faker (v1.24.1): Extracting archive
+2026-08-06T06:36:46.2794441Z   - Installing laravel/pail (v1.2.6): Extracting archive
+2026-08-06T06:36:46.2812426Z   - Installing laravel/pint (v1.29.0): Extracting archive
+2026-08-06T06:36:46.2813198Z   - Installing react/event-loop (v1.6.0): Extracting archive
+2026-08-06T06:36:46.2813920Z   - Installing evenement/evenement (v3.0.2): Extracting archive
+2026-08-06T06:36:46.2814589Z   - Installing react/stream (v1.4.0): Extracting archive
+2026-08-06T06:36:46.2815242Z   - Installing react/promise (v3.3.0): Extracting archive
+2026-08-06T06:36:46.2815887Z   - Installing react/cache (v1.2.0): Extracting archive
+2026-08-06T06:36:46.2816706Z   - Installing react/dns (v1.14.0): Extracting archive
+2026-08-06T06:36:46.2817342Z   - Installing react/socket (v1.17.0): Extracting archive
+2026-08-06T06:36:46.2818277Z   - Installing react/promise-timer (v1.11.0): Extracting archive
+2026-08-06T06:36:46.2819073Z   - Installing ratchet/rfc6455 (v0.4.0): Extracting archive
+2026-08-06T06:36:46.2819926Z   - Installing pusher/pusher-php-server (7.2.8): Extracting archive
+2026-08-06T06:36:46.2820743Z   - Installing clue/redis-react (v2.8.0): Extracting archive
+2026-08-06T06:36:46.2821716Z   - Installing laravel/reverb (v1.10.2): Extracting archive
+2026-08-06T06:36:46.2822471Z   - Installing laravel/sanctum (v4.3.2): Extracting archive
+2026-08-06T06:36:46.2823211Z   - Installing nikic/php-parser (v5.7.0): Extracting archive
+2026-08-06T06:36:46.2823951Z   - Installing psy/psysh (v0.12.22): Extracting archive
+2026-08-06T06:36:46.2824690Z   - Installing laravel/tinker (v3.0.2): Extracting archive
+2026-08-06T06:36:46.2825490Z   - Installing hamcrest/hamcrest-php (v2.1.1): Extracting archive
+2026-08-06T06:36:46.2826494Z   - Installing mockery/mockery (1.6.12): Extracting archive
+2026-08-06T06:36:46.2827231Z   - Installing filp/whoops (2.18.4): Extracting archive
+2026-08-06T06:36:46.2827993Z   - Installing nunomaduro/collision (v8.9.3): Extracting archive
+2026-08-06T06:36:46.2828808Z   - Installing markbaker/matrix (3.0.1): Extracting archive
+2026-08-06T06:36:46.2829583Z   - Installing markbaker/complex (3.0.2): Extracting archive
+2026-08-06T06:36:46.2830407Z   - Installing maennchen/zipstream-php (3.2.2): Extracting archive
+2026-08-06T06:36:46.2831208Z   - Installing composer/pcre (3.4.0): Extracting archive
+2026-08-06T06:36:46.2832145Z   - Installing phpoffice/phpspreadsheet (5.9.0): Extracting archive
+2026-08-06T06:36:46.2834141Z   - Installing staabm/side-effects-detector (1.0.5): Extracting archive
+2026-08-06T06:36:46.2836039Z   - Installing sebastian/version (6.0.0): Extracting archive
+2026-08-06T06:36:46.2842603Z   - Installing sebastian/type (6.0.3): Extracting archive
+2026-08-06T06:36:46.2843623Z   - Installing sebastian/recursion-context (7.0.1): Extracting archive
+2026-08-06T06:36:46.2844645Z   - Installing sebastian/object-reflector (5.0.0): Extracting archive
+2026-08-06T06:36:46.2845628Z   - Installing sebastian/object-enumerator (7.0.0): Extracting archive
+2026-08-06T06:36:46.2846593Z   - Installing sebastian/global-state (8.0.2): Extracting archive
+2026-08-06T06:36:46.2847507Z   - Installing sebastian/exporter (7.0.2): Extracting archive
+2026-08-06T06:36:46.2848396Z   - Installing sebastian/environment (8.1.0): Extracting archive
+2026-08-06T06:36:46.2849782Z   - Installing sebastian/diff (7.0.0): Extracting archive
+2026-08-06T06:36:46.2862757Z   - Installing sebastian/comparator (7.1.6): Extracting archive
+2026-08-06T06:36:46.2863577Z   - Installing sebastian/cli-parser (4.2.0): Extracting archive
+2026-08-06T06:36:46.2864322Z   - Installing phpunit/php-timer (8.0.0): Extracting archive
+2026-08-06T06:36:46.2865102Z   - Installing phpunit/php-text-template (5.0.0): Extracting archive
+2026-08-06T06:36:46.2865922Z   - Installing phpunit/php-invoker (6.0.0): Extracting archive
+2026-08-06T06:36:46.2866701Z   - Installing phpunit/php-file-iterator (6.0.1): Extracting archive
+2026-08-06T06:36:46.2867471Z   - Installing theseer/tokenizer (2.0.1): Extracting archive
+2026-08-06T06:36:46.2868215Z   - Installing sebastian/lines-of-code (4.0.0): Extracting archive
+2026-08-06T06:36:46.2868986Z   - Installing sebastian/complexity (5.0.0): Extracting archive
+2026-08-06T06:36:46.2869773Z   - Installing phpunit/php-code-coverage (12.5.6): Extracting archive
+2026-08-06T06:36:46.2870537Z   - Installing phar-io/version (3.2.1): Extracting archive
+2026-08-06T06:36:46.2871228Z   - Installing phar-io/manifest (2.0.4): Extracting archive
+2026-08-06T06:36:46.2873010Z   - Installing myclabs/deep-copy (1.13.4): Extracting archive
+2026-08-06T06:36:46.2874408Z   - Installing phpunit/phpunit (12.5.22): Extracting archive
+2026-08-06T06:36:46.2875919Z   - Installing bacon/bacon-qr-code (2.0.8): Extracting archive
+2026-08-06T06:36:46.2877453Z   - Installing simplesoftwareio/simple-qrcode (4.2.0): Extracting archive
+2026-08-06T06:36:47.2900990Z Generating optimized autoload files
+2026-08-06T06:36:48.2753631Z > Illuminate\Foundation\ComposerScripts::postAutoloadDump
+2026-08-06T06:36:48.3014787Z > @php artisan package:discover --ansi
+2026-08-06T06:36:48.4874825Z 
+2026-08-06T06:36:48.4875814Z   [37;44m INFO [39;49m Discovering packages.  
+2026-08-06T06:36:48.4876334Z 
+2026-08-06T06:36:48.4925678Z   barryvdh/laravel-dompdf [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.4944930Z   laravel/pail [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.4963586Z   laravel/reverb [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.4981100Z   laravel/sanctum [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.5000699Z   laravel/tinker [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.5020400Z   nesbot/carbon [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.5037327Z   nunomaduro/collision [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.5053774Z   nunomaduro/termwind [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.5068132Z   simplesoftwareio/simple-qrcode [90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m[90m.[39m [32;1mDONE[39;22m
+2026-08-06T06:36:48.5069229Z 
+2026-08-06T06:36:48.5199449Z 91 packages you are using are looking for funding.
+2026-08-06T06:36:48.5200497Z Use the `composer fund` command to find out more!
+2026-08-06T06:36:48.5514905Z ##[group]Run npm install
+2026-08-06T06:36:48.5515179Z [36;1mnpm install[0m
+2026-08-06T06:36:48.5541704Z shell: /usr/bin/bash -e {0}
+2026-08-06T06:36:48.5541962Z env:
+2026-08-06T06:36:48.5542163Z   COMPOSER_PROCESS_TIMEOUT: 0
+2026-08-06T06:36:48.5542407Z   COMPOSER_NO_INTERACTION: 1
+2026-08-06T06:36:48.5542634Z   COMPOSER_NO_AUDIT: 1
+2026-08-06T06:36:48.5542841Z ##[endgroup]
+2026-08-06T06:36:53.2787403Z 
+2026-08-06T06:36:53.2788122Z added 60 packages, and audited 61 packages in 5s
+2026-08-06T06:36:53.2788554Z 
+2026-08-06T06:36:53.2788930Z 18 packages are looking for funding
+2026-08-06T06:36:53.2789783Z   run `npm fund` for details
+2026-08-06T06:36:53.2885554Z 
+2026-08-06T06:36:53.2886480Z 7 vulnerabilities (5 high, 2 critical)
+2026-08-06T06:36:53.2886743Z 
+2026-08-06T06:36:53.2886873Z To address all issues, run:
+2026-08-06T06:36:53.2887121Z   npm audit fix
+2026-08-06T06:36:53.2887240Z 
+2026-08-06T06:36:53.2887361Z Run `npm audit` for details.
+2026-08-06T06:36:53.3196071Z ##[group]Run npm run build
+2026-08-06T06:36:53.3196371Z [36;1mnpm run build[0m
+2026-08-06T06:36:53.3222713Z shell: /usr/bin/bash -e {0}
+2026-08-06T06:36:53.3222977Z env:
+2026-08-06T06:36:53.3223178Z   COMPOSER_PROCESS_TIMEOUT: 0
+2026-08-06T06:36:53.3223426Z   COMPOSER_NO_INTERACTION: 1
+2026-08-06T06:36:53.3223656Z   COMPOSER_NO_AUDIT: 1
+2026-08-06T06:36:53.3223860Z ##[endgroup]
+2026-08-06T06:36:53.4227809Z 
+2026-08-06T06:36:53.4228523Z > build
+2026-08-06T06:36:53.4228892Z > vite build
+2026-08-06T06:36:53.4229102Z 
+2026-08-06T06:36:53.7217587Z [36mvite v8.0.8 [32mbuilding client environment for production...[36m[39m
+2026-08-06T06:36:53.7429540Z [2K
+2026-08-06T06:36:54.0345378Z transforming...✓ 75 modules transformed.
+2026-08-06T06:36:54.0744588Z rendering chunks...
+2026-08-06T06:36:54.1077025Z computing gzip size...
+2026-08-06T06:36:54.1112624Z public/build/manifest.json                                 1.81 kB │ gzip:  0.42 kB
+2026-08-06T06:36:54.1113287Z public/build/assets/fa-v4compatibility-DD84SGiu.woff2      4.03 kB
+2026-08-06T06:36:54.1113802Z public/build/assets/fa-regular-400-nyy7hhHF.woff2         18.92 kB
+2026-08-06T06:36:54.1114279Z public/build/assets/fa-brands-400-BP5tdqmh.woff2         110.08 kB
+2026-08-06T06:36:54.1114777Z public/build/assets/fa-solid-900-DRAAbZTg.woff2          114.74 kB
+2026-08-06T06:36:54.1115245Z public/build/assets/top_head_image-vfYh8E1j.png        1,292.35 kB
+2026-08-06T06:36:54.1115854Z public/build/assets/login-B9OXGg4f.css                     3.19 kB │ gzip:  1.12 kB
+2026-08-06T06:36:54.1117045Z public/build/assets/app-CviMBd24.css                     308.86 kB │ gzip: 54.59 kB
+2026-08-06T06:36:54.1117676Z public/build/assets/app-Dm68y1l5.js                      189.92 kB │ gzip: 52.51 kB
+2026-08-06T06:36:54.1118162Z 
+2026-08-06T06:36:54.1118351Z [32m✓ built in 389ms[39m
+2026-08-06T06:36:54.1365448Z ##[group]Run cp .env.example .env
+2026-08-06T06:36:54.1365746Z [36;1mcp .env.example .env[0m
+2026-08-06T06:36:54.1392278Z shell: /usr/bin/bash -e {0}
+2026-08-06T06:36:54.1392636Z env:
+2026-08-06T06:36:54.1392919Z   COMPOSER_PROCESS_TIMEOUT: 0
+2026-08-06T06:36:54.1393168Z   COMPOSER_NO_INTERACTION: 1
+2026-08-06T06:36:54.1393399Z   COMPOSER_NO_AUDIT: 1
+2026-08-06T06:36:54.1393603Z ##[endgroup]
+2026-08-06T06:36:54.1478273Z ##[group]Run php artisan key:generate
+2026-08-06T06:36:54.1478592Z [36;1mphp artisan key:generate[0m
+2026-08-06T06:36:54.1504395Z shell: /usr/bin/bash -e {0}
+2026-08-06T06:36:54.1504655Z env:
+2026-08-06T06:36:54.1504856Z   COMPOSER_PROCESS_TIMEOUT: 0
+2026-08-06T06:36:54.1505104Z   COMPOSER_NO_INTERACTION: 1
+2026-08-06T06:36:54.1505330Z   COMPOSER_NO_AUDIT: 1
+2026-08-06T06:36:54.1505537Z ##[endgroup]
+2026-08-06T06:36:54.3467941Z 
+2026-08-06T06:36:54.3469058Z    INFO  Application key set successfully.  
+2026-08-06T06:36:54.3555366Z 
+2026-08-06T06:36:54.3589113Z ##[group]Run php artisan migrate --force
+2026-08-06T06:36:54.3589503Z [36;1mphp artisan migrate --force[0m
+2026-08-06T06:36:54.3619076Z shell: /usr/bin/bash -e {0}
+2026-08-06T06:36:54.3619341Z env:
+2026-08-06T06:36:54.3619543Z   COMPOSER_PROCESS_TIMEOUT: 0
+2026-08-06T06:36:54.3619787Z   COMPOSER_NO_INTERACTION: 1
+2026-08-06T06:36:54.3620015Z   COMPOSER_NO_AUDIT: 1
+2026-08-06T06:36:54.3620218Z   APP_ENV: testing
+2026-08-06T06:36:54.3620412Z   DB_CONNECTION: pgsql
+2026-08-06T06:36:54.3620613Z   DB_HOST: 127.0.0.1
+2026-08-06T06:36:54.3620803Z   DB_PORT: 5432
+2026-08-06T06:36:54.3620996Z   DB_DATABASE: CIS_CAPSTONE
+2026-08-06T06:36:54.3621216Z   DB_USERNAME: postgres
+2026-08-06T06:36:54.3621420Z   DB_PASSWORD: postgres
+2026-08-06T06:36:54.3621705Z ##[endgroup]
+2026-08-06T06:36:54.5597106Z 
+2026-08-06T06:36:54.5597649Z    INFO  Preparing database.  
+2026-08-06T06:36:54.5598014Z 
+2026-08-06T06:36:54.5678356Z   Creating migration table ....................................... 6.59ms DONE
+2026-08-06T06:36:54.5678672Z 
+2026-08-06T06:36:54.5772662Z    INFO  Running migrations.  
+2026-08-06T06:36:54.5773044Z 
+2026-08-06T06:36:54.5903590Z   0001_01_01_000000_create_users_table .......................... 11.99ms DONE
+2026-08-06T06:36:54.5975406Z   0001_01_01_000001_create_cache_table ........................... 5.17ms DONE
+2026-08-06T06:36:54.6082939Z   0001_01_01_000002_create_jobs_table ............................ 8.89ms DONE
+2026-08-06T06:36:54.6146290Z   2026_04_28_062251_create_students_table ........................ 4.52ms DONE
+2026-08-06T06:36:54.6222840Z   2026_04_28_065500_create_guardians_table ....................... 5.82ms DONE
+2026-08-06T06:36:54.6285157Z   2026_04_28_075708_create_teachers_table ........................ 4.50ms DONE
+2026-08-06T06:36:54.6373758Z   2026_04_28_091044_create_enrollments_table ..................... 7.15ms DONE
+2026-08-06T06:36:54.6431868Z   2026_04_28_122126_create_qr-codes_table ........................ 4.05ms DONE
+2026-08-06T06:36:54.6517663Z   2026_04_30_084748_create_attendance_logs_table ................. 7.03ms DONE
+2026-08-06T06:36:54.6577907Z   2026_04_30_091100_create_schedule_configs_table ................ 4.15ms DONE
+2026-08-06T06:36:54.6673270Z   2026_04_30_092224_create_flagged_scans_table ................... 7.25ms DONE
+2026-08-06T06:36:54.6804733Z   2026_04_30_102631_create_email_logs_table ..................... 11.03ms DONE
+2026-08-06T06:36:54.6846173Z   2026_05_08_124653_add_lrn_to_students_table .................... 2.32ms DONE
+2026-08-06T06:36:54.6876244Z   2026_05_08_131929_add_middle_name_to_students_table ............ 1.49ms DONE
+2026-08-06T06:36:54.6946387Z   2026_05_09_125225_create_personal_access_tokens_table .......... 5.50ms DONE
+2026-08-06T06:36:54.6987976Z   2026_05_10_073931_remove_fields_from_enrollments_table ......... 2.57ms DONE
+2026-08-06T06:36:54.7041990Z   2026_05_11_112800_add_level_to_enrollments_table ............... 3.72ms DONE
+2026-08-06T06:36:54.7081119Z   2026_06_01_181941_add_user_id_to_users_table ................... 2.23ms DONE
+2026-08-06T06:36:54.7130305Z   2026_06_01_201756_create_school_years_table .................... 3.28ms DONE
+2026-08-06T06:36:54.7179452Z   2026_06_01_212400_add_school_year_id_to_enrollments_table ...... 3.64ms DONE
+2026-08-06T06:36:54.7206061Z   2026_06_11_000000_add_unique_student_school_year_to_enrollments_table  1.54ms DONE
+2026-08-06T06:36:54.7265602Z   2026_06_16_093708_create_sections_table ........................ 4.30ms DONE
+2026-08-06T06:36:54.7301073Z   2026_06_16_180417_add_is_active_to_sections_table .............. 2.05ms DONE
+2026-08-06T06:36:54.7351306Z   2026_06_17_175023_add_section_id_to_enrollments_table .......... 3.68ms DONE
+2026-08-06T06:36:54.7367138Z   2026_06_19_204412_update_session_type_enum_on_enrollments_and_schedule_configs  0.46ms DONE
+2026-08-06T06:36:54.7395071Z   2026_06_23_140014_add_capacity_to_sections_table ............... 1.40ms DONE
+2026-08-06T06:36:54.7434727Z   2026_06_28_171531_add_email_to_teachers_table .................. 2.45ms DONE
+2026-08-06T06:36:54.7465588Z   2026_06_28_172226_add_status_to_teachers_table ................. 1.57ms DONE
+2026-08-06T06:36:54.7496352Z   2026_06_28_172619_remove_email_from_teachers_table ............. 1.69ms DONE
+2026-08-06T06:36:54.7523532Z   2026_06_28_175402_remove_name_fields_from_teachers_table ....... 1.52ms DONE
+2026-08-06T06:36:54.7548430Z   2026_06_28_181112_rename_user_id_column_in_users_table ......... 1.27ms DONE
+2026-08-06T06:36:54.7579675Z   2026_07_02_203524_drop_school_year_from_enrollments_table ...... 1.92ms DONE
+2026-08-06T06:36:54.7606115Z   2026_07_04_130302_add_image_path_to_qr_codes_table ............. 1.25ms DONE
+2026-08-06T06:36:54.7664370Z   2026_07_12_201347_create_subjects_table ........................ 4.19ms DONE
+2026-08-06T06:36:54.7722036Z   2026_07_12_201348_create_grading_periods_table ................. 4.31ms DONE
+2026-08-06T06:36:54.7766716Z   2026_07_12_201349_create_assessment_categories_table ........... 3.05ms DONE
+2026-08-06T06:36:54.7882228Z   2026_07_12_201350_create_teaching_assignments_table ........... 10.02ms DONE
+2026-08-06T06:36:54.7958346Z   2026_07_12_201351_create_room_attendance_table ................. 6.03ms DONE
+2026-08-06T06:36:54.8051756Z   2026_07_12_201352_create_assessments_table ..................... 7.70ms DONE
+2026-08-06T06:36:54.8124421Z   2026_07_12_201353_create_student_assessment_scores_table ....... 5.75ms DONE
+2026-08-06T06:36:54.8213156Z   2026_07_12_201354_create_quarterly_grades_table ................ 7.32ms DONE
+2026-08-06T06:36:54.8287073Z   2026_07_13_201540_create_login_logs_table ...................... 5.59ms DONE
+2026-08-06T06:36:54.8374390Z   2026_07_29_000001_create_bulk_imports_table .................... 7.00ms DONE
+2026-08-06T06:36:54.8464062Z   2026_07_29_000002_create_bulk_import_issues_table .............. 7.37ms DONE
+2026-08-06T06:36:54.8472653Z 
+2026-08-06T06:36:54.8596375Z ##[group]Run php artisan test
+2026-08-06T06:36:54.8597048Z [36;1mphp artisan test[0m
+2026-08-06T06:36:54.8628422Z shell: /usr/bin/bash -e {0}
+2026-08-06T06:36:54.8628682Z env:
+2026-08-06T06:36:54.8628886Z   COMPOSER_PROCESS_TIMEOUT: 0
+2026-08-06T06:36:54.8629132Z   COMPOSER_NO_INTERACTION: 1
+2026-08-06T06:36:54.8629357Z   COMPOSER_NO_AUDIT: 1
+2026-08-06T06:36:54.8629565Z   APP_ENV: testing
+2026-08-06T06:36:54.8629767Z   DB_CONNECTION: pgsql
+2026-08-06T06:36:54.8629971Z   DB_HOST: 127.0.0.1
+2026-08-06T06:36:54.8630167Z   DB_PORT: 5432
+2026-08-06T06:36:54.8630364Z   DB_DATABASE: CIS_CAPSTONE
+2026-08-06T06:36:54.8630591Z   DB_USERNAME: postgres
+2026-08-06T06:36:54.8630800Z   DB_PASSWORD: postgres
+2026-08-06T06:36:54.8631003Z ##[endgroup]
+2026-08-06T06:36:55.2132382Z 
+2026-08-06T06:36:55.2133378Z   [30;42;1m PASS [39;49;22m[39m Tests\Unit\ExampleTest[39m
+2026-08-06T06:36:55.2219498Z   [32;1m✓[39;22m[90m [39m[90mthat true is true[39m
+2026-08-06T06:36:55.6881808Z 
+2026-08-06T06:36:55.6882931Z   [30;42;1m PASS [39;49;22m[39m Tests\Unit\LoginRequestValidationTest[39m
+2026-08-06T06:36:55.6896600Z   [32;1m✓[39;22m[90m [39m[90mlogin request allows simple passwords for existing users[39m[90m            [39m [90m0.47s[39m  
+2026-08-06T06:36:55.7600092Z 
+2026-08-06T06:36:55.7601089Z   [30;42;1m PASS [39;49;22m[39m Tests\Unit\UserRoleTest[39m
+2026-08-06T06:36:55.7614449Z   [32;1m✓[39;22m[90m [39m[90msupported roles are defined as constants[39m[90m                            [39m [90m0.03s[39m  
+2026-08-06T06:36:55.7626961Z   [32;1m✓[39;22m[90m [39m[90mrole helper methods return the expected result[39m[90m                      [39m [90m0.03s[39m  
+2026-08-06T06:36:56.2613466Z 
+2026-08-06T06:36:56.2614190Z   [39;41;1m FAIL [39;49;22m[39m Tests\Feature\AcademicTabsTest[39m
+2026-08-06T06:36:56.2626333Z   [31;1m⨯[39;22m[90m [39m[90macademic page renders all tab scopes[39m[90m                                [39m [90m0.14s[39m  
+2026-08-06T06:36:56.2637350Z   [31;1m⨯[39;22m[90m [39m[90menrollment search filters only unenrolled students[39m[90m                  [39m [90m0.09s[39m  
+2026-08-06T06:36:56.2648959Z   [31;1m⨯[39;22m[90m [39m[90msection filters use namespaced params and pagination links keep onl[39m[90m…[39m [90m0.09s[39m  
+2026-08-06T06:36:56.2660229Z   [31;1m⨯[39;22m[90m [39m[90msubject filters use namespaced params and pagination links keep onl[39m[90m…[39m [90m0.09s[39m  
+2026-08-06T06:36:56.2671414Z   [31;1m⨯[39;22m[90m [39m[90msingle tab params do not filter other tabs[39m[90m                          [39m [90m0.10s[39m  
+2026-08-06T06:36:56.3481747Z 
+2026-08-06T06:36:56.3482637Z   [39;41;1m FAIL [39;49;22m[39m Tests\Feature\AuthHardeningTest[39m
+2026-08-06T06:36:56.3494821Z   [31;1m⨯[39;22m[90m [39m[90mlogin rejects weak passwords before authentication[39m[90m                  [39m [90m0.05s[39m  
+2026-08-06T06:36:56.3506302Z   [31;1m⨯[39;22m[90m [39m[90mlogin throttles repeated failed attempts[39m[90m                            [39m [90m0.04s[39m  
+2026-08-06T06:36:56.5390913Z 
+2026-08-06T06:36:56.5391932Z   [39;41;1m FAIL [39;49;22m[39m Tests\Feature\AuthRoleRedirectTest[39m
+2026-08-06T06:36:56.5404377Z   [31;1m⨯[39;22m[90m [39m[90mauthenticated admin can view the login page without redirecting[39m[90m     [39m [90m0.05s[39m  
+2026-08-06T06:36:56.5416137Z   [31;1m⨯[39;22m[90m [39m[90mauthenticated teacher can view the login page without redirecting[39m[90m   [39m [90m0.05s[39m  
+2026-08-06T06:36:56.5428482Z   [31;1m⨯[39;22m[90m [39m[90mnon teacher users cannot access teacher dashboard[39m[90m                   [39m [90m0.04s[39m  
+2026-08-06T06:36:56.5439342Z   [31;1m⨯[39;22m[90m [39m[90mnon teacher users cannot access teacher module schedule page[39m[90m        [39m [90m0.05s[39m  
+2026-08-06T06:36:56.5839762Z 
+2026-08-06T06:36:56.5840759Z   [39;41;1m FAIL [39;49;22m[39m Tests\Feature\ExampleTest[39m
+2026-08-06T06:36:56.5854125Z   [31;1m⨯[39;22m[90m [39m[90mthe application returns a successful response[39m[90m                       [39m [90m0.04s[39m  
+2026-08-06T06:36:56.6741976Z 
+2026-08-06T06:36:56.6742907Z   [30;42;1m PASS [39;49;22m[39m Tests\Feature\PrivilegedAccessControlTest[39m
+2026-08-06T06:36:56.6755302Z   [32;1m✓[39;22m[90m [39m[90mteacher users cannot manage users via the api[39m[90m                       [39m [90m0.04s[39m  
+2026-08-06T06:36:56.6767178Z   [32;1m✓[39;22m[90m [39m[90madmin users must confirm their password for sensitive user manageme[39m[90m…[39m [90m0.05s[39m  
+2026-08-06T06:36:56.8012754Z 
+2026-08-06T06:36:56.8014177Z   [39;41;1m FAIL [39;49;22m[39m Tests\Feature\RouteProtectionTest[39m
+2026-08-06T06:36:56.8038867Z   [31;1m⨯[39;22m[90m [39m[90mguest is redirected to login for protected admin route[39m[90m              [39m [90m0.04s[39m  
+2026-08-06T06:36:56.8050388Z   [31;1m⨯[39;22m[90m [39m[90mteacher user cannot access admin dashboard[39m[90m                          [39m [90m0.04s[39m  
+2026-08-06T06:36:56.8061905Z   [31;1m⨯[39;22m[90m [39m[90madmin user can access admin dashboard[39m[90m                               [39m [90m0.04s[39m  
+2026-08-06T06:36:56.8068495Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8083699Z   [41;1m FAILED [49;22m [1mTests\Feature\AcademicTabsTest[22m [90m>[39m academic… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8100738Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8143313Z 
+2026-08-06T06:36:56.8144605Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8153334Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8154129Z      80▕     {
+2026-08-06T06:36:56.8154963Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8155950Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8156844Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8157611Z      84▕             }
+2026-08-06T06:36:56.8158141Z      85▕         });
+2026-08-06T06:36:56.8158633Z      86▕     }
+2026-08-06T06:36:56.8159127Z      87▕ }
+2026-08-06T06:36:56.8159504Z 
+2026-08-06T06:36:56.8159897Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8160886Z   [33m20  [39m[39;1mtests/Feature/AcademicTabsTest.php[39;22m:[39;1m41[39;22m
+2026-08-06T06:36:56.8161690Z 
+2026-08-06T06:36:56.8162418Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8175686Z   [41;1m FAILED [49;22m [1mTests\Feature\AcademicTabsTest[22m [90m>[39m enrollment searc… [41;1m QueryException [49;22m  
+2026-08-06T06:36:56.8177728Z [39;1m  SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in column "section" of relation "enrollments" violates not-null constraint
+2026-08-06T06:36:56.8182670Z DETAIL:  Failing row contains (1, 6, 1, null, morning, active, 2026-08-06 14:36:55, 2026-08-06 14:36:55, elementary, 2, 13). (Connection: pgsql, Host: 127.0.0.1, Port: 5432, Database: CIS_CAPSTONE, SQL: insert into "enrollments" ("student_id", "section_id", "school_year_id", "level", "session_type", "status", "grade_level", "updated_at", "created_at") values (6, 13, 2, elementary, morning, active, 1, 2026-08-06 14:36:55, 2026-08-06 14:36:55) returning "id")[39;22m
+2026-08-06T06:36:56.8223167Z 
+2026-08-06T06:36:56.8224273Z   at [32mvendor/laravel/framework/src/Illuminate/Database/Connection.php[39m:[32m841[39m
+2026-08-06T06:36:56.8319414Z     837▕             $exceptionType = ($isUniqueConstraintError = $this->isUniqueConstraintError($e))
+2026-08-06T06:36:56.8320217Z     838▕                 ? UniqueConstraintViolationException::class
+2026-08-06T06:36:56.8320667Z     839▕                 : QueryException::class;
+2026-08-06T06:36:56.8320962Z     840▕ 
+2026-08-06T06:36:56.8321734Z   ➜ 841▕             $exception = new $exceptionType(
+2026-08-06T06:36:56.8322200Z     842▕                 $this->getNameWithReadWriteType(),
+2026-08-06T06:36:56.8322908Z     843▕                 $query,
+2026-08-06T06:36:56.8323339Z     844▕                 $this->prepareBindings($bindings),
+2026-08-06T06:36:56.8323811Z     845▕                 $e,
+2026-08-06T06:36:56.8324103Z 
+2026-08-06T06:36:56.8324430Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8324903Z   [33m20  [39m[39;1mtests/Feature/AcademicTabsTest.php[39;22m:[39;1m55[39;22m
+2026-08-06T06:36:56.8326057Z 
+2026-08-06T06:36:56.8326416Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8341724Z   [41;1m FAILED [49;22m [1mTests\Feature\AcademicTabsTest[22m [90m>[39m section…  [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8343184Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8379182Z 
+2026-08-06T06:36:56.8380971Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8388469Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8388785Z      80▕     {
+2026-08-06T06:36:56.8389116Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8389654Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8390336Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8390884Z      84▕             }
+2026-08-06T06:36:56.8391318Z      85▕         });
+2026-08-06T06:36:56.8391895Z      86▕     }
+2026-08-06T06:36:56.8392234Z      87▕ }
+2026-08-06T06:36:56.8392394Z 
+2026-08-06T06:36:56.8392656Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8393473Z   [33m20  [39m[39;1mtests/Feature/AcademicTabsTest.php[39;22m:[39;1m77[39;22m
+2026-08-06T06:36:56.8393986Z 
+2026-08-06T06:36:56.8396146Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8411589Z   [41;1m FAILED [49;22m [1mTests\Feature\AcademicTabsTest[22m [90m>[39m subject…  [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8412978Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8448705Z 
+2026-08-06T06:36:56.8450015Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8457764Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8458135Z      80▕     {
+2026-08-06T06:36:56.8458715Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8459359Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8460125Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8460630Z      84▕             }
+2026-08-06T06:36:56.8461073Z      85▕         });
+2026-08-06T06:36:56.8461600Z      86▕     }
+2026-08-06T06:36:56.8462640Z      87▕ }
+2026-08-06T06:36:56.8462875Z 
+2026-08-06T06:36:56.8463214Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8464186Z   [33m20  [39m[39;1mtests/Feature/AcademicTabsTest.php[39;22m:[39;1m92[39;22m
+2026-08-06T06:36:56.8464783Z 
+2026-08-06T06:36:56.8466870Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8486145Z   [41;1m FAILED [49;22m [1mTests\Feature\AcademicTabsTest[22m [90m>[39m single t… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8488774Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8526761Z 
+2026-08-06T06:36:56.8528363Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8537329Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8538094Z      80▕     {
+2026-08-06T06:36:56.8538918Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8539978Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8541297Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8542663Z      84▕             }
+2026-08-06T06:36:56.8543492Z      85▕         });
+2026-08-06T06:36:56.8543970Z      86▕     }
+2026-08-06T06:36:56.8544347Z      87▕ }
+2026-08-06T06:36:56.8544531Z 
+2026-08-06T06:36:56.8544826Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8545683Z   [33m20  [39m[39;1mtests/Feature/AcademicTabsTest.php[39;22m:[39;1m106[39;22m
+2026-08-06T06:36:56.8546196Z 
+2026-08-06T06:36:56.8548863Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8565226Z   [41;1m FAILED [49;22m [1mTests\Feature\AuthHardeningTest[22m [90m>[39m login r… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8568000Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8606741Z 
+2026-08-06T06:36:56.8608156Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8616209Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8616917Z      80▕     {
+2026-08-06T06:36:56.8618011Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8618729Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8619392Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8619973Z      84▕             }
+2026-08-06T06:36:56.8620391Z      85▕         });
+2026-08-06T06:36:56.8620795Z      86▕     }
+2026-08-06T06:36:56.8621152Z      87▕ }
+2026-08-06T06:36:56.8621334Z 
+2026-08-06T06:36:56.8621836Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8622704Z   [33m20  [39m[39;1mtests/Feature/AuthHardeningTest.php[39;22m:[39;1m23[39;22m
+2026-08-06T06:36:56.8623253Z 
+2026-08-06T06:36:56.8623898Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8640515Z   [41;1m FAILED [49;22m [1mTests\Feature\AuthHardeningTest[22m [90m>[39m login t… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8642179Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8684904Z 
+2026-08-06T06:36:56.8686363Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8695274Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8696063Z      80▕     {
+2026-08-06T06:36:56.8696857Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8697662Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8698546Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8699288Z      84▕             }
+2026-08-06T06:36:56.8700202Z      85▕         });
+2026-08-06T06:36:56.8700632Z      86▕     }
+2026-08-06T06:36:56.8700995Z      87▕ }
+2026-08-06T06:36:56.8701184Z 
+2026-08-06T06:36:56.8701595Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8702881Z   [33m20  [39m[39;1mtests/Feature/AuthHardeningTest.php[39;22m:[39;1m35[39;22m
+2026-08-06T06:36:56.8703544Z 
+2026-08-06T06:36:56.8704700Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8722887Z   [41;1m FAILED [49;22m [1mTests\Feature\AuthRoleRedirectTest[22m [90m>[39m auth… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8724578Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8763809Z 
+2026-08-06T06:36:56.8765270Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8775391Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8776182Z      80▕     {
+2026-08-06T06:36:56.8776937Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8777702Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8778582Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8779333Z      84▕             }
+2026-08-06T06:36:56.8779926Z      85▕         });
+2026-08-06T06:36:56.8780800Z      86▕     }
+2026-08-06T06:36:56.8781207Z      87▕ }
+2026-08-06T06:36:56.8781388Z 
+2026-08-06T06:36:56.8781778Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8782649Z   [33m20  [39m[39;1mtests/Feature/AuthRoleRedirectTest.php[39;22m:[39;1m24[39;22m
+2026-08-06T06:36:56.8783182Z 
+2026-08-06T06:36:56.8784814Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8801676Z   [41;1m FAILED [49;22m [1mTests\Feature\AuthRoleRedirectTest[22m [90m>[39m auth… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8803359Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8840424Z 
+2026-08-06T06:36:56.8841817Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8850015Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8850774Z      80▕     {
+2026-08-06T06:36:56.8851762Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8852594Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8853515Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8854214Z      84▕             }
+2026-08-06T06:36:56.8854826Z      85▕         });
+2026-08-06T06:36:56.8855679Z      86▕     }
+2026-08-06T06:36:56.8856097Z      87▕ }
+2026-08-06T06:36:56.8856266Z 
+2026-08-06T06:36:56.8856510Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8857394Z   [33m20  [39m[39;1mtests/Feature/AuthRoleRedirectTest.php[39;22m:[39;1m40[39;22m
+2026-08-06T06:36:56.8857961Z 
+2026-08-06T06:36:56.8860407Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8876973Z   [41;1m FAILED [49;22m [1mTests\Feature\AuthRoleRedirectTest[22m [90m>[39m non…  [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8878452Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.8920471Z 
+2026-08-06T06:36:56.8921948Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.8932066Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.8934238Z      80▕     {
+2026-08-06T06:36:56.8934931Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.8935743Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.8936526Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.8937188Z      84▕             }
+2026-08-06T06:36:56.8937653Z      85▕         });
+2026-08-06T06:36:56.8938056Z      86▕     }
+2026-08-06T06:36:56.8938457Z      87▕ }
+2026-08-06T06:36:56.8938663Z 
+2026-08-06T06:36:56.8938968Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.8940025Z   [33m20  [39m[39;1mtests/Feature/AuthRoleRedirectTest.php[39;22m:[39;1m57[39;22m
+2026-08-06T06:36:56.8942368Z 
+2026-08-06T06:36:56.8943535Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.8961919Z   [41;1m FAILED [49;22m [1mTests\Feature\AuthRoleRedirectTest[22m [90m>[39m non…  [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.8963374Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.9001358Z 
+2026-08-06T06:36:56.9002702Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.9012864Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.9013488Z      80▕     {
+2026-08-06T06:36:56.9014135Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.9014911Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.9015673Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.9016274Z      84▕             }
+2026-08-06T06:36:56.9016660Z      85▕         });
+2026-08-06T06:36:56.9017082Z      86▕     }
+2026-08-06T06:36:56.9017430Z      87▕ }
+2026-08-06T06:36:56.9017637Z 
+2026-08-06T06:36:56.9017902Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.9021396Z   [33m20  [39m[39;1mtests/Feature/AuthRoleRedirectTest.php[39;22m:[39;1m76[39;22m
+2026-08-06T06:36:56.9022097Z 
+2026-08-06T06:36:56.9022733Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.9039769Z   [41;1m FAILED [49;22m [1mTests\Feature\ExampleTest[22m [90m>[39m the applicati… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.9041217Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.9078637Z 
+2026-08-06T06:36:56.9079857Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.9090081Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.9092425Z      80▕     {
+2026-08-06T06:36:56.9093168Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.9094037Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.9094822Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.9095478Z      84▕             }
+2026-08-06T06:36:56.9095937Z      85▕         });
+2026-08-06T06:36:56.9096358Z      86▕     }
+2026-08-06T06:36:56.9096766Z      87▕ }
+2026-08-06T06:36:56.9096976Z 
+2026-08-06T06:36:56.9097283Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.9099832Z   [33m20  [39m[39;1mtests/Feature/ExampleTest.php[39;22m:[39;1m13[39;22m
+2026-08-06T06:36:56.9100485Z 
+2026-08-06T06:36:56.9101249Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.9119785Z   [41;1m FAILED [49;22m [1mTests\Feature\RouteProtectionTest[22m [90m>[39m guest… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.9121213Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.9158518Z 
+2026-08-06T06:36:56.9159572Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.9167286Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.9167822Z      80▕     {
+2026-08-06T06:36:56.9168402Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.9169042Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.9169706Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.9170265Z      84▕             }
+2026-08-06T06:36:56.9170659Z      85▕         });
+2026-08-06T06:36:56.9171034Z      86▕     }
+2026-08-06T06:36:56.9171289Z      87▕ }
+2026-08-06T06:36:56.9171391Z 
+2026-08-06T06:36:56.9171673Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.9172162Z   [33m20  [39m[39;1mtests/Feature/RouteProtectionTest.php[39;22m:[39;1m12[39;22m
+2026-08-06T06:36:56.9172459Z 
+2026-08-06T06:36:56.9174760Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.9190546Z   [41;1m FAILED [49;22m [1mTests\Feature\RouteProtectionTest[22m [90m>[39m teach… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.9191892Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.9229575Z 
+2026-08-06T06:36:56.9231015Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.9241920Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.9242652Z      80▕     {
+2026-08-06T06:36:56.9243398Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.9244219Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.9245131Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.9245904Z      84▕             }
+2026-08-06T06:36:56.9246429Z      85▕         });
+2026-08-06T06:36:56.9246933Z      86▕     }
+2026-08-06T06:36:56.9247408Z      87▕ }
+2026-08-06T06:36:56.9247708Z 
+2026-08-06T06:36:56.9249310Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.9251581Z   [33m20  [39m[39;1mtests/Feature/RouteProtectionTest.php[39;22m:[39;1m24[39;22m
+2026-08-06T06:36:56.9252137Z 
+2026-08-06T06:36:56.9252756Z   [31m────────────────────────────────────────────────────────────────────────────[39m  
+2026-08-06T06:36:56.9269364Z   [41;1m FAILED [49;22m [1mTests\Feature\RouteProtectionTest[22m [90m>[39m admin… [41;1m MissingAppKeyException [49;22m  
+2026-08-06T06:36:56.9270778Z [39;1m  No application encryption key has been specified.[39;22m
+2026-08-06T06:36:56.9307117Z 
+2026-08-06T06:36:56.9308089Z   at [32mvendor/laravel/framework/src/Illuminate/Encryption/EncryptionServiceProvider.php[39m:[32m83[39m
+2026-08-06T06:36:56.9316657Z      79▕     protected function key(array $config)
+2026-08-06T06:36:56.9317166Z      80▕     {
+2026-08-06T06:36:56.9317746Z      81▕         return tap($config['key'], function ($key) {
+2026-08-06T06:36:56.9318252Z      82▕             if (empty($key)) {
+2026-08-06T06:36:56.9318783Z   ➜  83▕                 throw new MissingAppKeyException;
+2026-08-06T06:36:56.9319308Z      84▕             }
+2026-08-06T06:36:56.9319564Z      85▕         });
+2026-08-06T06:36:56.9319819Z      86▕     }
+2026-08-06T06:36:56.9320048Z      87▕ }
+2026-08-06T06:36:56.9320157Z 
+2026-08-06T06:36:56.9320328Z       [2m+19 vendor frames [22m
+2026-08-06T06:36:56.9321001Z   [33m20  [39m[39;1mtests/Feature/RouteProtectionTest.php[39;22m:[39;1m36[39;22m
+2026-08-06T06:36:56.9321753Z 
+2026-08-06T06:36:56.9321868Z 
+2026-08-06T06:36:56.9323897Z   [90mTests:[39m    [31;1m15 failed[39;22m[90m,[39m[39m [39m[32;1m6 passed[39;22m[90m (15 assertions)[39m
+2026-08-06T06:36:56.9325021Z   [90mDuration:[39m [39m1.68s[39m
+2026-08-06T06:36:56.9325363Z 
+2026-08-06T06:36:56.9509324Z ##[error]Process completed with exit code 2.
+2026-08-06T06:36:56.9615438Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-06T06:36:56.9616663Z Post job cleanup.
+2026-08-06T06:36:57.0479506Z [command]/usr/bin/git version
+2026-08-06T06:36:57.0524655Z git version 2.54.0
+2026-08-06T06:36:57.0569942Z Temporarily overriding HOME='/home/runner/work/_temp/1b3c4e2b-a58e-42d1-aeb7-9fd097e1fc43' before making global git config changes
+2026-08-06T06:36:57.0570872Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-06T06:36:57.0576730Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/CIS_CAPSTONE/CIS_CAPSTONE
+2026-08-06T06:36:57.0620089Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-06T06:36:57.0653877Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-06T06:36:57.0866305Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-06T06:36:57.0892158Z http.https://github.com/.extraheader
+2026-08-06T06:36:57.0903935Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-08-06T06:36:57.0934554Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-06T06:36:57.1164379Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-06T06:36:57.1196924Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-06T06:36:57.1522724Z Print service container logs: 784b444aa90941d4b66da9b30d9e2b2d_postgres17_92d960
+2026-08-06T06:36:57.1534756Z ##[command]/usr/bin/docker logs --details 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:57.1662266Z  The files belonging to this database system will be owned by user "postgres".
+2026-08-06T06:36:57.1664694Z  initdb: warning: enabling "trust" authentication for local connections
+2026-08-06T06:36:57.1665778Z  initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+2026-08-06T06:36:57.1666808Z  This user must also own the server process.
+2026-08-06T06:36:57.1667608Z  2026-08-06 06:36:16.395 UTC [1] LOG:  starting PostgreSQL 17.10 (Debian 17.10-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-08-06T06:36:57.1668281Z  2026-08-06 06:36:16.396 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-08-06T06:36:57.1668787Z  2026-08-06 06:36:16.396 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-08-06T06:36:57.1669270Z  2026-08-06 06:36:16.396 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-08-06T06:36:57.1669852Z  2026-08-06 06:36:16.399 UTC [65] LOG:  database system was shut down at 2026-08-06 06:36:16 UTC
+2026-08-06T06:36:57.1670321Z  2026-08-06 06:36:16.403 UTC [1] LOG:  database system is ready to accept connections
+2026-08-06T06:36:57.1670888Z  2026-08-06 06:36:55.985 UTC [108] ERROR:  null value in column "section" of relation "enrollments" violates not-null constraint
+2026-08-06T06:36:57.1672286Z  2026-08-06 06:36:55.985 UTC [108] DETAIL:  Failing row contains (1, 6, 1, null, morning, active, 2026-08-06 14:36:55, 2026-08-06 14:36:55, elementary, 2, 13).
+2026-08-06T06:36:57.1674180Z  2026-08-06 06:36:55.985 UTC [108] STATEMENT:  insert into "enrollments" ("student_id", "section_id", "school_year_id", "level", "session_type", "status", "grade_level", "updated_at", "created_at") values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning "id"
+2026-08-06T06:36:57.1675616Z  2026-08-06 06:36:55.985 UTC [108] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+2026-08-06T06:36:57.1676367Z  2026-08-06 06:36:55.985 UTC [108] STATEMENT:  DEALLOCATE pdo_stmt_00000027
+2026-08-06T06:36:57.1676731Z  
+2026-08-06T06:36:57.1677001Z  The database cluster will be initialized with locale "en_US.utf8".
+2026-08-06T06:36:57.1677418Z  The default database encoding has accordingly been set to "UTF8".
+2026-08-06T06:36:57.1677823Z  The default text search configuration will be set to "english".
+2026-08-06T06:36:57.1678130Z  
+2026-08-06T06:36:57.1678326Z  Data page checksums are disabled.
+2026-08-06T06:36:57.1678557Z  
+2026-08-06T06:36:57.1678834Z  fixing permissions on existing directory /var/lib/postgresql/data ... ok
+2026-08-06T06:36:57.1679208Z  creating subdirectories ... ok
+2026-08-06T06:36:57.1679510Z  selecting dynamic shared memory implementation ... posix
+2026-08-06T06:36:57.1679844Z  selecting default "max_connections" ... 100
+2026-08-06T06:36:57.1680133Z  selecting default "shared_buffers" ... 128MB
+2026-08-06T06:36:57.1680481Z  selecting default time zone ... Etc/UTC
+2026-08-06T06:36:57.1680850Z  creating configuration files ... ok
+2026-08-06T06:36:57.1681204Z  running bootstrap script ... ok
+2026-08-06T06:36:57.1681726Z  performing post-bootstrap initialization ... ok
+2026-08-06T06:36:57.1682138Z  syncing data to disk ... ok
+2026-08-06T06:36:57.1682473Z  
+2026-08-06T06:36:57.1682758Z  
+2026-08-06T06:36:57.1683142Z  Success. You can now start the database server using:
+2026-08-06T06:36:57.1683549Z  
+2026-08-06T06:36:57.1683868Z      pg_ctl -D /var/lib/postgresql/data -l logfile start
+2026-08-06T06:36:57.1684283Z  
+2026-08-06T06:36:57.1685205Z  waiting for server to start....2026-08-06 06:36:16.109 UTC [49] LOG:  starting PostgreSQL 17.10 (Debian 17.10-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-08-06T06:36:57.1686837Z  2026-08-06 06:36:16.110 UTC [49] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-08-06T06:36:57.1687820Z  2026-08-06 06:36:16.112 UTC [52] LOG:  database system was shut down at 2026-08-06 06:36:16 UTC
+2026-08-06T06:36:57.1688699Z  2026-08-06 06:36:16.115 UTC [49] LOG:  database system is ready to accept connections
+2026-08-06T06:36:57.1689308Z   done
+2026-08-06T06:36:57.1689611Z  server started
+2026-08-06T06:36:57.1689937Z  CREATE DATABASE
+2026-08-06T06:36:57.1690284Z  
+2026-08-06T06:36:57.1690588Z  
+2026-08-06T06:36:57.1691105Z  /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+2026-08-06T06:36:57.1692639Z  
+2026-08-06T06:36:57.1693267Z  waiting for server to shut down...2026-08-06 06:36:16.276 UTC [49] LOG:  received fast shutdown request
+2026-08-06T06:36:57.1694254Z  .2026-08-06 06:36:16.277 UTC [49] LOG:  aborting any active transactions
+2026-08-06T06:36:57.1695070Z  2026-08-06 06:36:16.279 UTC [49] LOG:  background worker "logical replication launcher" (PID 55) exited with exit code 1
+2026-08-06T06:36:57.1695907Z  2026-08-06 06:36:16.279 UTC [50] LOG:  shutting down
+2026-08-06T06:36:57.1696593Z  2026-08-06 06:36:16.279 UTC [50] LOG:  checkpoint starting: shutdown immediate
+2026-08-06T06:36:57.1698035Z  2026-08-06 06:36:16.290 UTC [50] LOG:  checkpoint complete: wrote 925 buffers (5.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.009 s, sync=0.002 s, total=0.011 s; sync files=301, longest=0.001 s, average=0.001 s; distance=4256 kB, estimate=4256 kB; lsn=0/1915978, redo lsn=0/1915978
+2026-08-06T06:36:57.1699388Z  2026-08-06 06:36:16.294 UTC [49] LOG:  database system is shut down
+2026-08-06T06:36:57.1699846Z   done
+2026-08-06T06:36:57.1700139Z  server stopped
+2026-08-06T06:36:57.1700400Z  
+2026-08-06T06:36:57.1700635Z  PostgreSQL init process complete; ready for start up.
+2026-08-06T06:36:57.1700922Z  
+2026-08-06T06:36:57.1706370Z Stop and remove container: 784b444aa90941d4b66da9b30d9e2b2d_postgres17_92d960
+2026-08-06T06:36:57.1711314Z ##[command]/usr/bin/docker rm --force 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:58.5988126Z 50a29af24a2953655eb72b09fe5c797b76e40b6a0464df04a52cfaa2b3e40686
+2026-08-06T06:36:58.6013729Z Remove container network: github_network_2d080a49ac99418fa0e622a1d5e44481
+2026-08-06T06:36:58.6017974Z ##[command]/usr/bin/docker network rm github_network_2d080a49ac99418fa0e622a1d5e44481
+2026-08-06T06:36:58.7120258Z github_network_2d080a49ac99418fa0e622a1d5e44481
+2026-08-06T06:36:58.7194134Z Cleaning up orphan processes
+2026-08-06T06:36:58.7481146Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

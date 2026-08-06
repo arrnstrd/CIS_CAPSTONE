@@ -9,26 +9,30 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-  public function up(): void
-{
-    Schema::table('enrollments', function (Blueprint $table) {
+    public function up(): void
+    {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
 
-        // drop foreign key first
-        $table->dropForeign('enrollments_adviser_id_foreign');
-
-        // then drop column
-        $table->dropColumn([
-            'level',
-            'adviser_id'
-        ]);
-    });
-}
+        Schema::table('enrollments', function (Blueprint $table) {
+            $table->dropForeign(['adviser_id']);
+            $table->dropColumn([
+                'level',
+                'adviser_id',
+            ]);
+        });
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('enrollments', function (Blueprint $table) {
             $table->string('level')->nullable();
             $table->string('adviser_id')->nullable();

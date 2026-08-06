@@ -11,22 +11,11 @@ import "./student.js";
 import "./section.js";
 import "./schedule-config.js";
 import "./teacher.js";
-
+import "./import.js";
 
 // teacher modules
-import "./teacherSide/sidebar.js"
-
-
-
-
-
-
-
-
-
-
-
-
+import "./teacher-modules/t-sidebar.js";
+import "./teacher-modules/t-sidebar.js";
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

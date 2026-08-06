@@ -23,10 +23,4 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
-README_REFACTORING.txt
-REFACTOR_SUMMARY.txt
-IMPLEMENTATION_COMPLETE.txt
-DOCUMENTATION_EMAIL_LOGS_REFACTOR.txt
-DEPLOYMENT_CHECKLIST.txt
-problemFound.txt
-ENROLLMENT_BUGFIX_NOTES.md
+backup.sql

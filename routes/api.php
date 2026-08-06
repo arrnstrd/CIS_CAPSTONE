@@ -1,12 +1,15 @@
 <?php
 
-use App\Http\Controllers\Enrollment\EnrollmentController;
-use App\Http\Controllers\Enrollment\SchoolYearController;
-use App\Http\Controllers\Enrollment\SectionController;
-use App\Http\Controllers\Management\StudentController;
-use App\Http\Controllers\Management\UserController;
-use App\Http\Controllers\Scanner\ScanController;
-use App\Http\Controllers\ScheduleConfigController;
+use App\Http\Controllers\AcademicFeature\EnrollmentController;
+use App\Http\Controllers\AcademicFeature\SchoolYearController;
+use App\Http\Controllers\AcademicFeature\SectionController;
+use App\Http\Controllers\AdministrationFeature\User\UserController;
+use App\Http\Controllers\QrSystemFeature\ClassroomScanner\ClassroomScanController;
+use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
+use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\Teacher\TeachingAssignmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,44 +17,51 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-
 Route::post('/scan', [ScanController::class, 'scan']);
-
-
+Route::post('/classroom-scan', [ClassroomScanController::class, 'scan'])->middleware('auth:sanctum');
 //storing
-Route::post('/students' , [StudentController::class, 'store'])->name('students.store');
-Route::post('/students/{id}' , [StudentController::class, 'update']);
-Route::get('/students/{id}' , [StudentController::class , 'show']);
+Route::post('/students', [StudentController::class, 'store'])->name('students.store');
+Route::post('/students/{id}', [StudentController::class, 'update']);
+Route::get('/students/{id}', [StudentController::class, 'show']);
 
-
-Route::post('/enrollment' , [ EnrollmentController::class , 'store'])->name('enrollments.store');
-Route::post('/enrollment/{id}' , [ EnrollmentController::class , 'update']);
-Route::delete('/enrollment/{id}' , [EnrollmentController::class , 'destroy']);
-
-
+Route::post('/enrollment', [EnrollmentController::class, 'store'])->name('enrollments.store');
+Route::post('/enrollment/{id}', [EnrollmentController::class, 'update']);
+Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy']);
 
 // users
-Route::post('/users', [UserController::class, 'store']);
-Route::put('/users/{id}', [UserController::class, 'update']);
-Route::delete('/users/{id}', [UserController::class, 'archive']);
-Route::patch('/users/{id}/restore', [UserController::class, 'restore']);
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::post('/users', [UserController::class, 'store']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'archive']);
+    Route::patch('/users/{id}/restore', [UserController::class, 'restore']);
+});
+
 //
-Route::post('/schedule-configuration' , [ScheduleConfigController::class , 'store']);
-Route::post('/schedule-configuration/{id}' , [ScheduleConfigController::class , 'update']);
-Route::delete('/schedule-configuration/{id}' , [ScheduleConfigController::class , 'destroy']);
-
-
+Route::post('/schedule-configuration', [ScheduleConfigController::class, 'store']);
+Route::post('/schedule-configuration/{id}', [ScheduleConfigController::class, 'update']);
+Route::delete('/schedule-configuration/{id}', [ScheduleConfigController::class, 'destroy']);
 
 //Sections
 Route::post('/sections', [SectionController::class, 'store']);
-Route::post('/sections/{id}' , [SectionController::class, 'update']);
-Route::delete('/sections/{id}' , [SectionController::class, 'destroy']);
-Route::patch('/sections/{id}' , [SectionController::class, 'restore']);
-
-
+Route::post('/sections/{id}', [SectionController::class, 'update']);
+Route::delete('/sections/{id}', [SectionController::class, 'destroy']);
+Route::patch('/sections/{id}', [SectionController::class, 'restore']);
 
 //school year
 Route::post('/school-year', [SchoolYearController::class, 'store']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'update']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'destroy']);
 Route::post('/school-year/{id}', [SchoolYearController::class, 'restore']);
+
+Route::apiResource('teaching-assignments', TeachingAssignmentController::class);
+
+
+
+        // teacher feature
+        Route::prefix('teachers')->group(function () {
+            Route::get('/', [TeacherController::class, 'index'])->name('teachers.index');
+            Route::post('/', [TeacherController::class, 'store'])->name('teachers.store');
+            Route::put('/{id}', [TeacherController::class, 'update'])->name('teachers.update');
+            Route::delete('/{id}', [TeacherController::class, 'destroy'])->name('teachers.destroy');
+            Route::patch('/{id}/restore', [TeacherController::class, 'restore'])->name('teachers.restore');
+        });

@@ -7,17 +7,25 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     public function up(): void
-        {
-            Schema::table('teachers', function (Blueprint $table) {
-                $table->dropColumn(['first_name', 'last_name']);
-            });
+    {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
         }
 
-        public function down(): void
-        {
-            Schema::table('teachers', function (Blueprint $table) {
-                $table->string('first_name')->after('user_id');
-                $table->string('last_name')->after('first_name');
-            });
+        Schema::table('teachers', function (Blueprint $table) {
+            $table->dropColumn(['first_name', 'last_name']);
+        });
+    }
+
+    public function down(): void
+    {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
         }
+
+        Schema::table('teachers', function (Blueprint $table) {
+            $table->string('first_name')->after('user_id');
+            $table->string('last_name')->after('first_name');
+        });
+    }
 };

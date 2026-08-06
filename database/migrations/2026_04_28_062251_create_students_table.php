@@ -14,15 +14,14 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->id();
             $table->string('student_number')->unique()->nullable();
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->string('first_name', 100);
+            $table->string('last_name', 100);
             $table->enum('sex',['female', 'male']);
             $table->string('address');
             $table->date('birthdate');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
 
-            $table->index(['last_name', 'first_name']);
             $table->index('student_number');
         });
     }

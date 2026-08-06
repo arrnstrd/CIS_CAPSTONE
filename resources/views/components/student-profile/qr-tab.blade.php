@@ -1,11 +1,13 @@
+@props(['student', 'currentEnrollment', 'qrCodeUrl' => null])
+
 <div class="tab-pane fade" id="qr" role="tabpanel" aria-labelledby="qr-tab">
 
-    @if($student->qrCode && $student->qrCode->image_path)
+    @if($student->qrCode && $qrCodeUrl)
         <div class="row justify-content-center">
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center py-5">
-                        <img src="{{ asset('storage/' . $student->qrCode->image_path) }}"
+                        <img src="{{ $qrCodeUrl }}"
                             class="img-fluid rounded border shadow-sm"
                             style="width:220px; cursor:pointer; transition:.2s;"
                             data-bs-toggle="modal"
@@ -25,7 +27,7 @@
 
 </div>
 
-@if($student->qrCode && $student->qrCode->image_path)
+@if($student->qrCode && $qrCodeUrl)
     <div class="modal fade" id="studentQrModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -36,14 +38,14 @@
                 </div>
 
                 <div class="modal-body text-center">
-                    <img src="{{ asset('storage/' . $student->qrCode->image_path) }}" class="img-fluid border rounded" style="max-width:320px;">
+                    <img src="{{ $qrCodeUrl }}" class="img-fluid border rounded" style="max-width:320px;">
 
                     <h5 class="fw-bold mt-4 mb-1">
                         {{ strtoupper($student->last_name) }}, {{ strtoupper($student->first_name) }}
                     </h5>
                     <p class="text-muted mb-1">{{ $student->student_number }}</p>
                     <p class="text-muted">
-                        {{ $currentEnrollment?->section?->grade_level ?? '-' }} - {{ $currentEnrollment?->section?->name ?? '-' }}
+                        {{ $currentEnrollment?->sectionModel?->grade_level ?? $currentEnrollment?->grade_level ?? '-' }} - {{ $currentEnrollment?->sectionModel?->name ?? $currentEnrollment?->getAttribute('section') ?? '-' }}
                     </p>
                 </div>
 

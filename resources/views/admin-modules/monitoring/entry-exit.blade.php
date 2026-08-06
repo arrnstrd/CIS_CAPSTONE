@@ -27,14 +27,14 @@
         ];
 
 
-       $overviewCards = [
-    ['label' => 'Total logs', 'value' => $statusCounts['TOTAL'] ?? 0, 'icon' => 'fa-solid fa-clipboard-list', 'variant' => 'dark', 'textVariant' => 'dark'],
-    ['label' => 'Entry scans', 'value' => $statusCounts['IN'] ?? 0, 'icon' => 'fa-solid fa-right-to-bracket', 'variant' => 'success', 'textVariant' => 'success'],
-    ['label' => 'Exit scans', 'value' => $statusCounts['OUT'] ?? 0, 'icon' => 'fa-solid fa-right-from-bracket', 'variant' => 'primary', 'textVariant' => 'primary'],
-    ['label' => 'Re-entry', 'value' => $statusCounts['RE_ENTRY'] ?? 0, 'icon' => 'fa-solid fa-rotate-right', 'variant' => 'info', 'textVariant' => 'info'],
-    ['label' => 'Re-exit', 'value' => $statusCounts['RE_EXIT'] ?? 0, 'icon' => 'fa-solid fa-rotate-left', 'variant' => 'warning', 'textVariant' => 'warning-emphasis'],
-    ['label' => 'Flagged scans', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
-];
+        $overviewCards = [
+            ['label' => 'Total logs', 'value' => $statusCounts['TOTAL'] ?? 0, 'icon' => 'fa-solid fa-clipboard-list', 'variant' => 'dark', 'textVariant' => 'dark'],
+            ['label' => 'Entry scans', 'value' => $statusCounts['IN'] ?? 0, 'icon' => 'fa-solid fa-right-to-bracket', 'variant' => 'success', 'textVariant' => 'success'],
+            ['label' => 'Exit scans', 'value' => $statusCounts['OUT'] ?? 0, 'icon' => 'fa-solid fa-right-from-bracket', 'variant' => 'primary', 'textVariant' => 'primary'],
+            ['label' => 'Re-entry', 'value' => $statusCounts['RE_ENTRY'] ?? 0, 'icon' => 'fa-solid fa-rotate-right', 'variant' => 'info', 'textVariant' => 'info'],
+            ['label' => 'Re-exit', 'value' => $statusCounts['RE_EXIT'] ?? 0, 'icon' => 'fa-solid fa-rotate-left', 'variant' => 'warning', 'textVariant' => 'warning-emphasis'],
+            ['label' => 'Flagged scans', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
+        ];
     @endphp
 
     <div class="row g-3 mb-4 px-3">
@@ -203,7 +203,8 @@
                 <tr>
                     <td>{{ $attendance_log->scan_time?->format('Y-m-d') ?? '-' }}</td>
                     <td class="fw-semibold">
-                        {{ trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-' }}</td>
+                        {{ trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-' }}
+                    </td>
                     <td>
                         Grade {{ $attendance_log->enrollment?->section->grade_level ?? '-' }}
 
@@ -211,16 +212,15 @@
                     <td>{{ $attendance_log->enrollment?->section?->name ?? '-' }}</td>
                     <td>
                         @php
-                            $scanTypeColors = [
+                            $scanTypeDotMap = [
                                 'IN' => 'success',
                                 'OUT' => 'primary',
                                 'RE_ENTRY' => 'info',
                                 'RE_EXIT' => 'warning'
                             ];
-                            $scanTypeColors = $scanTypeColors[$attendance_log->scan_type] ?? 'light';
+                            $dotScanType = $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary';
                         @endphp
-                        <span
-                            class="badge bg-{{$scanTypeColors}} bg-opacity-25 border border-{{ $scanTypeColors }}  border-opacity-50 text-dark">{{ $attendance_log->scan_type }}</span>
+                        <span class="badge-dot dot-{{ $dotScanType }}">{{ $attendance_log->scan_type }}</span>
                     </td>
                     <td>{{ $attendance_log->session_type ?? '-' }}</td>
                     <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
@@ -239,7 +239,8 @@
         </tbody>
     </x-ui.table>
 
-    <div class=" mx-3 mt-3 mb-3">
+    <!-- Pagination -->
+    <div class="px-3 py-3">
         {{ $attendance_logs->links() }}
     </div>
 

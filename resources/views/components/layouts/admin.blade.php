@@ -27,8 +27,9 @@
 
 
 
-        <main class="page-content">
-            <div class="container-fluid px-4">
+        <main class="page-content mx-5">
+            <div class="mx-3">
+                  <div class="container-fluid px-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
 
                     <!-- Left: Page title and subtitle -->
@@ -48,13 +49,16 @@
 
 
             <div class="container-fluid">
-                {{ $slot }}
+            {{$slot}}
             </div>
+            </div>
+          
         </main>
 
     </div>
 
 
+    @include('components.logout-modal')
 
 </body>
 

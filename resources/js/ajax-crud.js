@@ -66,9 +66,16 @@ function showFormErrors(form, data) {
     errorBox.classList.toggle('d-none', messages.length === 0);
 }
 
-function replaceMatchedRegions(selector, nextDocument) {
-    const currentRegions = document.querySelectorAll(selector);
-    const nextRegions = nextDocument.querySelectorAll(selector);
+function replaceMatchedRegions(selector, nextDocument, scope = null) {
+    const currentRoot = scope ? document.querySelector(scope) : document;
+    const nextRoot = scope ? nextDocument.querySelector(scope) : nextDocument;
+
+    if (!currentRoot || !nextRoot) {
+        return;
+    }
+
+    const currentRegions = currentRoot.querySelectorAll(selector);
+    const nextRegions = nextRoot.querySelectorAll(selector);
 
     currentRegions.forEach((currentRegion, index) => {
         const nextRegion = nextRegions[index];
@@ -79,7 +86,7 @@ function replaceMatchedRegions(selector, nextDocument) {
     });
 }
 
-async function refreshTables() {
+async function refreshTables(options = {}) {
     const response = await fetch(window.location.href, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -88,11 +95,12 @@ async function refreshTables() {
 
     const html = await response.text();
     const nextDocument = new DOMParser().parseFromString(html, 'text/html');
+    const scope = options.scope || null;
 
-    replaceMatchedRegions('.table-panel', nextDocument);
-    replaceMatchedRegions('.pagination', nextDocument);
+    replaceMatchedRegions('.table-panel', nextDocument, scope);
 
     document.dispatchEvent(new CustomEvent('ajax:table-refreshed'));
+    document.dispatchEvent(new CustomEvent('ajax:content-refreshed'));
 }
 
 const refreshPageContent = refreshTables;
@@ -129,19 +137,15 @@ async function submitAjaxForm(form, options = {}) {
         const modalElement = form.closest('.modal');
         const modal = modalElement ? bootstrap.Modal.getInstance(modalElement) : null;
 
-        console.log('1. Hide modal');
         modal?.hide();
 
-        console.log('2. Reset form');
         form.reset();
 
-        console.log('3. Refresh table');
-        await refreshTables();
+        await refreshTables({
+            scope: options.scope || form.dataset.ajaxScope || modalElement?.dataset.ajaxScope || null,
+        });
 
-        console.log('4. Success callback');
         options.onSuccess?.(data, response);
-
-        console.log('5. Done');
 
         return true;
     } catch (error) {
@@ -157,7 +161,7 @@ async function submitAjaxForm(form, options = {}) {
     }
 }
 
-async function submitAjaxDelete(form) {
+async function submitAjaxDelete(form, options = {}) {
     if (!confirm('Are you sure?')) {
         return;
     }
@@ -180,8 +184,171 @@ async function submitAjaxDelete(form) {
         return;
     }
 
-    await refreshTables();
+    await refreshTables({
+        scope: options.scope || form.dataset.ajaxScope || null,
+    });
 }
+
+const tabFilterDebounceTimers = new Map();
+
+function getTabScope(element) {
+    return element.dataset.tabScope ||
+        element.dataset.ajaxScope ||
+        element.closest('[data-tab-scope]')?.dataset.tabScope ||
+        element.closest('.tab-pane')?.id && `#${element.closest('.tab-pane').id}`;
+}
+
+function getControlsForScope(scope) {
+    if (!scope) {
+        return [];
+    }
+
+    return Array.from(document.querySelectorAll(`${scope} [data-tab-filter]`));
+}
+
+function updateUrlForScope(scope, options = {}) {
+    const nextUrl = new URL(window.location.href);
+    const pageParam = options.pageParam;
+
+    getControlsForScope(scope).forEach((control) => {
+        if (!control.name) {
+            return;
+        }
+
+        const value = control.value.trim ? control.value.trim() : control.value;
+
+        if (value) {
+            nextUrl.searchParams.set(control.name, value);
+        } else {
+            nextUrl.searchParams.delete(control.name);
+        }
+    });
+
+    if (pageParam) {
+        if (options.pageValue) {
+            nextUrl.searchParams.set(pageParam, options.pageValue);
+        } else {
+            nextUrl.searchParams.delete(pageParam);
+        }
+    }
+
+    history.pushState({}, '', nextUrl);
+}
+
+async function updateScopedFilters(control) {
+    const scope = getTabScope(control);
+
+    if (!scope) {
+        return;
+    }
+
+    updateUrlForScope(scope, {
+        pageParam: control.dataset.pageParam,
+    });
+
+    await refreshTables({ scope });
+}
+
+document.addEventListener('input', (event) => {
+    const control = event.target;
+
+    if (!control?.matches('[data-tab-filter][type="search"]')) {
+        return;
+    }
+
+    const scope = getTabScope(control);
+    const timerKey = `${scope}:${control.name}`;
+
+    clearTimeout(tabFilterDebounceTimers.get(timerKey));
+    tabFilterDebounceTimers.set(timerKey, setTimeout(() => {
+        updateScopedFilters(control);
+    }, 350));
+});
+
+document.addEventListener('change', (event) => {
+    const control = event.target;
+
+    if (!control?.matches('select[data-tab-filter]')) {
+        return;
+    }
+
+    updateScopedFilters(control);
+});
+
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('.tab-pane .pagination a');
+
+    if (!link) {
+        return;
+    }
+
+    const scope = getTabScope(link);
+
+    if (!scope) {
+        return;
+    }
+
+    const scopeRoot = document.querySelector(scope);
+    const pageParam = scopeRoot?.querySelector('[data-tab-filter][data-page-param]')?.dataset.pageParam;
+
+    if (!pageParam) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const targetUrl = new URL(link.href);
+    updateUrlForScope(scope, {
+        pageParam,
+        pageValue: targetUrl.searchParams.get(pageParam) || '1',
+    });
+
+    refreshTables({ scope });
+});
+
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+
+    if (!form?.matches('[data-ajax-form]')) {
+        return;
+    }
+
+    event.preventDefault();
+    submitAjaxForm(form, {
+        scope: form.dataset.ajaxScope || null,
+    });
+});
+
+document.addEventListener('submit', (event) => {
+    const form = event.target;
+
+    if (!form?.matches('[data-ajax-delete="subject"]')) {
+        return;
+    }
+
+    event.preventDefault();
+    submitAjaxDelete(form, {
+        scope: form.dataset.ajaxScope || '#subject-table-pane',
+    });
+});
+
+document.addEventListener('show.bs.modal', (event) => {
+    if (event.target?.id !== 'editSubjectModal') {
+        return;
+    }
+
+    const button = event.relatedTarget;
+    const form = document.getElementById('editSubjectForm');
+
+    if (!button || !form) {
+        return;
+    }
+
+    form.action = button.dataset.updateUrl || `/subjects/${button.dataset.id}`;
+    document.getElementById('edit_subject_code').value = button.dataset.code || '';
+    document.getElementById('edit_subject_name').value = button.dataset.name || '';
+    document.getElementById('edit_subject_level').value = button.dataset.level || '';
+});
 
 window.ajaxCrud = {
     clearFormErrors,
