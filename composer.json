@@ -53,6 +53,8 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "test:pg:migrate": "DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=CIS_CAPSTONE DB_USERNAME=postgres DB_PASSWORD=postgres @php artisan migrate --force",
+        "test:pg": "DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=CIS_CAPSTONE DB_USERNAME=postgres DB_PASSWORD=postgres @php artisan config:clear --ansi && DB_CONNECTION=pgsql DB_HOST=127.0.0.1 DB_PORT=5432 DB_DATABASE=CIS_CAPSTONE DB_USERNAME=postgres DB_PASSWORD=postgres @php artisan test",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

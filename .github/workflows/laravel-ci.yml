@@ -9,6 +9,14 @@ on:
 jobs:
   laravel-tests:
     runs-on: ubuntu-latest
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: CIS_CAPSTONE
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
 
     services:
       postgres:
@@ -17,8 +25,6 @@ jobs:
           POSTGRES_DB: CIS_CAPSTONE
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd="pg_isready -U postgres -d CIS_CAPSTONE"
           --health-interval=10s
@@ -72,23 +78,7 @@ jobs:
         run: php artisan key:generate
 
       - name: Run Migrations
-        env:
-          APP_ENV: testing
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: CIS_CAPSTONE
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres
         run: php artisan migrate --force
 
       - name: Execute Tests
-        env:
-          APP_ENV: testing
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: CIS_CAPSTONE
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres
         run: php artisan test

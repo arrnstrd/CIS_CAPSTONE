@@ -132,6 +132,7 @@ class AcademicTabsTest extends TestCase
         $teacher = Teacher::create([
             'user_id' => $teacherUser->id,
             'status' => 'active',
+            'email' => 'ada.lovelace@example.test',
         ]);
 
         $sectionAlpha = Section::create([
@@ -151,7 +152,7 @@ class AcademicTabsTest extends TestCase
             'status' => 'inactive',
         ]);
 
-        foreach (range(2, 11) as $index) {
+        foreach (range(2, 21) as $index) {
             Section::create([
                 'name' => "Alpha {$index}",
                 'level' => 'elementary',
@@ -200,7 +201,7 @@ class AcademicTabsTest extends TestCase
             'level' => 'elementary',
         ]);
 
-        foreach (range(2, 11) as $index) {
+        foreach (range(2, 21) as $index) {
             Subject::create([
                 'code' => "SCI-{$index}",
                 'name' => "Science {$index}",

@@ -59,18 +59,26 @@ class Enrollment extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $enrollment) {
+        // Use saving so attributes are set for both create and update flows.
+        static::saving(function (self $enrollment) {
             if ($enrollment->section_id) {
                 $section = Section::find($enrollment->section_id);
 
                 if ($section !== null) {
-                    if (empty($enrollment->grade_level)) {
-                        $enrollment->grade_level = (string) $section->grade_level;
-                    }
+                    // Set raw attributes to avoid conflicting with the
+                    // `section()` relation accessor.
+                    $enrollment->attributes['grade_level'] = (string) $section->grade_level;
+                    $enrollment->attributes['section'] = $section->name;
+                }
+            }
 
-                    if (empty($enrollment->section)) {
-                        $enrollment->section = $section->name;
-                    }
+            // Ensure backwards-compatible `school_year` string is populated
+            // for sqlite/in-memory tests where migrations that drop the
+            // `school_year` column may be skipped.
+            if (empty($enrollment->getAttribute('school_year')) && $enrollment->school_year_id) {
+                $schoolYear = SchoolYear::find($enrollment->school_year_id);
+                if ($schoolYear !== null) {
+                    $enrollment->attributes['school_year'] = (string) $schoolYear->school_year;
                 }
             }
         });
@@ -108,8 +116,4 @@ class Enrollment extends Model
                 ->count(),
         ];
     }
-
-
-
-
 }
