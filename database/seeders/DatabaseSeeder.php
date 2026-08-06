@@ -23,5 +23,7 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
             'email' => 'superadmin@cis.edu.ph',
         ]);
+
+        $this->call(TeacherSeeder::class);
     }
 }

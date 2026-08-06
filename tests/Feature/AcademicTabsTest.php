@@ -16,6 +16,24 @@ class AcademicTabsTest extends TestCase
 {
     use RefreshDatabase;
 
+    private User $admin;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->admin = User::create([
+            'first_name' => 'Admin',
+            'last_name' => 'User',
+            'email' => 'admin@example.test',
+            'password' => bcrypt('password'),
+            'role' => User::ROLE_ADMIN,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($this->admin);
+    }
+
     public function test_academic_page_renders_all_tab_scopes(): void
     {
         $this->seedAcademicData();
@@ -182,7 +200,7 @@ class AcademicTabsTest extends TestCase
             'level' => 'elementary',
         ]);
 
-        foreach (range(1, 11) as $index) {
+        foreach (range(2, 11) as $index) {
             Subject::create([
                 'code' => "SCI-{$index}",
                 'name' => "Science {$index}",

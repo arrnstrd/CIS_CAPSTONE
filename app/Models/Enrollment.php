@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Section;
 use App\Models\Student;
 use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Model;
@@ -56,8 +57,18 @@ class Enrollment extends Model
         return $this->hasMany(QuarterlyGrade::class);
     }
 
-    
+    protected static function booted(): void
+    {
+        static::creating(function (self $enrollment) {
+            if (empty($enrollment->grade_level) && $enrollment->section_id) {
+                $section = Section::find($enrollment->section_id);
 
+                if ($section !== null) {
+                    $enrollment->grade_level = (string) $section->grade_level;
+                }
+            }
+        });
+    }
 
     public static function getEnrollmentStatistics(int $schoolYearId): array
     {
