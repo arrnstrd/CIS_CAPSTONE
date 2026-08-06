@@ -12,24 +12,11 @@ jobs:
     env:
       APP_ENV: testing
       DB_CONNECTION: pgsql
-      DB_HOST: 127.0.0.1
-      DB_PORT: 5432
-      DB_DATABASE: CIS_CAPSTONE
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: CIS_CAPSTONE
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd="pg_isready -U postgres -d CIS_CAPSTONE"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
     steps:
       - name: Checkout repository
