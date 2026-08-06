@@ -60,11 +60,17 @@ class Enrollment extends Model
     protected static function booted(): void
     {
         static::creating(function (self $enrollment) {
-            if (empty($enrollment->grade_level) && $enrollment->section_id) {
+            if ($enrollment->section_id) {
                 $section = Section::find($enrollment->section_id);
 
                 if ($section !== null) {
-                    $enrollment->grade_level = (string) $section->grade_level;
+                    if (empty($enrollment->grade_level)) {
+                        $enrollment->grade_level = (string) $section->grade_level;
+                    }
+
+                    if (empty($enrollment->section)) {
+                        $enrollment->section = $section->name;
+                    }
                 }
             }
         });
