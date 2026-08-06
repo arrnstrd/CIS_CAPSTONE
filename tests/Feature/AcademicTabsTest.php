@@ -133,7 +133,7 @@ class AcademicTabsTest extends TestCase
             'status' => 'inactive',
         ]);
 
-        foreach (range(1, 11) as $index) {
+        foreach (range(2, 11) as $index) {
             Section::create([
                 'name' => "Alpha {$index}",
                 'level' => 'elementary',
