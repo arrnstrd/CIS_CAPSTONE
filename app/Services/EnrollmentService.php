@@ -91,10 +91,6 @@ class EnrollmentService
             $data['grade_level'] = (string) $section->grade_level;
         }
 
-        if (Schema::hasColumn('enrollments', 'section')) {
-            $data['section'] = $section->name;
-        }
-
         return $data;
     }
 

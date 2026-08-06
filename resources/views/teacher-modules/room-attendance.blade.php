@@ -22,11 +22,11 @@
                 <tr>
                     <td>{{ $attendance->enrollment->student->student_number ?? '—' }}</td>
                     <td>
-                        {{ $attendance->enrollment->student->first_name ?? '' }} 
+                        {{ $attendance->enrollment->student->first_name ?? '' }}
                         {{ $attendance->enrollment->student->last_name ?? '' }}
                     </td>
                     <td>
-                        {{ $attendance->enrollment->section->name ?? $attendance->enrollment->section ?? '—' }}
+                        {{ $attendance->enrollment->section?->name ?? '—' }}
                     </td>
                     <td>
                         {{ $attendance->attendance_date ? \Carbon\Carbon::parse($attendance->attendance_date)->format('M d, Y') : '—' }}
