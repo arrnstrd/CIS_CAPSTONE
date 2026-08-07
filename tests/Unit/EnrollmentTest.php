@@ -49,8 +49,8 @@ class EnrollmentTest extends TestCase
         ]);
 
         $this->assertNotEmpty($enrollment->grade_level, 'grade_level should be populated from section');
-        $this->assertEquals((string)$section->grade_level, $enrollment->grade_level);
-        $this->assertNotEmpty($enrollment->section, 'section name should be populated from section model');
-        $this->assertEquals($section->name, $enrollment->section);
+        $this->assertEquals((string) $section->grade_level, $enrollment->grade_level);
+        $this->assertNotNull($enrollment->section, 'section relation should be available');
+        $this->assertEquals($section->name, $enrollment->section->name);
     }
 }

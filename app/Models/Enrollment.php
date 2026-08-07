@@ -16,7 +16,6 @@ class Enrollment extends Model
         'section_id',
         'school_year_id',
         'grade_level',
-        'section',
         'level',
         'session_type',
         'status'
@@ -68,7 +67,6 @@ class Enrollment extends Model
                     // Set raw attributes to avoid conflicting with the
                     // `section()` relation accessor.
                     $enrollment->attributes['grade_level'] = (string) $section->grade_level;
-                    $enrollment->attributes['section'] = $section->name;
                 }
             }
 
