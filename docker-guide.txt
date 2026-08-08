@@ -1,0 +1,49 @@
+Local Development: Artisan Commands & File Permissions
+When running Laravel commands inside the Docker container (e.g., creating migrations or models), you must run them as the www-data user.
+
+Because our PHP-FPM container starts as root, running standard docker compose exec app php artisan ... will generate files owned by root. This causes "Insufficient permissions" errors when trying to save those files in VS Code on your host machine.
+
+To prevent this, always use -u www-data when executing Artisan or Composer commands:
+
+bash
+
+# The standard, safe way to run commands
+docker compose exec -u www-data app php artisan make:migration create_users_table
+⚡ Recommended: Setup the artisan Alias
+Typing docker compose exec -u www-data app php artisan every time is tedious. We highly recommend adding a shortcut (alias) to your shell profile (~/.bashrc or ~/.zshrc).
+
+1. Add the alias:
+Run this command in your terminal to append the alias to your shell configuration:
+
+bash
+
+echo "alias artisan='docker compose exec -u www-data app php artisan'" >> ~/.bashrc
+# If you use Zsh (default on macOS), use ~/.zshrc instead:
+# echo "alias artisan='docker compose exec -u www-data app php artisan'" >> ~/.zshrc
+2. Reload your shell:
+
+bash
+
+source ~/.bashrc
+# or: source ~/.zshrc
+3. Use the shortcut:
+Now, instead of the long Docker command, you can simply run:
+
+bash
+
+artisan make:migration create_users_table
+artisan migrate
+artisan tinker
+Note: Files generated using this alias will automatically be owned by your host user, meaning you can edit and save them in VS Code without any permission errors.
+
+----
+Context & Rules for AI Code Assistant:
+This Laravel project runs locally via Docker Compose. The PHP container runs as root, so generating files directly via docker compose exec app php artisan creates root-owned files, causing VS Code permission errors.
+
+To prevent this, I have a local shell alias configured.
+Rule: Whenever you generate terminal commands for Artisan, you MUST use the artisan alias instead of the full Docker command.
+
+Correct: artisan make:migration create_users_table
+Correct: artisan migrate
+Incorrect: docker compose exec app php artisan make:migration create_users_table
+(Note: If you need to generate Composer commands, use docker compose exec -u www-data app composer ...)

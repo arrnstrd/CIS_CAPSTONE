@@ -54,5 +54,5 @@ echo "=================================="
 echo "PHP-FPM Started"
 echo "=================================="
 
-# 3. Start PHP-FPM as www-data (dropping root privileges)
-exec gosu www-data php-fpm
+# Start PHP-FPM as root (FPM will internally drop to www-data for the workers)
+exec php-fpm
