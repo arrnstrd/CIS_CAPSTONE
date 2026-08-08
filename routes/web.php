@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdministrationFeature\Authentication\AuthController;
 use App\Http\Controllers\AcademicFeature\AcademicController;
 use App\Http\Controllers\AcademicFeature\EnrollmentController;
+use App\Http\Controllers\AcademicFeature\SchoolYearController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AcademicFeature\SubjectController;
 use App\Http\Controllers\GradingSystemFeature\AssessmentController;
@@ -181,7 +182,18 @@ Route::middleware(['auth'])->group(function () {
                 'query' => '',
             ]);
         })->name('admin.dashboard');
-        Route::get('/settings', fn() => view('admin-modules.utilities.settings'));
+        Route::get('/settings', fn() => view('admin-modules.utilities.settings', [
+            'schoolYears' => \App\Models\SchoolYear::orderByDesc('is_active')
+                ->orderBy('school_year', 'desc')
+                ->get(),
+        ]));
+
+        // school years
+        Route::post('/school-years', [SchoolYearController::class, 'store'])->name('school-years.store');
+        Route::put('/school-years/{id}', [SchoolYearController::class, 'update'])->name('school-years.update');
+        Route::delete('/school-years/{id}', [SchoolYearController::class, 'destroy'])->name('school-years.destroy');
+        Route::patch('/school-years/{id}', [SchoolYearController::class, 'restore'])->name('school-years.restore');
+
         Route::get('/users', fn() => view('admin-modules.management.users'));
         Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
 

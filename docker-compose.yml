@@ -13,6 +13,12 @@ services:
       - vendor_data:/var/www/vendor
       - node_modules_data:/var/www/node_modules
 
+    # --- NEW LINES ADDED HERE ---
+    environment:
+      - HOST_UID=${UID:-1000}
+      - HOST_GID=${GID:-1000}
+    # ----------------------------
+
     dns:
       - 1.1.1.1
       - 8.8.8.8
