@@ -13,6 +13,10 @@ services:
       - vendor_data:/var/www/vendor
       - node_modules_data:/var/www/node_modules
 
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+
     restart: unless-stopped
 
   nginx:
