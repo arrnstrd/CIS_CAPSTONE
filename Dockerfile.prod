@@ -4,11 +4,10 @@ FROM php:8.3-apache
 # 2. I-set ang working directory
 WORKDIR /var/www/html
 
-# 3. I-install ang mga system dependencies at PHP extensions na kailangan ng Laravel
+# I-install ang PDO_PGSQL instead of PDO_MYSQL dahil Supabase ang gamit niyo
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
-
+    git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip libpq-dev \
+    && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip
 # 4. I-clear ang default Apache folder para walang makitang index.html
 RUN rm -rf /var/www/html/*
 
