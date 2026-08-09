@@ -46,7 +46,7 @@ class StudentController extends Controller
     {
         // validate input from form (frontend)
         $validatedData = $request->validate([
-            'lrn' => ['required', 'digits:12', 'unique:students,lrn'],
+            'lrn' => ['required', 'digits_between:12,13', 'unique:students,lrn'],
             'first_name' => ['required', 'string'],
             'last_name' => ['required', 'string'],
             'middle_name' => ['nullable', 'string'],
@@ -94,7 +94,7 @@ class StudentController extends Controller
         $student = Student::findOrFail($id);
 
         $validatedData = $request->validate([
-            'lrn' => ['required', 'digits:12', 'unique:students,lrn,' . $id],
+            'lrn' => ['required', 'digits_between:12,13', 'unique:students,lrn,' . $id],
             'first_name' => ['required', 'string'],
             'last_name' => ['required', 'string'],
             'middle_name' => ['nullable', 'string'],

@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
     initializeEditModal();
-    initializeAddForm();
-    initializeTableActions();
 });
 
 /*
@@ -33,31 +31,7 @@ function initializeEditModal() {
         editForm.querySelector('[name="email"]').value = email;
     });
 
-    editForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        ajaxCrud.submitAjaxForm(this);
-    });
-}
-
-/*
-|--------------------------------------------------------------------------
-| Add Teacher
-|--------------------------------------------------------------------------
-*/
-
-function initializeAddForm() {
-    const addForm = document.getElementById("addTeacherForm");
-
-    if (!addForm) {
-        return;
-    }
-
-    addForm.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        ajaxCrud.submitAjaxForm(this);
-    });
+    // Form submission is handled by ajax-crud.js general event listener
 }
 
 /*
@@ -66,22 +40,17 @@ function initializeAddForm() {
 |--------------------------------------------------------------------------
 */
 
-function initializeTableActions() {
-    document.addEventListener("submit", function (event) {
-        const form = event.target;
+// ajax-crud.js only auto-handles `data-ajax-delete="subject"`, so teacher
+// archive/restore forms are wired up here (add/edit forms are handled by
+// ajax-crud.js via the `data-ajax-form` attribute on the forms).
+document.addEventListener("submit", function (event) {
+    const form = event.target;
 
-        if (form.matches('[data-ajax-delete="teacher"]')) {
-            event.preventDefault();
-
-            ajaxCrud.submitAjaxDelete(form);
-
-            return;
-        }
-
-        if (form.matches('[data-ajax-restore="teacher"]')) {
-            event.preventDefault();
-
-            ajaxCrud.submitAjaxDelete(form);
-        }
-    });
-}
+    if (
+        form?.matches('[data-ajax-delete="teacher"]') ||
+        form?.matches('[data-ajax-restore="teacher"]')
+    ) {
+        event.preventDefault();
+        window.ajaxCrud.submitAjaxDelete(form);
+    }
+});

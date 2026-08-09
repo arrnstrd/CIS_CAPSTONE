@@ -123,8 +123,8 @@
                             <i class="fa-solid fa-person text-secondary" style="font-size: 16px;"></i>
                         </div>
                         <div>
-                            <p class="mb-0 fw-medium">{{ $student->guardian->name }}</p>
-                            <small class="text-muted">{{ $student->guardian->relationship }}</small>
+                            <p class="mb-0 fw-medium">{{ $student->guardian?->name ?? '—' }}</p>
+                            <small class="text-muted">{{ $student->guardian?->relationship ?? '—' }}</small>
                         </div>
                     </div>
 
@@ -133,7 +133,7 @@
                             style="font-size: 10px; letter-spacing: 0.06em;">Email address</p>
                         <p class="mb-0">
                             <i class="fa-regular fa-envelope me-1 text-muted" style="font-size: 12px;"></i>
-                            {{ $student->guardian->email }}
+                            {{ $student->guardian?->email ?? '—' }}
                         </p>
                     </div>
                 </div>

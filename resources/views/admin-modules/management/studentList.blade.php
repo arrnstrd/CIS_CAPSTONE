@@ -174,15 +174,17 @@
             Add Student
         </x-slot>
 
-        <form id="addStudentForm" action="{{ route('student.store') }}" method="POST">
+        <form id="addStudentForm" action="{{ route('student.store') }}" method="POST" data-ajax-form="student">
             @csrf
+
+            <div data-ajax-errors></div>
 
             <div class="row">
                 <div class="col">
                     <div class="mb-3">
                         <label class="form-label">Student LRN</label>
                         <input type="text" class="form-control" name="lrn" placeholder="e.g. 123456789012"
-                            inputmode="numeric" maxlength="12" required />
+                            inputmode="numeric" maxlength="13" required />
 
                     </div>
 
@@ -287,15 +289,18 @@
             Edit Student
         </x-slot>
 
-        <form id="editStudentForm" action="" method="POST">
+        <form id="editStudentForm" action="" method="POST" data-ajax-form="student">
             @csrf
             @method('PUT')
+
+            <div data-ajax-errors></div>
+
             <div class="row">
                 <div class="col">
                     <div class="mb-3">
                         <label class="form-label">Student LRN</label>
                         <input type="text" class="form-control" id="edit_lrn" name="lrn" placeholder="e.g. 123456789012"
-                            inputmode="numeric" maxlength="12" required />
+                            inputmode="numeric" maxlength="13" required />
                     </div>
 
                     <div class="row">

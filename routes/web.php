@@ -12,7 +12,7 @@ use App\Http\Controllers\GradingSystemFeature\GradingPeriodController;
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Logs\AttendanceLogController;
 use App\Http\Controllers\QrSystemFeature\Logs\EmailLogController;
-use App\Http\Controllers\QrSystemFeature\Logs\RoomAttendanceController;
+
 use App\Http\Controllers\QrSystemFeature\QrCode\QrCodeController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
 use App\Http\Controllers\Student\StudentController;
@@ -57,7 +57,7 @@ Route::middleware(['auth'])->group(function () {
     // ADMIN FEATURE
     // ============================================================
 
- 
+
 
 
 
@@ -230,10 +230,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:teacher'])->group(function () {
 
-
         Route::get('/teacher/student-management', [StudentManagementController::class, 'index'])->name('teacher.student-management');
         Route::get('/teacher/student-profile/{student}', [StudentProfileController::class, 'teacherShow'])->name('teacher.student-profile');
         Route::get('/teacher/grading-system', fn() => view('teacher-modules.grading-system'))->name('teacher.grading-system');
+        
+        // Teacher attendance monitoring
+        Route::get('/teacher/attendance', fn() => view('teacher-modules.monitoring.class-attendance'))->name('teacher.attendance');
+        Route::get('/teacher/entry-exit', [AttendanceLogController::class, 'teacherIndex'])->name('teacher.entry-exit.index');
     });
 
     // ============================================================
