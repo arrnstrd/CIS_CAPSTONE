@@ -78,7 +78,7 @@ class TeachingAssignmentService
 
     /**
      * Plain delete, relying on the existing DB foreign key constraints
-     * (e.g. RoomAttendance.teaching_assignment_id is restrictOnDelete)
+     * (e.g. attendance records teaching_assignment_id is restrictOnDelete)
      * to prevent deletion when related records exist.
      *
      * No application-level "has related records, block deletion, use

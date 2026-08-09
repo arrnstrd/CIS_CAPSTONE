@@ -23,7 +23,7 @@
                 <li>
                     <a href="/entry-exit">
                         <i class="fas fa-exchange-alt"></i>
-                        <span>Entry/Exit Monitoring</span>
+                        <span>Time In Time Out </span>
                     </a>
                 </li>
                 <li>
@@ -36,7 +36,7 @@
                 <li>
                     <a href="/emails">
                         <i class="fas fa-envelope"></i>
-                        <span>Email Monitoring</span>
+                        <span>Email Logs</span>
                     </a>
                 </li>
 

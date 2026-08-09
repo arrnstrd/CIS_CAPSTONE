@@ -43,10 +43,7 @@ class TeachingAssignment extends Model
         return $this->hasMany(Assessment::class);
     }
 
-    public function roomAttendances()
-    {
-        return $this->hasMany(RoomAttendance::class);
-    }
+
 
     public function quarterlyGrades()
     {

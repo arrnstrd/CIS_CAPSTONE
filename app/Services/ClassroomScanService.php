@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Exceptions\ClassroomScanRejectedException;
 use App\Models\Enrollment;
 use App\Models\QrCode;
-use App\Models\RoomAttendance;
+
 use App\Models\Teacher;
 use App\Models\TeachingAssignment;
 use Carbon\Carbon;
@@ -21,7 +21,7 @@ class ClassroomScanService
      *  2. Validate the QR code and resolve the student
      *  3. Validate the student's active enrollment matches the assignment's section + school year
      *  4. Determine attendance status against in_start / late_threshold / out_end
-     *  5. Create the RoomAttendance record (time_in) or update it (time_out) if one already
+     *  5. Store attendance record (time_in) or update it (time_out) if one already
      *     exists for this student + assignment + date
      *
      * @param  array{qr_code: string, teaching_assignment_id: int}  $data
@@ -41,7 +41,7 @@ class ClassroomScanService
         $remarks = $this->resolveAttendanceStatus($assignment, $now);
 
         $attendance = DB::transaction(
-            fn () => $this->storeOrUpdateAttendance($assignment, $enrollment, $now, $remarks)
+            fn() => $this->storeOrUpdateAttendance($assignment, $enrollment, $now, $remarks)
         );
 
         return [
@@ -58,13 +58,7 @@ class ClassroomScanService
                 'section_id' => $assignment->section_id,
                 'session_type' => $assignment->session_type,
             ],
-            'room_attendance' => [
-                'id' => $attendance['record']->id,
-                'attendance_date' => $attendance['record']->attendance_date->toDateString(),
-                'time_in' => optional($attendance['record']->time_in)->toDateTimeString(),
-                'time_out' => optional($attendance['record']->time_out)->toDateTimeString(),
-                'remarks' => $attendance['record']->remarks,
-            ],
+
         ];
     }
 
@@ -172,7 +166,7 @@ class ClassroomScanService
      * once for time_out (fills the existing record). A third scan is
      * rejected as a duplicate.
      *
-     * @return array{record: RoomAttendance, action: string}
+     * @return array{message: string, action: string}
      */
     private function storeOrUpdateAttendance(
         TeachingAssignment $assignment,
@@ -180,27 +174,40 @@ class ClassroomScanService
         Carbon $now,
         string $remarks
     ): array {
-        $existing = RoomAttendance::where('teaching_assignment_id', $assignment->id)
+        // Check if attendance record already exists for today
+        $existing = DB::table('attendance_logs')
             ->where('enrollment_id', $enrollment->id)
-            ->where('attendance_date', $now->toDateString())
+            ->where('teaching_assignment_id', $assignment->id)
+            ->whereDate('scan_time', $now->toDateString())
             ->first();
 
         if (!$existing) {
-            $record = RoomAttendance::create([
-                'teaching_assignment_id' => $assignment->id,
+            // Create new attendance record (time_in)
+            DB::table('attendance_logs')->insert([
                 'enrollment_id' => $enrollment->id,
-                'attendance_date' => $now->toDateString(),
-                'time_in' => $now,
+                'teaching_assignment_id' => $assignment->id,
+                'scan_time' => $now,
+                'scan_type' => 'IN',
+                'session_type' => $assignment->session_type,
                 'remarks' => $remarks,
+                'created_at' => $now,
+                'updated_at' => $now,
             ]);
 
-            return ['record' => $record, 'action' => 'time_in'];
+            return ['message' => 'Time-in recorded', 'action' => 'time_in'];
         }
 
         if (!$existing->time_out) {
-            $existing->update(['time_out' => $now]);
+            // Update existing record (time_out)
+            DB::table('attendance_logs')
+                ->where('id', $existing->id)
+                ->update([
+                    'time_out' => $now,
+                    'scan_type' => 'OUT',
+                    'updated_at' => $now,
+                ]);
 
-            return ['record' => $existing->refresh(), 'action' => 'time_out'];
+            return ['message' => 'Time-out recorded', 'action' => 'time_out'];
         }
 
         throw new ClassroomScanRejectedException(

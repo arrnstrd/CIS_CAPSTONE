@@ -41,10 +41,7 @@ class Enrollment extends Model
         return $this->belongsTo(Section::class, 'section_id');
     }
 
-    public function roomAttendances()
-    {
-        return $this->hasMany(RoomAttendance::class);
-    }
+
 
     public function studentAssessmentScores()
     {

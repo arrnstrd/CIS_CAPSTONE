@@ -1,14 +1,14 @@
 <x-layouts.admin>
     <x-slot name="title">
-        Entry/Exit Monitoring
+        Time In Time Out Monitoring
     </x-slot>
 
     <x-slot name="pageName">
-        Student Entry and Exit Monitoring
+        Student Time In Time Out Monitoring
     </x-slot>
 
     <x-slot name="subtitle">
-        School entry/exit gate scans.
+        School time in time out scans.
     </x-slot>
 
     @php
@@ -59,7 +59,7 @@
 
     <div class="card border mx-3 mb-3">
         <div class="card-body p-4">
-            <form action="{{ route('attendance.index') }}" method="GET">
+            <form action="{{ route('time-in-time-out.index') }}" method="GET">
 
                 <div class="row g-3 align-items-end mb-3">
                     <div class="col-12 col-lg-6">
@@ -151,7 +151,7 @@
 
                     <div class="col-12 col-lg-auto ms-lg-auto d-flex gap-2">
 
-                        <a href="{{ route('attendance.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('time-in-time-out.index') }}" class="btn btn-outline-secondary">
                             Reset
                         </a>
                         <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#">
