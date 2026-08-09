@@ -19,8 +19,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY composer.json composer.lock ./
 
 # 7. I-install ang Laravel dependencies (walang dev dependencies para mabilis)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
+# Added --no-scripts para hindi hanapin ang artisan file na wala pa dun
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 # 8. I-copy ang buong Laravel project papunta sa container
 COPY . .
 
