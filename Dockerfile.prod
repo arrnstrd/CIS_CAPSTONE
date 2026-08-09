@@ -1,49 +1,59 @@
-# 1. Gumamit ng official PHP image na may Apache built-in (mas magaan kaysa Ubuntu)
+# 1. Gumamit ng official PHP image na may Apache built-in
 FROM php:8.3-apache
 
 # 2. I-set ang working directory
 WORKDIR /var/www/html
 
-# I-install ang PDO_PGSQL instead of PDO_MYSQL dahil Supabase ang gamit niyo
+# 3. I-install ang mga system dependencies, PHP extensions, at NODE.JS
 RUN apt-get update && apt-get install -y \
     git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip libpq-dev \
-    && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip
-# 4. I-clear ang default Apache folder para walang makitang index.html
+    && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
+
+# 4. I-clear ang default Apache folder
 RUN rm -rf /var/www/html/*
 
 # 5. Kunin at i-install si Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 6. COPY MUNA ang composer.json at composer.lock bago ang ibang files
-# Para magamit ang Docker cache at hindi paulit-ulit mag-download ng dependencies
+# 6. COPY MUNO ang composer.json at composer.lock
 COPY composer.json composer.lock ./
 
-# 7. I-install ang Laravel dependencies (walang dev dependencies para mabilis)
-# Added --no-scripts para hindi hanapin ang artisan file na wala pa dun
+# 7. I-install ang Laravel dependencies (walang dev dependencies at walang scripts)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
-# 8. I-copy ang buong Laravel project papunta sa container
+
+# 8. COPY ang package.json at package-lock.json para sa Node
+COPY package.json package-lock.json ./
+
+# 9. I-install ang Node dependencies
+RUN npm install
+
+# 10. I-copy ang buong Laravel project papunta sa container
 COPY . .
 
-# 9. I-set ang tamang permissions para sa Laravel storage at bootstrap
+# 11. I-BUILD ang Vite assets (Dito nagagawa ang manifest.json!)
+RUN npm run build
+
+# 12. I-set ang tamang permissions para sa Laravel storage at bootstrap
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# 10. I-enable ang Apache mod_rewrite (para gumana ang Laravel routing at i-bypass ang index.html)
+# 13. I-enable ang Apache mod_rewrite
 RUN a2enmod rewrite
 
-# 11. Sabihin sa Apache na ang /public folder ang DocumentRoot
+# 14. Sabihin sa Apache na ang /public folder ang DocumentRoot
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# 12. Mag-run ng database migrations bago mag-start (etong part na to ay mag-e-execute sa Render)
-# Gagamitin natin ang start-up script para dito
+# 15. Start-up script
 COPY start-prod.sh /usr/local/bin/start-prod
 RUN chmod +x /usr/local/bin/start-prod
 
-# 13. Expose port 80 (Ang Render ay mag-convert nito sa port na gusto nila)
+# 16. Expose port 80
 EXPOSE 80
 
-# 14. I-run ang Apache at Migration script
+# 17. I-run ang Apache at Migration script
 CMD ["/usr/local/bin/start-prod"]
