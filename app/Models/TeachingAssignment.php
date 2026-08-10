@@ -11,10 +11,6 @@ class TeachingAssignment extends Model
         'subject_id',
         'section_id',
         'school_year_id',
-        'session_type',
-        'in_start',
-        'late_threshold',
-        'out_end',
         'status',
     ];
 
