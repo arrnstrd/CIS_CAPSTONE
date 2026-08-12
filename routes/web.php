@@ -18,6 +18,7 @@ use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Teacher\StudentManagementController;
 use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\Teacher\TeacherRoomAttendanceController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
@@ -57,10 +58,12 @@ Route::middleware(['auth'])->group(function () {
     // ============================================================
 
     Route::middleware(['role:teacher'])->group(function () {
-        Route::get('/teacher/dashboard', [RoomAttendanceController::class, 'index'])->name('teacher.dashboard');
+        Route::get('/teacher/dashboard', [TeacherRoomAttendanceController::class, 'index'])->name('teacher.dashboard');
     });
 
-    Route::get('/teacher/room-attendance', [RoomAttendanceController::class, 'index'])->name('room-attendance.index');
+    Route::get('/teacher/room-attendance', [TeacherRoomAttendanceController::class, 'index'])->name('room-attendance.index');
+
+    
 
     Route::middleware(['role:admin'])->group(function () {
         // academic

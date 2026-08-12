@@ -15,6 +15,11 @@ class RoomAttendance extends Model
      */
     protected $table = 'room_attendance';
 
+    /**
+     * Indicates if the model should be timestamped.
+     */
+    public $timestamps = false;
+
     protected $fillable = [
         'teaching_assignment_id',
         'enrollment_id',

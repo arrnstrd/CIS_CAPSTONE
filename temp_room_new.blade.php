@@ -68,7 +68,7 @@
             </div>
 
             @if ($sections->count() > 1)
-                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <div class="mb-2">
                     <select name="section_id" class="ra-range-input" onchange="this.form.submit()">
                         <option value="">All my sections</option>
                         @foreach ($sections as $section)
@@ -77,20 +77,38 @@
                             </option>
                         @endforeach
                     </select>
-
-                    <input type="radio" class="btn-check" name="status_filter" id="status_present" value="present" @checked($currentStatus === 'present') onchange="this.form.submit()">
-                    <label class="ra-pill-btn" for="status_present">
-                        <i class="fa-solid fa-circle-check me-1" style="font-size: 0.75rem;"></i>
-                        Present
-                    </label>
-
-                    <input type="radio" class="btn-check" name="status_filter" id="status_absent" value="absent" @checked($currentStatus === 'absent') onchange="this.form.submit()">
-                    <label class="ra-pill-btn" for="status_absent">
-                        <i class="fa-solid fa-circle-xmark me-1" style="font-size: 0.75rem;"></i>
-                        Absent
-                    </label>
                 </div>
             @endif
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <input
+                    type="radio"
+                    class="btn-check"
+                    name="status_filter"
+                    id="status_present"
+                    value="present"
+                    @checked($currentStatus === "present")
+                    onchange="this.form.submit()"
+                >
+                <label class="ra-pill-btn" for="status_present">
+                    <i class="fa-solid fa-circle-check me-1" style="font-size: 0.75rem;"></i>
+                    Present
+                </label>
+
+                <input
+                    type="radio"
+                    class="btn-check"
+                    name="status_filter"
+                    id="status_absent"
+                    value="absent"
+                    @checked($currentStatus === "absent")
+                    onchange="this.form.submit()"
+                >
+                <label class="ra-pill-btn" for="status_absent">
+                    <i class="fa-solid fa-circle-xmark me-1" style="font-size: 0.75rem;"></i>
+                    Absent
+                </label>
+            </div>
         </form>
     </div>
 

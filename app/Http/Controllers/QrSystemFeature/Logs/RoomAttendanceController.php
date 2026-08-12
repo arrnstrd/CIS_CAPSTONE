@@ -24,16 +24,21 @@ class RoomAttendanceController extends Controller
      */
     public function index(Request $request)
     {
-        // Pinalitan mula $attendances papuntang $roomAttendance para mag-match sa Blade template
+        // Get the selected date filter, default to today
+        $selectedDate = $request->input('date', now()->toDateString());
+        
+        // Filter room attendance by the selected date
         $roomAttendance = RoomAttendance::with([
             'teachingAssignment.subject',
-            'teachingAssignment.section',
+            'enrollment.section',
             'enrollment.student'
         ])
-        ->latest()
-        ->paginate(20);
+        ->whereDate('attendance_date', $selectedDate)
+        ->latest('time_in')
+        ->paginate(20)
+        ->withQueryString();
 
-        return view('teacher-modules.room-attendance', compact('roomAttendance'));
+        return view('teacher-modules.room-attendance', compact('roomAttendance', 'selectedDate'));
     }
 
     public function create()
