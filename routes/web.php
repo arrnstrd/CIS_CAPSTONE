@@ -160,24 +160,7 @@ Route::middleware(['auth'])->group(function () {
 
         // dashboard and settings
         Route::get('/dashboard', function () {
-            return view('admin-modules.monitoring.entry-exit', [
-                'attendance_logs' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20, 1),
-                'scan_type' => null,
-                'session_type' => null,
-                'flag_type' => null,
-                'statusCounts' => [
-                    'TOTAL' => 0,
-                    'IN' => 0,
-                    'OUT' => 0,
-                    'RE_ENTRY' => 0,
-                    'RE_EXIT' => 0,
-                    'FLAGGED' => 0,
-                ],
-                'dateFilter' => 'today',
-                'customStartDate' => null,
-                'customEndDate' => null,
-                'query' => '',
-            ]);
+            return view('admin-modules.dashboard');
         })->name('admin.dashboard');
         Route::get('/settings', fn() => view('admin-modules.utilities.settings', [
             'schoolYears' => \App\Models\SchoolYear::orderByDesc('is_active')

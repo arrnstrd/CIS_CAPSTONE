@@ -65,10 +65,10 @@
             <tbody>
                 @forelse ($teachers as $teacher)
                     <tr>
-                        <td>{{ $teacher->user->employee_id }}</td>
+                        <td>{{ $teacher->user?->employee_id ?? '-' }}</td>
                         <td>{{ $teacher->full_name }}</td>
-                        <td>{{ $teacher->user->email }}</td>
-                        <td>{{ ucfirst($teacher->status) }}</td>
+                        <td>{{ $teacher->user?->email ?? '-' }}</td>
+                        <td>{{ ucfirst($teacher->status ?? 'inactive') }}</td>
                         <td>
                             <div class="dropdown position-static">
                                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
@@ -80,9 +80,9 @@
                                         <li>
                                             <a href="#" class="dropdown-item" data-bs-toggle="modal"
                                                 data-bs-target="#editTeacherModal" data-id="{{ $teacher->id }}"
-                                                data-first_name="{{ $teacher->user->first_name }}"
-                                                data-last_name="{{ $teacher->user->last_name }}"
-                                                data-email="{{ $teacher->user->email }}">
+                                                data-first_name="{{ $teacher->user?->first_name ?? '' }}"
+                                                data-last_name="{{ $teacher->user?->last_name ?? '' }}"
+                                                data-email="{{ $teacher->user?->email ?? '' }}">
 
                                                 Edit
                                             </a>

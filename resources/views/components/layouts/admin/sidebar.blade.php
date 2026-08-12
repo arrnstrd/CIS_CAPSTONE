@@ -16,6 +16,13 @@
         <div class="sidebar-menu">
             <ul>
 
+                <li>
+                    <a href="{{ route('admin.dashboard') }}">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
                 <!-- MONITORING SECTION -->
                 <li class="sidebar-section-label">
                     <small>MONITORING</small>
