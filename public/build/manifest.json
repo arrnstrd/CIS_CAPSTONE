@@ -15,12 +15,12 @@
     "file": "assets/fa-v4compatibility-DD84SGiu.woff2",
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
   },
-  "public/images/top_head_image.png": {
-    "file": "assets/top_head_image-vfYh8E1j.png",
-    "src": "public/images/top_head_image.png"
+  "public/images/top_head_image.webp": {
+    "file": "assets/top_head_image-Bx9Yx47L.webp",
+    "src": "public/images/top_head_image.webp"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DIpFZiQl.css",
+    "file": "assets/app-Dyf7qyui.css",
     "name": "app",
     "names": [
       "app.css"
@@ -32,7 +32,7 @@
       "assets/fa-regular-400-nyy7hhHF.woff2",
       "assets/fa-solid-900-DRAAbZTg.woff2",
       "assets/fa-v4compatibility-DD84SGiu.woff2",
-      "assets/top_head_image-vfYh8E1j.png"
+      "assets/top_head_image-Bx9Yx47L.webp"
     ]
   },
   "resources/css/login.css": {
@@ -45,7 +45,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-B5VsSM40.js",
+    "file": "assets/app-BcBtn6ba.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

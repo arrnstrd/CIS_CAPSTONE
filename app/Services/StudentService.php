@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Enrollment;
 use App\Models\Guardian;
 use App\Models\QrCode;
 use App\Models\Student;
@@ -13,6 +14,7 @@ class StudentService
 {
     public function __construct(
         private readonly QRCodeService $qrCodeService,
+        private readonly EnrollmentService $enrollmentService,
     ) {}
 
     /**
@@ -43,9 +45,9 @@ class StudentService
         return $this->qrCodeService->ensureImage($qrCode);
     }
 
-    public function createStudent(array $studentData, array $guardianData): Student
+    public function createStudent(array $studentData, array $guardianData, ?array $enrollmentData = null): Student
     {
-        return DB::transaction(function () use ($studentData, $guardianData) {
+        return DB::transaction(function () use ($studentData, $guardianData, $enrollmentData) {
 
             $student = Student::create([
                 'lrn' => $studentData['lrn'],
@@ -53,6 +55,9 @@ class StudentService
                 'last_name' => strip_tags($studentData['last_name']),
                 'middle_name' => isset($studentData['middle_name'])
                     ? strip_tags($studentData['middle_name'])
+                    : null,
+                'suffix' => isset($studentData['suffix'])
+                    ? strip_tags($studentData['suffix'])
                     : null,
                 'sex' => $studentData['sex'],
                 'address' => strip_tags($studentData['address']),
@@ -64,18 +69,28 @@ class StudentService
                 'student_id' => $student->id,
                 'name' => strip_tags($guardianData['name']),
                 'relationship' => $guardianData['relationship'],
+                'contact_number' => isset($guardianData['contact_number'])
+                    ? strip_tags($guardianData['contact_number'])
+                    : null,
                 'email' => strip_tags($guardianData['email']),
             ]);
 
             $this->ensureQrCode($student);
 
+            if ($enrollmentData) {
+                $this->enrollmentService->createEnrollment(
+                    $this->enrollmentPayload($student->id, $enrollmentData),
+                    $enrollmentData['school_year_id'],
+                );
+            }
+
             return $student;
         });
     }
 
-    public function updateStudent(Student $student, array $studentData, array $guardianData): Student
+    public function updateStudent(Student $student, array $studentData, array $guardianData, ?array $enrollmentData = null): Student
     {
-        return DB::transaction(function () use ($student, $studentData, $guardianData) {
+        return DB::transaction(function () use ($student, $studentData, $guardianData, $enrollmentData) {
 
             $student->update([
                 'lrn' => $studentData['lrn'],
@@ -83,6 +98,9 @@ class StudentService
                 'last_name' => strip_tags($studentData['last_name']),
                 'middle_name' => isset($studentData['middle_name'])
                     ? strip_tags($studentData['middle_name'])
+                    : null,
+                'suffix' => isset($studentData['suffix'])
+                    ? strip_tags($studentData['suffix'])
                     : null,
                 'sex' => $studentData['sex'],
                 'address' => strip_tags($studentData['address']),
@@ -95,6 +113,9 @@ class StudentService
                 [
                     'name' => strip_tags($guardianData['name']),
                     'relationship' => $guardianData['relationship'],
+                    'contact_number' => isset($guardianData['contact_number'])
+                        ? strip_tags($guardianData['contact_number'])
+                        : null,
                     'email' => strip_tags($guardianData['email']),
                 ]
             );
@@ -102,7 +123,43 @@ class StudentService
             // Backfill QR code + image for students who predate QR generation.
             $this->ensureQrCode($student);
 
+            if ($enrollmentData) {
+                $this->upsertEnrollment($student, $enrollmentData);
+            }
+
             return $student;
         });
+    }
+
+    private function enrollmentPayload(int $studentId, array $data): array
+    {
+        return [
+            'student_id' => $studentId,
+            'section_id' => $data['section_id'],
+            'session_type' => $data['session_type'],
+            'status' => $data['status'],
+        ];
+    }
+
+    private function upsertEnrollment(Student $student, array $data): void
+    {
+        $enrollment = Enrollment::where('student_id', $student->id)
+            ->where('school_year_id', $data['school_year_id'])
+            ->first();
+
+        if ($enrollment) {
+            $this->enrollmentService->updateEnrollment($enrollment, [
+                'section_id' => $data['section_id'],
+                'session_type' => $data['session_type'],
+                'status' => $data['status'],
+            ]);
+
+            return;
+        }
+
+        $this->enrollmentService->createEnrollment(
+            $this->enrollmentPayload($student->id, $data),
+            $data['school_year_id'],
+        );
     }
 }

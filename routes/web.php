@@ -20,7 +20,6 @@ use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Teacher\StudentManagementController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
-use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -150,12 +149,12 @@ Route::middleware(['auth'])->group(function () {
         });
 
         // student feature
-        Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');
+        Route::get('/student-management', [StudentController::class, 'index'])->name('student-management.index');
+        Route::get('/student-management/grade/{grade}', [StudentController::class, 'byGrade'])->name('student-management.grade');
         Route::post('/students', [StudentController::class, 'store'])->name('student.store');
         Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
         Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
         Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
-        Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
         Route::get('/student-profile', fn() => view('admin-modules.management.student-profile'));
         Route::get('/student-profile/{student}', [StudentProfileController::class, 'show'])->name('student.profile');
 
@@ -233,7 +232,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/teacher/student-management', [StudentManagementController::class, 'index'])->name('teacher.student-management');
         Route::get('/teacher/student-profile/{student}', [StudentProfileController::class, 'teacherShow'])->name('teacher.student-profile');
         Route::get('/teacher/grading-system', fn() => view('teacher-modules.grading-system'))->name('teacher.grading-system');
-        
+
         // Teacher attendance monitoring
         Route::get('/teacher/attendance', fn() => view('teacher-modules.monitoring.class-attendance'))->name('teacher.attendance');
         Route::get('/teacher/entry-exit', [AttendanceLogController::class, 'teacherIndex'])->name('teacher.entry-exit.index');

@@ -16,7 +16,6 @@ import "./import.js";
 
 // teacher modules
 import "./teacher-modules/t-sidebar.js";
-import "./teacher-modules/t-sidebar.js";
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

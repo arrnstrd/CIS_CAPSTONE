@@ -7,16 +7,23 @@
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center py-5">
-                        <img src="{{ $qrCodeUrl }}"
-                            class="img-fluid rounded border shadow-sm"
-                            style="width:220px; cursor:pointer; transition:.2s;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#studentQrModal"
-                            id="studentQrPreview">
+                        <img src="{{ $qrCodeUrl }}" class="img-fluid rounded border shadow-sm"
+                            style="width:220px; cursor:pointer; transition:.2s;" data-bs-toggle="modal"
+                            data-bs-target="#studentQrModal" id="studentQrPreview">
 
                         <h5 class="fw-bold mt-4 mb-1">{{ $student->first_name }} {{ $student->last_name }}</h5>
                         <p class="text-muted mb-2">{{ $student->student_number }}</p>
                         <small class="text-muted">Click the QR code to enlarge.</small>
+
+                        {{-- TEMP: copy-ready QR string (testing only) --}}
+                        <div class="input-group input-group-sm mt-3 mx-auto" style="max-width: 320px;">
+                            <input type="text" class="form-control text-monospace" id="qrCodeCopyValue"
+                                value="{{ $student->qrCode->code }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button"
+                                onclick="navigator.clipboard.writeText(document.getElementById('qrCodeCopyValue').value); this.textContent='Copied!'; setTimeout(()=>this.textContent='Copy', 1500);">
+                                Copy
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -45,7 +52,8 @@
                     </h5>
                     <p class="text-muted mb-1">{{ $student->student_number }}</p>
                     <p class="text-muted">
-                        {{ $currentEnrollment?->sectionModel?->grade_level ?? $currentEnrollment?->grade_level ?? '-' }} - {{ $currentEnrollment?->sectionModel?->name ?? $currentEnrollment?->getAttribute('section') ?? '-' }}
+                        {{ $currentEnrollment?->sectionModel?->grade_level ?? $currentEnrollment?->grade_level ?? '-' }} -
+                        {{ $currentEnrollment?->sectionModel?->name ?? $currentEnrollment?->getAttribute('section') ?? '-' }}
                     </p>
                 </div>
 
