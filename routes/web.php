@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Route;
 // AUTHENTICATION
 // ============================================================
 
+Route::get('/', fn() => redirect()->route('login'));
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
     ->name('login.attempt')
