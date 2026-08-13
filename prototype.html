@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIS — Attendance System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --border: #E2E8F0;
+    --text: #0F172A;
+    --text-muted: #64748B;
+    --primary: #4F46E5;
+    --primary-light: #EEF2FF;
+  }
+  * { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  body { background: var(--bg); color: var(--text); }
+
+  .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+  .scroll-thin::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+  .scroll-thin::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(0.95); opacity: 0.6; }
+    50% { transform: scale(1.15); opacity: 0.15; }
+    100% { transform: scale(0.95); opacity: 0.6; }
+  }
+  .pulse-ring { animation: pulse-ring 2.5s ease-in-out infinite; }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .fade-in-scale { animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .slide-in-right { animation: slideInRight 0.3s ease-out; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { animation: spin 0.8s linear infinite; }
+
+  @keyframes countdown {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
+
+  .scanner-input {
+    position: absolute; opacity: 0; width: 1px; height: 1px;
+    top: -100px; left: -100px; border: none; outline: none;
+    background: transparent; color: transparent; caret-color: transparent;
+  }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.01em;
+    line-height: 1.2; white-space: nowrap;
+  }
+
+  .glow-success { box-shadow: 0 0 0 1px #A7F3D0, 0 20px 40px -12px rgba(4, 120, 87, 0.20); }
+  .glow-warning { box-shadow: 0 0 0 1px #FDE68A, 0 20px 40px -12px rgba(180, 83, 9, 0.20); }
+  .glow-danger { box-shadow: 0 0 0 1px #FECACA, 0 20px 40px -12px rgba(185, 28, 28, 0.20); }
+
+  .stat-num { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+
+  .ready-bg {
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 35%, rgba(79, 70, 229, 0.05), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 90%, rgba(14, 165, 233, 0.04), transparent 60%);
+  }
+
+  .data-row { transition: background 0.12s ease; }
+  .data-row:hover { background: #F8FAFC; }
+
+  input:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); border-color: var(--primary); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Hidden scanner input -->
+  <input id="scanner-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" class="scanner-input" aria-label="QR Scanner Input" />
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="fixed top-0 left-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-40">
+    <div class="px-6 py-5 border-b border-slate-200">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+          <i class="fa-solid fa-graduation-cap text-base"></i>
+        </div>
+        <div>
+          <div class="text-base font-extrabold text-slate-900 leading-tight tracking-tight">CIS</div>
+          <div class="text-[11px] text-slate-500 leading-tight">Attendance System</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto scroll-thin">
+      <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Time In / Out Station</div>
+      <button class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 bg-indigo-50 text-indigo-600 font-semibold">
+        <i class="fa-solid fa-qrcode nav-icon w-5 text-center text-indigo-600"></i>
+        <span>Attendance Station</span>
+      </button>
+    </nav>
+
+    <div class="p-4 border-t border-slate-200">
+      <div class="flex items-center gap-2.5 px-2 py-2 bg-slate-50 rounded-lg">
+        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">AD</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-semibold text-slate-800 truncate">Admin User</div>
+          <div class="text-[10px] text-slate-500 truncate">District Admin</div>
+        </div>
+        <i class="fa-solid fa-ellipsis-vertical text-slate-400 text-xs"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="ml-64 min-h-screen">
+    
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+      <div class="px-8 py-4 flex items-center justify-between gap-4">
+        <div>
+          <h1 id="page-title" class="text-xl font-extrabold text-slate-900 tracking-tight leading-tight">Attendance Station</h1>
+          <p id="page-subtitle" class="text-xs text-slate-500 leading-tight">Time In / Time Out Monitoring</p>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-lg">
+            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full pulse-dot"></span>
+            <span class="text-xs font-medium text-emerald-700">Scanner Connected</span>
+          </div>
+          <div class="text-right">
+            <div id="clock" class="text-sm font-bold text-slate-900 tabular-nums">--:--:--</div>
+            <div id="date" class="text-[11px] text-slate-500">Loading…</div>
+          </div>
+          <div class="hidden md:block px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+            <div class="text-[10px] uppercase tracking-wider text-slate-500 font-medium leading-tight">Station</div>
+            <div class="text-xs font-bold text-slate-700 leading-tight">A · Main Gate</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ STATION VIEW ============ -->
+    <section id="station-view" class="px-8 py-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1500px] mx-auto">
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          <div id="scanner-panel" class="relative bg-white rounded-2xl border border-slate-200 overflow-hidden flex-1 shadow-sm" style="min-height: 580px;">
+            <div class="absolute top-0 left-0 right-0 z-10 px-6 py-4 flex items-center justify-between border-b border-slate-100 bg-white/90 backdrop-blur-sm">
+              <div id="state-pill" class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">Scanner Active</span>
+              </div>
+              <div class="text-xs text-slate-400 tabular-nums" id="state-detail">Awaiting input…</div>
+            </div>
+
+            <div id="scanner-content" class="absolute inset-0 pt-16 pb-12 flex items-center justify-center px-6"></div>
+
+            <div class="absolute bottom-0 left-0 right-0 px-6 py-3 border-t border-slate-100 bg-slate-50/50 backdrop-blur-sm flex items-center justify-between z-10">
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                  <i class="fa-solid fa-keyboard text-slate-400"></i>
+                  <span class="hidden sm:inline">USB HID Scanner</span>
+                </div>
+              </div>
+              <div class="text-xs text-slate-400">
+                Auto-ready in <span id="countdown-text" class="font-semibold text-slate-600 tabular-nums">—</span>
+              </div>
+            </div>
+
+            <div id="countdown-bar-container" class="absolute bottom-0 left-0 right-0 h-0.5 hidden z-20">
+              <div id="countdown-bar" class="h-full"></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-flask text-xs text-indigo-500"></i>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Demo Simulation</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="demoScan('valid-in')" class="px-3 py-1.5 text-xs font-medium bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-md transition">Valid IN</button>
+              <button onclick="demoScan('valid-out')" class="px-3 py-1.5 text-xs font-medium bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-md transition">Valid OUT</button>
+              <button onclick="demoScan('late')" class="px-3 py-1.5 text-xs font-medium bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-md transition">Late Arrival</button>
+              <button onclick="demoScan('invalid')" class="px-3 py-1.5 text-xs font-medium bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-md transition">Invalid QR</button>
+              <button onclick="demoScan('duplicate')" class="px-3 py-1.5 text-xs font-medium bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-md transition">Duplicate</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col shadow-sm" style="max-height: calc(100vh - 160px);">
+            <div class="px-6 py-4 border-b border-slate-100">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                  <i class="fa-solid fa-bolt text-amber-500 text-sm"></i>
+                  <h2 class="text-base font-bold text-slate-900 tracking-tight">Live Activity</h2>
+                </div>
+                <button onclick="clearActivity()" class="text-xs text-slate-400 hover:text-slate-700 font-medium transition">Clear</button>
+              </div>
+              <div class="grid grid-cols-4 gap-3">
+                <div class="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                  <div class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">In</div>
+                  <div id="mini-in" class="text-xl font-extrabold text-slate-900 stat-num">0</div>
+                </div>
+                <div class="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                  <div class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Out</div>
+                  <div id="mini-out" class="text-xl font-extrabold text-slate-900 stat-num">0</div>
+                </div>
+                <div class="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                  <div class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Late</div>
+                  <div id="mini-late" class="text-xl font-extrabold text-slate-900 stat-num">0</div>
+                </div>
+                <div class="bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                  <div class="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Issues</div>
+                  <div id="mini-issues" class="text-xl font-extrabold text-slate-900 stat-num">0</div>
+                </div>
+              </div>
+            </div>
+            <div id="activity-list" class="flex-1 overflow-y-auto scroll-thin"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+  // =================================================================
+  //  CIS — Attendance System Frontend
+  // =================================================================
+
+  const STATION_ID = 'A';
+
+  // ============ Mock Data ============
+  const STUDENTS = [
+    { id: 'RA-2024-001', name: 'Maya Chen',           grade: 'Grade 5',  section: 'B' },
+    { id: 'RA-2024-002', name: 'Liam Rodriguez',      grade: 'Grade 8',  section: 'A' },
+    { id: 'RA-2024-003', name: 'Sophia Patel',        grade: 'Grade 3',  section: 'C' },
+    { id: 'RA-2024-004', name: 'Ethan Williams',      grade: 'Grade 11', section: 'B' },
+    { id: 'RA-2024-005', name: 'Olivia Johnson',      grade: 'Grade 1',  section: 'A' },
+    { id: 'RA-2024-006', name: 'Noah Garcia',         grade: 'Grade 7',  section: 'D' },
+    { id: 'RA-2024-007', name: 'Ava Martinez',        grade: 'Grade 10', section: 'B' },
+    { id: 'RA-2024-008', name: 'Lucas Kim',           grade: 'Grade 4',  section: 'C' },
+    { id: 'RA-2024-009', name: 'Isabella Brown',      grade: 'Grade 6',  section: 'A' },
+    { id: 'RA-2024-010', name: 'Mason Davis',         grade: 'Grade 9',  section: 'B' },
+    { id: 'RA-2024-011', name: 'Mia Thompson',        grade: 'Grade 2',  section: 'D' },
+    { id: 'RA-2024-012', name: 'James Wilson',        grade: 'Grade 12', section: 'A' },
+    { id: 'RA-2024-013', name: 'Charlotte Lee',       grade: 'Grade 5',  section: 'C' },
+    { id: 'RA-2024-014', name: 'Benjamin Taylor',     grade: 'Grade 8',  section: 'B' },
+    { id: 'RA-2024-015', name: 'Amelia Anderson',     grade: 'Grade 11', section: 'D' },
+    { id: 'RA-2024-016', name: 'Elijah Thomas',       grade: 'Grade 3',  section: 'A' },
+    { id: 'RA-2024-017', name: 'Harper Moore',        grade: 'Grade 7',  section: 'C' },
+    { id: 'RA-2024-018', name: 'Henry Jackson',       grade: 'Grade 10', section: 'B' },
+    { id: 'RA-2024-019', name: 'Evelyn White',        grade: 'Grade 2',  section: 'A' },
+    { id: 'RA-2024-020', name: 'Sebastian Harris',    grade: 'Grade 4',  section: 'B' },
+    { id: 'RA-2024-021', name: 'Aria Robinson',       grade: 'Grade 9',  section: 'C' },
+    { id: 'RA-2024-022', name: 'Jack Clark',          grade: 'Grade 6',  section: 'D' },
+    { id: 'RA-2024-023', name: 'Layla Lewis',         grade: 'Grade 11', section: 'A' },
+    { id: 'RA-2024-024', name: 'Logan Walker',        grade: 'Grade 2',  section: 'B' },
+    { id: 'RA-2024-025', name: 'Chloe Hall',          grade: 'Grade 8',  section: 'C' },
+    { id: 'RA-2024-026', name: 'Daniel Allen',        grade: 'Grade 5',  section: 'D' },
+    { id: 'RA-2024-027', name: 'Grace Young',         grade: 'Grade 10', section: 'A' },
+    { id: 'RA-2024-028', name: 'Oscar Hernandez',     grade: 'Grade 7',  section: 'B' },
+    { id: 'RA-2024-029', name: 'Nora King',           grade: 'Grade 12', section: 'C' },
+    { id: 'RA-2024-030', name: 'Leo Wright',          grade: 'Grade 3',  section: 'D' },
+    { id: 'RA-2024-031', name: 'Ruby Lopez',          grade: 'Grade 1',  section: 'B' },
+    { id: 'RA-2024-032', name: 'Felix Hill',          grade: 'Grade 9',  section: 'A' },
+  ];
+
+  // Generate QRs
+  function generateQrToken() {
+    const chars = 'abcdef0123456789';
+    let s = '';
+    for (let i = 0; i < 64; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s;
+  }
+  STUDENTS.forEach(s => s.qr = generateQrToken());
+
+  // ============ App State ============
+  let scannerState = 'idle';
+  let currentResult = null;
+  let recentScans = [];
+  let resultTimeout = null;
+  let countdownInterval = null;
+
+  // ============ Audio feedback ============
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function beep(freq, duration, vol = 0.10) {
+    if (!audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration/1000);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration/1000);
+    } catch(e) {}
+  }
+  function soundSuccess() { beep(880, 90); setTimeout(() => beep(1318, 140), 100); }
+  function soundWarning() { beep(660, 110); setTimeout(() => beep(660, 110), 140); }
+  function soundError()   { beep(220, 90, 0.14); setTimeout(() => beep(180, 220, 0.14), 100); }
+
+  // ============ Scanner input handling ============
+  const scannerInput = document.getElementById('scanner-input');
+
+  function focusScanner() {
+    if (scannerState === 'processing') return;
+    const active = document.activeElement;
+    if (active && active !== scannerInput && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return;
+    if (document.activeElement !== scannerInput) {
+      try { scannerInput.focus({ preventScroll: true }); } catch(e) {}
+    }
+  }
+  scannerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const value = scannerInput.value.trim();
+      scannerInput.value = '';
+      if (value) processScan(value);
+    }
+  });
+  setInterval(focusScanner, 250);
+  document.addEventListener('click', () => { ensureAudio(); focusScanner(); });
+  window.addEventListener('focus', focusScanner);
+
+  // ============ Demo injection ============
+  function demoScan(scenario) {
+    ensureAudio();
+    let qr;
+    if (scenario === 'invalid') {
+      qr = generateQrToken();
+    } else {
+      const student = STUDENTS[Math.floor(Math.random() * STUDENTS.length)];
+      qr = student.qr;
+    }
+    scannerInput.value = qr;
+    scannerInput.focus();
+    scannerInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  }
+
+  // ============ Mock API ============
+  async function resolveScan(qrString) {
+    await new Promise(r => setTimeout(r, 280 + Math.random() * 220));
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const qrRef = qrString.substring(0, 6) + '…' + qrString.substring(qrString.length - 4);
+
+    const student = STUDENTS.find(s => s.qr === qrString);
+    if (!student) {
+      return { outcome:'error', scanType:null, student:null, time:timeStr, date:now, qrRef, status:'INVALID_QR', title:'Invalid QR Code', message:'This code is not registered in the system.' };
+    }
+    const r = Math.random();
+    if (r < 0.5)  return { outcome:'success', scanType:'IN',  student, time:timeStr, date:now, qrRef, status:'SUCCESS', message:'On time' };
+    if (r < 0.8)  return { outcome:'success', scanType:'OUT', student, time:timeStr, date:now, qrRef, status:'SUCCESS', message:'Valid checkout' };
+    if (r < 0.92) return { outcome:'late',   scanType:'IN',  student, time:timeStr, date:now, qrRef, status:'LATE',    message:'Late by 8 min', minutesLate:8 };
+    return { outcome:'error', scanType:null, student, time:timeStr, date:now, qrRef, status:'DUPLICATE', title:'Duplicate Scan', message:'Already scanned recently.' };
+  }
+
+  async function processScan(qrString) {
+    if (resultTimeout) { clearTimeout(resultTimeout); resultTimeout = null; }
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+
+    scannerState = 'processing';
+    currentResult = { qrRef: qrString.substring(0, 6) + '…' + qrString.substring(qrString.length - 4) };
+    renderScanner();
+
+    const result = await resolveScan(qrString);
+
+    scannerState = 'result';
+    currentResult = result;
+    renderScanner();
+    addToRecent(result);
+
+    if (result.outcome === 'success') soundSuccess();
+    else if (result.outcome === 'late') soundWarning();
+    else soundError();
+
+    const duration = result.outcome === 'error' ? 5500 : 4500;
+    let remaining = duration / 1000;
+    document.getElementById('countdown-text').textContent = remaining.toFixed(1) + 's';
+    countdownInterval = setInterval(() => {
+      remaining -= 0.1;
+      if (remaining <= 0) { clearInterval(countdownInterval); return; }
+      document.getElementById('countdown-text').textContent = Math.max(0, remaining).toFixed(1) + 's';
+    }, 100);
+
+    resultTimeout = setTimeout(() => {
+      scannerState = 'idle';
+      currentResult = null;
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+      document.getElementById('countdown-text').textContent = '—';
+      renderScanner();
+    }, duration);
+  }
+
+  // ============ Render Scanner ============
+  const THEMES = {
+    success: { pillDot:'bg-emerald-500', pillText:'text-emerald-700', pillLabel:'Scan Complete', cardBg:'bg-emerald-50', border:'border-emerald-200', iconBg:'bg-emerald-500', glow:'glow-success', bar:'bg-emerald-400', noteBg:'bg-emerald-100', noteText:'text-emerald-800', noteIcon:'text-emerald-600' },
+    late:    { pillDot:'bg-amber-500',   pillText:'text-amber-700',   pillLabel:'Late Arrival',   cardBg:'bg-amber-50',   border:'border-amber-200',   iconBg:'bg-amber-500',   glow:'glow-warning', bar:'bg-amber-400',   noteBg:'bg-amber-100',   noteText:'text-amber-800',   noteIcon:'text-amber-600' },
+    error:   { pillDot:'bg-red-500',     pillText:'text-red-700',     pillLabel:'Scan Issue',     cardBg:'bg-red-50',     border:'border-red-200',     iconBg:'bg-red-500',     glow:'glow-danger',  bar:'bg-red-400',     noteBg:'bg-white',       noteText:'text-slate-700',   noteIcon:'text-slate-500' },
+  };
+
+  function renderScanner() {
+    const content = document.getElementById('scanner-content');
+    const pill = document.getElementById('state-pill');
+    const detail = document.getElementById('state-detail');
+    const countdownContainer = document.getElementById('countdown-bar-container');
+    const countdownBar = document.getElementById('countdown-bar');
+
+    if (scannerState === 'idle') {
+      pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span><span class="text-xs font-bold uppercase tracking-wider text-emerald-700">Scanner Active</span>';
+      detail.textContent = 'Awaiting input…';
+      countdownContainer.classList.add('hidden');
+      content.innerHTML = `
+        <div class="text-center ready-bg w-full h-full flex flex-col items-center justify-center rounded-2xl fade-in-scale px-6">
+          <div class="relative mb-8">
+            <div class="absolute inset-0 pulse-ring rounded-3xl bg-indigo-400/20" style="transform: scale(1.7)"></div>
+            <div class="absolute inset-0 pulse-ring rounded-3xl bg-indigo-400/20" style="transform: scale(1.7); animation-delay: 0.9s"></div>
+            <div class="relative w-24 h-24 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+              <i class="fa-solid fa-qrcode text-4xl text-white"></i>
+            </div>
+          </div>
+          <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">Ready to Scan</h1>
+          <p class="text-sm text-slate-500 max-w-md">Present your student QR code to the scanner</p>
+        </div>
+      `;
+    } else if (scannerState === 'processing') {
+      pill.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 pulse-dot"></span><span class="text-xs font-bold uppercase tracking-wider text-amber-700">Processing…</span>';
+      detail.textContent = 'Verifying QR token';
+      countdownContainer.classList.add('hidden');
+      content.innerHTML = `
+        <div class="text-center fade-in-scale flex flex-col items-center">
+          <div class="w-14 h-14 rounded-full border-4 border-slate-200 border-t-indigo-600 spinner mb-6"></div>
+          <h2 class="text-xl font-bold text-slate-900 mb-1">Verifying…</h2>
+          <div class="text-xs text-slate-500 mb-4">Checking student record</div>
+          <div class="text-xs text-slate-400 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-200">${currentResult.qrRef}</div>
+        </div>
+      `;
+    } else if (scannerState === 'result') {
+      const r = currentResult;
+      const theme = THEMES[r.outcome];
+      const duration = r.outcome === 'error' ? 5500 : 4500;
+
+      pill.innerHTML = `<span class="w-2 h-2 rounded-full ${theme.pillDot}"></span><span class="text-xs font-bold uppercase tracking-wider ${theme.pillText}">${theme.pillLabel}</span>`;
+      detail.textContent = r.outcome === 'success' ? 'Attendance recorded' : r.outcome === 'late' ? 'Late arrival flagged' : 'Scan rejected';
+
+      countdownContainer.classList.remove('hidden');
+      countdownBar.className = `h-full ${theme.bar}`;
+      countdownBar.style.animation = 'none';
+      void countdownBar.offsetWidth;
+      countdownBar.style.animation = `countdown ${duration}ms linear forwards`;
+
+      if (r.outcome === 'success' || r.outcome === 'late') {
+        const scanTypeLabels = { 'IN':'Check-In', 'OUT':'Check-Out' };
+        const scanTypeBadges = {
+          'IN':       'bg-emerald-100 text-emerald-700 border-emerald-200',
+          'OUT':      'bg-blue-100 text-blue-700 border-blue-200',
+        };
+        const icon = r.outcome === 'late' ? 'fa-clock' : 'fa-circle-check';
+        const eyebrow = r.outcome === 'late' ? 'Late Arrival Recorded' : 'Attendance Recorded';
+
+        content.innerHTML = `
+          <div class="w-full max-w-lg fade-in-scale ${theme.glow} rounded-2xl ${theme.cardBg} border ${theme.border} p-8">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-14 h-14 rounded-full ${theme.iconBg} flex items-center justify-center mb-4 shadow-lg">
+                <i class="fa-solid ${icon} text-2xl text-white"></i>
+              </div>
+              <div class="text-xs font-bold uppercase tracking-wider ${theme.pillText} mb-2">${eyebrow}</div>
+              <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-1 tracking-tight leading-tight">${r.student.name}</h1>
+              <div class="text-sm text-slate-500 mb-6">${r.student.id} · ${r.student.grade} · Section ${r.student.section}</div>
+
+              <div class="grid grid-cols-2 gap-3 w-full mb-6">
+                <div class="bg-white rounded-lg p-3 border ${theme.border}">
+                  <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Scan Type</div>
+                  <span class="badge ${scanTypeBadges[r.scanType]} border" style="font-size:12px;padding:4px 12px;">${scanTypeLabels[r.scanType]}</span>
+                </div>
+                <div class="bg-white rounded-lg p-3 border ${theme.border}">
+                  <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Time</div>
+                  <div class="text-base font-bold text-slate-900 tabular-nums">${r.time}</div>
+                </div>
+              </div>
+
+              <div class="w-full ${theme.noteBg} rounded-lg p-3 flex items-center justify-center gap-2">
+                <i class="fa-solid ${r.outcome === 'late' ? 'fa-clock' : 'fa-circle-check'} ${theme.noteIcon}"></i>
+                <span class="text-sm font-semibold ${theme.noteText}">${r.message}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        content.innerHTML = `
+          <div class="w-full max-w-lg fade-in-scale ${theme.glow} rounded-2xl ${theme.cardBg} border ${theme.border} p-8">
+            <div class="flex flex-col items-center text-center">
+              <div class="w-14 h-14 rounded-full ${theme.iconBg} flex items-center justify-center mb-4 shadow-lg">
+                <i class="fa-solid fa-circle-xmark text-2xl text-white"></i>
+              </div>
+              <div class="text-xs font-bold uppercase tracking-wider ${theme.pillText} mb-2">Scan Not Processed</div>
+              <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mb-3 tracking-tight leading-tight">${r.title}</h1>
+              <p class="text-sm text-slate-600 mb-6 max-w-sm">${r.message}</p>
+              <div class="w-full bg-white rounded-lg p-3 border ${theme.border}">
+                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">QR Reference</div>
+                <div class="text-xs font-mono text-slate-700 break-all">${r.qrRef}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+  }
+
+  // ============ Recent Activity ============
+  function addToRecent(result) {
+    const record = {
+      id: 'R' + Date.now() + Math.random().toString(36).slice(2,6),
+      ...result,
+      timestamp: new Date(),
+      station: STATION_ID
+    };
+    recentScans.unshift(record);
+    if (recentScans.length > 100) recentScans.pop();
+
+    renderActivity();
+  }
+
+  function renderActivity() {
+    const list = document.getElementById('activity-list');
+    let cIn = 0, cOut = 0, cLate = 0, cIssues = 0;
+    recentScans.forEach(s => {
+      if (s.outcome === 'success' && s.scanType === 'IN') cIn++;
+      else if (s.outcome === 'success' && s.scanType === 'OUT') cOut++;
+      else if (s.outcome === 'late') cLate++;
+      else if (s.outcome === 'error') cIssues++;
+    });
+    document.getElementById('mini-in').textContent = cIn;
+    document.getElementById('mini-out').textContent = cOut;
+    document.getElementById('mini-late').textContent = cLate;
+    document.getElementById('mini-issues').textContent = cIssues;
+
+    if (recentScans.length === 0) {
+      list.innerHTML = `<div class="px-6 py-12 text-center text-slate-400 text-sm"><i class="fa-solid fa-qrcode text-3xl mb-3 text-slate-200"></i><p>No scans yet. Waiting for the first student…</p></div>`;
+      return;
+    }
+
+    list.innerHTML = recentScans.map(s => {
+      let borderColor, badgeClass, iconClass, typeLabel;
+      if (s.outcome === 'success') {
+        borderColor = 'border-l-emerald-500';
+        badgeClass = 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+        iconClass = s.scanType === 'IN' ? 'fa-door-open' : 'fa-door-closed';
+      } else if (s.outcome === 'late') {
+        borderColor = 'border-l-amber-500';
+        badgeClass = 'bg-amber-50 text-amber-700 border border-amber-100';
+        iconClass = 'fa-clock';
+      } else {
+        borderColor = 'border-l-red-500';
+        badgeClass = 'bg-red-50 text-red-700 border border-red-100';
+        iconClass = 'fa-circle-xmark';
+      }
+      const typeMap = { 'IN':'IN', 'OUT':'OUT' };
+      typeLabel = s.scanType ? typeMap[s.scanType] : '—';
+
+      const name = s.student ? s.student.name : 'Unknown QR';
+      const meta = s.student ? `${s.student.grade} · Sec ${s.student.section}` : 'Unregistered';
+      const time = s.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const sub = s.outcome === 'success' ? s.message : s.outcome === 'late' ? `Late ${s.minutesLate || ''}m`.trim() : (s.title || 'Error');
+
+      return `
+        <div class="activity-card slide-in-right px-6 py-3 border-l-4 ${borderColor} border-b border-slate-50 flex items-center gap-4">
+          <div class="text-xs text-slate-500 w-12 flex-shrink-0 tabular-nums">${time}</div>
+          <div class="w-8 h-8 rounded-lg ${badgeClass} flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid ${iconClass} text-xs"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-slate-900 truncate">${name}</div>
+            <div class="text-xs text-slate-500 truncate">${meta} · ${sub}</div>
+          </div>
+          <span class="badge ${badgeClass}">${typeLabel}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function clearActivity() {
+    recentScans = [];
+    renderActivity();
+  }
+
+  // ============ Init ============
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  renderScanner();
+  renderActivity();
+  focusScanner();
+  </script>
+</body>
+</html>

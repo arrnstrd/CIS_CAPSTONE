@@ -21,6 +21,8 @@ class StudentController extends Controller
 
     public function index()
     {
+        $t0 = microtime(true); // TEMP
+
         $grades = [
             'Elementary' => range(1, 6),
             'Junior High School' => range(7, 10),
@@ -34,6 +36,8 @@ class StudentController extends Controller
             ->selectRaw('grade_level, COUNT(DISTINCT student_id) as total')
             ->groupBy('grade_level')
             ->pluck('total', 'grade_level');
+
+        \Illuminate\Support\Facades\Log::debug('[PROFILE-CTRL:student-management] ms=' . round((microtime(true) - $t0) * 1000, 1)); // TEMP
 
         return view('admin-modules.management.students.index', compact('grades', 'gradeCounts'));
     }

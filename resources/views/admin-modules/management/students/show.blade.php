@@ -29,7 +29,7 @@
                             <i class="bi bi-arrow-left me-1"></i> Grade Selection
                         </a>
                     </div>
-            @endif
+            </div>
 
             <form action="{{ route('student-management.grade', $grade) }}" method="GET">
                 <div class="row g-3 align-items-center">

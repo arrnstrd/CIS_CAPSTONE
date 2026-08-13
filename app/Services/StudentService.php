@@ -31,7 +31,7 @@ class StudentService
 
         if ($qrCode === null) {
             do {
-                $code = Str::upper(Str::random(32));
+                $code = Str::upper(Str::random(64));
             } while (QrCode::where('code', $code)->exists());
 
             $qrCode = QrCode::create([

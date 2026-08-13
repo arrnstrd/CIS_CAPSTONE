@@ -168,17 +168,9 @@ class AttendanceLog extends Model
                 ->where('scan_type', 'OUT')
                 ->count(),
 
-            'RE_ENTRY' => (clone $query)
-                ->where('scan_type', 'RE_ENTRY')
-                ->count(),
-
-            'RE_EXIT' => (clone $query)
-                ->where('scan_type', 'RE_EXIT')
-                ->count(),
-
             'FLAGGED' => (clone $query)
                 ->whereHas('flagged_scans')
                 ->count(),
         ];
     }
-}       
+}

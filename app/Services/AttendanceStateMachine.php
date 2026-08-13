@@ -16,11 +16,7 @@ class AttendanceStateMachine
 
             'IN' => 'OUT',
 
-            'OUT' => 'RE_ENTRY',
-
-            'RE_ENTRY' => 'RE_EXIT',
-
-            'RE_EXIT' => 'RE_ENTRY',
+            'OUT' => 'IN',
 
             default => 'IN',
         };

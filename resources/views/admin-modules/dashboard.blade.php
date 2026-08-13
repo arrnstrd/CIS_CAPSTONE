@@ -39,11 +39,62 @@
     <div class="row g-3">
         <div class="col-lg-8">
             <div class="bg-white rounded p-4 border h-100">
-                <h5 class="fw-semibold text-dark mb-3">Activity</h5>
-                <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
-                    <i class="fas fa-chart-line fa-2x mb-3 opacity-50"></i>
-                    <p class="mb-0">No activity data available yet.</p>
-                </div>
+                <h5 class="fw-semibold text-dark mb-3">Latest Time In / Time Out Scans</h5>
+                @php
+                    $scanTypeDotMap = [
+                        'IN' => 'success',
+                        'OUT' => 'primary',
+                    ];
+                @endphp
+                @if ($latestScans->isNotEmpty())
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle table-striped mb-0">
+                            <thead class="table-light text-uppercase small">
+                                <tr>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Student</th>
+                                    <th scope="col">Grade</th>
+                                    <th scope="col">Section</th>
+                                    <th scope="col">Scan Type</th>
+                                    <th scope="col">Session</th>
+                                    <th scope="col">Gate Time</th>
+                                    <th scope="col">Flag</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($latestScans as $scan)
+                                    @php
+                                        $dotScanType = $scanTypeDotMap[$scan['scan_type']] ?? 'secondary';
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $scan['scan_date'] ?? '-' }}</td>
+                                        <td class="fw-semibold">{{ $scan['student_name'] ?? 'Unknown' }}</td>
+                                        <td>Grade {{ $scan['grade_level'] ?? '-' }}</td>
+                                        <td>{{ $scan['section_name'] ?? '-' }}</td>
+                                        <td>
+                                            <span
+                                                class="badge-dot dot-{{ $dotScanType }}">{{ $scan['scan_type'] ?? '-' }}</span>
+                                        </td>
+                                        <td>{{ $scan['session_type'] ?? '-' }}</td>
+                                        <td>{{ $scan['scan_time'] ?? '-' }}</td>
+                                        <td class="fw-semibold text-danger">
+                                            {{ !empty($scan['flag_types']) ? $scan['flag_types'] : '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ route('time-in-time-out.index') }}" class="text-primary text-decoration-none small">
+                            <i class="fas fa-history me-1"></i> View full Time In / Time Out history
+                        </a>
+                    </div>
+                @else
+                    <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
+                        <i class="fas fa-qrcode fa-2x mb-3 opacity-50"></i>
+                        <p class="mb-0">No Time In / Time Out scans recorded yet.</p>
+                    </div>
+                @endif
             </div>
         </div>
 

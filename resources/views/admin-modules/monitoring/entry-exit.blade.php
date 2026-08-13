@@ -1,10 +1,10 @@
 <x-layouts.admin>
     <x-slot name="title">
-        Time In Time Out Monitoring
+        Time In Time Out History
     </x-slot>
 
     <x-slot name="pageName">
-        Student Time In Time Out Monitoring
+        Student Time In Time Out History
     </x-slot>
 
     <x-slot name="subtitle">
@@ -31,8 +31,6 @@
             ['label' => 'Total logs', 'value' => $statusCounts['TOTAL'] ?? 0, 'icon' => 'fa-solid fa-clipboard-list', 'variant' => 'dark', 'textVariant' => 'dark'],
             ['label' => 'Entry scans', 'value' => $statusCounts['IN'] ?? 0, 'icon' => 'fa-solid fa-right-to-bracket', 'variant' => 'success', 'textVariant' => 'success'],
             ['label' => 'Exit scans', 'value' => $statusCounts['OUT'] ?? 0, 'icon' => 'fa-solid fa-right-from-bracket', 'variant' => 'primary', 'textVariant' => 'primary'],
-            ['label' => 'Re-entry', 'value' => $statusCounts['RE_ENTRY'] ?? 0, 'icon' => 'fa-solid fa-rotate-right', 'variant' => 'info', 'textVariant' => 'info'],
-            ['label' => 'Re-exit', 'value' => $statusCounts['RE_EXIT'] ?? 0, 'icon' => 'fa-solid fa-rotate-left', 'variant' => 'warning', 'textVariant' => 'warning-emphasis'],
             ['label' => 'Flagged scans', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
         ];
     @endphp
@@ -79,8 +77,6 @@
                             <option value="all" @selected($scanTypeValue === 'all')>All</option>
                             <option value="IN" @selected($scanTypeValue === 'IN')>IN</option>
                             <option value="OUT" @selected($scanTypeValue === 'OUT')>OUT</option>
-                            <option value="RE_ENTRY" @selected($scanTypeValue === 'RE_ENTRY')>Re-entry</option>
-                            <option value="RE_EXIT" @selected($scanTypeValue === 'RE_EXIT')>Re-exit</option>
                         </select>
                     </div>
 
@@ -215,8 +211,6 @@
                             $scanTypeDotMap = [
                                 'IN' => 'success',
                                 'OUT' => 'primary',
-                                'RE_ENTRY' => 'info',
-                                'RE_EXIT' => 'warning'
                             ];
                             $dotScanType = $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary';
                         @endphp

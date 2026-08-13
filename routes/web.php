@@ -12,6 +12,7 @@ use App\Http\Controllers\GradingSystemFeature\GradingPeriodController;
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Logs\AttendanceLogController;
 use App\Http\Controllers\QrSystemFeature\Logs\EmailLogController;
+use App\Http\Controllers\QrSystemFeature\Logs\QrStationController;
 
 use App\Http\Controllers\QrSystemFeature\QrCode\QrCodeController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
@@ -20,8 +21,15 @@ use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Teacher\StudentManagementController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
+use App\Models\AttendanceLog;
 use Illuminate\Support\Facades\Route;
 
+
+
+
+Route::get('/speed-test', function () {
+    return 'OK';
+});
 
 // ============================================================
 // AUTHENTICATION
@@ -128,6 +136,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/teaching-assignments/{teachingAssignment}/grading-periods/{gradingPeriod}/assessments', [AssessmentController::class, 'byTeachingAssignmentAndGradingPeriod'])->name('teaching-assignments.grading-periods.assessments');
 
         // monitoring logs
+        Route::get('/qr-station', [QrStationController::class, 'index'])->name('qr-station.index');
+        Route::post('/qr-station/scan', [ScanController::class, 'scan'])->name('qr-station.scan');
         Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('time-in-time-out.index');
         Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
         Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
@@ -161,7 +171,37 @@ Route::middleware(['auth'])->group(function () {
 
         // dashboard and settings
         Route::get('/dashboard', function () {
-            return view('admin-modules.dashboard');
+            $latestScans = AttendanceLog::query()
+                ->with([
+                    'enrollment.student',
+                    'enrollment.section',
+                    'flagged_scans',
+                ])
+                ->orderBy('scan_time', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(fn ($log) => [
+                    'scan_date' => $log->scan_time?->format('Y-m-d'),
+                    'student_name' => trim(
+                        ($log->enrollment?->student?->first_name ?? '') . ' ' .
+                            ($log->enrollment?->student?->last_name ?? '')
+                    ) ?: 'Unknown',
+                    'student_number' => $log->enrollment?->student?->student_number ?? '-',
+                    'grade_level' => $log->enrollment?->section?->grade_level ?? '-',
+                    'section_name' => $log->enrollment?->section?->name ?? '-',
+                    'scan_type' => $log->scan_type,
+                    'session_type' => $log->session_type ?? '-',
+                    'scan_time' => $log->scan_time?->format('h:i A'),
+                    'flag_types' => $log->flagged_scans
+                        ->pluck('flag_type')
+                        ->filter()
+                        ->unique()
+                        ->join(', '),
+                ]);
+
+            return view('admin-modules.dashboard', [
+                'latestScans' => $latestScans,
+            ]);
         })->name('admin.dashboard');
         Route::get('/settings', fn() => view('admin-modules.utilities.settings', [
             'schoolYears' => \App\Models\SchoolYear::orderByDesc('is_active')
