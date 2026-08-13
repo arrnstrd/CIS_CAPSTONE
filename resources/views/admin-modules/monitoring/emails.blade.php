@@ -65,10 +65,6 @@
                                     Type</option>
                                 <option value="IN" {{ request('scan_type') === 'IN' ? 'selected' : '' }}>IN</option>
                                 <option value="OUT" {{ request('scan_type') === 'OUT' ? 'selected' : '' }}>OUT</option>
-                                <option value="RE_ENTRY" {{ request('scan_type') === 'RE_ENTRY' ? 'selected' : '' }}>RE
-                                    ENTRY</option>
-                                <option value="RE_EXIT" {{ request('scan_type') === 'RE_EXIT' ? 'selected' : '' }}>RE EXIT
-                                </option>
                             </select>
                         </div>
                     </div>
@@ -309,8 +305,8 @@
 
                         <td>
                             @if ($emailLog->status === 'failed')
-                                <form action="{{ route('retry.email', $emailLog->id) }}" method="POST"
-                                    class="d-inline" data-ajax-retry="email">
+                                <form action="{{ route('retry.email', $emailLog->id) }}" method="POST" class="d-inline"
+                                    data-ajax-retry="email">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-outline-danger px-3">
                                         <i class="bi bi-arrow-repeat"></i> Retry

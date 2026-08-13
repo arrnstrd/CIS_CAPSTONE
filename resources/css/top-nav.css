@@ -2,7 +2,7 @@
     margin-left: 260px;
     position: relative;
     height: 80px;
-    background: url('/public/images/top_head_image.png');
+    background: url('/public/images/top_head_image.webp');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 10% 47%;
@@ -16,51 +16,10 @@
 }
 
 
-/* ===== TOGGLE BUTTON ===== */
-.btn-sidebar-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background-color: #F5A623;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 18px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: 0.3px;
-    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-    box-shadow: 0 3px 10px rgba(245, 166, 35, 0.35);
-}
-
-.btn-sidebar-toggle:hover {
-    background-color: #e09416;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 14px rgba(245, 166, 35, 0.45);
-}
-
-.btn-sidebar-toggle:active {
-    transform: translateY(0);
-}
-
-.btn-sidebar-toggle i {
-    font-size: 1rem;
-}
 
 
-/* ===== SIDEBAR COLLAPSED STATE ===== */
-.sidebar-collapsed .sidebar-wrapper {
-    transform: translateX(-260px);
-}
 
-.sidebar-collapsed .top-nav {
-    margin-left: 0;
-}
 
-.sidebar-collapsed .page-content {
-    padding-left: 0;
-}
 
 
 

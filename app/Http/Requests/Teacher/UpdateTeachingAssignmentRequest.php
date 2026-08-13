@@ -29,9 +29,6 @@ class UpdateTeachingAssignmentRequest extends FormRequest
             'section_id' => ['required', 'exists:sections,id'],
             'school_year_id' => ['required', 'exists:school_years,id'],
             'session_type' => ['required', 'in:morning,afternoon,whole_day'],
-            'in_start' => ['required', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/'],
-            'late_threshold' => ['required', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/'],
-            'out_end' => ['required', 'regex:/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/'],
             'status' => ['required', 'in:active,inactive'],
         ];
     }

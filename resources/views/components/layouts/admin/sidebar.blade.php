@@ -16,14 +16,27 @@
         <div class="sidebar-menu">
             <ul>
 
+                <li>
+                    <a href="{{ route('admin.dashboard') }}">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
                 <!-- MONITORING SECTION -->
                 <li class="sidebar-section-label">
                     <small>MONITORING</small>
                 </li>
                 <li>
+                    <a href="{{ route('qr-station.index') }}">
+                        <i class="fas fa-tower-broadcast"></i>
+                        <span>QR Station</span>
+                    </a>
+                </li>
+                <li>
                     <a href="/entry-exit">
                         <i class="fas fa-exchange-alt"></i>
-                        <span>Entry/Exit Monitoring</span>
+                        <span>Time In Time Out </span>
                     </a>
                 </li>
                 <li>
@@ -36,7 +49,7 @@
                 <li>
                     <a href="/emails">
                         <i class="fas fa-envelope"></i>
-                        <span>Email Monitoring</span>
+                        <span>Email Logs</span>
                     </a>
                 </li>
 
@@ -81,7 +94,7 @@
                 </li>
 
                 <li class="sidebar-section-label">
-                    <small>setup</small>
+                    <small>setup and utilities</small>
                 </li>
 
 
@@ -114,10 +127,6 @@
                     </a>
                 </li> --}}
 
-                <!-- OTHERS SECTION -->
-                <li class="sidebar-section-label">
-                    <small>Utilities</small>
-                </li>
 
                 <li>
                     <a href="/schedule-configuration">
@@ -132,12 +141,7 @@
                         <span>QR Generation</span>
                     </a>
                 </li>
-                <li>
-                    <a href="/reports">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Report Generation</span>
-                    </a>
-                </li>
+
 
                 <!-- SYSTEM SECTION -->
                 <li class="sidebar-section-label">

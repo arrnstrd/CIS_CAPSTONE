@@ -1,14 +1,14 @@
 <x-layouts.admin>
     <x-slot name="title">
-        Entry/Exit Monitoring
+        Time In Time Out History
     </x-slot>
 
     <x-slot name="pageName">
-        Student Entry and Exit Monitoring
+        Student Time In Time Out History
     </x-slot>
 
     <x-slot name="subtitle">
-        School entry/exit gate scans.
+        School time in time out scans.
     </x-slot>
 
     @php
@@ -31,8 +31,6 @@
             ['label' => 'Total logs', 'value' => $statusCounts['TOTAL'] ?? 0, 'icon' => 'fa-solid fa-clipboard-list', 'variant' => 'dark', 'textVariant' => 'dark'],
             ['label' => 'Entry scans', 'value' => $statusCounts['IN'] ?? 0, 'icon' => 'fa-solid fa-right-to-bracket', 'variant' => 'success', 'textVariant' => 'success'],
             ['label' => 'Exit scans', 'value' => $statusCounts['OUT'] ?? 0, 'icon' => 'fa-solid fa-right-from-bracket', 'variant' => 'primary', 'textVariant' => 'primary'],
-            ['label' => 'Re-entry', 'value' => $statusCounts['RE_ENTRY'] ?? 0, 'icon' => 'fa-solid fa-rotate-right', 'variant' => 'info', 'textVariant' => 'info'],
-            ['label' => 'Re-exit', 'value' => $statusCounts['RE_EXIT'] ?? 0, 'icon' => 'fa-solid fa-rotate-left', 'variant' => 'warning', 'textVariant' => 'warning-emphasis'],
             ['label' => 'Flagged scans', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
         ];
     @endphp
@@ -59,7 +57,7 @@
 
     <div class="card border mx-3 mb-3">
         <div class="card-body p-4">
-            <form action="{{ route('attendance.index') }}" method="GET">
+            <form action="{{ route('time-in-time-out.index') }}" method="GET">
 
                 <div class="row g-3 align-items-end mb-3">
                     <div class="col-12 col-lg-6">
@@ -79,8 +77,6 @@
                             <option value="all" @selected($scanTypeValue === 'all')>All</option>
                             <option value="IN" @selected($scanTypeValue === 'IN')>IN</option>
                             <option value="OUT" @selected($scanTypeValue === 'OUT')>OUT</option>
-                            <option value="RE_ENTRY" @selected($scanTypeValue === 'RE_ENTRY')>Re-entry</option>
-                            <option value="RE_EXIT" @selected($scanTypeValue === 'RE_EXIT')>Re-exit</option>
                         </select>
                     </div>
 
@@ -151,7 +147,7 @@
 
                     <div class="col-12 col-lg-auto ms-lg-auto d-flex gap-2">
 
-                        <a href="{{ route('attendance.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('time-in-time-out.index') }}" class="btn btn-outline-secondary">
                             Reset
                         </a>
                         <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#">
@@ -215,8 +211,6 @@
                             $scanTypeDotMap = [
                                 'IN' => 'success',
                                 'OUT' => 'primary',
-                                'RE_ENTRY' => 'info',
-                                'RE_EXIT' => 'warning'
                             ];
                             $dotScanType = $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary';
                         @endphp

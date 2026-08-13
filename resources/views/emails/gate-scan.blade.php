@@ -28,7 +28,7 @@
                     <div style="padding: 0 25px 20px 25px;">
                         <p style="font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 20px;">
                             <strong>Magandang araw, Parent/Guardian!</strong><br>
-                            Nais naming ipabatid na na-scan na ang ID ng inyong anak sa gate ng paaralan.
+                            Nais naming ipabatid na na-scan na ang ID ng inyong anak sa loob ng paaralan.
                         </p>
 
                         <!-- Data Table -->
@@ -42,7 +42,7 @@
                             <tr>
                                 <td style="padding: 10px 0; border-bottom: 1px solid #f1f1f1; color: #6c757d;">Aksyon (Status):</td>
                                 <td style="padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-weight: 700; color: #0d6efd;">
-                                    {{ $scanType }}
+                                   TIME  {{ $scanType }}
                                 </td>
                             </tr>
                             <tr>

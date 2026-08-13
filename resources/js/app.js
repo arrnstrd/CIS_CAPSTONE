@@ -10,11 +10,12 @@ import "./layout.js";
 import "./student.js";
 import "./section.js";
 import "./schedule-config.js";
+import "./settings.js";
 import "./teacher.js";
 import "./import.js";
+import "./qr-station.js";
 
 // teacher modules
-import "./teacher-modules/t-sidebar.js";
 import "./teacher-modules/t-sidebar.js";
 
 /**

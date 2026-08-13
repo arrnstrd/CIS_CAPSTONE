@@ -16,9 +16,8 @@
                 <th>Teacher</th>
                 <th>Subject</th>
                 <th>Section</th>
-                <th>In Start</th>
-                <th>Late Threshold</th>
-                <th>Out End</th>
+                <th>School Year</th>
+                <th>Session Type</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -28,15 +27,12 @@
                 <tr data-assignment-id="{{ $assignment->id }}" data-teacher-id="{{ $assignment->teacher_id }}"
                     data-subject-id="{{ $assignment->subject_id }}" data-section-id="{{ $assignment->section_id }}"
                     data-school-year-id="{{ $assignment->school_year_id }}"
-                    data-session-type="{{ $assignment->session_type }}" data-status="{{ $assignment->status }}"
-                    data-in-start="{{ $assignment->in_start }}" data-late-threshold="{{ $assignment->late_threshold }}"
-                    data-out-end="{{ $assignment->out_end }}">
+                    data-session-type="{{ $assignment->session_type }}" data-status="{{ $assignment->status }}">
                     <td>{{ $assignment->teacher?->full_name ?? '—' }}</td>
                     <td>{{ $assignment->subject?->name ?? '—' }}</td>
                     <td>{{ $assignment->section?->name ?? '—' }}</td>
-                    <td>{{ $assignment->in_start ?? '—' }}</td>
-                    <td>{{ $assignment->late_threshold ?? '—' }}</td>
-                    <td>{{ $assignment->out_end ?? '—' }}</td>
+                    <td>{{ $assignment->schoolYear?->school_year ?? '—' }}</td>
+                    <td>{{ ucfirst($assignment->session_type ?? '—') }}</td>
                     <td>
                         <span class="badge-dot dot-{{ $assignment->status === 'active' ? 'success' : 'secondary' }}">
                             {{ ucfirst($assignment->status) }}
@@ -59,7 +55,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted">
+                    <td colspan="7" class="text-center py-4 text-muted">
                         No teaching assignments found.
                     </td>
                 </tr>
@@ -133,18 +129,6 @@
                         <option value="inactive">Inactive</option>
                     </select>
                 </div>
-                <div class="col-4">
-                    <label class="form-label text-muted text-uppercase small fw-bold">In Start</label>
-                    <input type="time" name="in_start" id="field_in_start" class="form-control" required>
-                </div>
-                <div class="col-4">
-                    <label class="form-label text-muted text-uppercase small fw-bold">Late Threshold</label>
-                    <input type="time" name="late_threshold" id="field_late_threshold" class="form-control" required>
-                </div>
-                <div class="col-4">
-                    <label class="form-label text-muted text-uppercase small fw-bold">Out End</label>
-                    <input type="time" name="out_end" id="field_out_end" class="form-control" required>
-                </div>
             </div>
 
             <div class="d-flex gap-2 justify-content-end mt-4">
@@ -156,5 +140,4 @@
         </form>
     </x-modal>
 
-    @vite(['resources/js/teaching-assignments.js'])
 </x-layouts.admin>

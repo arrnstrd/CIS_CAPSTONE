@@ -12,9 +12,6 @@ class TeachingAssignment extends Model
         'section_id',
         'school_year_id',
         'session_type',
-        'in_start',
-        'late_threshold',
-        'out_end',
         'status',
     ];
 
@@ -43,10 +40,7 @@ class TeachingAssignment extends Model
         return $this->hasMany(Assessment::class);
     }
 
-    public function roomAttendances()
-    {
-        return $this->hasMany(RoomAttendance::class);
-    }
+
 
     public function quarterlyGrades()
     {

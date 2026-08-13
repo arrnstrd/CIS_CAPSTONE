@@ -12,6 +12,7 @@ class AttendanceLogController extends Controller
 
     public function index(Request $request)
     {
+        $t0 = microtime(true); // TEMP
         $query = $request->input('query');
         $scan_type = $request->input('scan_type');
         $session_type = $request->input('session_type');
@@ -46,6 +47,8 @@ class AttendanceLogController extends Controller
             ->orderBy('scan_time', 'desc')
             ->paginate(15)
             ->withQueryString();
+
+        \Illuminate\Support\Facades\Log::debug('[PROFILE-CTRL:entry-exit] ms=' . round((microtime(true) - $t0) * 1000, 1)); // TEMP
 
         return view(
             'admin-modules.monitoring.entry-exit',

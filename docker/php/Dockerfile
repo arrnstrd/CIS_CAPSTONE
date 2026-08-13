@@ -1,6 +1,6 @@
 FROM php:8.3-fpm
 
-# Install system dependencies
+# Install system dependencies (added gosu at the bottom)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     imagemagick \
     libmagickwand-dev \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -47,7 +48,6 @@ RUN docker-php-ext-enable opcache
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
-
 
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 

@@ -75,4 +75,9 @@ class Teacher extends Model
             ($this->user?->last_name ?? '')
         );
     }
+
+    // NOTE: The `first_name`/`last_name` columns were removed from the
+    // `teachers` table (see remove_name_fields_from_teachers_table migration).
+    // Teacher names are stored on the related `users` record and exposed via
+    // the `full_name` accessor, so no creating-hook is needed here.
 }

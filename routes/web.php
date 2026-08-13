@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdministrationFeature\Authentication\AuthController;
 use App\Http\Controllers\AcademicFeature\AcademicController;
 use App\Http\Controllers\AcademicFeature\EnrollmentController;
+use App\Http\Controllers\AcademicFeature\SchoolYearController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AcademicFeature\SubjectController;
 use App\Http\Controllers\GradingSystemFeature\AssessmentController;
@@ -11,23 +12,32 @@ use App\Http\Controllers\GradingSystemFeature\GradingPeriodController;
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Logs\AttendanceLogController;
 use App\Http\Controllers\QrSystemFeature\Logs\EmailLogController;
-use App\Http\Controllers\QrSystemFeature\Logs\RoomAttendanceController;
+use App\Http\Controllers\QrSystemFeature\Logs\QrStationController;
+
 use App\Http\Controllers\QrSystemFeature\QrCode\QrCodeController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Teacher\StudentManagementController;
 use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\Teacher\TeacherRoomAttendanceController;
+
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
-use App\Http\Controllers\SearchController;
+use App\Http\Controllers\Teacher\TeacherRoomAttendanceController;
+use App\Models\AttendanceLog;
 use Illuminate\Support\Facades\Route;
 
+
+
+
+Route::get('/speed-test', function () {
+    return 'OK';
+});
 
 // ============================================================
 // AUTHENTICATION
 // ============================================================
 
+Route::get('/', fn() => redirect()->route('login'));
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])
     ->name('login.attempt')
@@ -57,16 +67,7 @@ Route::middleware(['auth'])->group(function () {
     // ADMIN FEATURE
     // ============================================================
 
-    Route::middleware(['role:teacher'])->group(function () {
-        Route::get('/teacher/dashboard', [TeacherRoomAttendanceController::class, 'index'])->name('teacher.dashboard');
-    });
 
-    Route::get('/teacher/room-attendance', [TeacherRoomAttendanceController::class, 'index'])->name('room-attendance.index');
-Route::get('/teacher/room-attendance/{section}', [TeacherRoomAttendanceController::class, 'show'])->name('room-attendance.show');
-Route::post('/teacher/room-attendance/{section}/{enrollment}/verify', [TeacherRoomAttendanceController::class, 'verify'])->name('room-attendance.verify');
-Route::get('/teacher/room-attendance/{section}/{enrollment}/history', [TeacherRoomAttendanceController::class, 'history'])->name('room-attendance.history');
-
-    
 
     Route::middleware(['role:admin'])->group(function () {
         // academic
@@ -135,7 +136,9 @@ Route::get('/teacher/room-attendance/{section}/{enrollment}/history', [TeacherRo
         Route::get('/teaching-assignments/{teachingAssignment}/grading-periods/{gradingPeriod}/assessments', [AssessmentController::class, 'byTeachingAssignmentAndGradingPeriod'])->name('teaching-assignments.grading-periods.assessments');
 
         // monitoring logs
-        Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('attendance.index');
+        Route::get('/qr-station', [QrStationController::class, 'index'])->name('qr-station.index');
+        Route::post('/qr-station/scan', [ScanController::class, 'scan'])->name('qr-station.scan');
+        Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('time-in-time-out.index');
         Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
         Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
         Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
@@ -157,37 +160,61 @@ Route::get('/teacher/room-attendance/{section}/{enrollment}/history', [TeacherRo
         });
 
         // student feature
-        Route::get('/student-management', [StudentController::class, 'index'])->name('addStudent');
+        Route::get('/student-management', [StudentController::class, 'index'])->name('student-management.index');
+        Route::get('/student-management/grade/{grade}', [StudentController::class, 'byGrade'])->name('student-management.grade');
         Route::post('/students', [StudentController::class, 'store'])->name('student.store');
         Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
         Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
         Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
-        Route::get('/student-management/search', [SearchController::class, 'searchStudent'])->name('search.students');
         Route::get('/student-profile', fn() => view('admin-modules.management.student-profile'));
         Route::get('/student-profile/{student}', [StudentProfileController::class, 'show'])->name('student.profile');
 
         // dashboard and settings
         Route::get('/dashboard', function () {
-            return view('admin-modules.monitoring.entry-exit', [
-                'attendance_logs' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20, 1),
-                'scan_type' => null,
-                'session_type' => null,
-                'flag_type' => null,
-                'statusCounts' => [
-                    'TOTAL' => 0,
-                    'IN' => 0,
-                    'OUT' => 0,
-                    'RE_ENTRY' => 0,
-                    'RE_EXIT' => 0,
-                    'FLAGGED' => 0,
-                ],
-                'dateFilter' => 'today',
-                'customStartDate' => null,
-                'customEndDate' => null,
-                'query' => '',
+            $latestScans = AttendanceLog::query()
+                ->with([
+                    'enrollment.student',
+                    'enrollment.section',
+                    'flagged_scans',
+                ])
+                ->orderBy('scan_time', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(fn ($log) => [
+                    'scan_date' => $log->scan_time?->format('Y-m-d'),
+                    'student_name' => trim(
+                        ($log->enrollment?->student?->first_name ?? '') . ' ' .
+                            ($log->enrollment?->student?->last_name ?? '')
+                    ) ?: 'Unknown',
+                    'student_number' => $log->enrollment?->student?->student_number ?? '-',
+                    'grade_level' => $log->enrollment?->section?->grade_level ?? '-',
+                    'section_name' => $log->enrollment?->section?->name ?? '-',
+                    'scan_type' => $log->scan_type,
+                    'session_type' => $log->session_type ?? '-',
+                    'scan_time' => $log->scan_time?->format('h:i A'),
+                    'flag_types' => $log->flagged_scans
+                        ->pluck('flag_type')
+                        ->filter()
+                        ->unique()
+                        ->join(', '),
+                ]);
+
+            return view('admin-modules.dashboard', [
+                'latestScans' => $latestScans,
             ]);
         })->name('admin.dashboard');
-        Route::get('/settings', fn() => view('admin-modules.utilities.settings'));
+        Route::get('/settings', fn() => view('admin-modules.utilities.settings', [
+            'schoolYears' => \App\Models\SchoolYear::orderByDesc('is_active')
+                ->orderBy('school_year', 'desc')
+                ->get(),
+        ]));
+
+        // school years
+        Route::post('/school-years', [SchoolYearController::class, 'store'])->name('school-years.store');
+        Route::put('/school-years/{id}', [SchoolYearController::class, 'update'])->name('school-years.update');
+        Route::delete('/school-years/{id}', [SchoolYearController::class, 'destroy'])->name('school-years.destroy');
+        Route::patch('/school-years/{id}', [SchoolYearController::class, 'restore'])->name('school-years.restore');
+
         Route::get('/users', fn() => view('admin-modules.management.users'));
         Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
 
@@ -225,21 +252,19 @@ Route::get('/teacher/room-attendance/{section}/{enrollment}/history', [TeacherRo
     // ============================================================
 
     Route::middleware(['role:teacher'])->group(function () {
-        Route::get('/teacher/room-attendance/create', [RoomAttendanceController::class, 'create'])->name('room-attendance.create');
-        Route::post('/teacher/room-attendance', [RoomAttendanceController::class, 'store'])->name('room-attendance.store');
-        Route::get('/teacher/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'show'])->name('room-attendance.show');
-        Route::get('/teacher/teaching-assignments', [TeachingAssignmentController::class, 'index'])->name('teacher.teaching-assignments.index');
-        Route::get('/teacher/room-attendance/{roomAttendance}/edit', [RoomAttendanceController::class, 'edit'])->name('room-attendance.edit');
-        Route::put('/teacher/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'update'])->name('room-attendance.update');
-        Route::delete('/teacher/room-attendance/{roomAttendance}', [RoomAttendanceController::class, 'destroy'])->name('room-attendance.destroy');
-
-        Route::get('/teacher/teaching-assignments/{teachingAssignment}/room-attendance', [RoomAttendanceController::class, 'byTeachingAssignmentAndDate'])->name('teaching-assignments.room-attendance');
-        Route::get('/teacher/teaching-assignments/{teachingAssignment}/room-attendance/bulk-create', [RoomAttendanceController::class, 'bulkCreateForm'])->name('teaching-assignments.room-attendance.bulk-create');
-        Route::post('/teacher/teaching-assignments/{teachingAssignment}/room-attendance/bulk', [RoomAttendanceController::class, 'bulkStore'])->name('teaching-assignments.room-attendance.bulk-store');
 
         Route::get('/teacher/student-management', [StudentManagementController::class, 'index'])->name('teacher.student-management');
         Route::get('/teacher/student-profile/{student}', [StudentProfileController::class, 'teacherShow'])->name('teacher.student-profile');
         Route::get('/teacher/grading-system', fn() => view('teacher-modules.grading-system'))->name('teacher.grading-system');
+
+        // Teacher attendance monitoring
+        Route::get('/teacher/attendance', fn() => view('teacher-modules.monitoring.class-attendance'))->name('teacher.attendance');
+        Route::get('/teacher/entry-exit', [AttendanceLogController::class, 'teacherIndex'])->name('teacher.entry-exit.index');
+        Route::get('/teacher/dashboard', [TeacherRoomAttendanceController::class, 'index'])->name('teacher.dashboard');
+        Route::get('/teacher/room-attendance', [TeacherRoomAttendanceController::class, 'index'])->name('room-attendance.index');
+        Route::get('/teacher/room-attendance/{section}', [TeacherRoomAttendanceController::class, 'show'])->name('room-attendance.show');
+        Route::post('/teacher/room-attendance/{section}/{enrollment}/verify', [TeacherRoomAttendanceController::class, 'verify'])->name('room-attendance.verify');
+        Route::get('/teacher/room-attendance/{section}/{enrollment}/history', [TeacherRoomAttendanceController::class, 'history'])->name('room-attendance.history');
     });
 
     // ============================================================

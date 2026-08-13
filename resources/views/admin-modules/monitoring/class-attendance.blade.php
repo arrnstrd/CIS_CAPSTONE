@@ -1,38 +1,32 @@
 <x-layouts.admin>
-    <x-slot name="pageName">
-        Room Attendance Monitoring
+    <x-slot name="title">
+        Class Attendance
     </x-slot>
 
     <x-slot name="subtitle">
-
+        Monitor student attendance across classes.
     </x-slot>
-    <div class="d-flex justify-content-center align-items-center vh-95">
 
-        <div class="text-center bg-white p-5 rounded-4 shadow-sm" style="max-width: 480px;">
+    <x-slot name="pageName">
+        Class Attendance
+    </x-slot>
 
-            <i class="fa-solid fa-screwdriver-wrench fa-4x text-warning mb-4"></i>
+    <div class="col mb-3 mx-2">
+        <div class="bg-white rounded p-4 border">
+            <h5 class="fw-semibold text-dark mb-0">Class Attendance Monitoring</h5>
+            <p class="text-muted small mb-0">This module is under construction.</p>
+        </div>
+    </div>
 
-            <h1 class="fw-bold mb-2">Page Not Available</h1>
-            <p class="text-muted fs-5 mb-4">This page is not yet developed.</p>
-
-            <span class="badge rounded-pill text-bg-warning px-3 py-2 mb-4">
-                <i class="fa-solid fa-hourglass-half me-1"></i> Under Construction
-            </span>
-
-            <div class="d-flex justify-content-center gap-4 text-secondary">
-                <div class="text-center">
-                    <i class="fa-solid fa-code fa-lg mb-1"></i>
-                    <div class="small">In Progress</div>
-                </div>
-                <div class="text-center">
-                    <i class="fa-solid fa-gear fa-spin fa-lg mb-1"></i>
-                    <div class="small">Building</div>
-                </div>
-                <div class="text-center">
-                    <i class="fa-solid fa-clock fa-lg mb-1"></i>
-                    <div class="small">Coming Soon</div>
+    <div class="container-fluid">
+        <div class="table-panel shadow-sm">
+            <div class="bg-white rounded p-4">
+                <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
+                    <i class="fas fa-calendar-check fa-2x mb-3 opacity-50"></i>
+                    <p class="mb-0">No class attendance data available yet.</p>
                 </div>
             </div>
         </div>
     </div>
+
 </x-layouts.admin>

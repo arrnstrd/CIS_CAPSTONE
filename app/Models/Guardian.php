@@ -12,10 +12,11 @@ class Guardian extends Model
         'student_id',
         'name',
         'relationship',
+        'contact_number',
         'email'
     ];
 
-  
+
     // Student → Guardian (1:1)
     public function student()
     {

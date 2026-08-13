@@ -85,7 +85,11 @@ class EnrollmentService
 
     private function applySectionSnapshot(array $data, Section $section): array
     {
-        $data['level'] = $this->enrollmentLevelForSection($section);
+        // The `level` column was dropped on non-sqlite drivers
+        // (see remove_fields_from_enrollments_table migration).
+        if (Schema::hasColumn('enrollments', 'level')) {
+            $data['level'] = $this->enrollmentLevelForSection($section);
+        }
 
         if (Schema::hasColumn('enrollments', 'grade_level')) {
             $data['grade_level'] = (string) $section->grade_level;

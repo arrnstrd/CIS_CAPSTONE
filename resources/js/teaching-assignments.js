@@ -51,10 +51,6 @@ window.openEditModal = function (id) {
         row.dataset.sessionType || "";
     document.getElementById("field_status").value =
         row.dataset.status || "active";
-    document.getElementById("field_in_start").value = row.dataset.inStart || "";
-    document.getElementById("field_late_threshold").value =
-        row.dataset.lateThreshold || "";
-    document.getElementById("field_out_end").value = row.dataset.outEnd || "";
 };
 
 // --- AJAX delete handler ---

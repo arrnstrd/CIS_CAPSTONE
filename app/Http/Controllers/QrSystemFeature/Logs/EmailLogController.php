@@ -126,7 +126,7 @@ class EmailLogController extends Controller
         $data = $request->validate([
             'student_id' => ['required', 'integer'],
             'email' => ['required', 'string'],
-            'scan_type' => ['required', 'in:IN,OUT,RE_ENTRY,RE_EXIT'],
+            'scan_type' => ['required', 'in:IN,OUT'],
             'status' => ['required', 'in:pending,sent,failed']
         ]);
 

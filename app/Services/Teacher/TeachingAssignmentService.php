@@ -21,9 +21,6 @@ class TeachingAssignmentService
      *   section_id: int,
      *   school_year_id: int,
      *   session_type: string,
-     *   in_start: string,
-     *   late_threshold: string,
-     *   out_end: string,
      *   status?: string
      * } $data
      * @return TeachingAssignment
@@ -49,9 +46,6 @@ class TeachingAssignmentService
                 'section_id' => $data['section_id'],
                 'school_year_id' => $data['school_year_id'],
                 'session_type' => $data['session_type'],
-                'in_start' => $data['in_start'],
-                'late_threshold' => $data['late_threshold'],
-                'out_end' => $data['out_end'],
                 'status' => $data['status'] ?? 'active',
             ]);
         });
@@ -67,9 +61,6 @@ class TeachingAssignmentService
      *   section_id?: int,
      *   school_year_id?: int,
      *   session_type?: string,
-     *   in_start?: string,
-     *   late_threshold?: string,
-     *   out_end?: string,
      *   status?: string
      * } $data
      * @return TeachingAssignment
