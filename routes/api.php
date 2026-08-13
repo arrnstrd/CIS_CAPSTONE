@@ -4,6 +4,7 @@ use App\Http\Controllers\AcademicFeature\EnrollmentController;
 use App\Http\Controllers\AcademicFeature\SchoolYearController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AdministrationFeature\User\UserController;
+use App\Http\Controllers\Api\ClassroomVerificationController;
 use App\Http\Controllers\QrSystemFeature\ClassroomScanner\ClassroomScanController;
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
@@ -23,6 +24,13 @@ Route::get('/user', function (Request $request) {
 Route::post('/scan', [ScanController::class, 'scan']);
 Route::post('/classroom-scan', [ClassroomScanController::class, 'scan'])
     ->middleware('auth:sanctum');
+
+
+// CLASSROOM VERIFICATIONS
+Route::prefix('classroom')->middleware('auth:sanctum')->group(function () {
+    Route::get('/roster/{teaching_assignment_id}', [ClassroomVerificationController::class, 'roster']);
+    Route::post('/verify', [ClassroomVerificationController::class, 'verify']);
+});
 
 
 // STUDENTS
@@ -53,7 +61,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'archive']);
 
     Route::patch('/users/{id}/restore', [UserController::class, 'restore']);
-
 });
 
 
@@ -113,5 +120,4 @@ Route::prefix('teachers')->group(function () {
 
     Route::patch('/{id}/restore', [TeacherController::class, 'restore'])
         ->name('api.teachers.restore');
-
 });
