@@ -34,9 +34,9 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/entry-exit">
+                    <a href="/time-in-time-out-history">
                         <i class="fas fa-exchange-alt"></i>
-                        <span>Time In Time Out </span>
+                        <span>In/Out History</span>
                     </a>
                 </li>
                 <li>

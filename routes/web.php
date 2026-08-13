@@ -138,7 +138,7 @@ Route::middleware(['auth'])->group(function () {
         // monitoring logs
         Route::get('/qr-station', [QrStationController::class, 'index'])->name('qr-station.index');
         Route::post('/qr-station/scan', [ScanController::class, 'scan'])->name('qr-station.scan');
-        Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('time-in-time-out.index');
+        Route::get('/time-in-time-out-history', [AttendanceLogController::class, 'index'])->name('time-in-time-out-history.index');
         Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
         Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
         Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
@@ -259,7 +259,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Teacher attendance monitoring
         Route::get('/teacher/attendance', fn() => view('teacher-modules.monitoring.class-attendance'))->name('teacher.attendance');
-        Route::get('/teacher/entry-exit', [AttendanceLogController::class, 'teacherIndex'])->name('teacher.entry-exit.index');
+        Route::get('/teacher/time-in-time-out-history', [AttendanceLogController::class, 'teacherIndex'])->name('teacher.time-in-time-out-history.index');
     });
 
     // ============================================================

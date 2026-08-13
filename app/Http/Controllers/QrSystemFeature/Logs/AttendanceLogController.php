@@ -48,10 +48,10 @@ class AttendanceLogController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        \Illuminate\Support\Facades\Log::debug('[PROFILE-CTRL:entry-exit] ms=' . round((microtime(true) - $t0) * 1000, 1)); // TEMP
+        \Illuminate\Support\Facades\Log::debug('[PROFILE-CTRL:time-in-time-out-history] ms=' . round((microtime(true) - $t0) * 1000, 1)); // TEMP
 
         return view(
-            'admin-modules.monitoring.entry-exit',
+            'admin-modules.monitoring.time-in-time-out-history',
             compact(
                 'attendance_logs',
                 'scan_type',
@@ -64,6 +64,14 @@ class AttendanceLogController extends Controller
                 'query'
             )
         );
+    }
+
+    /**
+     * Teacher index method for time in time out history
+     */
+    public function teacherIndex(Request $request)
+    {
+        return $this->index($request);
     }
 
     /**
