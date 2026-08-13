@@ -85,7 +85,7 @@
                         </table>
                     </div>
                     <div class="mt-3">
-                        <a href="{{ route('time-in-time-out.index') }}" class="text-primary text-decoration-none small">
+                        <a href="{{ route('time-in-time-out-history.index') }}" class="text-primary text-decoration-none small">
                             <i class="fas fa-history me-1"></i> View full Time In / Time Out history
                         </a>
                     </div>
