@@ -27,8 +27,10 @@ class Student extends Model
     protected static function booted()
     {
         static::created(function($student){
-            $student->student_number = 'STU-' . now()->year . '-' . str_pad($student->id, 4, '0' , STR_PAD_LEFT);
-            $student->save();
+            if (empty($student->student_number)) {
+                $student->student_number = 'STU-' . now()->year . '-' . str_pad($student->id, 4, '0', STR_PAD_LEFT);
+                $student->saveQuietly();
+            }
         });
 
     }

@@ -62,6 +62,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::get('/teacher/room-attendance', [TeacherRoomAttendanceController::class, 'index'])->name('room-attendance.index');
+Route::get('/teacher/room-attendance/{section}', [TeacherRoomAttendanceController::class, 'show'])->name('room-attendance.show');
+Route::post('/teacher/room-attendance/{section}/{enrollment}/verify', [TeacherRoomAttendanceController::class, 'verify'])->name('room-attendance.verify');
+Route::get('/teacher/room-attendance/{section}/{enrollment}/history', [TeacherRoomAttendanceController::class, 'history'])->name('room-attendance.history');
 
     
 

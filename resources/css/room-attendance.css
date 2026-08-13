@@ -12,8 +12,8 @@
     width: 40px;
     height: 40px;
     border-radius: 8px;
-    background-color: rgba(245, 166, 35, 0.12);
-    color: #e09416;
+    background-color: rgba(36, 56, 185, 0.12);
+    color: #1c2c94;
     flex-shrink: 0;
 }
 
@@ -42,7 +42,7 @@
     margin-left: 6px;
     font-size: 0.7rem;
     font-weight: 600;
-    color: #e09416;
+    color: #1c2c94;
 }
 
 .ra-filter-divider {
@@ -61,15 +61,15 @@
 
 .ra-filter-input:focus {
     outline: none;
-    border-color: #F5A623;
-    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+    border-color: #2438b9;
+    box-shadow: 0 0 0 3px rgba(36, 56, 185, 0.15);
 }
 
 .btn-view-history {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background-color: #F5A623;
+    background-color: #235bf5;
     color: #ffffff;
     border: none;
     border-radius: 8px;
@@ -79,14 +79,15 @@
     cursor: pointer;
     letter-spacing: 0.3px;
     transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-    box-shadow: 0 3px 10px rgba(245, 166, 35, 0.35);
+    box-shadow: 0 3px 10px rgba(35, 70, 245, 0.35);
 }
 
+
 .btn-view-history:hover {
-    background-color: #e09416;
+    background-color: #1642e0;
     color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 5px 14px rgba(245, 166, 35, 0.45);
+    box-shadow: 0 5px 14px rgba(35, 91, 245, 0.45);
 }
 
 .btn-view-history:active {
@@ -125,7 +126,7 @@
     display: inline-flex;
     align-items: center;
     padding: 8px 16px;
-    border-radius: 20px;
+    border-radius: 6px;
     border: 1px solid #d5d5d5;
     color: #555555;
     background-color: #ffffff;
@@ -137,16 +138,18 @@
 }
 
 .ra-pill-btn:hover {
-    border-color: #F5A623;
-    color: #e09416;
+    border-color: #2438b9;
+    color: #1c2c94;
 }
 
 .btn-check:checked + .ra-pill-btn {
-    background-color: #F5A623;
-    border-color: #F5A623;
+    background-color: #2438b9;
+    border-color: #2438b9;
     color: #ffffff;
-    box-shadow: 0 3px 10px rgba(245, 166, 35, 0.35);
+    box-shadow: 0 3px 10px rgba(36, 56, 185, 0.35);
 }
+
+
 
 .ra-range-input {
     border: 1px solid #d5d5d5;
@@ -158,6 +161,124 @@
 
 .ra-range-input:focus {
     outline: none;
-    border-color: #F5A623;
-    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+    border-color: #2438b9;
+    box-shadow: 0 0 0 3px rgba(36, 56, 185, 0.15);
+}
+
+/* ===== ROOM ATTENDANCE — LANDING PAGE + STAT CARDS (additions) ===== */
+
+.ra-section-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 18px;
+    height: 100%;
+}
+
+.ra-section-card-name {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.ra-section-card-meta {
+    font-size: 0.78rem;
+    color: #8a8a8a;
+    margin: 2px 0 0;
+}
+
+.ra-stat-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+.ra-stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    color: #222222;
+}
+
+.ra-stat-suffix {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #8a8a8a;
+}
+
+.ra-stat-present {
+    color: #085041;
+}
+
+.ra-stat-absent {
+    color: #791F1F;
+}
+
+.dot-danger {
+    background-color: #FCEBEB;
+    color: #791F1F;
+}
+
+/* ===== ROOM ATTENDANCE — STATUS OPTIONS + BADGES (additions) ===== */
+
+.ra-status-option {
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.ra-status-option-active {
+    border-color: #2438b9;
+    background-color: rgba(36, 56, 185, 0.08);
+}
+
+.dot-warning {
+    background-color: #FAEEDA;
+    color: #854F0B;
+}
+
+.dot-success {
+    background-color: #e1f5ee;
+    color: #085041;
+}
+
+.dot-danger {
+    background-color: #FCEBEB;
+    color: #791F1F;
+}
+
+.dot-info {
+    background-color: #E4EEFB;
+    color: #0B3D91;
+}
+
+.ra-stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+}
+
+.ra-stat-icon-neutral {
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #2438b9;
+}
+
+.ra-stat-icon-present {
+    background-color: #e1f5ee;
+    color: #085041;
+}
+
+.ra-stat-icon-absent {
+    background-color: #FCEBEB;
+    color: #791F1F;
 }
