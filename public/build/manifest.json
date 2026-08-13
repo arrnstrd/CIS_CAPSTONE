@@ -20,7 +20,7 @@
     "src": "public/images/top_head_image.webp"
   },
   "resources/css/app.css": {
-    "file": "assets/app-C3LD97ty.css",
+    "file": "assets/app-D0XYhBvK.css",
     "name": "app",
     "names": [
       "app.css"
@@ -48,6 +48,12 @@
     "file": "assets/app-DXGiZenF.js",
     "name": "app",
     "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/teaching-assignments.js": {
+    "file": "assets/teaching-assignments-D_yWVe_k.js",
+    "name": "teaching-assignments",
+    "src": "resources/js/teaching-assignments.js",
     "isEntry": true
   }
 }
