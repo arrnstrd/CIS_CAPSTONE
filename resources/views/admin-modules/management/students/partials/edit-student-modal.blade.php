@@ -160,15 +160,6 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Session Type</label>
-                    <select id="edit_session_type" name="session_type" class="form-select" required>
-                        <option value="morning">Morning</option>
-                        <option value="afternoon">Afternoon</option>
-                        <option value="whole_day">Whole Day</option>
-                    </select>
-                </div>
-
-                <div class="col-md-6">
                     <label class="form-label">Enrollment Status</label>
                     <select id="edit_enrollment_status" name="enrollment_status" class="form-select" required>
                         <option value="active">Active</option>

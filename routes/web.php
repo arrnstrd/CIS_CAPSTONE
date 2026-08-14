@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AdministrationFeature\Authentication\AuthController;
 use App\Http\Controllers\AcademicFeature\AcademicController;
-use App\Http\Controllers\AcademicFeature\EnrollmentController;
 use App\Http\Controllers\AcademicFeature\SchoolYearController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AcademicFeature\SubjectController;
@@ -72,12 +71,6 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:admin'])->group(function () {
         // academic
         Route::get('/academic', [AcademicController::class, 'index'])->name('academic.index');
-
-        // enrollment
-        Route::get('/enrollment', [EnrollmentController::class, 'index'])->name('enrollment.index');
-        Route::post('/enrollment', [EnrollmentController::class, 'store'])->name('enrollment.store');
-        Route::put('/enrollment/{id}', [EnrollmentController::class, 'update'])->name('enrollment.update');
-        Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy'])->name('enrollment.destroy');
 
         // section
         Route::get('/sections', [SectionController::class, 'index'])->name('sections.index');
@@ -163,7 +156,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/student-management', [StudentController::class, 'index'])->name('student-management.index');
         Route::get('/student-management/grade/{grade}', [StudentController::class, 'byGrade'])->name('student-management.grade');
         Route::post('/students', [StudentController::class, 'store'])->name('student.store');
-        Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
         Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
         Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
         Route::get('/student-profile', fn() => view('admin-modules.management.student-profile'));
@@ -180,7 +172,7 @@ Route::middleware(['auth'])->group(function () {
                 ->orderBy('scan_time', 'desc')
                 ->limit(5)
                 ->get()
-                ->map(fn ($log) => [
+                ->map(fn($log) => [
                     'scan_date' => $log->scan_time?->format('Y-m-d'),
                     'student_name' => trim(
                         ($log->enrollment?->student?->first_name ?? '') . ' ' .
@@ -253,6 +245,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:teacher'])->group(function () {
 
+        Route::get('/teacher/dashboard', fn() => view('teacher-modules.dashboard'))->name('teacher.dashboard');
         Route::get('/teacher/student-management', [StudentManagementController::class, 'index'])->name('teacher.student-management');
         Route::get('/teacher/student-profile/{student}', [StudentProfileController::class, 'teacherShow'])->name('teacher.student-profile');
         Route::get('/teacher/grading-system', fn() => view('teacher-modules.grading-system'))->name('teacher.grading-system');

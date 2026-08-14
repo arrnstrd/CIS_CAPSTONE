@@ -37,7 +37,8 @@ class QrScanService
                 'enrollments.*',
                 'sections.level as section_level',
                 'sections.name as section_name',
-                'sections.grade_level as section_grade'
+                'sections.grade_level as section_grade',
+                'sections.session_type as section_session_type'
             )
             ->leftJoin('sections', 'sections.id', '=', 'enrollments.section_id')
             ->where('enrollments.student_id', $student->id)
@@ -54,7 +55,7 @@ class QrScanService
         // 3. Resolve today's active schedule
         $schedule = (new ScheduleResolver())->resolve(
             $enrollment->section_level,
-            $enrollment->session_type,
+            $enrollment->section_session_type,
             $currentTime
         );
 
@@ -141,7 +142,7 @@ class QrScanService
             $log = AttendanceLog::create([
                 'enrollment_id' => $enrollment->id,
                 'scan_type' => $scanType,
-                'session_type' => $enrollment->session_type,
+                'session_type' => $enrollment->section_session_type,
                 'scan_time' => $now,
                 'scanned_by_user_id' => $data['scanned_by_user_id'] ?? null,
                 'device_id' => $data['device_id'] ?? null,
@@ -185,7 +186,7 @@ class QrScanService
         // 11. Notify guardian by email
         $this->sendGuardianEmail($student, $guardian, $log, $scanType, $now);
 
-        
+
 
         return response()->json([
             'message' => 'Scan successful',
@@ -194,7 +195,7 @@ class QrScanService
                 'name' => "{$student->first_name} {$student->last_name}",
                 'student_number' => $student->student_number,
                 'level' => $schedule->level,
-                'session_type' => $enrollment->session_type,
+                'session_type' => $enrollment->section_session_type,
                 'section' => $enrollment->section_grade
                     ? "Grade {$enrollment->section_grade} - {$enrollment->section_name}"
                     : null,
@@ -233,7 +234,7 @@ class QrScanService
         }
     }
 
-    
+
 
     private function resolveStudent(array $data): ?Student
     {
@@ -277,7 +278,7 @@ class QrScanService
         $log = AttendanceLog::create([
             'enrollment_id' => $enrollment->id,
             'scan_type' => $scanType,
-            'session_type' => $enrollment->session_type,
+            'session_type' => $enrollment->section_session_type,
             'scan_time' => $now,
         ]);
 
@@ -302,7 +303,7 @@ class QrScanService
         $log = AttendanceLog::create([
             'enrollment_id' => $enrollment->id,
             'scan_type' => 'IN',
-            'session_type' => $enrollment->session_type,
+            'session_type' => $enrollment->section_session_type,
             'scan_time' => $now,
         ]);
 

@@ -49,12 +49,4 @@ class Student extends Model
     {
         return $this->hasMany(Enrollment::class);
     }
-
-    // for overview cards in enrollment webpage
-    public function scopeWithoutCurrentEnrollment($query, $school_year_id)
-    {
-        return $query->whereDoesntHave('enrollments', function ($q) use ($school_year_id) {
-            $q->where('school_year_id', $school_year_id);
-        });
-    }
 }

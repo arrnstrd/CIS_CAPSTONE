@@ -114,7 +114,6 @@ document.addEventListener("show.bs.modal", function (event) {
         setValue(modal, "#edit_school_year_id", btn.dataset.school_year_id);
         setValue(modal, "#edit_grade_level", btn.dataset.grade_level);
         setValue(modal, "#edit_section_id", btn.dataset.section_id);
-        setValue(modal, "#edit_session_type", btn.dataset.session_type);
         setValue(
             modal,
             "#edit_enrollment_status",

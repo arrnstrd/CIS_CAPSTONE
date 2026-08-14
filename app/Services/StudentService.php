@@ -136,7 +136,6 @@ class StudentService
         return [
             'student_id' => $studentId,
             'section_id' => $data['section_id'],
-            'session_type' => $data['session_type'],
             'status' => $data['status'],
         ];
     }
@@ -150,7 +149,6 @@ class StudentService
         if ($enrollment) {
             $this->enrollmentService->updateEnrollment($enrollment, [
                 'section_id' => $data['section_id'],
-                'session_type' => $data['session_type'],
                 'status' => $data['status'],
             ]);
 

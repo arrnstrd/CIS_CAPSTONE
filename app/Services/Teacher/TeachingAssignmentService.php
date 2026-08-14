@@ -20,7 +20,6 @@ class TeachingAssignmentService
      *   subject_id: int,
      *   section_id: int,
      *   school_year_id: int,
-     *   session_type: string,
      *   status?: string
      * } $data
      * @return TeachingAssignment
@@ -45,7 +44,6 @@ class TeachingAssignmentService
                 'subject_id' => $data['subject_id'],
                 'section_id' => $data['section_id'],
                 'school_year_id' => $data['school_year_id'],
-                'session_type' => $data['session_type'],
                 'status' => $data['status'] ?? 'active',
             ]);
         });
@@ -60,7 +58,6 @@ class TeachingAssignmentService
      *   subject_id?: int,
      *   section_id?: int,
      *   school_year_id?: int,
-     *   session_type?: string,
      *   status?: string
      * } $data
      * @return TeachingAssignment

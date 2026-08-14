@@ -68,6 +68,15 @@ class SpreadsheetParser
         'department level',
         'grade level',
         'section',
+    ];
+
+    /**
+     * Optional headers — still parsed if present (e.g. legacy SF-1 templates),
+     * but no longer required. Session type is now derived from the Section.
+     *
+     * @var list<string>
+     */
+    private const OPTIONAL_HEADERS = [
         'session type',
     ];
 
@@ -202,7 +211,10 @@ class SpreadsheetParser
         foreach ($rawHeaders as $colIdx => $raw) {
             $normalized = $this->normalizeHeader($raw);
 
-            if (in_array($normalized, self::REQUIRED_HEADERS, true)) {
+            if (
+                in_array($normalized, self::REQUIRED_HEADERS, true)
+                || in_array($normalized, self::OPTIONAL_HEADERS, true)
+            ) {
                 $map[$normalized] = $colIdx;
             }
         }

@@ -120,16 +120,6 @@ class ImportRowValidator
             $issues[] = $this->error('sectionName', 'Section is required.');
         }
 
-        // ── Session Type ─────────────────────────────────────────────────
-        if ($this->isEmpty($row->sessionType)) {
-            $issues[] = $this->error('sessionType', 'Session Type is required.');
-        } elseif (!in_array($row->sessionType, ['morning', 'afternoon', 'whole_day'], true)) {
-            $issues[] = $this->error(
-                'sessionType',
-                'Session Type must be one of: morning, afternoon, whole_day.'
-            );
-        }
-
         return $issues;
     }
 

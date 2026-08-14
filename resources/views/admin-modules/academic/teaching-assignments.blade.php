@@ -26,13 +26,12 @@
             @forelse ($teachingAssignments as $assignment)
                 <tr data-assignment-id="{{ $assignment->id }}" data-teacher-id="{{ $assignment->teacher_id }}"
                     data-subject-id="{{ $assignment->subject_id }}" data-section-id="{{ $assignment->section_id }}"
-                    data-school-year-id="{{ $assignment->school_year_id }}"
-                    data-session-type="{{ $assignment->session_type }}" data-status="{{ $assignment->status }}">
+                    data-school-year-id="{{ $assignment->school_year_id }}" data-status="{{ $assignment->status }}">
                     <td>{{ $assignment->teacher?->full_name ?? '—' }}</td>
                     <td>{{ $assignment->subject?->name ?? '—' }}</td>
                     <td>{{ $assignment->section?->name ?? '—' }}</td>
                     <td>{{ $assignment->schoolYear?->school_year ?? '—' }}</td>
-                    <td>{{ ucfirst($assignment->session_type ?? '—') }}</td>
+                    <td>{{ ucfirst($assignment->section?->session_type ?? '—') }}</td>
                     <td>
                         <span class="badge-dot dot-{{ $assignment->status === 'active' ? 'success' : 'secondary' }}">
                             {{ ucfirst($assignment->status) }}
@@ -111,15 +110,6 @@
                         @foreach ($schoolYears as $sy)
                             <option value="{{ $sy->id }}">{{ $sy->school_year }}</option>
                         @endforeach
-                    </select>
-                </div>
-                <div class="col-6">
-                    <label class="form-label text-muted text-uppercase small fw-bold">Session Type</label>
-                    <select name="session_type" id="field_session_type" class="form-select" required>
-                        <option value="">Select Session</option>
-                        <option value="morning">Morning</option>
-                        <option value="afternoon">Afternoon</option>
-                        <option value="whole_day">Whole Day</option>
                     </select>
                 </div>
                 <div class="col-6">

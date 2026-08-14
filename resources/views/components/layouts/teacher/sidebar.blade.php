@@ -42,8 +42,8 @@
                 </li>
                 <li>
                     <a href="{{ route('teacher.dashboard') }}">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span>Room Attendance</span>
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
                     </a>
                 </li>
 

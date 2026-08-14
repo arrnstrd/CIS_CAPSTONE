@@ -113,7 +113,7 @@ class StudentController extends Controller
             $student->setAttribute('enrollment_status', $enrollment?->status ?? '-');
             $student->setAttribute('enrollment_id', $enrollment?->id);
             $student->setAttribute('section_id', $enrollment?->section_id);
-            $student->setAttribute('session_type', $enrollment?->session_type);
+            $student->setAttribute('session_type', $enrollment?->section?->session_type);
             $student->setAttribute('school_year_id', $enrollment?->school_year_id);
         });
 
@@ -146,7 +146,6 @@ class StudentController extends Controller
                 enrollmentData: [
                     'school_year_id' => $validated['school_year_id'],
                     'section_id' => $validated['section_id'],
-                    'session_type' => $validated['session_type'],
                     'status' => $validated['enrollment_status'],
                 ],
             );
@@ -188,7 +187,6 @@ class StudentController extends Controller
                 enrollmentData: [
                     'school_year_id' => $validated['school_year_id'],
                     'section_id' => $validated['section_id'],
-                    'session_type' => $validated['session_type'],
                     'status' => $validated['enrollment_status'],
                 ],
             );
@@ -230,7 +228,6 @@ class StudentController extends Controller
                     $query->where('grade_level', $request->input('grade_level'));
                 }),
             ],
-            'session_type' => ['required', 'in:morning,afternoon,whole_day'],
             'enrollment_status' => ['required', 'in:active,inactive'],
         ]);
     }
@@ -260,29 +257,6 @@ class StudentController extends Controller
         }
     }
 
-
-    public function search(Request $request)
-    {
-        $q = $request->query('q', '');
-        $activeSchoolYearId = SchoolYear::query()->where('is_active', true)->value('id');
-
-        $students = Student::query()
-            ->with('enrollments')
-            ->where(function ($query) use ($q) {
-                $query->where('student_number', 'like', "%{$q}%")
-                    ->orWhere('first_name', 'like', "%{$q}%")
-                    ->orWhere('last_name', 'like', "%{$q}%");
-            })
-            ->limit(10)
-            ->get(['id', 'student_number', 'first_name', 'last_name'])
-            ->each(function (Student $student) use ($activeSchoolYearId) {
-                $student->is_enrolled = $activeSchoolYearId
-                    ? $student->enrollments->contains('school_year_id', $activeSchoolYearId)
-                    : false;
-            });
-
-        return response()->json($students);
-    }
 
     public function show($id)
     {

@@ -114,13 +114,6 @@
 
 
                 {{-- <li>
-                    <a href="/enrollment">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Enrollment Management</span>
-                    </a>
-                </li>
-
-                <li>
                     <a href="/sections">
                         <i class="fas fa-layer-group"></i>
                         <span>Section List</span>

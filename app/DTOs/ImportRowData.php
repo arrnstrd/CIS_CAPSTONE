@@ -101,15 +101,15 @@ class ImportRowData
      *
      * The 'section_id' key is intentionally left null here — it will be set by
      * SectionResolver after lookup. Callers must set section_id before passing
-     * this array to EnrollmentService.
+     * this array to EnrollmentService. Session type is derived from the
+     * resolved Section by EnrollmentService, not set here.
      *
-     * @return array{section_id: null, session_type: ?string, status: string}
+     * @return array{section_id: null, status: string}
      */
     public function toEnrollmentData(): array
     {
         return [
             'section_id'   => null, // Set by SectionResolver
-            'session_type' => $this->sessionType,
             'status'       => 'active',
         ];
     }
@@ -122,7 +122,6 @@ class ImportRowData
     {
         return $this->departmentLevel !== null
             && $this->gradeLevel !== null
-            && $this->sectionName !== null
-            && $this->sessionType !== null;
+            && $this->sectionName !== null;
     }
 }

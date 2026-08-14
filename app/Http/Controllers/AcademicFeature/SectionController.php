@@ -76,6 +76,7 @@ class SectionController extends Controller
                     }
                 }
             ],
+            'session_type' => ['required', 'in:morning,afternoon,whole_day'],
             'advisor_id' => ['nullable', 'exists:teachers,id'],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
             'status' => ['required', 'in:active,inactive'],

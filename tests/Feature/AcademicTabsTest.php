@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Student;
@@ -34,40 +33,16 @@ class AcademicTabsTest extends TestCase
         $this->actingAs($this->admin);
     }
 
-    public function test_academic_page_renders_all_tab_scopes(): void
+    public function test_academic_page_renders_section_and_subject_tabs(): void
     {
         $this->seedAcademicData();
 
         $this->get('/academic')
             ->assertOk()
-            ->assertSee('id="enrollment-table-pane"', false)
             ->assertSee('id="section-table-pane"', false)
             ->assertSee('id="subject-table-pane"', false)
-            ->assertSee('Unenrolled Students')
             ->assertSee('Section Records')
             ->assertSee('Subject Records');
-    }
-
-    public function test_enrollment_search_filters_only_unenrolled_students(): void
-    {
-        $data = $this->seedAcademicData();
-
-        Enrollment::create([
-            'student_id' => $data['enrolledStudent']->id,
-            'section_id' => $data['sectionAlpha']->id,
-            'school_year_id' => $data['schoolYear']->id,
-            'level' => 'elementary',
-            'session_type' => 'morning',
-            'status' => 'active',
-        ]);
-
-        $this->get('/academic?enrollment_search=Zara&section_search=Alpha&subject_search=Science')
-            ->assertOk()
-            ->assertSee('Zara')
-            ->assertDontSee('Bruno')
-            ->assertDontSee('Enrolled Student')
-            ->assertSee('Alpha')
-            ->assertSee('Science');
     }
 
     public function test_section_filters_use_namespaced_params_and_pagination_links_keep_only_section_params(): void

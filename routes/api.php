@@ -1,11 +1,9 @@
 <?php
 
-use App\Http\Controllers\AcademicFeature\EnrollmentController;
 use App\Http\Controllers\AcademicFeature\SchoolYearController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AdministrationFeature\User\UserController;
 use App\Http\Controllers\Api\ClassroomVerificationController;
-use App\Http\Controllers\QrSystemFeature\ClassroomScanner\ClassroomScanController;
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
 use App\Http\Controllers\Student\StudentController;
@@ -22,8 +20,6 @@ Route::get('/user', function (Request $request) {
 
 // QR SCANNING
 Route::post('/scan', [ScanController::class, 'scan']);
-Route::post('/classroom-scan', [ClassroomScanController::class, 'scan'])
-    ->middleware('auth:sanctum');
 
 
 // CLASSROOM VERIFICATIONS
@@ -40,15 +36,6 @@ Route::post('/students', [StudentController::class, 'store'])
 Route::post('/students/{id}', [StudentController::class, 'update']);
 
 Route::get('/students/{id}', [StudentController::class, 'show']);
-
-
-// ENROLLMENT
-Route::post('/enrollment', [EnrollmentController::class, 'store'])
-    ->name('api.enrollments.store');
-
-Route::post('/enrollment/{id}', [EnrollmentController::class, 'update']);
-
-Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy']);
 
 
 // USERS

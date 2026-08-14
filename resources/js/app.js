@@ -4,7 +4,6 @@ import * as bootstrap from "bootstrap";
 window.bootstrap = bootstrap;
 
 import "./ajax-crud.js";
-import "./enrollment.js";
 import "./sidebar.js";
 import "./layout.js";
 import "./student.js";
