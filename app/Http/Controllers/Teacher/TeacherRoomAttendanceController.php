@@ -37,6 +37,8 @@ class TeacherRoomAttendanceController extends Controller
 
             $totalStudents = $enrollmentIds->count();
 
+            $trackingStart = $this->getTrackingStartDate($enrollmentIds);
+
             $presentCount = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
                 ->whereDate('scan_time', now()->toDateString())
                 ->distinct('enrollment_id')
@@ -44,7 +46,15 @@ class TeacherRoomAttendanceController extends Controller
 
             $section->total_students = $totalStudents;
             $section->present_count = $presentCount;
-            $section->absent_count = $totalStudents - $presentCount;
+
+            if ($trackingStart === null || now()->startOfDay()->lt($trackingStart)) {
+                // No scans have ever happened yet for this section, or tracking hasn't started as of today: nothing to mark absent yet.
+                $section->absent_count = 0;
+                $section->no_data_yet = true;
+            } else {
+                $section->absent_count = $totalStudents - $presentCount;
+                $section->no_data_yet = false;
+            }
         }
 
         return view('teacher-modules.room-attendance-index', compact('sections'));
@@ -190,6 +200,8 @@ class TeacherRoomAttendanceController extends Controller
      */
     private function buildSingleDayRoster($enrollments, $enrollmentIds, Carbon $date, $teachingAssignment, ?Carbon $trackingStart = null)
     {
+        
+
         $logsByEnrollment = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
             ->whereDate('scan_time', $date->toDateString())
             ->where('scan_type', 'IN')
@@ -210,16 +222,21 @@ class TeacherRoomAttendanceController extends Controller
             $log = $logsByEnrollment->get($enrollment->id);
             $verification = $verificationsByEnrollment->get($enrollment->id);
 
-            if ($verification) {
+            // Refined logic for single day roster
+            if ($trackingStart === null || $date->lt($trackingStart) || $date->gt(now())) {
+                // No scans have ever happened for this section yet, OR date is before tracking start, OR date is in the future: No Data Yet
+                $status = AttendanceVerification::STATUS_NO_DATA;
+                $statusLabel = AttendanceVerification::STATUS_LABELS_EXTENDED[$status];
+            } elseif ($verification) {
+                // Student has a verification record
                 $status = $verification->status;
                 $statusLabel = $verification->statusLabel();
             } elseif ($log) {
+                // Student has a scan record
                 $status = AttendanceVerification::STATUS_PRESENT;
                 $statusLabel = AttendanceVerification::STATUSES[$status];
-            } elseif ($trackingStart === null || $date->lt($trackingStart)) {
-                $status = AttendanceVerification::STATUS_NO_DATA;
-                $statusLabel = AttendanceVerification::STATUS_LABELS_EXTENDED[$status];
             } else {
+                // Date is during tracking period but no records: Absent
                 $status = AttendanceVerification::STATUS_ABSENT;
                 $statusLabel = AttendanceVerification::STATUSES[$status];
             }
@@ -242,6 +259,7 @@ class TeacherRoomAttendanceController extends Controller
      */
     private function buildMultiDayRoster($enrollments, $enrollmentIds, Carbon $start, Carbon $end, $teachingAssignment, ?Carbon $trackingStart = null)
     {
+
         $logs = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
             ->whereBetween('scan_time', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
             ->where('scan_type', 'IN')
@@ -266,16 +284,23 @@ class TeacherRoomAttendanceController extends Controller
                 $log = $logs->get($key);
                 $verification = $verifications->get($key);
 
-                if ($verification) {
+
+
+                // Refined logic for multi-day roster
+                if ($trackingStart === null || $cursor->lt($trackingStart) || $cursor->gt(now())) {
+                    // No scans have ever happened for this section yet, OR this specific day is before tracking start, OR this specific day is in the future: No Data Yet
+                    $status = AttendanceVerification::STATUS_NO_DATA;
+                    $statusLabel = AttendanceVerification::STATUS_LABELS_EXTENDED[$status];
+                } elseif ($verification) {
+                    // Student has a verification record for this specific day
                     $status = $verification->status;
                     $statusLabel = $verification->statusLabel();
                 } elseif ($log) {
+                    // Student has a scan record for this specific day
                     $status = AttendanceVerification::STATUS_PRESENT;
                     $statusLabel = AttendanceVerification::STATUSES[$status];
-                } elseif ($trackingStart === null || $cursor->lt($trackingStart)) {
-                    $status = AttendanceVerification::STATUS_NO_DATA;
-                    $statusLabel = AttendanceVerification::STATUS_LABELS_EXTENDED[$status];
                 } else {
+                    // This specific day is within the tracking period but has no scan or verification: Absent
                     $status = AttendanceVerification::STATUS_ABSENT;
                     $statusLabel = AttendanceVerification::STATUSES[$status];
                 }
@@ -305,11 +330,11 @@ class TeacherRoomAttendanceController extends Controller
     {
         switch ($dateFilter) {
             case 'yesterday':
-                $d = now()->subDay();
-                return [$d->copy()->startOfDay(), $d->copy()->startOfDay()];
+                $d = Carbon::yesterday();
+                return [$d->copy()->startOfDay(), $d->copy()->endOfDay()];
 
             case 'week':
-                return [now()->startOfWeek(), now()->endOfWeek()->min(now())];
+                return [now()->startOfWeek(), now()->endOfWeek()];
 
             case 'custom':
                 if ($customStartDate && $customEndDate) {
@@ -324,7 +349,8 @@ class TeacherRoomAttendanceController extends Controller
     }
 
     /**
-     * Get the earliest scan date for a set of enrollment IDs, or null if there are no scans at all.
+     * Get the tracking start date for a section.
+     * Uses the section's created_at date as the tracking start date.
      */
     private function getTrackingStartDate($enrollmentIds): ?Carbon
     {

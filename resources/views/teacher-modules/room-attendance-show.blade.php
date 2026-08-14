@@ -1,6 +1,6 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        {{ $section->name }}
+        Grade {{ $section->grade_level }} - {{ $section->name }}
     </x-slot>
 
     <x-slot name="subtitle">
@@ -128,6 +128,7 @@
                     <td>
                         {{ $row->student->first_name ?? '' }}
                         {{ $row->student->last_name ?? '' }}
+                    </td>
                     <td>
                         @if ($row->log)
                             {{ $row->log?->scan_time?->format('h:i A') ?? '—' }}

@@ -282,3 +282,180 @@
     background-color: #FCEBEB;
     color: #791F1F;
 }
+
+/* ===== ROOM ATTENDANCE — HELP/RULES SECTION (additions) ===== */
+
+.ra-help-section {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.ra-help-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ra-help-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #222222;
+}
+
+.ra-help-subtitle {
+    font-size: 0.78rem;
+    color: #8a8a8a;
+}
+
+.ra-help-column-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #555555;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ra-help-column-label i {
+    color: #2438b9;
+    font-size: 0.85rem;
+}
+
+.ra-status-item,
+.ra-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.ra-status-item-last {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.ra-status-item .badge-dot {
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin-top: 1px;
+}
+
+.ra-status-text {
+    font-size: 0.82rem;
+    color: #666666;
+    line-height: 1.5;
+}
+
+.ra-step-number {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #2438b9;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* ===== ROOM ATTENDANCE — ENHANCED SECTION CARD (additions) ===== */
+
+.ra-section-card {
+    transition: border-color 0.15s ease;
+}
+
+.ra-section-card:hover {
+    border-color: #c5c5c5;
+}
+
+.ra-grade-pill {
+    display: inline-block;
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #1c2c94;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+}
+
+.ra-enrolled-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #f7f7f5;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 14px 0;
+}
+
+.ra-enrolled-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    color: #222222;
+}
+
+.ra-enrolled-label {
+    font-size: 0.75rem;
+    color: #8a8a8a;
+    margin: 0;
+}
+
+.ra-mini-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.ra-mini-stat {
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.ra-mini-stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.ra-mini-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin: 2px 0 0;
+}
+
+.ra-mini-stat-present {
+    background-color: #e1f5ee;
+}
+
+.ra-mini-stat-present .ra-mini-stat-value,
+.ra-mini-stat-present .ra-mini-stat-label {
+    color: #085041;
+}
+
+.ra-mini-stat-absent {
+    background-color: #FCEBEB;
+}
+
+.ra-mini-stat-absent .ra-mini-stat-value,
+.ra-mini-stat-absent .ra-mini-stat-label {
+    color: #791F1F;
+}
+
+.ra-mini-stat-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
