@@ -5,6 +5,40 @@
 
 export function createInput({ els, state, getSubmit, ensureAudio }) {
     // capture keyboard input globally so the operator never has to click before scanning
+    // Auto-submit: most HID scanners just type the QR string with no terminating Enter,
+    // so a short typing pause marks the scan as complete and submits it automatically.
+    const AUTO_SUBMIT_DELAY_MS = 120;
+    let autoSubmitTimer = null;
+
+    function clearPendingAutoSubmit() {
+        if (autoSubmitTimer) {
+            clearTimeout(autoSubmitTimer);
+            autoSubmitTimer = null;
+        }
+    }
+
+    function submitBuffer() {
+        if (!state.buffer) return;
+
+        // station is busy — keep the buffered string and submit it once it frees up
+        if (state.processing) {
+            armAutoSubmit();
+            return;
+        }
+
+        clearPendingAutoSubmit();
+        const value = state.buffer;
+        state.buffer = "";
+        if (els.fbBuffer) els.fbBuffer.textContent = "—";
+        const submit = getSubmit();
+        if (submit) submit(value);
+    }
+
+    function armAutoSubmit() {
+        clearPendingAutoSubmit();
+        autoSubmitTimer = setTimeout(submitBuffer, AUTO_SUBMIT_DELAY_MS);
+    }
+
     function handleKeydown(e) {
         ensureAudio();
         const inManual = document.activeElement === els.manualInput;
@@ -16,10 +50,8 @@ export function createInput({ els, state, getSubmit, ensureAudio }) {
                 return;
             }
             e.preventDefault();
-            const submit = getSubmit();
-            if (submit) submit(state.buffer);
-            state.buffer = "";
-            if (els.fbBuffer) els.fbBuffer.textContent = "—";
+            clearPendingAutoSubmit();
+            submitBuffer();
             return;
         }
 
@@ -35,6 +67,7 @@ export function createInput({ els, state, getSubmit, ensureAudio }) {
             e.preventDefault();
             state.buffer += e.key;
             if (els.fbBuffer) els.fbBuffer.textContent = state.buffer;
+            armAutoSubmit();
         }
     }
 
