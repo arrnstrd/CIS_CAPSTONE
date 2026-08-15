@@ -26,6 +26,8 @@ document.addEventListener("show.bs.modal", function (event) {
         button.dataset.capacity || "";
     document.getElementById("edit_section_status").value =
         button.dataset.status || "active";
+    document.getElementById("edit_session_type").value =
+        button.dataset.sessionType || "";
 });
 
 document.addEventListener("hidden.bs.modal", function (event) {

@@ -87,6 +87,7 @@
                                             data-grade-level="{{ $section->grade_level }}"
                                             data-advisor-id="{{ $section->advisor_id ?? '' }}"
                                             data-capacity="{{ $section->capacity }}" data-status="{{ $section->status }}"
+                                            data-session-type="{{ $section->session_type }}"
                                             data-ajax-scope="#section-table-pane">
                                             Edit
                                         </button>
