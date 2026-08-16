@@ -64,8 +64,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Birth Date</label>
-                            <input type="date" id="add_birthdate" name="birthdate" class="form-control" required>
+                            <label class="form-label">Age</label>
+                            <input type="number" id="add_age" name="age" class="form-control" min="1" max="100" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Status</label>

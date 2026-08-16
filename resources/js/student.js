@@ -101,7 +101,7 @@ document.addEventListener("show.bs.modal", function (event) {
         setValue(modal, "#edit_suffix", btn.dataset.suffix);
         setValue(modal, "#edit_sex", btn.dataset.sex);
         setValue(modal, "#edit_address", btn.dataset.address);
-        setValue(modal, "#edit_birthdate", btn.dataset.birthdate);
+        setValue(modal, "#edit_age", btn.dataset.age);
         setValue(modal, "#edit_status", btn.dataset.status);
         setValue(modal, "#edit_guardian_name", btn.dataset.guardian_name);
         setValue(

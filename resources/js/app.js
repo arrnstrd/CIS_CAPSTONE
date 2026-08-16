@@ -13,6 +13,7 @@ import "./settings.js";
 import "./teacher.js";
 import "./import.js";
 import "./qr-station.js";
+import "./download-excel.js";
 
 // teacher modules
 import "./teacher-modules/t-sidebar.js";

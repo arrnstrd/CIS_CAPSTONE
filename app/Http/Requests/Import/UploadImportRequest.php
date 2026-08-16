@@ -17,8 +17,8 @@ class UploadImportRequest extends FormRequest
             'file' => [
                 'required',
                 'file',
-                'extensions:xlsx',
-                'mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'extensions:xlsx,xls',
+                'mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
                 'max:10240', // 10 MB
             ],
         ];
@@ -29,8 +29,8 @@ class UploadImportRequest extends FormRequest
         return [
             'file.required'    => 'Please select an Excel file to upload.',
             'file.file'        => 'The uploaded file is invalid.',
-            'file.extensions'  => 'Only .xlsx files are accepted.',
-            'file.mimetypes'   => 'The file must be a valid Excel spreadsheet.',
+            'file.extensions'  => 'Only .xlsx or .xls files are accepted.',
+            'file.mimetypes'   => 'The file must be a valid Excel spreadsheet (.xlsx or .xls).',
             'file.max'         => 'File size must not exceed 10 MB.',
         ];
     }

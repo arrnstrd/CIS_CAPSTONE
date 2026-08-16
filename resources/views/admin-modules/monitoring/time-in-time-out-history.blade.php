@@ -11,7 +11,7 @@
         School time in time out scans.
     </x-slot>
 
-  
+
     @php
         $currentFilter = $dateFilter ?? request('date_filter', 'today');
         $queryValue = $query ?? request('query', '');
@@ -35,6 +35,11 @@
         ];
     @endphp
 
+    {{-- Flash Messages --}}
+    @if (session('error'))
+        <div class="alert alert-danger mx-3 mb-3" role="alert">{{ session('error') }}</div>
+    @endif
+
     {{-- Overview Cards --}}
     <div class="row g-3 mb-4 px-3">
         @foreach ($overviewCards as $card)
@@ -46,7 +51,8 @@
                             <i class="{{ $card['icon'] }} fs-4"></i>
                         </div>
                         <div class="overflow-hidden">
-                            <div class="text-uppercase text-muted small fw-bold" style="letter-spacing: 0.05em; font-size: 0.7rem;">
+                            <div class="text-uppercase text-muted small fw-bold"
+                                style="letter-spacing: 0.05em; font-size: 0.7rem;">
                                 {{ $card['label'] }}
                             </div>
                             <div class="fs-3 fw-bold lh-1 text-{{ $card['textVariant'] }} mt-1">
@@ -146,10 +152,12 @@
                     @endif
 
                     <div class="col-12 col-lg-auto ms-lg-auto d-flex gap-2">
-                        <a href="{{ route('time-in-time-out-history.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <a href="{{ route('time-in-time-out-history.index') }}"
+                            class="btn btn-outline-secondary btn-sm">
                             Reset
                         </a>
-                        <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#">
+                        <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#downloadExcelModal">
                             <i class="fas fa-download"></i> Download Excel
                         </button>
                     </div>
@@ -185,7 +193,8 @@
                         {{ trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-' }}
                     </td>
                     <td>
-                        <span class="fw-semibold">Grade {{ $attendance_log->enrollment?->section->grade_level ?? '-' }}</span>
+                        <span class="fw-semibold">Grade
+                            {{ $attendance_log->enrollment?->section->grade_level ?? '-' }}</span>
                         <span class="text-muted">—</span>
                         <span>{{ $attendance_log->enrollment?->section?->name ?? '-' }}</span>
                     </td>
@@ -210,7 +219,8 @@
                         @endphp
                         @if($flagTypes->isNotEmpty())
                             @foreach($flagTypes as $ftype)
-                                <span class="badge-dot dot-{{ $flagTypeDotMap[$ftype] ?? 'secondary' }}">{{ ucfirst(str_replace('_', ' ', $ftype)) }}</span>
+                                <span
+                                    class="badge-dot dot-{{ $flagTypeDotMap[$ftype] ?? 'secondary' }}">{{ ucfirst(str_replace('_', ' ', $ftype)) }}</span>
                             @endforeach
                         @else
                             <span class="text-muted">-</span>
@@ -218,7 +228,8 @@
                     </td>
                     <td>
                         @if($flagTypes->isNotEmpty())
-                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#flagModal{{ $attendance_log->id }}">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                data-bs-target="#flagModal{{ $attendance_log->id }}">
                                 <i class="fas fa-eye"></i>
                             </button>
                         @else
@@ -297,7 +308,8 @@
                                 <div class="student-info">
                                     <span class="student-name">{{ $studentName }}</span>
                                     <div class="student-meta">
-                                        Grade {{ $attendance_log->enrollment?->section->grade_level ?? '-' }} &middot; {{ $attendance_log->enrollment?->section?->name ?: '-' }}
+                                        Grade {{ $attendance_log->enrollment?->section->grade_level ?? '-' }} &middot;
+                                        {{ $attendance_log->enrollment?->section?->name ?: '-' }}
                                     </div>
                                 </div>
                             </div>
@@ -319,7 +331,8 @@
                                 <div class="scan-item">
                                     <span class="scan-label">Scan Type</span>
                                     <span class="scan-value">
-                                        <span class="badge-dot dot-{{ $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary' }}">{{ $attendance_log->scan_type }}</span>
+                                        <span
+                                            class="badge-dot dot-{{ $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary' }}">{{ $attendance_log->scan_type }}</span>
                                     </span>
                                 </div>
                             </div>
@@ -334,7 +347,8 @@
                                         </div>
                                         <div class="flag-content">
                                             <span class="flag-name">{{ ucfirst(str_replace('_', ' ', $flagType)) }}</span>
-                                            <span class="flag-desc">{{ $flagDescriptions[$flagType] ?? 'This scan requires administrative review.' }}</span>
+                                            <span
+                                                class="flag-desc">{{ $flagDescriptions[$flagType] ?? 'This scan requires administrative review.' }}</span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -350,5 +364,49 @@
             </div>
         @endif
     @endforeach
+
+    {{-- Download Excel Modal --}}
+    <div class="modal fade" id="downloadExcelModal" tabindex="-1" aria-labelledby="downloadExcelModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="GET" action="{{ route('time-in-time-out-history.download') }}">
+                    {{-- Carry over the active filters so the export matches what is on screen --}}
+                    @foreach (request()->except(['date_filter', 'custom_start_date', 'custom_end_date', 'page', 'start_date', 'end_date']) as $field => $value)
+                        <input type="hidden" name="{{ $field }}" value="{{ $value }}">
+                    @endforeach
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="downloadExcelModalLabel">Download Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">Select a date range to export. Max range is one month (31
+                            days).</p>
+
+                        <div class="mb-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control form-control-sm" id="start_date" name="start_date"
+                                value="{{ now()->format('Y-m-d') }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" class="form-control form-control-sm" id="end_date" name="end_date"
+                                value="{{ now()->format('Y-m-d') }}" required>
+                        </div>
+
+                        <div id="dlDateError" class="alert alert-danger py-2 mb-0" style="display: none;"></div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark">Download</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 </x-layouts.admin>

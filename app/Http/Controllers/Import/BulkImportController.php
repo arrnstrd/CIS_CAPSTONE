@@ -9,7 +9,6 @@ use App\Http\Resources\BulkImportResource;
 use App\Models\BulkImport;
 use App\Models\BulkImportIssue;
 use App\Services\Import\BulkImportService;
-use App\Services\Import\SpreadsheetParser;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -20,7 +19,6 @@ class BulkImportController extends Controller
 {
     public function __construct(
         private readonly BulkImportService $bulkImportService,
-        private readonly SpreadsheetParser $parser,
     ) {}
 
     // ── Upload ──────────────────────────────────────────────────────────
@@ -209,35 +207,15 @@ class BulkImportController extends Controller
 
     public function downloadTemplate(): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
-        $headers = $this->parser->getTemplateHeaders();
+        $path = storage_path(config('import.sf1_template_path'));
 
-        $spreadsheet = new Spreadsheet();
-        $sheet       = $spreadsheet->getActiveSheet();
-
-        foreach ($headers as $colIndex => $header) {
-            $column = Coordinate::stringFromColumnIndex($colIndex + 1);
-            $sheet->setCellValue($column . '1', $header);
-            $sheet->getStyle($column . '1')->getFont()->setBold(true);
-            $sheet->getColumnDimension($column)->setAutoSize(true);
+        if (!file_exists($path)) {
+            abort(404, 'SF1 template file not found.');
         }
 
-        $headerRange = 'A1:' . Coordinate::stringFromColumnIndex(count($headers)) . '1';
-        $sheet->getStyle($headerRange)
-            ->getFill()
-            ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()
-            ->setRGB('E8E8E8');
-
-        $sheet->freezePane('A2');
-        $sheet->setAutoFilter($headerRange);
-
-        $tempPath = tempnam(sys_get_temp_dir(), 'import_template_') . '.xlsx';
-        $writer   = new Xlsx($spreadsheet);
-        $writer->save($tempPath);
-
-        return response()->download($tempPath, 'bulk-import-template.xlsx', [
+        return response()->download($path, 'School-Forms-1-Template.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ])->deleteFileAfterSend(true);
+        ]);
     }
 
     // ── Export errors ───────────────────────────────────────────────────

@@ -8,3 +8,5 @@ GLOBAL AGENT INSTRUCTIONS
 - Before making a broad change, ask for confirmation.
 - Prefer the smallest viable change.
 - Do not refactor unless explicitly requested.
+
+refer to this file .github/skills/strict-engineer-skill/SKILL.md for the set of instructions

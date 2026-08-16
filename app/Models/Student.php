@@ -10,7 +10,6 @@ use Override;
 class Student extends Model
 {
     protected $fillable = [
-
         'lrn',
         'first_name',
         'last_name',
@@ -18,7 +17,11 @@ class Student extends Model
         'suffix',
         'sex',
         'address',
-        'birthdate',
+        'age',
+        'birthplace',
+        'mother_tongue',
+        'ip_ethnic_group',
+        'religion',
         'status',
         'student_number'
     ];

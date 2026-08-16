@@ -98,8 +98,8 @@
                         </div>
                         <div class="col-6">
                             <p class="text-muted mb-1 small text-uppercase fw-semibold"
-                                style="font-size: 10px; letter-spacing: 0.06em;">Birthdate</p>
-                            <p class="mb-0">{{ \Carbon\Carbon::parse($student->birthdate)->format('M d, Y') }}</p>
+                                style="font-size: 10px; letter-spacing: 0.06em;">Age</p>
+                            <p class="mb-0">{{ $student->age }}</p>
                         </div>
                     </div>
 

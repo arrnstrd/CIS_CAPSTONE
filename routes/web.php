@@ -132,6 +132,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/qr-station', [QrStationController::class, 'index'])->name('qr-station.index');
         Route::post('/qr-station/scan', [ScanController::class, 'scan'])->name('qr-station.scan');
         Route::get('/time-in-time-out-history', [AttendanceLogController::class, 'index'])->name('time-in-time-out-history.index');
+        Route::get('/time-in-time-out-history/download', [AttendanceLogController::class, 'download'])->name('time-in-time-out-history.download');
         Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
         Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
         Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');

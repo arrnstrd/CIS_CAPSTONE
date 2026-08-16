@@ -134,7 +134,7 @@ class StudentController extends Controller
                     'suffix' => $validated['suffix'] ?? null,
                     'sex' => $validated['sex'],
                     'address' => $validated['address'],
-                    'birthdate' => $validated['birthdate'],
+                    'age' => $validated['age'],
                     'status' => $validated['status'],
                 ],
                 guardianData: [
@@ -175,7 +175,7 @@ class StudentController extends Controller
                     'suffix' => $validated['suffix'] ?? null,
                     'sex' => $validated['sex'],
                     'address' => $validated['address'],
-                    'birthdate' => $validated['birthdate'],
+                    'age' => $validated['age'],
                     'status' => $validated['status'],
                 ],
                 guardianData: [
@@ -210,7 +210,7 @@ class StudentController extends Controller
             'suffix' => ['nullable', 'string', 'max:20'],
             'sex' => ['required', 'in:female,male'],
             'address' => ['required', 'string'],
-            'birthdate' => ['required', 'date'],
+            'age' => ['required', 'integer', 'min:1', 'max:100'],
             'status' => ['required', 'in:active,inactive'],
 
             // guardian

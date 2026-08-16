@@ -3,7 +3,8 @@
 namespace App\DTOs;
 
 /**
- * Holds normalized data for a single row from the SF-1 import template.
+ * Holds normalized data for a single student row from the official
+ * DepEd School Form 1 (SF1) — School Register.
  *
  * This DTO represents the imported spreadsheet data only.
  * Parsing, normalization, and validation are handled by the import pipeline.
@@ -20,12 +21,20 @@ class ImportRowData
         public readonly ?string $lastName = null,
         public readonly ?string $middleName = null,
         public readonly ?string $sex = null,
-        public readonly ?string $birthdate = null,
+        public readonly bool $sexAmbiguous = false,
+        public readonly ?string $age = null,
+        public readonly ?string $birthplace = null,
+        public readonly ?string $motherTongue = null,
+        public readonly ?string $ipEthnicGroup = null,
+        public readonly ?string $religion = null,
         public readonly ?string $address = null,
 
-        // Guardian
+        // Parents / Guardian
+        public readonly ?string $fatherName = null,
+        public readonly ?string $motherMaidenName = null,
         public readonly ?string $guardianName = null,
         public readonly ?string $guardianRelationship = null,
+        public readonly ?string $guardianContactNumber = null,
         public readonly ?string $guardianEmail = null,
 
         // Enrollment
@@ -39,7 +48,7 @@ class ImportRowData
      * Returns the raw imported values.
      * Used for validation, processing, and issue logging.
      *
-     * @return array<string, string|int|null>
+     * @return array<string, string|int|bool|null>
      */
     public function toRawData(): array
     {
@@ -47,15 +56,21 @@ class ImportRowData
             'LRN'                   => $this->lrn,
             'Learner Name'          => $this->learnerName,
             'Sex'                   => $this->sex,
-            'Birth Date'            => $this->birthdate,
+            'Age'                   => $this->age,
+            'Birthplace'            => $this->birthplace,
+            'Mother Tongue'         => $this->motherTongue,
+            'IP/Ethnic Group'       => $this->ipEthnicGroup,
+            'Religion'              => $this->religion,
             'Complete Address'      => $this->address,
+            "Father's Name"         => $this->fatherName,
+            "Mother's Maiden Name"  => $this->motherMaidenName,
             'Guardian Name'         => $this->guardianName,
             'Guardian Relationship' => $this->guardianRelationship,
+            'Guardian Contact'      => $this->guardianContactNumber,
             'Guardian Email'        => $this->guardianEmail,
             'Department Level'      => $this->departmentLevel,
             'Grade Level'           => $this->gradeLevel,
             'Section'               => $this->sectionName,
-            'Session Type'          => $this->sessionType,
         ];
     }
 
@@ -65,19 +80,24 @@ class ImportRowData
      *
      * @return array{lrn: ?string, first_name: ?string, last_name: ?string,
      *               middle_name: ?string, sex: ?string, address: ?string,
-     *               birthdate: ?string, status: string}
+     *               age: ?int, birthplace: ?string, mother_tongue: ?string,
+     *               ip_ethnic_group: ?string, religion: ?string, status: string}
      */
     public function toStudentData(): array
     {
         return [
-            'lrn'         => $this->lrn,
-            'first_name'  => $this->firstName,
-            'last_name'   => $this->lastName,
-            'middle_name' => $this->middleName,
-            'sex'         => $this->sex,
-            'address'     => $this->address,
-            'birthdate'   => $this->birthdate,
-            'status'      => 'active',
+            'lrn'             => $this->lrn,
+            'first_name'      => $this->firstName,
+            'last_name'       => $this->lastName,
+            'middle_name'     => $this->middleName,
+            'sex'             => $this->sex,
+            'address'         => $this->address,
+            'age'             => ($this->age !== null && is_numeric($this->age)) ? (int) $this->age : null,
+            'birthplace'      => $this->birthplace,
+            'mother_tongue'   => $this->motherTongue,
+            'ip_ethnic_group' => $this->ipEthnicGroup,
+            'religion'        => $this->religion,
+            'status'          => 'active',
         ];
     }
 
@@ -85,14 +105,19 @@ class ImportRowData
      * Build the guardian data array in the exact shape expected by
      * StudentService::createStudent().
      *
-     * @return array{name: ?string, relationship: ?string, email: ?string}
+     * The primary guardian record uses relationship 'guardian'; father and
+     * mother records are created separately by ImportProcessor using the
+     * shared contact/email from this row.
+     *
+     * @return array{name: ?string, relationship: string, contact_number: ?string, email: ?string}
      */
     public function toGuardianData(): array
     {
         return [
-            'name'         => $this->guardianName,
-            'relationship' => $this->guardianRelationship,
-            'email'        => $this->guardianEmail,
+            'name'           => $this->guardianName,
+            'relationship'   => 'guardian',
+            'contact_number' => $this->guardianContactNumber,
+            'email'          => $this->guardianEmail,
         ];
     }
 

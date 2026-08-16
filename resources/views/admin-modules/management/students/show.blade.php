@@ -149,7 +149,7 @@
                                             data-middle_name="{{ $student->middle_name }}"
                                             data-last_name="{{ $student->last_name }}" data-suffix="{{ $student->suffix }}"
                                             data-sex="{{ $student->sex }}" data-address="{{ $student->address }}"
-                                            data-birthdate="{{ $student->birthdate }}" data-status="{{ $student->status }}"
+                                            data-age="{{ $student->age }}" data-status="{{ $student->status }}"
                                             data-guardian_name="{{ $student->guardian->name ?? '' }}"
                                             data-guardian_relationship="{{ $student->guardian->relationship ?? '' }}"
                                             data-guardian_contact="{{ $student->guardian->contact_number ?? '' }}"

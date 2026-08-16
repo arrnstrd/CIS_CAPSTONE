@@ -61,19 +61,38 @@ class StudentService
                     : null,
                 'sex' => $studentData['sex'],
                 'address' => strip_tags($studentData['address']),
-                'birthdate' => $studentData['birthdate'],
+                'age' => $studentData['age'] ?? null,
+                'birthplace' => isset($studentData['birthplace'])
+                    ? strip_tags($studentData['birthplace'])
+                    : null,
+                'mother_tongue' => isset($studentData['mother_tongue'])
+                    ? strip_tags($studentData['mother_tongue'])
+                    : null,
+                'ip_ethnic_group' => isset($studentData['ip_ethnic_group'])
+                    ? strip_tags($studentData['ip_ethnic_group'])
+                    : null,
+                'religion' => isset($studentData['religion'])
+                    ? strip_tags($studentData['religion'])
+                    : null,
                 'status' => $studentData['status'],
             ]);
 
-            Guardian::create([
-                'student_id' => $student->id,
-                'name' => strip_tags($guardianData['name']),
-                'relationship' => $guardianData['relationship'],
-                'contact_number' => isset($guardianData['contact_number'])
-                    ? strip_tags($guardianData['contact_number'])
-                    : null,
-                'email' => strip_tags($guardianData['email']),
-            ]);
+            // Primary guardian only when a name is present — a blank name
+            // means the row has no guardian (father/mother are created by
+            // ImportProcessor). Email is nullable-safe.
+            if (!empty(trim((string) ($guardianData['name'] ?? '')))) {
+                Guardian::create([
+                    'student_id' => $student->id,
+                    'name' => strip_tags($guardianData['name']),
+                    'relationship' => $guardianData['relationship'] ?? 'guardian',
+                    'contact_number' => isset($guardianData['contact_number'])
+                        ? strip_tags($guardianData['contact_number'])
+                        : null,
+                    'email' => isset($guardianData['email'])
+                        ? strip_tags($guardianData['email'])
+                        : null,
+                ]);
+            }
 
             $this->ensureQrCode($student);
 
@@ -104,7 +123,7 @@ class StudentService
                     : null,
                 'sex' => $studentData['sex'],
                 'address' => strip_tags($studentData['address']),
-                'birthdate' => $studentData['birthdate'],
+                'age' => $studentData['age'] ?? null,
                 'status' => $studentData['status'],
             ]);
 
