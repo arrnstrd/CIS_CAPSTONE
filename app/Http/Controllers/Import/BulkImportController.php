@@ -213,7 +213,7 @@ class BulkImportController extends Controller
             abort(404, 'SF1 template file not found.');
         }
 
-        return response()->download($path, 'School-Forms-1-Template.xlsx', [
+        return response()->download($path, 'School-Forms-1-Template-File.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }

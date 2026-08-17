@@ -20,7 +20,7 @@
     "src": "public/images/top_head_image.webp"
   },
   "resources/css/app.css": {
-    "file": "assets/app-COijgV-M.css",
+    "file": "assets/app-BR5vn13v.css",
     "name": "app",
     "names": [
       "app.css"
@@ -35,53 +35,10 @@
       "assets/top_head_image-Bx9Yx47L.webp"
     ]
   },
-  "resources/css/login.css": {
-    "file": "assets/login-B9OXGg4f.css",
-    "name": "login",
-    "names": [
-      "login.css"
-    ],
-    "src": "resources/css/login.css",
-    "isEntry": true
-  },
-  "resources/css/qr-generation.css": {
-    "file": "assets/qr-generation-CfjSv5jM.css",
-    "name": "qr-generation",
-    "names": [
-      "qr-generation.css"
-    ],
-    "src": "resources/css/qr-generation.css",
-    "isEntry": true
-  },
-  "resources/css/qr-station.css": {
-    "file": "assets/qr-station-D1YRxj3l.css",
-    "name": "qr-station",
-    "names": [
-      "qr-station.css"
-    ],
-    "src": "resources/css/qr-station.css",
-    "isEntry": true
-  },
   "resources/js/app.js": {
-    "file": "assets/app-CXoynQlU.js",
+    "file": "assets/app-Ch2UccmQ.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true,
-    "imports": [
-      "resources/js/qr-station.js",
-      "resources/js/qr-station.js"
-    ]
-  },
-  "resources/js/qr-generation.js": {
-    "file": "assets/qr-generation-C1AFTXs8.js",
-    "name": "qr-generation",
-    "src": "resources/js/qr-generation.js",
-    "isEntry": true
-  },
-  "resources/js/qr-station.js": {
-    "file": "assets/qr-station-K1xK6XrN.js",
-    "name": "qr-station",
-    "src": "resources/js/qr-station.js",
     "isEntry": true
   }
 }

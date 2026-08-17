@@ -1,0 +1,397 @@
+/* ===================================================================
+   bulk-import.css — scoped to .bulk-import-page
+   All overrides are nested under the wrapper class so no other page
+   in the app is affected.
+   =================================================================== */
+
+/* ---- Fonts (only applied within .bulk-import-page) ---- */
+.bulk-import-page {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #1f2937;
+}
+.bulk-import-page h1,
+.bulk-import-page h2,
+.bulk-import-page h3,
+.bulk-import-page h4,
+.bulk-import-page h5,
+.bulk-import-page h6,
+.bulk-import-page .step-label,
+.bulk-import-page .group-title {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* ---- Indigo accent (buttons, step rail, upload zone) ---- */
+.bulk-import-page .bi-btn {
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+.bulk-import-page .btn-indigo {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: #ffffff;
+}
+.bulk-import-page .btn-indigo:hover,
+.bulk-import-page .btn-indigo:focus {
+    background-color: #4338ca;
+    border-color: #4338ca;
+    color: #ffffff;
+}
+.bulk-import-page .btn-indigo.bi-btn-lg {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.95rem;
+}
+
+/* ---- Step rail ---- */
+.bulk-import-page .step-rail {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.bulk-import-page .step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+.bulk-import-page .step-item.active {
+    color: #4f46e5;
+    font-weight: 700;
+}
+.bulk-import-page .step-item:not(:last-child)::after {
+    content: "";
+    display: inline-block;
+    flex: 1;
+    height: 2px;
+    background-color: #e5e7eb;
+    margin-left: 0.5rem;
+}
+.bulk-import-page .step-item.active:not(:last-child)::after {
+    background-color: #4f46e5;
+}
+.bulk-import-page .step-bullet {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background-color: #e5e7eb;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.bulk-import-page .step-item.active .step-bullet {
+    background-color: #4f46e5;
+    color: #ffffff;
+}
+.bulk-import-page .step-label {
+    font-size: 0.8rem;
+}
+
+/* ---- Screen sections ---- */
+.bulk-import-page .screen-section {
+    /* shown/hidden via d-none by JS */
+}
+
+/* ---- Screen 1: Landing ---- */
+.bulk-import-page .empty-state-card {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: #ffffff;
+    border: 1px dashed #e5e7eb;
+    border-radius: 0.75rem;
+}
+.bulk-import-page .empty-state-card i {
+    opacity: 0.4;
+}
+
+/* History card (rendered by JS) */
+.bulk-import-page .import-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.bulk-import-page .import-card:hover {
+    border-color: #4f46e5;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.bulk-import-page .import-card .import-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+.bulk-import-page .import-card .import-file-name {
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.95rem;
+}
+.bulk-import-page .import-card .import-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+.bulk-import-page .import-card .import-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.bulk-import-page .import-card .import-result {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: #4b5563;
+}
+.bulk-import-page .import-card .import-status-pill {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.025rem;
+}
+
+/* ---- Screen 2: Upload ---- */
+.bulk-import-page .upload-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.bulk-import-page .upload-dropzone {
+    border: 2px dashed #d1d5db;
+    border-radius: 0.5rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+.bulk-import-page .upload-dropzone:hover {
+    border-color: #4f46e5;
+    background-color: #f8fafc;
+}
+.bulk-import-page .file-selected-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+}
+.bulk-import-page .progress-bar-animated {
+    width: 100%;
+    height: 0.5rem;
+    background-color: #f3f4f6;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+.bulk-import-page .progress-bar-fill {
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        90deg,
+        #4f46e5,
+        #4f46e5 8px,
+        #6366f1 8px,
+        #6366f1 16px
+    );
+    background-size: 40px 100%;
+    animation: bulkProgressSlide 0.8s linear infinite;
+}
+@keyframes bulkProgressSlide {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 0; }
+}
+
+/* ---- Screen 3: Validation results ---- */
+.bulk-import-page .stat-cards [class*="col-"] {
+    display: flex;
+}
+.bulk-import-page .stat-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    height: 100%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+.bulk-import-page .stat-card .stat-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+.bulk-import-page .stat-card .stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025rem;
+    margin-top: 0.125rem;
+    color: #6b7280;
+}
+.bulk-import-page .stat-card-green .stat-number { color: #059669; }   /* emerald-700 */
+.bulk-import-page .stat-card-amber .stat-number { color: #b4530d; }    /* amber-700 */
+.bulk-import-page .stat-card-rose .stat-number { color: #be123c; }      /* rose-700 */
+
+.bulk-import-page .filter-bar {
+    padding: 0.5rem 0;
+}
+.bulk-import-page .filter-btn {
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+.bulk-import-page .filter-btn.active,
+.bulk-import-page .filter-btn:hover {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    border-color: #c7d2fe;
+}
+
+.bulk-import-page .issue-group {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+.bulk-import-page .group-title {
+    color: #374151;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+}
+.bulk-import-page .issue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Individual issue card */
+.bulk-import-page .issue-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #f3f4f6;
+    border-radius: 0.375rem;
+    font-size: 0.85rem;
+}
+.bulk-import-page .issue-card .issue-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.bulk-import-page .issue-card .issue-student {
+    font-weight: 500;
+    color: #111827;
+}
+.bulk-import-page .issue-card .issue-row-tag {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+.bulk-import-page .issue-card .issue-message {
+    font-size: 0.825rem;
+    color: #374151;
+}
+.bulk-import-page .issue-card .issue-toggle {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    cursor: pointer;
+    user-select: none;
+}
+.bulk-import-page .issue-card .issue-toggle:hover {
+    color: #6b7280;
+}
+
+/* Collapsible raw-data detail */
+.bulk-import-page .issue-raw-data {
+    display: none;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+}
+.bulk-import-page .issue-raw-data.open {
+    display: block;
+}
+.bulk-import-page .issue-raw-data dt {
+    font-weight: 500;
+    color: #4b5563;
+    font-size: 0.725rem;
+}
+.bulk-import-page .issue-raw-data dd {
+    margin: 0 0 0.375rem 0;
+    color: #6b7280;
+    font-size: 0.775rem;
+}
+
+.bulk-import-page .validation-success-card,
+.bulk-import-page .validation-blocked-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.bulk-import-page .validation-blocked-card {
+    border-color: #fecaca;
+}
+
+.bulk-import-page .bottom-bar {
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Screen 4: Confirm ---- */
+.bulk-import-page .confirm-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+.bulk-import-page .confirm-card-body {
+    padding: 1.5rem;
+}
+
+/* ---- Screen 5: Result ---- */
+.bulk-import-page .result-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.bulk-import-page .result-card i {
+    opacity: 0.9;
+}
+
+/* ---- Color utilities ---- */
+.bulk-import-page .text-indigo { color: #4f46e5; }
+.bulk-import-page .text-emerald { color: #10b981; }
+.bulk-import-page .text-rose { color: #f43f5e; }
+.bulk-import-page .text-amber { color: #f59e0b; }
+
+/* ---- Form control focus ---- */
+.bulk-import-page .form-control:focus,
+.bulk-import-page .form-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.25);
+}

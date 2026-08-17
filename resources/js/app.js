@@ -14,9 +14,11 @@ import "./teacher.js";
 import "./import.js";
 import "./qr-station.js";
 import "./download-excel.js";
+import "./teaching-assignments.js";
 
 // teacher modules
 import "./teacher-modules/t-sidebar.js";
+import "./teacher-modules/t-top-header.js";
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

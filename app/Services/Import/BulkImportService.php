@@ -184,16 +184,6 @@ class BulkImportService
                 }
             }
 
-            // SF1: both Sex marker columns (G and H) are marked → flag for review
-            if ($row->sexAmbiguous) {
-                $rowIssues[] = [
-                    'issue_type' => 'sex_column_ambiguous',
-                    'severity'   => 'warning',
-                    'field'      => 'sex',
-                    'message'    => 'Both Sex columns (G and H) are marked. Defaulted to male. Please verify against the source form.',
-                ];
-            }
-
             // Errors block the row; warnings are persisted but do NOT block it
             $hasErrors = false;
 
@@ -324,8 +314,8 @@ class BulkImportService
         foreach ($allRows as $row) {
             $rowIssues = $this->validator->validate($row);
 
-            // Warnings (no_guardian, sex_column_ambiguous) do not block a
-            // row — only hard errors exclude it from processing.
+            // Warnings (e.g. no_guardian) do not block a row — only hard
+            // errors exclude it from processing.
             $hasErrors = false;
 
             foreach ($rowIssues as $issue) {

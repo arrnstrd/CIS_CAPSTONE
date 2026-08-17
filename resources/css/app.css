@@ -1,18 +1,24 @@
 /* 1. Imports first */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import '@fortawesome/fontawesome-free/css/all.min.css';
-@import './sidebar.css';
-@import './top-nav.css';
-@import './layout.css';
-@import './table.css';
-@import './gradeLevel.css';
-@import './status-badges.css';
 
 
-/* @import './teacher-modules/t-layout.css';
-@import './teacher-modules/t-sidebar.css'; */
 
 
 @import './academic.css';
-@import './import.css';
+@import './bulk-import.css';
 @import './flagged-modal.css';
+@import './gradeLevel.css';
+@import './import.css';
+@import './layout.css';
+@import './qr-generation.css';
+@import './qr-station.css';
+@import './sidebar.css';
+@import './status-badges.css';
+@import './table.css';
+@import './top-nav.css';
+
+
+
+
+

@@ -13,6 +13,6 @@ return [
     |
     */
 
-    'sf1_template_path' => 'app/templates/School-Forms-1-Template.xlsx',
+    'sf1_template_path' => 'app/templates/School-Forms-1-Template-File.xlsx',
 
 ];

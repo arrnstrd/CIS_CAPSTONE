@@ -19,7 +19,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
  *  - Read form-level Grade Level (S6) / Section (W6) and apply them to
  *    every row; derive the department level from the grade level
  *  - Concatenate the 4 address sub-cells into one address string
- *  - Resolve Sex from the G/H marker columns (see resolveSex())
+ *  - Resolve Sex from the single Sex (M/F) column (G) (see resolveSex())
  *
  * This service performs NO validation — it normalizes and preserves.
  * Invalid values are passed through as-is so ImportRowValidator can flag them.
@@ -35,11 +35,18 @@ class SpreadsheetParser
 
     /** @var array<int, string> Map: grade level → department level */
     private const GRADE_TO_DEPARTMENT = [
-        1 => 'elementary', 2 => 'elementary', 3 => 'elementary',
-        4 => 'elementary', 5 => 'elementary', 6 => 'elementary',
-        7 => 'highschool', 8 => 'highschool', 9 => 'highschool',
+        1 => 'elementary',
+        2 => 'elementary',
+        3 => 'elementary',
+        4 => 'elementary',
+        5 => 'elementary',
+        6 => 'elementary',
+        7 => 'highschool',
+        8 => 'highschool',
+        9 => 'highschool',
         10 => 'highschool',
-        11 => 'senior_high_school', 12 => 'senior_high_school',
+        11 => 'senior_high_school',
+        12 => 'senior_high_school',
     ];
 
     public function parse(string $filePath): array
@@ -75,8 +82,10 @@ class SpreadsheetParser
     {
         $rows = [];
 
-        // Form-level values from the SF1 header area (applied to every row)
-        $gradeLevel  = $this->cellToString($worksheet->getCell('S6')->getValue());
+        // Form-level values from the SF1 header area (applied to every row).
+        // R6:S6 is the "Grade Level" label; the value lives in T6:U6.
+        // V6 is the "Section" label; the value lives in W6:Y6.
+        $gradeLevel  = $this->cellToString($worksheet->getCell('T6')->getValue());
         $sectionName = $this->cellToString($worksheet->getCell('W6')->getValue());
 
         // File-level header guard: if these are missing/invalid, every row
@@ -85,7 +94,7 @@ class SpreadsheetParser
         $missing = [];
 
         if ($gradeLevel === null || $this->deriveDepartmentLevel($gradeLevel) === null) {
-            $missing[] = 'Grade Level (cell S6)';
+            $missing[] = 'Grade Level (cell T6)';
         }
 
         if ($sectionName === null) {
@@ -130,7 +139,6 @@ class SpreadsheetParser
     ): ImportRowData {
         $name = $this->cellToString($ws->getCell('C' . $rowNumber)->getValue());
         ['last' => $last, 'first' => $first, 'middle' => $middle] = $this->parseName($name);
-        $sexResult = $this->resolveSex($ws, $rowNumber);
 
         return new ImportRowData(
             rowNumber: $rowNumber,
@@ -139,20 +147,19 @@ class SpreadsheetParser
             firstName: $first,
             lastName: $last,
             middleName: $middle,
-            sex: $sexResult['sex'],
-            sexAmbiguous: $sexResult['ambiguous'],
-            age: $this->cellToString($ws->getCell('I' . $rowNumber)->getValue()),
-            birthplace: $this->cellToString($ws->getCell('J' . $rowNumber)->getValue()),
-            motherTongue: $this->cellToString($ws->getCell('L' . $rowNumber)->getValue()),
-            ipEthnicGroup: $this->cellToString($ws->getCell('M' . $rowNumber)->getValue()),
-            religion: $this->cellToString($ws->getCell('N' . $rowNumber)->getValue()),
+            sex: $this->resolveSex($ws, $rowNumber),
+            age: $this->cellToString($ws->getCell('H' . $rowNumber)->getValue()),
+            birthplace: $this->cellToString($ws->getCell('I' . $rowNumber)->getValue()),
+            motherTongue: $this->cellToString($ws->getCell('K' . $rowNumber)->getValue()),
+            ipEthnicGroup: $this->cellToString($ws->getCell('L' . $rowNumber)->getValue()),
+            religion: $this->cellToString($ws->getCell('M' . $rowNumber)->getValue()),
             address: $this->concatAddress($ws, $rowNumber),
-            fatherName: $this->cellToString($ws->getCell('T' . $rowNumber)->getValue()),
-            motherMaidenName: $this->cellToString($ws->getCell('V' . $rowNumber)->getValue()),
-            guardianName: $this->cellToString($ws->getCell('X' . $rowNumber)->getValue()),
-            guardianRelationship: $this->cellToString($ws->getCell('Y' . $rowNumber)->getValue()),
-            guardianContactNumber: $this->cellToString($ws->getCell('Z' . $rowNumber)->getValue()),
-            guardianEmail: $this->normalizeEmail($ws->getCell('AA' . $rowNumber)->getValue()),
+            fatherName: $this->cellToString($ws->getCell('S' . $rowNumber)->getValue()),
+            motherMaidenName: $this->cellToString($ws->getCell('U' . $rowNumber)->getValue()),
+            guardianName: $this->cellToString($ws->getCell('W' . $rowNumber)->getValue()),
+            guardianRelationship: $this->cellToString($ws->getCell('X' . $rowNumber)->getValue()),
+            guardianContactNumber: $this->cellToString($ws->getCell('Y' . $rowNumber)->getValue()),
+            guardianEmail: $this->normalizeEmail($ws->getCell('Z' . $rowNumber)->getValue()),
             departmentLevel: $departmentLevel,
             gradeLevel: $gradeLevel,
             sectionName: $sectionName,
@@ -164,32 +171,24 @@ class SpreadsheetParser
     // -----------------------------------------------------------------
 
     /**
-     * Resolve Sex from the G/H marker columns.
+     * Resolve Sex from the single "Sex (M/F)" column (G) where the
+     * registrar types M or F.
      *
-     * UNVERIFIED ASSUMPTION (blank template, no filled sample): G is a
-     * male marker, H is a female marker. When both are marked, default to
-     * male and flag the row (sexAmbiguous) so the UI shows a warning.
-     *
-     * @return array{sex: ?string, ambiguous: bool}
+     * @return string|null  'male' or 'female', or null if blank/unrecognized
      */
-    private function resolveSex(Worksheet $ws, int $row): array
+    private function resolveSex(Worksheet $ws, int $row): ?string
     {
-        $g = $this->cellToString($ws->getCell('G' . $row)->getValue());
-        $h = $this->cellToString($ws->getCell('H' . $row)->getValue());
+        $value = $this->cellToString($ws->getCell('G' . $row)->getValue());
 
-        if ($g !== null && $h !== null) {
-            return ['sex' => 'male', 'ambiguous' => true];
+        if ($value === null) {
+            return null;
         }
 
-        if ($g !== null) {
-            return ['sex' => 'male', 'ambiguous' => false];
-        }
-
-        if ($h !== null) {
-            return ['sex' => 'female', 'ambiguous' => false];
-        }
-
-        return ['sex' => null, 'ambiguous' => false];
+        return match (strtolower($value)) {
+            'm', 'male'   => 'male',
+            'f', 'female' => 'female',
+            default       => null,
+        };
     }
 
     /**
@@ -200,7 +199,7 @@ class SpreadsheetParser
     {
         $parts = [];
 
-        foreach (['O', 'P', 'Q', 'R'] as $col) {
+        foreach (['N', 'O', 'P', 'Q'] as $col) {
             $value = $this->cellToString($ws->getCell($col . $row)->getValue());
 
             if ($value !== null) {
@@ -284,7 +283,7 @@ class SpreadsheetParser
         if (str_contains($rest, ',')) {
             $restParts = array_values(array_filter(
                 array_map('trim', explode(',', $rest)),
-                fn (string $part) => $part !== '',
+                fn(string $part) => $part !== '',
             ));
 
             $result['first'] = $restParts[0] ?? null;
@@ -302,7 +301,7 @@ class SpreadsheetParser
         // the middle name(s)
         $restWords = array_values(array_filter(
             preg_split('/\s+/', $rest),
-            fn (string $word) => $word !== '',
+            fn(string $word) => $word !== '',
         ));
 
         $result['first'] = array_shift($restWords) ?: null;

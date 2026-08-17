@@ -21,7 +21,6 @@ class ImportRowData
         public readonly ?string $lastName = null,
         public readonly ?string $middleName = null,
         public readonly ?string $sex = null,
-        public readonly bool $sexAmbiguous = false,
         public readonly ?string $age = null,
         public readonly ?string $birthplace = null,
         public readonly ?string $motherTongue = null,

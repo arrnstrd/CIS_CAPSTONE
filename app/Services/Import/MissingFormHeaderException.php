@@ -9,6 +9,4 @@ namespace App\Services\Import;
  * BulkImportService catches this to record a single blocking issue
  * instead of letting every per-row validation fail on the same root cause.
  */
-class MissingFormHeaderException extends \RuntimeException
-{
-}
+class MissingFormHeaderException extends \RuntimeException {}
