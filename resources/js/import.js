@@ -97,7 +97,7 @@ export function initUpload() {
             if (!r.ok) {
                 showError(
                     "Upload Failed",
-                    d.message || "Could not upload the file.",
+                    apiErrorMessage(d) || "Could not upload the file.",
                 );
                 resetUI();
                 return;
@@ -140,6 +140,16 @@ export function initUpload() {
         fi.value = "";
         document.getElementById("fileInfo").classList.add("d-none");
     });
+
+    // Reset the file selection whenever the upload modal is dismissed
+    // (Cancel, close X, backdrop, or ESC) so a previously chosen file is
+    // not pre-selected or re-uploaded the next time the modal is opened.
+    // Safe for the in-flight upload: the FormData already captured the File
+    // synchronously before this async "hidden" event fires.
+    document.getElementById("uploadModal")?.addEventListener("hidden.bs.modal", () => {
+        fi.value = "";
+        document.getElementById("fileInfo").classList.add("d-none");
+    });
 }
 
 function showFileInfo() {
@@ -166,7 +176,7 @@ async function doValidate() {
         document.getElementById("inlineProgress").classList.add("d-none");
 
         if (!r.ok) {
-            showError("Validation Failed", d.message || "Validation error.");
+            showError("Validation Failed", apiErrorMessage(d) || "Validation error.");
             resetUI();
             return;
         }
@@ -209,10 +219,18 @@ function showValidationResult(data) {
     } else {
         title.innerHTML =
             '<i class="fas fa-exclamation-triangle me-1"></i> Validation Issues Found';
+        const readyMsg =
+            data.valid_count > 0
+                ? `<div class="alert alert-success small d-flex align-items-center gap-2"><i class="fas fa-check-circle me-1"></i> ${data.valid_count} row(s) are ready to import. ${data.error_count} row(s) with errors will be skipped.</div>`
+                : "";
         body.innerHTML =
             summary +
-            '<div class="alert alert-warning small">Some rows contain issues. Review them before proceeding.</div>';
-        footer.innerHTML = `<button type="button" class="btn btn-outline-secondary" id="modalReuploadBtn"><i class="fas fa-file-upload me-1"></i> Re-upload</button>
+            readyMsg +
+            '<div class="alert alert-warning small">Some rows have issues, but you can still import the valid rows.</div>' +
+            '<h6 class="fw-semibold mb-2 mt-3"><i class="fas fa-list me-1"></i> Top Issues</h6>' +
+            '<div id="validationIssuePreview" class="list-group list-group-flush mb-3"></div>';
+        footer.innerHTML = `<a class="btn btn-outline-secondary" href="/import/${state.get()}/export-errors"><i class="fas fa-file-download me-1"></i> Download Error Report</a>
+             <button type="button" class="btn btn-outline-secondary" id="modalReuploadBtn"><i class="fas fa-file-upload me-1"></i> Re-upload</button>
              <button type="button" class="btn btn-outline-primary" id="modalReviewBtn" data-bs-dismiss="modal"><i class="fas fa-search me-1"></i> Review Issues</button>
              ${
                  data.valid_count > 0
@@ -239,6 +257,47 @@ function showValidationResult(data) {
     }
 
     showM("validationModal");
+
+    if (hasErrors || hasWarnings) loadValidationIssuePreview();
+}
+
+/**
+ * Load the first few issues into the validation modal so the user can see
+ * what is wrong immediately instead of having to open the Issues tab.
+ */
+async function loadValidationIssuePreview() {
+    const container = document.getElementById("validationIssuePreview");
+    if (!container) return;
+
+    try {
+        const r = await fetch(`/import/${state.get()}/issues?per_page=5`, {
+            headers: { Accept: "application/json" },
+        });
+        const d = await r.json();
+
+        if (!d.data || !d.data.length) {
+            container.innerHTML =
+                '<div class="text-muted small py-2">No issues to display.</div>';
+            return;
+        }
+
+        container.innerHTML = d.data
+            .map(
+                (i) => `
+            <div class="list-group-item d-flex align-items-start gap-2 py-2">
+                <span class="badge-dot dot-${i.severity} mt-1"></span>
+                <div class="small w-100">
+                    <span class="text-muted me-2">Row ${i.row_number ?? "—"}</span>
+                    <span class="text-muted">${esc(i.issue_type)}</span>
+                    <div class="mt-1">${esc(i.message)}</div>
+                </div>
+            </div>`,
+            )
+            .join("");
+    } catch (e) {
+        container.innerHTML =
+            '<div class="text-muted small py-2">Could not load issues.</div>';
+    }
 }
 
 // ── Process (confirm) ──────────────────────────────────────────────────
@@ -257,20 +316,25 @@ async function doProcess() {
         "Importing students...";
     showM("processingModal");
 
-    try {
-        // Confirm runs synchronously — the response IS the final result.
-        const r = await fetch(`/import/${state.get()}/confirm`, {
-            method: "POST",
-            headers: { "X-CSRF-TOKEN": csrf(), Accept: "application/json" },
-        });
+    // Kick off the confirm request (it processes synchronously on the
+    // server) and poll /status while it runs so the progress bar shows
+    // real numbers instead of sitting frozen at 0%.
+    const confirmRes = fetch(`/import/${state.get()}/confirm`, {
+        method: "POST",
+        headers: { "X-CSRF-TOKEN": csrf(), Accept: "application/json" },
+    });
+    const stopProgressPoll = startProgressPolling();
 
+    try {
+        const r = await confirmRes;
+        stopProgressPoll();
         const d = await r.json();
 
         if (!r.ok) {
             hideM("processingModal");
             showError(
                 "Processing Failed",
-                d.message || "Could not start import.",
+                apiErrorMessage(d) || "Could not start import.",
             );
             return;
         }
@@ -287,9 +351,39 @@ async function doProcess() {
             document.getElementById("issuesBadge").classList.remove("d-none");
         }
     } catch (err) {
+        stopProgressPoll();
         hideM("processingModal");
         showError("Processing Failed", err.message || "Unexpected error.");
     }
+}
+
+/**
+ * Poll the import /status endpoint while the synchronous confirm request
+ * runs, feeding real counts into the processing progress UI.
+ * Returns a stop() function.
+ */
+function startProgressPolling(intervalMs = 1200) {
+    let stopped = false;
+    const stop = () => {
+        stopped = true;
+    };
+
+    const tick = async () => {
+        if (stopped) return;
+        try {
+            const r = await fetch(`/import/${state.get()}/status`, {
+                headers: { Accept: "application/json" },
+            });
+            const d = await r.json();
+            if (!stopped && d) fillProcessingUI(d);
+        } catch (e) {
+            /* transient poll failure — keep waiting for the next tick */
+        }
+        if (!stopped) setTimeout(tick, intervalMs);
+    };
+
+    tick();
+    return stop;
 }
 
 function fillProcessingUI(data) {
@@ -329,7 +423,7 @@ function showResultModal(data) {
                 <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-success">${data.success_count}</div><div class="text-muted small">Imported</div></div></div>
                 <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold">${data.warning_count || 0}</div><div class="text-muted small">Warnings</div></div></div>
             </div>`;
-        footer.innerHTML = `<button type="button" class="btn btn-outline-secondary" onclick="location.reload()"><i class="fas fa-plus me-1"></i> Import Another File</button>
+        footer.innerHTML = `<button type="button" class="btn btn-outline-secondary" onclick="resetImportUI()"><i class="fas fa-plus me-1"></i> Import Another File</button>
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>`;
     } else {
         header.className =
@@ -343,7 +437,7 @@ function showResultModal(data) {
                 <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-warning">${data.warning_count || 0}</div><div class="text-muted small">Warnings</div></div></div>
             </div>
             <div class="alert alert-warning small mt-3 mb-0">Failed rows can be reviewed in the Issues tab.</div>`;
-        footer.innerHTML = `<button type="button" class="btn btn-outline-secondary" onclick="location.reload()"><i class="fas fa-plus me-1"></i> New Import</button>
+        footer.innerHTML = `<button type="button" class="btn btn-outline-secondary" onclick="resetImportUI()"><i class="fas fa-plus me-1"></i> New Import</button>
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="setTimeout(()=>{switchTab('issues');loadIssues();},100)">View Issues</button>`;
     }
 
@@ -443,6 +537,13 @@ let issuesPage = 1;
 export async function loadIssues(page) {
     issuesPage = page || issuesPage;
     if (!state.get()) return;
+
+    // Expose the error report download for the selected import.
+    const downloadBtn = document.getElementById("downloadErrorsBtn");
+    if (downloadBtn) {
+        downloadBtn.href = `/import/${state.get()}/export-errors`;
+        downloadBtn.classList.remove("d-none");
+    }
 
     const severity = document.getElementById("severityFilter").value;
     const status = document.getElementById("statusFilter").value;
@@ -614,6 +715,12 @@ export function initFilters() {
 
 // ── Tab switching ─────────────────────────────────────────────────────
 export function switchTab(tab) {
+    // The Issues tab is only shown while actually viewing issues; it stays
+    // hidden on the History tab so the tab bar stays clean.
+    const issuesItem = document.getElementById("issuesTabItem");
+    if (tab === "issues" && issuesItem) issuesItem.classList.remove("d-none");
+    if (tab === "history" && issuesItem) issuesItem.classList.add("d-none");
+
     const btn =
         tab === "issues"
             ? document.getElementById("issues-tab")
@@ -622,6 +729,16 @@ export function switchTab(tab) {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
+function apiErrorMessage(d) {
+    if (!d) return "Unexpected error.";
+    // 422 validation failures put the real reason in d.errors, not d.message.
+    if (d.errors && typeof d.errors === "object") {
+        const first = Object.values(d.errors)[0];
+        if (Array.isArray(first) && first.length) return first[0];
+    }
+    return d.message || "Unexpected error.";
+}
+
 function showError(title, msg) {
     document.getElementById("errorModalTitle").textContent = title;
     document.getElementById("errorModalBody").innerHTML = "<p>" + msg + "</p>";
@@ -648,8 +765,17 @@ function resetUI() {
     document.getElementById("file").value = "";
     document.getElementById("fileInfo").classList.add("d-none");
     document.getElementById("issuesBadge").classList.add("d-none");
+    const issuesItem = document.getElementById("issuesTabItem");
+    if (issuesItem) issuesItem.classList.add("d-none");
     showM("uploadModal");
 }
+
+// "Import another file" / "New import" without a full page reload: reset the
+// UI and reopen the upload modal in place (fewer clicks, keeps context).
+window.resetImportUI = function () {
+    hideM("resultModal");
+    resetUI();
+};
 
 function rebind(id, handler) {
     const el = document.getElementById(id);

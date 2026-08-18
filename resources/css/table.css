@@ -46,3 +46,49 @@
 .table-hover tbody tr:hover {
     background-color: #f8f8f8;
 }
+
+.table-name-cell {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.table-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.table-name-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #2438b9;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.table-name-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.table-name-main {
+    font-weight: 700;
+    line-height: 1.2;
+    color: #212529;
+}
+
+.table-name-sub {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    color: #6c757d;
+}

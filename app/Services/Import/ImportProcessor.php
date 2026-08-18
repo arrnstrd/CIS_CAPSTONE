@@ -118,7 +118,7 @@ class ImportProcessor
 
                 $issueType = $this->classifyStudentError($e);
                 $friendlyMessage = match ($issueType) {
-                    'duplicate_lrn' => 'A student with this LRN already exists in the system.',
+                    'duplicate_lrn' => 'A student with this LRN already exists in the system. The row was skipped; remove duplicates from the file before re-importing.',
                     default => 'An unexpected system error occurred while processing this row. Please contact the system administrator.',
                 };
 
@@ -209,11 +209,16 @@ class ImportProcessor
 
     private function classifyStudentError(\Throwable $e): string
     {
-        if ($e instanceof QueryException && $e->getCode() == 23000) {
-            $prevMsg = strtolower((string) $e->getPrevious()?->getMessage());
+        if ($e instanceof QueryException) {
+            // MySQL reports 23000; PostgreSQL reports 23505 for unique violations.
+            $code = (string) $e->getCode();
 
-            if (str_contains($prevMsg, 'duplicate') && str_contains($prevMsg, 'lrn')) {
-                return 'duplicate_lrn';
+            if (in_array($code, ['23000', '23505'], true)) {
+                $prevMsg = strtolower((string) $e->getPrevious()?->getMessage());
+
+                if (str_contains($prevMsg, 'duplicate') && str_contains($prevMsg, 'lrn')) {
+                    return 'duplicate_lrn';
+                }
             }
         }
 

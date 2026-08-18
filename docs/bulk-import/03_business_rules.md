@@ -1,5 +1,7 @@
 # 03. Business Rules
 
+THIS DOCUMENT IS OUTDATED.....
+
 This document defines all business rules enforced by the Bulk Import module. These rules govern validation, normalization, processing, enrollment creation, issue handling, and overall import behavior.
 
 ---
@@ -43,7 +45,7 @@ Modified columns required by the system are included in the template.
 
 ---
 
-## 2. Template Rules
+## 2. Template Rules (outdated)
 
 ### BR-005 - Learner Name Format
 

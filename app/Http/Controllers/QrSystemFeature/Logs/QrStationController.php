@@ -11,6 +11,7 @@ class QrStationController extends Controller
     public function index(Request $request)
     {
         $recentLogs = AttendanceLog::with(['enrollment.student', 'enrollment.section', 'flagged_scans'])
+            ->withoutExcessScanFlags()
             ->todayOnly()
             ->orderBy('scan_time', 'desc')
             ->limit(25)
@@ -38,6 +39,7 @@ class QrStationController extends Controller
 
         // All live overview metrics in a single aggregate query (was 7 separate counts).
         $stats = AttendanceLog::todayOnly()
+            ->withoutExcessScanFlags()
             ->selectRaw("
                 COUNT(*) AS total,
                 COUNT(*) FILTER (WHERE scan_type = 'IN') AS in_count,

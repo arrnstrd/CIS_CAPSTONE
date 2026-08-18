@@ -40,6 +40,7 @@ class StudentManagementController extends Controller
         $sectionId = $request->input('section_id');
         $gradeLevel = $request->input('grade_level');
         $schoolYearId = $request->input('school_year_id');
+        $sort = $request->input('sort', 'last_name_asc');
 
         $students = Student::query()
             ->with(['enrollments.sectionModel'])
@@ -73,8 +74,14 @@ class StudentManagementController extends Controller
                     $q->where('grade_level', $gradeLevel);
                 });
             })
-            ->orderBy('last_name')
-            ->orderBy('first_name')
+            ->when($sort === 'last_name_desc', fn($q) => $q->orderByDesc('last_name')->orderByDesc('first_name'))
+            ->when($sort === 'first_name_asc', fn($q) => $q->orderBy('first_name')->orderBy('last_name'))
+            ->when($sort === 'first_name_desc', fn($q) => $q->orderByDesc('first_name')->orderByDesc('last_name'))
+            ->when($sort === 'student_number_asc', fn($q) => $q->orderBy('student_number'))
+            ->when($sort === 'student_number_desc', fn($q) => $q->orderByDesc('student_number'))
+            ->when(!in_array($sort, ['last_name_desc', 'first_name_asc', 'first_name_desc', 'student_number_asc', 'student_number_desc'], true), function ($q) {
+                $q->orderBy('last_name')->orderBy('first_name');
+            })
             ->paginate(15)
             ->withQueryString();
 
@@ -115,7 +122,8 @@ class StudentManagementController extends Controller
             'sections',
             'gradeLevels',
             'schoolYears',
-            'activeSchoolYear'
+            'activeSchoolYear',
+            'sort'
         ));
     }
 }

@@ -59,12 +59,11 @@
                         </div>
 
                         <div class="col-6 col-lg-2">
-                            <label class="form-label text-muted text-uppercase small fw-bold">scan type</label>
+                            <label class="form-label text-muted text-uppercase small fw-bold">Scan type</label>
                             <select class="form-select" name="scan_type" onchange="this.form.submit()">
-                                <option value="all" {{ request('scan_type', 'all') === 'all' ? 'selected' : '' }}>All Scan
-                                    Type</option>
-                                <option value="IN" {{ request('scan_type') === 'IN' ? 'selected' : '' }}>IN</option>
-                                <option value="OUT" {{ request('scan_type') === 'OUT' ? 'selected' : '' }}>OUT</option>
+                                <option value="all" {{ request('scan_type', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                                <option value="IN" {{ request('scan_type') === 'IN' ? 'selected' : '' }}>Time In</option>
+                                <option value="OUT" {{ request('scan_type') === 'OUT' ? 'selected' : '' }}>Time Out</option>
                             </select>
                         </div>
                     </div>
@@ -239,13 +238,13 @@
         <x-ui.table>
             <thead>
                 <tr>
+                    <th style="width: 26%">
+                        <span class="fas fa-user me-1"></span> Student
+                    </th>
                     <th style="width: 12%">
                         <span class="fas fa-calendar me-1"></span> Date
                     </th>
-                    <th style="width: 15%">
-                        <span class="fas fa-user me-1"></span> Student Name
-                    </th>
-                    <th style="width: 20%">
+                    <th style="width: 18%">
                         <span class="fas fa-envelope me-1"></span> Recipient Email
                     </th>
                     <th style="width: 12%">
@@ -257,7 +256,7 @@
                     <th style="width: 12%">
                         <span class="fas fa-clock me-1"></span> Time
                     </th>
-                    <th style="width: 15%">
+                    <th style="width: 8%">
                         <span class="fas fa-sliders-h me-1"></span> Actions
                     </th>
                 </tr>
@@ -265,16 +264,25 @@
 
             <tbody>
                 @forelse($emailLogs as $emailLog)
+                    @php
+                        $firstName = $emailLog->student?->first_name ?? '';
+                        $lastName = $emailLog->student?->last_name ?? '';
+                        $studentName = trim($firstName . ' ' . $lastName) ?: 'Unknown';
+                        $initials = strtoupper(trim(substr($firstName, 0, 1) . substr($lastName, 0, 1))) ?: '--';
+                    @endphp
                     <tr>
-                        <td>
-                            {{ $emailLog->last_attempt_at?->format('M d, Y') }}
+                        <td class="table-name-cell">
+                            <div class="table-name-wrap">
+                                <div class="table-name-avatar">{{ $initials }}</div>
+                                <div class="table-name-copy">
+                                    <span class="table-name-main">{{ $studentName }}</span>
+                                    <span class="table-name-sub">{{ $emailLog->student?->student_number ?? '-' }}</span>
+                                </div>
+                            </div>
                         </td>
 
                         <td>
-                            <span class="fw-500">
-                                {{ $emailLog->student?->first_name ?? '' }}
-                                {{ $emailLog->student?->last_name ?? '' }}
-                            </span>
+                            {{ $emailLog->last_attempt_at?->format('M d, Y') }}
                         </td>
 
                         <td>
@@ -282,7 +290,7 @@
                         </td>
 
                         <td>
-                            <span class="badge-dot dot-secondary">{{ $emailLog->scan_type }}</span>
+                            <span class="badge-dot dot-secondary">{{ $emailLog->scan_type === 'IN' ? 'Time In' : ($emailLog->scan_type === 'OUT' ? 'Time Out' : 'Unknown') }}</span>
                         </td>
 
                         <td>

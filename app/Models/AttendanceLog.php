@@ -136,6 +136,13 @@ class AttendanceLog extends Model
         });
     }
 
+    public function scopeWithoutExcessScanFlags(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('flagged_scans', function (Builder $flagQuery) {
+            $flagQuery->where('flag_type', 'excess_scan');
+        });
+    }
+
     public function scopeSearch(
         Builder $query,
         $search

@@ -25,33 +25,36 @@
 
 
 
-        <main class="page-content mx-5">
-            <div class="mx-3">
-                <div class="container-fluid px-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-
-                        <!-- Left: Page title and subtitle -->
-                        <div>
-                            <h4 class="fw-bold text-dark mb-0">{{$pageName ?? 'Header' }} </h4>
-                            <p class="text-muted small mb-0">{{ $subtitle ?? 'subtile here' }}</p>
-                        </div>
-
-                        <!-- Right: Current date badge -->
-                        <div
-                            class="current-date shadow-sm px-2 py-1 bg-white rounded-3 border d-flex align-items-center">
-                            <i class="fa-regular fa-calendar-check text-primary me-2"></i>
-                            <span class="fw-bold small text-uppercase" id="liveDate"> </span>
-                        </div>
+        <main class="page-content">
+            <div class="container-fluid px-4">
+                <section class="admin-head-banner mx-3 mt-3">
+                    <div class="admin-head-banner__copy">
+                        <div class="admin-head-banner__eyebrow">{{ $pageName ?? 'Header' }}</div>
+                        <h1 class="admin-head-banner__title">{{ $pageName ?? 'Header' }}</h1>
+                        <p class="admin-head-banner__sub">{{ $subtitle ?? 'subtile here' }}</p>
                     </div>
-                </div>
 
+                    <div class="admin-head-banner__meta">
+                        <div class="admin-head-banner__date">
+                            <i class="fa-regular fa-calendar-check"></i>
+                            <span>
+                                <small>Today</small>
+                                <strong id="liveDate"></strong>
+                            </span>
+                        </div>
 
+                        @isset($headerActions)
+                            <div class="admin-head-banner__actions">
+                                {{ $headerActions }}
+                            </div>
+                        @endisset
+                    </div>
+                </section>
 
-                <div class="container-fluid">
-                    {{$slot}}
+                <div class="admin-page-slot">
+                    {{ $slot }}
                 </div>
             </div>
-
         </main>
 
     </div>

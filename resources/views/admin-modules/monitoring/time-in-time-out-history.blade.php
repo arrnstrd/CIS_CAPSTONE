@@ -18,6 +18,14 @@
         $scanTypeValue = $scan_type ?? request('scan_type', 'all');
         $sessionTypeValue = $session_type ?? request('session_type', 'all');
         $flagTypeValue = $flag_type ?? request('flag_type', 'all');
+        $scanTypeLabels = [
+            'IN' => 'Time In',
+            'OUT' => 'Time Out',
+        ];
+        $flagTypeLabels = [
+            'late_arrival' => 'Late arrival',
+            'invalid_checkout' => 'Checkout issue',
+        ];
 
         $filterOptions = [
             'today' => 'Today',
@@ -31,7 +39,7 @@
             ['label' => 'Total logs', 'value' => $statusCounts['TOTAL'] ?? 0, 'icon' => 'fa-solid fa-clipboard-list', 'variant' => 'dark', 'textVariant' => 'dark'],
             ['label' => 'Time In scans', 'value' => $statusCounts['IN'] ?? 0, 'icon' => 'fa-solid fa-right-to-bracket', 'variant' => 'success', 'textVariant' => 'success'],
             ['label' => 'Time Out scans', 'value' => $statusCounts['OUT'] ?? 0, 'icon' => 'fa-solid fa-right-from-bracket', 'variant' => 'primary', 'textVariant' => 'primary'],
-            ['label' => 'Flagged scans', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
+            ['label' => 'Remarks', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
         ];
     @endphp
 
@@ -101,13 +109,13 @@
                     </div>
 
                     <div class="col-6 col-md-4 col-lg-2">
-                        <label class="form-label text-muted text-uppercase small fw-bold">Flag type</label>
+                        <label class="form-label text-muted text-uppercase small fw-bold">Remarks</label>
                         <select class="form-select form-select-sm" name="flag_type" onchange="this.form.submit()">
                             <option value="all" @selected($flagTypeValue === 'all')>All</option>
                             <option value="late_arrival" @selected($flagTypeValue === 'late_arrival')>Late arrival
                             </option>
-                            <option value="invalid_checkout" @selected($flagTypeValue === 'invalid_checkout')>Invalid
-                                checkout</option>
+                            <option value="invalid_checkout" @selected($flagTypeValue === 'invalid_checkout')>Checkout
+                                issue</option>
                         </select>
                     </div>
                 </div>
@@ -171,14 +179,14 @@
     <x-ui.table>
         <thead class="text-uppercase small">
             <tr>
-                <th style="width: 11%">Date</th>
-                <th style="width: 20%">Student Name</th>
-                <th style="width: 14%">Grade & Section</th>
-                <th style="width: 11%">Scan Type</th>
-                <th style="width: 11%">Session</th>
-                <th style="width: 11%">Gate Time</th>
-                <th style="width: 12%">Flag Type</th>
-                <th style="width: 10%">Action</th>
+                <th style="width: 24%">Student</th>
+                <th style="width: 12%">Date</th>
+                <th style="width: 16%">Grade & Section</th>
+                <th style="width: 12%">Scan Type</th>
+                <th style="width: 10%">Session</th>
+                <th style="width: 10%">Gate Time</th>
+                <th style="width: 10%">Remarks</th>
+                <th style="width: 6%">Action</th>
             </tr>
         </thead>
         <tbody>
@@ -186,12 +194,22 @@
                 @php
                     $student = $attendance_log->enrollment?->student;
                     $flagTypes = $attendance_log->flagged_scans->pluck('flag_type')->filter()->unique();
+                    $firstName = $student?->first_name ?? '';
+                    $lastName = $student?->last_name ?? '';
+                    $studentName = trim($firstName . ' ' . $lastName) ?: '-';
+                    $initials = strtoupper(trim(substr($firstName, 0, 1) . substr($lastName, 0, 1))) ?: '--';
                 @endphp
                 <tr>
-                    <td>{{ $attendance_log->scan_time?->format('Y-m-d') ?? '-' }}</td>
-                    <td class="fw-semibold">
-                        {{ trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-' }}
+                    <td class="table-name-cell">
+                        <div class="table-name-wrap">
+                            <div class="table-name-avatar">{{ $initials }}</div>
+                            <div class="table-name-copy">
+                                <span class="table-name-main">{{ $studentName }}</span>
+                                <span class="table-name-sub">{{ $student?->student_number ?? '-' }}</span>
+                            </div>
+                        </div>
                     </td>
+                    <td>{{ $attendance_log->scan_time?->format('M d, Y') ?? '-' }}</td>
                     <td>
                         <span class="fw-semibold">Grade
                             {{ $attendance_log->enrollment?->section->grade_level ?? '-' }}</span>
@@ -206,9 +224,9 @@
                             ];
                             $dotScanType = $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary';
                         @endphp
-                        <span class="badge-dot dot-{{ $dotScanType }}">{{ $attendance_log->scan_type }}</span>
+                        <span class="badge-dot dot-{{ $dotScanType }}">{{ $scanTypeLabels[$attendance_log->scan_type] ?? 'Unknown' }}</span>
                     </td>
-                    <td>{{ $attendance_log->session_type ?? '-' }}</td>
+                    <td>{{ $attendance_log->session_type ? ucfirst($attendance_log->session_type) : '-' }}</td>
                     <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
                     <td>
                         @php
@@ -220,7 +238,7 @@
                         @if($flagTypes->isNotEmpty())
                             @foreach($flagTypes as $ftype)
                                 <span
-                                    class="badge-dot dot-{{ $flagTypeDotMap[$ftype] ?? 'secondary' }}">{{ ucfirst(str_replace('_', ' ', $ftype)) }}</span>
+                                    class="badge-dot dot-{{ $flagTypeDotMap[$ftype] ?? 'secondary' }}">{{ $flagTypeLabels[$ftype] ?? 'Needs review' }}</span>
                             @endforeach
                         @else
                             <span class="text-muted">-</span>
@@ -255,7 +273,7 @@
         {{ $attendance_logs->links() }}
     </div>
 
-    <!-- Flagged Scan Modals -->
+    <!-- Remarks Modals -->
     @foreach ($attendance_logs as $attendance_log)
         @php
             $student = $attendance_log->enrollment?->student;
@@ -265,15 +283,23 @@
                 'IN' => 'success',
                 'OUT' => 'primary',
             ];
+            $scanTypeLabels = [
+                'IN' => 'Time In',
+                'OUT' => 'Time Out',
+            ];
 
             $flagDescriptions = [
-                'late_arrival' => 'Student arrived after the scheduled start time.',
-                'invalid_checkout' => 'No matching time-in record found for this session.',
+                'late_arrival' => 'Student arrived later than expected.',
+                'invalid_checkout' => 'This entry needs review before it can be confirmed.',
             ];
 
             $flagIcons = [
                 'late_arrival' => 'fas fa-clock',
                 'invalid_checkout' => 'fas fa-circle-exclamation',
+            ];
+            $flagLabels = [
+                'late_arrival' => 'Late arrival',
+                'invalid_checkout' => 'Checkout issue',
             ];
 
             $firstName = $student?->first_name ?? '';
@@ -293,8 +319,8 @@
                                     <i class="fas fa-flag"></i>
                                 </div>
                                 <div>
-                                    <h5 class="modal-title">Flagged Scan</h5>
-                                    <div class="modal-subtitle">Review details and flag reasons</div>
+                                    <h5 class="modal-title">Remarks</h5>
+                                    <div class="modal-subtitle">Review details and notes</div>
                                 </div>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -332,13 +358,13 @@
                                     <span class="scan-label">Scan Type</span>
                                     <span class="scan-value">
                                         <span
-                                            class="badge-dot dot-{{ $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary' }}">{{ $attendance_log->scan_type }}</span>
+                                            class="badge-dot dot-{{ $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary' }}">{{ $scanTypeLabels[$attendance_log->scan_type] ?? 'Unknown' }}</span>
                                     </span>
                                 </div>
                             </div>
 
-                            {{-- Flag Reasons --}}
-                            <div class="flags-title">Flag Reasons</div>
+                            {{-- Remarks --}}
+                            <div class="flags-title">Remarks</div>
                             <div class="flag-list">
                                 @foreach($flagTypes as $flagType)
                                     <div class="flag-item {{ $flagType }}">
@@ -346,7 +372,7 @@
                                             <i class="{{ $flagIcons[$flagType] ?? 'fas fa-exclamation' }}"></i>
                                         </div>
                                         <div class="flag-content">
-                                            <span class="flag-name">{{ ucfirst(str_replace('_', ' ', $flagType)) }}</span>
+                                            <span class="flag-name">{{ $flagLabels[$flagType] ?? 'Needs review' }}</span>
                                             <span
                                                 class="flag-desc">{{ $flagDescriptions[$flagType] ?? 'This scan requires administrative review.' }}</span>
                                         </div>

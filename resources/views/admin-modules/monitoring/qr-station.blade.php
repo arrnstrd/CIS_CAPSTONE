@@ -131,12 +131,12 @@
                         <x-ui.table>
                             <thead class="text-uppercase small">
                                 <tr>
-                                    <th style="width: 28%"><span class="fas fa-user me-1"></span> Student</th>
-                                    <th style="width: 13%"><span class="fas fa-graduation-cap me-1"></span> Grade</th>
-                                    <th style="width: 11%"><span class="fas fa-users me-1"></span> Section</th>
-                                    <th style="width: 15%"><span class="fas fa-clock me-1"></span> Time</th>
-                                    <th style="width: 13%"><span class="fas fa-qrcode me-1"></span> Type</th>
-                                    <th style="width: 20%"><span class="fas fa-flag me-1"></span> Status</th>
+                                    <th style="width: 34%"><span class="fas fa-user me-1"></span> Student</th>
+                                    <th style="width: 12%"><span class="fas fa-graduation-cap me-1"></span> Grade</th>
+                                    <th style="width: 12%"><span class="fas fa-users me-1"></span> Section</th>
+                                    <th style="width: 13%"><span class="fas fa-clock me-1"></span> Time</th>
+                                    <th style="width: 14%"><span class="fas fa-qrcode me-1"></span> Type</th>
+                                    <th style="width: 15%"><span class="fas fa-flag me-1"></span> Status</th>
                                 </tr>
                             </thead>
                             <tbody id="queueBody">

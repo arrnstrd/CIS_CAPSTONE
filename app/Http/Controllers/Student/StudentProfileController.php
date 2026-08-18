@@ -55,6 +55,55 @@ class StudentProfileController extends Controller
     }
 
     /**
+     * Inline update of the student's personal information (admin only).
+     * Updates only the fields sent by the Personal Information container.
+     */
+    public function updateInfo(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'first_name'      => ['required', 'string', 'max:100'],
+            'middle_name'     => ['nullable', 'string', 'max:100'],
+            'last_name'       => ['required', 'string', 'max:100'],
+            'suffix'          => ['nullable', 'string', 'max:20'],
+            'sex'             => ['required', 'in:female,male'],
+            'age'             => ['nullable', 'integer', 'min:1', 'max:100'],
+            'birthplace'      => ['nullable', 'string', 'max:255'],
+            'mother_tongue'   => ['nullable', 'string', 'max:100'],
+            'ip_ethnic_group' => ['nullable', 'string', 'max:100'],
+            'religion'        => ['nullable', 'string', 'max:100'],
+            'address'         => ['nullable', 'string'],
+        ]);
+
+        // students.address is NOT NULL — store an empty string when cleared.
+        $student->update([...$validated, 'address' => $validated['address'] ?? '']);
+
+        return response()->json([
+            'message' => 'Personal information updated.',
+            'student' => $student->fresh(),
+        ]);
+    }
+
+    /**
+     * Inline update of the guardian record (admin only).
+     */
+    public function updateGuardian(Request $request, Student $student)
+    {
+        $validated = $request->validate([
+            'name'           => ['required', 'string', 'max:255'],
+            'relationship'   => ['required', 'string', 'max:50'],
+            'contact_number' => ['nullable', 'string', 'max:20'],
+            'email'          => ['nullable', 'email', 'max:255'],
+        ]);
+
+        $student->guardian()->updateOrCreate([], $validated);
+
+        return response()->json([
+            'message' => 'Guardian information updated.',
+            'student' => $student->fresh()->load('guardian'),
+        ]);
+    }
+
+    /**
      * Shared profile data loader.
      */
     private function loadProfileData(Student $student): array

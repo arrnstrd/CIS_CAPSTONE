@@ -37,6 +37,8 @@ class BulkImportController extends Controller
 
     public function show(BulkImport $import): BulkImportResource
     {
+        $this->authorizeAccess($import);
+
         $import->loadCount('issues');
 
         return new BulkImportResource($import);
@@ -44,6 +46,8 @@ class BulkImportController extends Controller
 
     public function status(BulkImport $import): \Illuminate\Http\JsonResponse
     {
+        $this->authorizeAccess($import);
+
         $total = max($import->total_rows, 1);
 
         return response()->json([
@@ -133,6 +137,8 @@ class BulkImportController extends Controller
 
     public function issues(Request $request, BulkImport $import)
     {
+        $this->authorizeAccess($import);
+
         $query = $import->issues()->orderBy('row_number');
 
         if ($request->filled('severity')) {
@@ -155,6 +161,8 @@ class BulkImportController extends Controller
 
     public function acknowledge(BulkImportIssue $issue): \Illuminate\Http\JsonResponse
     {
+        $this->authorizeAccess($issue->bulkImport);
+
         $issue->acknowledge();
 
         return response()->json([
@@ -165,6 +173,8 @@ class BulkImportController extends Controller
 
     public function acknowledgeAll(BulkImport $import): \Illuminate\Http\JsonResponse
     {
+        $this->authorizeAccess($import);
+
         $count = $import->issues()
             ->where('status', 'unresolved')
             ->update([
@@ -222,6 +232,8 @@ class BulkImportController extends Controller
 
     public function exportErrors(BulkImport $import): \Symfony\Component\HttpFoundation\BinaryFileResponse
     {
+        $this->authorizeAccess($import);
+
         $issues = $import->issues()->orderBy('row_number')->get();
 
         $spreadsheet = new Spreadsheet();

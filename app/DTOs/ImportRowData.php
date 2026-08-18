@@ -90,7 +90,7 @@ class ImportRowData
             'last_name'       => $this->lastName,
             'middle_name'     => $this->middleName,
             'sex'             => $this->sex,
-            'address'         => $this->address,
+            'address'         => $this->address ?? '',
             'age'             => ($this->age !== null && is_numeric($this->age)) ? (int) $this->age : null,
             'birthplace'      => $this->birthplace,
             'mother_tongue'   => $this->motherTongue,

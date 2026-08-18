@@ -33,7 +33,7 @@
 
             <form action="{{ route('student-management.grade', $grade) }}" method="GET">
                 <div class="row g-3 align-items-center">
-                    <div class="col-12 col-md-6 col-lg-4">
+                    <div class="col-12 col-lg-4">
                         <div class="input-group">
                             <input type="search" name="query" class="form-control"
                                 placeholder="Search by name, LRN, or student number..." value="{{ request('query') }}">
@@ -43,7 +43,30 @@
                         </div>
                     </div>
 
-                    <div class="col-6 col-md-4 col-lg-3">
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <select name="sort" class="form-select" onchange="this.form.submit()">
+                            <option value="last_name_asc" {{ request('sort', 'last_name_asc') === 'last_name_asc' ? 'selected' : '' }}>
+                                Last name A-Z
+                            </option>
+                            <option value="last_name_desc" {{ request('sort') === 'last_name_desc' ? 'selected' : '' }}>
+                                Last name Z-A
+                            </option>
+                            <option value="first_name_asc" {{ request('sort') === 'first_name_asc' ? 'selected' : '' }}>
+                                First name A-Z
+                            </option>
+                            <option value="first_name_desc" {{ request('sort') === 'first_name_desc' ? 'selected' : '' }}>
+                                First name Z-A
+                            </option>
+                            <option value="student_number_asc" {{ request('sort') === 'student_number_asc' ? 'selected' : '' }}>
+                                Student ID A-Z
+                            </option>
+                            <option value="student_number_desc" {{ request('sort') === 'student_number_desc' ? 'selected' : '' }}>
+                                Student ID Z-A
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-md-4 col-lg-2">
                         <select name="school_year_id" class="form-select" onchange="this.form.submit()">
                             <option value="all" {{ request('school_year_id', 'all') === 'all' ? 'selected' : '' }}>
                                 All School Years
@@ -91,22 +114,22 @@
         <x-slot>
             <thead class="text-uppercase">
                 <tr>
-                    <th style="width: 14%">
-                        <span class="fas fa-id-card me-1"></span> Student No.
-                    </th>
-                    <th style="width: 28%">
+                    <th style="width: 30%">
                         <span class="fas fa-user me-1"></span> Student Name
                     </th>
-                    <th style="width: 14%">
+                    <th style="width: 18%">
+                        <span class="fas fa-id-card me-1"></span> LRN
+                    </th>
+                    <th style="width: 16%">
                         <span class="fas fa-signal me-1"></span> Grade Level
                     </th>
                     <th style="width: 16%">
                         <span class="fas fa-users me-1"></span> Section
                     </th>
-                    <th style="width: 12%">
+                    <th style="width: 10%">
                         <span class="fas fa-circle me-1"></span> Status
                     </th>
-                    <th style="width: 8%">
+                    <th style="width: 10%">
                         <span class="fas fa-sliders-h me-1"></span> Actions
                     </th>
                 </tr>
@@ -115,13 +138,22 @@
             <tbody>
                 @forelse ($students as $student)
                     <tr>
-                        <td>{{ $student->student_number ?? '-' }}</td>
-                        <td>
-                            <div class="fw-semibold">{{ $student->last_name }},
-                                {{ $student->first_name }}
-                                {{ $student->middle_name }}
+                        <td class="table-name-cell">
+                            @php
+                                $firstName = $student->first_name ?? '';
+                                $lastName = $student->last_name ?? '';
+                                $studentName = trim($firstName . ' ' . $lastName) ?: '-';
+                                $initials = strtoupper(trim(substr($firstName, 0, 1) . substr($lastName, 0, 1))) ?: '--';
+                            @endphp
+                            <div class="table-name-wrap">
+                                <div class="table-name-avatar">{{ $initials }}</div>
+                                <div class="table-name-copy">
+                                    <span class="table-name-main">{{ $studentName }}</span>
+                                    <span class="table-name-sub">{{ $student->student_number ?? '-' }}</span>
+                                </div>
                             </div>
                         </td>
+                        <td>{{ $student->lrn ?? '-' }}</td>
                         <td>Grade {{ $student->grade_level }}</td>
                         <td>{{ $student->section_name }}</td>
                         <td>

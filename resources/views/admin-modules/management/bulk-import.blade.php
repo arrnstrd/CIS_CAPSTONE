@@ -3,34 +3,18 @@
     <x-slot name="subtitle">Import student records from a DepEd SF-1 spreadsheet.</x-slot>
     <x-slot name="pageName">Import</x-slot>
 
-    {{-- Action Buttons + Inline Progress --}}
-    <div class="row mb-3">
-        <div class="col-12 d-flex justify-content-end align-items-center gap-2">
-            <div id="inlineProgress" class="d-none text-muted small me-2">
-                <span class="spinner-border spinner-border-sm me-1"></span>
-                <span id="inlineProgressText">Processing...</span>
-            </div>
-            <a href="{{ route('import.template') }}" class="btn btn-outline-secondary px-3 py-2 rounded-3 fw-medium">
-                <i class="fas fa-download me-1"></i> Template
-            </a>
-            <button class="btn btn-dark px-4 py-2 rounded-3 fw-medium" data-bs-toggle="modal"
-                data-bs-target="#uploadModal">
-                <i class="fas fa-file-import me-2"></i> Bulk Import
-            </button>
-        </div>
-    </div>
-
-    {{-- Tabs: History (default) + Issues --}}
-    <div class="row">
-        <div class="col-12">
-            <ul class="nav nav-pills modern-nav-pills mx-3 mb-4" id="mainTabs" role="tablist">
+    {{-- Tabs: History (default) + Issues (hidden until an import is selected) --}}
+    <div class="bulk-import-page mx-3 mb-2">
+        {{-- Tabs + action buttons on the same row --}}
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <ul class="nav nav-pills import-tabs" id="mainTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#historyPane"
                         type="button" role="tab">
                         <i class="fas fa-history me-1"></i> History
                     </button>
                 </li>
-                <li class="nav-item" role="presentation">
+                <li class="nav-item d-none" id="issuesTabItem" role="presentation">
                     <button class="nav-link" id="issues-tab" data-bs-toggle="tab" data-bs-target="#issuesPane"
                         type="button" role="tab">
                         <i class="fas fa-exclamation-triangle me-1"></i> Issues
@@ -39,7 +23,21 @@
                 </li>
             </ul>
 
-            <div class="tab-content ">
+            <div class="d-flex align-items-center gap-2">
+                <div id="inlineProgress" class="bi-inline-progress d-none">
+                    <span class="spinner-border spinner-border-sm"></span>
+                    <span id="inlineProgressText">Processing...</span>
+                </div>
+                <a href="{{ route('import.template') }}" class="bi-btn bi-btn--outline">
+                    <i class="fas fa-download me-1"></i> Template
+                </a>
+                <button class="bi-btn bi-btn--primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="fas fa-file-import me-2"></i> Bulk Import
+                </button>
+            </div>
+        </div>
+
+        <div class="tab-content">
 
                 {{-- === HISTORY TAB === --}}
                 <div class="tab-pane fade show active" id="historyPane" role="tabpanel">
@@ -88,6 +86,9 @@
                             </select>
                             <input type="text" class="form-control form-control-sm" id="issuesSearch"
                                 placeholder="Search..." style="width:160px;">
+                            <a href="#" id="downloadErrorsBtn" class="btn btn-sm btn-outline-secondary d-none">
+                                <i class="fas fa-file-download me-1"></i> Download Errors
+                            </a>
                             <button class="btn btn-sm btn-outline-success" id="acknowledgeAllBtn">
                                 <i class="fas fa-check-double me-1"></i> Acknowledge All
                             </button>
@@ -118,14 +119,13 @@
                 </div>
             </div>
         </div>
-    </div>
 
     {{-- ==================================================================== --}}
     {{-- MODALS --}}
     {{-- ==================================================================== --}}
 
     {{-- Upload Modal (replaces inline upload form) --}}
-    <div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal fade bulk-import-page" id="uploadModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0">
@@ -170,7 +170,7 @@
     </div>
 
     {{-- Error Modal --}}
-    <div class="modal fade" id="errorModal" tabindex="-1">
+    <div class="modal fade bulk-import-page" id="errorModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0">
@@ -189,7 +189,7 @@
     </div>
 
     {{-- Validation Result Modal --}}
-    <div class="modal fade" id="validationModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal fade bulk-import-page" id="validationModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header border-0" id="validationHeader">
@@ -203,7 +203,7 @@
     </div>
 
     {{-- Processing Modal --}}
-    <div class="modal fade" id="processingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade bulk-import-page" id="processingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body text-center py-5">
@@ -233,7 +233,7 @@
     </div>
 
     {{-- Result Modal --}}
-    <div class="modal fade" id="resultModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal fade bulk-import-page" id="resultModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header border-0" id="resultHeader">
@@ -246,7 +246,7 @@
     </div>
 
     {{-- Confirm Modal --}}
-    <div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal fade bulk-import-page" id="confirmModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
                 <div class="modal-header border-0">
@@ -265,7 +265,7 @@
     </div>
 
     {{-- Issue Detail Modal --}}
-    <div class="modal fade" id="issueDetailModal" tabindex="-1">
+    <div class="modal fade bulk-import-page" id="issueDetailModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header border-0">

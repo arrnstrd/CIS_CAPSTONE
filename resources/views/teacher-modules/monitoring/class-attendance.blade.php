@@ -124,25 +124,25 @@
     <x-ui.table>
         <thead class="text-uppercase small">
             <tr>
-                <th style="width: 15%">
+                <th style="width: 28%">
+                    <span class="fas fa-user me-1"></span> Student
+                </th>
+                <th style="width: 12%">
                     <span class="fas fa-calendar me-1"></span> Date
                 </th>
-                <th style="width: 20%">
-                    <span class="fas fa-user me-1"></span> Student Name
-                </th>
-                <th style="width: 15%">
+                <th style="width: 16%">
                     <span class="fas fa-chart-simple me-1"></span> Grade/Section
                 </th>
-                <th style="width: 15%">
+                <th style="width: 14%">
                     <span class="fas fa-clock me-1"></span> Time In
                 </th>
-                <th style="width: 15%">
+                <th style="width: 14%">
                     <span class="fas fa-sign-out-alt me-1"></span> Time Out
                 </th>
-                <th style="width: 10%">
+                <th style="width: 8%">
                     <span class="fas fa-flag me-1"></span> Status
                 </th>
-                <th style="width: 10%">
+                <th style="width: 8%">
                     <span class="fas fa-exclamation-triangle me-1"></span> Remarks
                 </th>
             </tr>
@@ -151,17 +151,27 @@
             @forelse ($attendanceRecords ?? [] as $record)
                 @php
                     $student = $record->enrollment?->student;
+                    $firstName = $student?->first_name ?? '';
+                    $lastName = $student?->last_name ?? '';
+                    $studentName = trim($firstName . ' ' . $lastName) ?: '-';
+                    $initials = strtoupper(trim(substr($firstName, 0, 1) . substr($lastName, 0, 1))) ?: '--';
                     $statusBadge = $record->remarks === 'present' 
                         ? 'success' 
                         : ($record->remarks === 'late' ? 'warning' : 'danger');
                 @endphp
                 <tr>
-                    <td>{{ $record->scan_time?->format('Y-m-d') ?? '-' }}</td>
-                    <td class="fw-semibold">
-                        {{ trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-' }}
+                    <td class="table-name-cell">
+                        <div class="table-name-wrap">
+                            <div class="table-name-avatar">{{ $initials }}</div>
+                            <div class="table-name-copy">
+                                <span class="table-name-main">{{ $studentName }}</span>
+                                <span class="table-name-sub">{{ $student?->student_number ?? '-' }}</span>
+                            </div>
+                        </div>
                     </td>
+                    <td>{{ $record->scan_time?->format('Y-m-d') ?? '-' }}</td>
                     <td>
-                        Grade {{ $record->enrollment?->section?->grade_level ?? '-' }} / 
+                        Grade {{ $record->enrollment?->section?->grade_level ?? '-' }} /
                         {{ $record->enrollment?->section?->name ?? '-' }}
                     </td>
                     <td>{{ $record->scan_time?->format('h:i A') ?? '-' }}</td>

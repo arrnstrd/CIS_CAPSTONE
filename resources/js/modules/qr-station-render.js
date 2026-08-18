@@ -348,6 +348,10 @@ export function createRenderer({ els, state }) {
     // ==================================================================
 
     function addToQueue(result, body) {
+        if (result.key === "excess") {
+            return;
+        }
+
         const student = body && body.student;
         const log = body && body.attendance_log;
 
@@ -412,8 +416,27 @@ export function createRenderer({ els, state }) {
             if (idx === 0 && row.isNew) tr.classList.add("is-new");
 
             const nameTd = document.createElement("td");
-            nameTd.className = "fw-semibold";
-            nameTd.textContent = row.name;
+            nameTd.className = "table-name-cell";
+            const nameWrap = document.createElement("div");
+            nameWrap.className = "table-name-wrap";
+            const avatar = document.createElement("div");
+            avatar.className = "table-name-avatar";
+            const nameParts = String(row.name || "Unknown").trim().split(/\s+/).filter(Boolean);
+            const initials = ((nameParts[0] || "U").slice(0, 1) + (nameParts[nameParts.length - 1] || "K").slice(0, 1)).toUpperCase();
+            avatar.textContent = initials;
+            const copy = document.createElement("div");
+            copy.className = "table-name-copy";
+            const main = document.createElement("span");
+            main.className = "table-name-main";
+            main.textContent = row.name || "Unknown";
+            const sub = document.createElement("span");
+            sub.className = "table-name-sub";
+            sub.textContent = row.number || "—";
+            copy.appendChild(main);
+            copy.appendChild(sub);
+            nameWrap.appendChild(avatar);
+            nameWrap.appendChild(copy);
+            nameTd.appendChild(nameWrap);
 
             const gradeTd = document.createElement("td");
             gradeTd.textContent = row.grade || "—";
@@ -429,7 +452,12 @@ export function createRenderer({ els, state }) {
                 { IN: "success", OUT: "primary" }[row.scan_type] || "secondary";
             const typeBadge = document.createElement("span");
             typeBadge.className = "badge-dot dot-" + typeDot;
-            typeBadge.textContent = row.scan_type || "—";
+            typeBadge.textContent =
+                row.scan_type === "IN"
+                    ? "Time In"
+                    : row.scan_type === "OUT"
+                      ? "Time Out"
+                      : row.scan_type || "—";
             typeTd.appendChild(typeBadge);
 
             const statusTd = document.createElement("td");
@@ -470,7 +498,9 @@ export function createRenderer({ els, state }) {
 
     // derive status from server-provided flags on the seeded queue
     function seedQueue() {
-        state.queue = state.queue.map((row) => {
+        state.queue = state.queue
+            .filter((row) => !(row.flags || []).includes("excess_scan"))
+            .map((row) => {
             const flags = row.flags || [];
             let statusLabel = "Success";
             let statusClass = "dot-success";

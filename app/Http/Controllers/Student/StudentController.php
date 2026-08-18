@@ -55,6 +55,7 @@ class StudentController extends Controller
         $sectionId = $request->input('section');
         $status = $request->input('status');
         $query = $request->input('query');
+        $sort = $request->input('sort', 'last_name_asc');
 
         $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get(['id', 'school_year']);
         $sections = Section::query()
@@ -93,8 +94,14 @@ class StudentController extends Controller
                         ->orWhere('last_name', 'like', "%{$query}%");
                 });
             })
-            ->orderBy('last_name')
-            ->orderBy('first_name')
+            ->when($sort === 'last_name_desc', fn($q) => $q->orderByDesc('last_name')->orderByDesc('first_name'))
+            ->when($sort === 'first_name_asc', fn($q) => $q->orderBy('first_name')->orderBy('last_name'))
+            ->when($sort === 'first_name_desc', fn($q) => $q->orderByDesc('first_name')->orderByDesc('last_name'))
+            ->when($sort === 'student_number_asc', fn($q) => $q->orderBy('student_number'))
+            ->when($sort === 'student_number_desc', fn($q) => $q->orderByDesc('student_number'))
+            ->when(!in_array($sort, ['last_name_desc', 'first_name_asc', 'first_name_desc', 'student_number_asc', 'student_number_desc'], true), function ($q) {
+                $q->orderBy('last_name')->orderBy('first_name');
+            })
             ->paginate(15)
             ->withQueryString();
 
@@ -117,7 +124,7 @@ class StudentController extends Controller
             $student->setAttribute('school_year_id', $enrollment?->school_year_id);
         });
 
-        return view('admin-modules.management.students.show', compact('students', 'grade', 'sections', 'allSections', 'schoolYears', 'activeSchoolYear'));
+        return view('admin-modules.management.students.show', compact('students', 'grade', 'sections', 'allSections', 'schoolYears', 'activeSchoolYear', 'sort'));
     }
 
     public function store(Request $request)

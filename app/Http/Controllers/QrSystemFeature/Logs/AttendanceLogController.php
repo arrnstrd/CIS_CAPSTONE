@@ -31,7 +31,7 @@ class AttendanceLogController extends Controller
             'enrollment.student',
             'enrollment.section',
             'flagged_scans'
-        ]);
+        ])->withoutExcessScanFlags();
 
         $attendanceLogsQuery = $this->applyDateFilter(
             $attendanceLogsQuery,
@@ -97,6 +97,7 @@ class AttendanceLogController extends Controller
             'enrollment.section',
             'flagged_scans',
         ])
+            ->withoutExcessScanFlags()
             ->filterByDateRange($validated['start_date'], $validated['end_date'])
             ->search($request->input('query'))
             ->filterByScanType($request->input('scan_type'))
@@ -109,7 +110,7 @@ class AttendanceLogController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();
 
-        $columns = ['Date', 'Student Name', 'Grade & Section', 'Scan Type', 'Session', 'Gate Time', 'Flag Type'];
+        $columns = ['Student', 'Date', 'Grade & Section', 'Scan Type', 'Session', 'Gate Time', 'Remarks'];
 
         foreach ($columns as $colIndex => $header) {
             $column = Coordinate::stringFromColumnIndex($colIndex + 1);
@@ -129,13 +130,17 @@ class AttendanceLogController extends Controller
             $flagTypes = $log->flagged_scans->pluck('flag_type')->filter()->unique();
 
             $flagText = $flagTypes->isNotEmpty()
-                ? $flagTypes->map(fn ($flagType) => ucfirst(str_replace('_', ' ', $flagType)))->join(', ')
+                ? $flagTypes->map(fn ($flagType) => match ($flagType) {
+                    'late_arrival' => 'Late arrival',
+                    'invalid_checkout' => 'Checkout issue',
+                    default => 'Needs review',
+                })->join(', ')
                 : '-';
 
-            $sheet->setCellValue('A' . $rowNum, $log->scan_time?->format('Y-m-d') ?? '-');
-            $sheet->setCellValue('B' . $rowNum, $studentName);
+            $sheet->setCellValue('A' . $rowNum, $studentName . ' (' . ($student?->student_number ?? '-') . ')');
+            $sheet->setCellValue('B' . $rowNum, $log->scan_time?->format('Y-m-d') ?? '-');
             $sheet->setCellValue('C' . $rowNum, $gradeSection);
-            $sheet->setCellValue('D' . $rowNum, $log->scan_type ?? '-');
+            $sheet->setCellValue('D' . $rowNum, $log->scan_type === 'IN' ? 'Time In' : ($log->scan_type === 'OUT' ? 'Time Out' : 'Unknown'));
             $sheet->setCellValue('E' . $rowNum, $log->session_type ? ucfirst($log->session_type) : '-');
             $sheet->setCellValue('F' . $rowNum, $log->scan_time?->format('h:i A') ?? '-');
             $sheet->setCellValue('G' . $rowNum, $flagText);
@@ -209,4 +214,3 @@ class AttendanceLogController extends Controller
         }
     }
 }
-

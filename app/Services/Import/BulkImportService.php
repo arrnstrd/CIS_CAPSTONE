@@ -5,6 +5,7 @@ namespace App\Services\Import;
 use App\Models\BulkImport;
 use App\Models\BulkImportIssue;
 use App\Models\SchoolYear;
+use App\Models\Student;
 use App\Models\User;
 use App\Enums\ImportStatus;
 use Illuminate\Http\UploadedFile;
@@ -128,31 +129,32 @@ class BulkImportService
         } catch (MissingFormHeaderException $e) {
             // File-level SF1 header problem: record ONE blocking issue and
             // skip per-row processing (every row would fail identically).
-            BulkImportIssue::create([
-                'bulk_import_id' => $import->id,
-                'row_number'     => null,
-                'issue_type'     => 'missing_form_header',
-                'severity'       => 'error',
-                'field'          => 'form_header',
-                'message'        => $e->getMessage(),
-                'raw_data'       => null,
-                'status'         => 'unresolved',
-            ]);
-
-            $import->update([
-                'status'        => 'validated',
-                'total_rows'    => 0,
-                'valid_count'   => 0,
-                'error_count'   => 1,
-                'warning_count' => 0,
-                'success_count' => 0,
-                'failed_count'  => 0,
-            ]);
-
-            return $import->fresh();
+            return $this->failFileLevel($import, 'missing_form_header', $e->getMessage());
+        } catch (\Exception $e) {
+            // Unreadable/invalid workbook (missing sheet, wrong anchor, or
+            // corrupt file): surface ONE clear blocking issue instead of a 500.
+            return $this->failFileLevel(
+                $import,
+                'invalid_file',
+                'The file could not be read as a valid SF-1 spreadsheet. ' . $e->getMessage(),
+            );
         }
 
         $import->update(['total_rows' => count($allRows)]);
+
+        // Pre-flag LRNs already present in the system so the user sees the real
+        // reason (duplicate student) during validation instead of a confusing
+        // database unique-constraint failure during processing.
+        $lrnList = array_values(array_filter(array_map(
+            static fn ($row) => $row->lrn !== null ? trim($row->lrn) : null,
+            $allRows,
+        )));
+
+        $existingLrns = Student::query()
+            ->whereIn('lrn', $lrnList)
+            ->pluck('lrn')
+            ->map(static fn (string $lrn) => strtolower(trim($lrn)))
+            ->flip();
 
         // Pre-load sections once before the row loop
         $this->sectionResolver->loadActiveSections();
@@ -182,6 +184,18 @@ class BulkImportService
                 } else {
                     $seenLrns[$lrnKey] = $row->rowNumber;
                 }
+
+                // Existing-student LRN check: flag rows whose LRN is already in
+                // the system so the user sees a clear reason instead of a
+                // database unique-constraint error during processing.
+                if (isset($existingLrns[$lrnKey])) {
+                    $rowIssues[] = [
+                        'issue_type' => 'duplicate_lrn',
+                        'severity'   => 'error',
+                        'field'      => 'lrn',
+                        'message'    => 'A student with this LRN already exists in the system. Check the row and remove it if it is a duplicate.',
+                    ];
+                }
             }
 
             // Errors block the row; warnings are persisted but do NOT block it
@@ -195,35 +209,17 @@ class BulkImportService
             }
 
             if (!$hasErrors) {
-                // Row is importable — resolve section
+                // Row is importable — resolve (or auto-create) the section
                 $validRows[] = $row;
 
                 if ($row->hasEnrollmentData()) {
-                    $section = $this->sectionResolver->resolveSection(
+                    $section = $this->sectionResolver->resolveOrCreateSection(
                         $row->sectionName,
                         $row->departmentLevel,
                         $row->gradeLevel,
                     );
 
-                    if ($section === null) {
-                        $sectionIds[$row->rowNumber] = null;
-
-                        $persistIssues[] = [
-                            'bulk_import_id' => $import->id,
-                            'row_number'     => $row->rowNumber,
-                            'issue_type'     => 'section_not_found',
-                            'severity'       => 'warning',
-                            'field'          => 'sectionName',
-                            'message'        => "Section \"{$row->sectionName}\" not found or inactive for {$row->departmentLevel} grade {$row->gradeLevel}.",
-                            'raw_data'       => json_encode($row->toRawData()),
-                            'status'         => 'unresolved',
-                            'created_at'     => now(),
-                            'updated_at'     => now(),
-                        ];
-                        $warningCount++;
-                    } else {
-                        $sectionIds[$row->rowNumber] = $section->id;
-                    }
+                    $sectionIds[$row->rowNumber] = $section->id;
                 } else {
                     $sectionIds[$row->rowNumber] = null;
                 }
@@ -269,6 +265,36 @@ class BulkImportService
             'valid_count'   => $validCount,
             'error_count'   => $errorCount,
             'warning_count' => $warningCount,
+        ]);
+
+        return $import->fresh();
+    }
+
+    /**
+     * Record a single file-level blocking issue and leave the import in a
+     * reviewable state so the user sees a clear message instead of a 500.
+     */
+    private function failFileLevel(BulkImport $import, string $issueType, string $message): BulkImport
+    {
+        BulkImportIssue::create([
+            'bulk_import_id' => $import->id,
+            'row_number'     => null,
+            'issue_type'     => $issueType,
+            'severity'       => 'error',
+            'field'          => 'form_header',
+            'message'        => $message,
+            'raw_data'       => null,
+            'status'         => 'unresolved',
+        ]);
+
+        $import->update([
+            'status'        => 'validated',
+            'total_rows'    => 0,
+            'valid_count'   => 0,
+            'error_count'   => 1,
+            'warning_count' => 0,
+            'success_count' => 0,
+            'failed_count'  => 0,
         ]);
 
         return $import->fresh();
@@ -329,12 +355,12 @@ class BulkImportService
                 $validRows[] = $row;
 
                 if ($row->hasEnrollmentData()) {
-                    $section = $this->sectionResolver->resolveSection(
+                    $section = $this->sectionResolver->resolveOrCreateSection(
                         $row->sectionName,
                         $row->departmentLevel,
                         $row->gradeLevel,
                     );
-                    $sectionIds[$row->rowNumber] = $section?->id;
+                    $sectionIds[$row->rowNumber] = $section->id;
                 } else {
                     $sectionIds[$row->rowNumber] = null;
                 }

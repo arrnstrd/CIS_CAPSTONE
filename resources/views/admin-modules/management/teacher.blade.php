@@ -8,7 +8,7 @@
         Manage teacher accounts, contact information, and account status.
     </x-slot>
 
-    <div class="col mb-3 mx-2">
+    <div class="col mb-3 mx-3">
         <div class="bg-white rounded p-4 border">
 
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -54,8 +54,7 @@
 
             <thead class="text-uppercase">
                 <tr>
-                    <th width="18%">Employee ID</th>
-                    <th width="28%">Full Name</th>
+                    <th width="34%">Teacher</th>
                     <th width="28%">Email</th>
                     <th width="12%">Status</th>
                     <th width="14%">Actions</th>
@@ -65,8 +64,26 @@
             <tbody>
                 @forelse ($teachers as $teacher)
                     <tr>
-                        <td>{{ $teacher->user?->employee_id ?? '-' }}</td>
-                        <td>{{ $teacher->full_name }}</td>
+                        @php
+                            $teacherFirst = trim($teacher->user?->first_name ?? '');
+                            $teacherLast = trim($teacher->user?->last_name ?? '');
+                            $teacherName = trim($teacherFirst . ' ' . $teacherLast) ?: ($teacher->full_name ?? '-');
+                            $teacherInitials = collect(preg_split('/\s+/', $teacherName, -1, PREG_SPLIT_NO_EMPTY))
+                                ->take(2)
+                                ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))
+                                ->implode('');
+                        @endphp
+                        <td class="table-name-cell">
+                            <div class="table-name-wrap">
+                                <div class="table-name-avatar" aria-hidden="true">
+                                    {{ $teacherInitials ?: 'T' }}
+                                </div>
+                                <div class="table-name-copy">
+                                    <div class="table-name-main">{{ $teacherName }}</div>
+                                    <div class="table-name-sub">{{ $teacher->user?->employee_id ?? 'No employee ID' }}</div>
+                                </div>
+                            </div>
+                        </td>
                         <td>{{ $teacher->user?->email ?? '-' }}</td>
                         <td>{{ ucfirst($teacher->status ?? 'inactive') }}</td>
                         <td>
@@ -122,7 +139,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-5">
+                        <td colspan="4" class="text-center text-muted py-5">
                             <div class="d-flex flex-column align-items-center">
                                 <i class="fas fa-folder-open fa-2x mb-3 opacity-50"></i>
                                 <p class="mb-0">No teacher records found.</p>

@@ -8,6 +8,7 @@ use App\Http\Controllers\AcademicFeature\SubjectController;
 use App\Http\Controllers\GradingSystemFeature\AssessmentController;
 use App\Http\Controllers\GradingSystemFeature\AssessmentCategoryController;
 use App\Http\Controllers\GradingSystemFeature\GradingPeriodController;
+use App\Http\Controllers\AdministrationFeature\Dashboard\DashboardController;
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Logs\AttendanceLogController;
 use App\Http\Controllers\QrSystemFeature\Logs\EmailLogController;
@@ -20,7 +21,6 @@ use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\Teacher\StudentManagementController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
-use App\Models\AttendanceLog;
 use Illuminate\Support\Facades\Route;
 
 
@@ -161,41 +161,11 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
         Route::get('/student-profile', fn() => view('admin-modules.management.student-profile'));
         Route::get('/student-profile/{student}', [StudentProfileController::class, 'show'])->name('student.profile');
+        Route::put('/student-profile/{student}/info', [StudentProfileController::class, 'updateInfo'])->name('student.profile.update-info');
+        Route::put('/student-profile/{student}/guardian', [StudentProfileController::class, 'updateGuardian'])->name('student.profile.update-guardian');
 
         // dashboard and settings
-        Route::get('/dashboard', function () {
-            $latestScans = AttendanceLog::query()
-                ->with([
-                    'enrollment.student',
-                    'enrollment.section',
-                    'flagged_scans',
-                ])
-                ->orderBy('scan_time', 'desc')
-                ->limit(5)
-                ->get()
-                ->map(fn($log) => [
-                    'scan_date' => $log->scan_time?->format('Y-m-d'),
-                    'student_name' => trim(
-                        ($log->enrollment?->student?->first_name ?? '') . ' ' .
-                            ($log->enrollment?->student?->last_name ?? '')
-                    ) ?: 'Unknown',
-                    'student_number' => $log->enrollment?->student?->student_number ?? '-',
-                    'grade_level' => $log->enrollment?->section?->grade_level ?? '-',
-                    'section_name' => $log->enrollment?->section?->name ?? '-',
-                    'scan_type' => $log->scan_type,
-                    'session_type' => $log->session_type ?? '-',
-                    'scan_time' => $log->scan_time?->format('h:i A'),
-                    'flag_types' => $log->flagged_scans
-                        ->pluck('flag_type')
-                        ->filter()
-                        ->unique()
-                        ->join(', '),
-                ]);
-
-            return view('admin-modules.dashboard', [
-                'latestScans' => $latestScans,
-            ]);
-        })->name('admin.dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
         Route::get('/settings', fn() => view('admin-modules.utilities.settings', [
             'schoolYears' => \App\Models\SchoolYear::orderByDesc('is_active')
                 ->orderBy('school_year', 'desc')

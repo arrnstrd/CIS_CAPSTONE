@@ -4,6 +4,7 @@ namespace App\Services\Import;
 
 use App\DTOs\ImportRowData;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 /**
@@ -31,7 +32,7 @@ class SpreadsheetParser
     private const SF1_FOOTER_LANDMARK = 'List and Code of Indicators';
 
     private const DATA_START_ROW = 10;
-    private const MAX_ROW_CEILING = 200;
+    private const MAX_ROW_CEILING = 1000;
 
     /** @var array<int, string> Map: grade level → department level */
     private const GRADE_TO_DEPARTMENT = [
@@ -56,23 +57,55 @@ class SpreadsheetParser
         }
 
         $spreadsheet = IOFactory::load($filePath);
-        $worksheet   = $spreadsheet->getSheetByName(self::SF1_SHEET_NAME);
+        $worksheet   = $this->findSf1Sheet($spreadsheet);
 
         if ($worksheet === null) {
             throw new \RuntimeException(
-                'Sheet "' . self::SF1_SHEET_NAME . '" not found in the workbook.'
+                'The workbook does not contain the "School Form 1 (SF1)" sheet. ' .
+                'Please upload a file based on the provided SF-1 template.'
             );
         }
 
         $a1 = (string) $worksheet->getCell('A1')->getValue();
 
-        if (!str_contains($a1, self::SF1_A1_ANCHOR)) {
+        if (!str_contains(strtolower($a1), strtolower(self::SF1_A1_ANCHOR))) {
             throw new \RuntimeException(
-                'Cell A1 does not contain "School Form 1". This does not look like an SF1 form.'
+                'Cell A1 of the "School Form 1 (SF1)" sheet does not contain "School Form 1". ' .
+                'Please upload a file based on the provided SF-1 template.'
             );
         }
 
         return $this->parseRows($worksheet);
+    }
+
+    /**
+     * Locate the SF1 worksheet, tolerating minor naming differences such as
+     * extra spaces, casing, or a trailing suffix (e.g. "School Form 1 (SF1) - Grade 5").
+     */
+    private function findSf1Sheet(Spreadsheet $spreadsheet): ?Worksheet
+    {
+        // 1) Exact match (case-insensitive, trimmed)
+        foreach ($spreadsheet->getWorksheetIterator() as $ws) {
+            if (strtolower(trim($ws->getTitle())) === strtolower(self::SF1_SHEET_NAME)) {
+                return $ws;
+            }
+        }
+
+        // 2) Any sheet whose title contains "School Form 1"
+        foreach ($spreadsheet->getWorksheetIterator() as $ws) {
+            if (str_contains(strtolower($ws->getTitle()), strtolower(self::SF1_A1_ANCHOR))) {
+                return $ws;
+            }
+        }
+
+        // 3) Any sheet whose title contains "SF1"
+        foreach ($spreadsheet->getWorksheetIterator() as $ws) {
+            if (str_contains(strtolower($ws->getTitle()), 'sf1')) {
+                return $ws;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -103,7 +136,8 @@ class SpreadsheetParser
 
         if (!empty($missing)) {
             throw new MissingFormHeaderException(
-                'Missing or invalid form-level header: ' . implode(', ', $missing) . '.'
+                'Missing or invalid form-level header: ' . implode(', ', $missing) . '. ' .
+                'Please make sure these cells are filled in before uploading.'
             );
         }
 

@@ -39,7 +39,10 @@ class ImportRowValidator
         if ($this->isEmpty($row->lrn)) {
             $issues[] = $this->error('lrn', 'LRN is required.');
         } elseif (!preg_match('/^\d{12,13}$/', $row->lrn)) {
-            $issues[] = $this->error('lrn', 'LRN must be 12 or 13 digits.');
+            $issues[] = $this->error(
+                'lrn',
+                'LRN must be 12 or 13 digits. If Excel removed leading zeros, format the LRN column as Text.'
+            );
         }
 
         // ── Learner Name ─────────────────────────────────────────────────
@@ -48,7 +51,7 @@ class ImportRowValidator
         } elseif ($this->isEmpty($row->lastName) || $this->isEmpty($row->firstName)) {
             $issues[] = $this->error(
                 'learnerName',
-                'Learner Name must be in the format "LAST NAME, FIRST NAME MIDDLE NAME".'
+                'Learner Name must be in the format "LAST NAME, FIRST NAME MIDDLE NAME". Example: "Santos, Juan Dela Cruz".'
             );
         }
 
@@ -56,7 +59,7 @@ class ImportRowValidator
         if ($this->isEmpty($row->sex)) {
             $issues[] = $this->error('sex', 'Sex is required. Accepted values: male, female.');
         } elseif (!in_array($row->sex, ['male', 'female'], true)) {
-            $issues[] = $this->error('sex', 'Sex must be "male" or "female".');
+            $issues[] = $this->error('sex', 'Sex must be "male" or "female" (use M or F in the Sex column).');
         }
 
         // ── Age (optional; must be a whole number 1–100 if present) ─────
@@ -70,11 +73,6 @@ class ImportRowValidator
                     $issues[] = $this->error('age', 'Age must be between 1 and 100.');
                 }
             }
-        }
-
-        // ── Address ──────────────────────────────────────────────────────
-        if ($this->isEmpty($row->address)) {
-            $issues[] = $this->error('address', 'Complete Address is required.');
         }
 
         // ── Parents / Guardian (soft warning, not a hard error) ─────────
