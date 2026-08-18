@@ -258,6 +258,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/teacher/grading-system/grade-sheet/assessment', [App\Http\Controllers\Teacher\GradeSheetController::class, 'storeAssessment'])->name('teacher.grading-system.grade-sheet.assessment');
         Route::post('/teacher/grading-system/grade-sheet/score', [App\Http\Controllers\Teacher\GradeSheetController::class, 'storeScore'])->name('teacher.grading-system.grade-sheet.score');
         Route::get('/teacher/grading-system/import-data', [App\Http\Controllers\Teacher\ImportDataController::class, 'index'])->name('teacher.grading-system.import-data');
+        Route::get('/teacher/grading-system/reports', [App\Http\Controllers\Teacher\ReportsController::class, 'index'])->name('teacher.grading-system.reports');
+        Route::get('/teacher/grading-system/reports/class-record/{teachingAssignmentId}', [App\Http\Controllers\Teacher\ReportsController::class, 'classRecordData'])->name('teacher.grading-system.reports.class-record');
         Route::get('/teacher/grading-system/grades/{gradeLevel}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'show'])->name('teacher.grading-system.grades.show');
         Route::get('/teacher/grading-system/sections/{sectionId}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'students'])->name('teacher.grading-system.sections.show');
         Route::get('/teacher/grading-system/students/{enrollmentId}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'studentDetail'])->name('teacher.grading-system.students.show');

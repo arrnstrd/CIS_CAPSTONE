@@ -31,13 +31,19 @@
                         <tr>
                             <th rowspan="2" class="align-middle">Learner Name</th>
                             <th colspan="{{ $assessmentsByCategory['written']->count() + 1 }}" class="text-center">
-                                Written Works <button type="button" class="btn btn-sm btn-link p-0 ms-1 gs-add-col" data-category="written">+ Add</button>
+                                Written Works <button type="button" class="gs-add-col-btn gs-add-col" data-category="written">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
                             </th>
                             <th colspan="{{ $assessmentsByCategory['performance']->count() + 1 }}" class="text-center">
-                                Performance Tasks <button type="button" class="btn btn-sm btn-link p-0 ms-1 gs-add-col" data-category="performance">+ Add</button>
+                                Performance Tasks <button type="button" class="gs-add-col-btn gs-add-col" data-category="performance">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
                             </th>
                             <th colspan="{{ $assessmentsByCategory['quarterly']->count() + 1 }}" class="text-center">
-                                Quarterly Assessment <button type="button" class="btn btn-sm btn-link p-0 ms-1 gs-add-col" data-category="quarterly">+ Add</button>
+                                Quarterly Assessment <button type="button" class="gs-add-col-btn gs-add-col" data-category="quarterly">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
                             </th>
                             <th rowspan="2" class="align-middle text-center">Initial Grade</th>
                             <th rowspan="2" class="align-middle text-center">Transmuted</th>
@@ -104,7 +110,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn gd-btn-primary" id="addColumnSubmit">Add Column</button>
+                    <button type="button" class="btn gd-btn-primary" id="addColumnSubmit">
+                        <span id="addColumnSpinner" class="spinner-border spinner-border-sm me-1 d-none" role="status"></span>
+                        <span id="addColumnBtnText">Add Column</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -118,21 +127,40 @@
         document.querySelectorAll('.gs-add-col').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.getElementById('addColumnCategory').value = btn.dataset.category;
+                document.getElementById('addColumnTitle').value = '';
+                document.getElementById('addColumnTotal').value = 10;
                 document.getElementById('addColumnError').textContent = '';
-                new bootstrap.Modal(document.getElementById('addColumnModal')).show();
+                const modalEl = document.getElementById('addColumnModal');
+                new bootstrap.Modal(modalEl).show();
+                modalEl.addEventListener('shown.bs.modal', () => {
+                    document.getElementById('addColumnTitle').focus();
+                }, { once: true });
             });
         });
 
-        document.getElementById('addColumnSubmit').addEventListener('click', async () => {
+        const addColumnSubmitBtn = document.getElementById('addColumnSubmit');
+        const addColumnSpinner = document.getElementById('addColumnSpinner');
+        const addColumnBtnText = document.getElementById('addColumnBtnText');
+
+        function setAddColumnLoading(isLoading) {
+            addColumnSubmitBtn.disabled = isLoading;
+            addColumnSpinner.classList.toggle('d-none', !isLoading);
+            addColumnBtnText.textContent = isLoading ? 'Adding...' : 'Add Column';
+        }
+
+        addColumnSubmitBtn.addEventListener('click', async () => {
             const category = document.getElementById('addColumnCategory').value;
             const title = document.getElementById('addColumnTitle').value.trim();
             const total = document.getElementById('addColumnTotal').value;
             const errorEl = document.getElementById('addColumnError');
+            errorEl.textContent = '';
 
             if (!title || !total || total < 1) {
                 errorEl.textContent = 'Please fill in a title and a valid total items value.';
                 return;
             }
+
+            setAddColumnLoading(true);
 
             try {
                 const res = await fetch('{{ route("teacher.grading-system.grade-sheet.assessment") }}', {
@@ -148,6 +176,7 @@
                 location.reload();
             } catch (e) {
                 errorEl.textContent = 'Something went wrong. Please try again.';
+                setAddColumnLoading(false);
             }
         });
 

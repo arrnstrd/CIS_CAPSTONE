@@ -598,3 +598,47 @@
     margin-bottom: 0.25rem;
     display: block;
 }
+
+/* Grade Sheet — Add Column button */
+.gs-add-col-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    margin-left: 0.4rem;
+    transition: background 0.15s ease;
+}
+
+.gs-add-col-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.gs-add-col-btn i {
+    font-size: 0.65rem;
+}
+
+.gs-score-input:focus {
+    border-color: #2438b9 !important;
+    box-shadow: 0 0 0 2px rgba(36, 56, 185, 0.15) !important;
+}
+
+/* Reports — report type selection cards */
+.gs-report-type-card {
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    border: 2px solid transparent;
+}
+
+.gs-report-type-card:hover {
+    background: #f7f7f5;
+}
+
+.gs-report-type-active {
+    border-color: #2438b9;
+    background: #e8eaf9;
+}

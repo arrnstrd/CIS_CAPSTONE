@@ -11,10 +11,10 @@
     <a href="{{ route('teacher.grading-system.import-data') }}" class="gd-sidebar-link {{ $gdActive === 'import-data' ? 'gd-sidebar-link-active' : '' }}">
         <i class="fa-solid fa-file-import"></i> Import Data
     </a>
-    <span class="gd-sidebar-link gd-sidebar-link-disabled" title="Coming soon">
+    <a href="{{ route('teacher.grading-system.reports') }}" class="gd-sidebar-link {{ $gdActive === 'reports' ? 'gd-sidebar-link-active' : '' }}">
         <i class="fa-solid fa-file-lines"></i> Reports
-    </span>
-    <span class="gd-sidebar-link gd-sidebar-link-disabled" title="Coming soon">
+    </a>
+    <span class="gd-sidebar-link gd-sidebar-link-disabled" title="See Comp. Rules tab instead">
         <i class="fa-solid fa-gear"></i> Settings
     </span>
 </div>
