@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\AdministrationFeature\Authentication\AuthController;
 use App\Http\Controllers\AcademicFeature\AcademicController;
-use App\Http\Controllers\AcademicFeature\EnrollmentController;
+
 use App\Http\Controllers\AcademicFeature\SchoolYearController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AcademicFeature\SubjectController;
@@ -73,11 +73,7 @@ Route::middleware(['auth'])->group(function () {
         // academic
         Route::get('/academic', [AcademicController::class, 'index'])->name('academic.index');
 
-        // enrollment
-        Route::get('/enrollment', [EnrollmentController::class, 'index'])->name('enrollment.index');
-        Route::post('/enrollment', [EnrollmentController::class, 'store'])->name('enrollment.store');
-        Route::put('/enrollment/{id}', [EnrollmentController::class, 'update'])->name('enrollment.update');
-        Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy'])->name('enrollment.destroy');
+        
 
         // section
         Route::get('/sections', [SectionController::class, 'index'])->name('sections.index');
