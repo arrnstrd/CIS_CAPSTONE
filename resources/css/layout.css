@@ -98,6 +98,19 @@
     min-width: 0;
 }
 
+/* ===== HEAD BANNER — READABLE TITLE/SUBTITLE ON GRADIENT =====
+   Teacher pages may pass styled spans (e.g. .ra-page-title/.ra-page-subtitle)
+   that were designed for a light header. Re-style them inside the dark
+   gradient banner so they stay readable. */
+.admin-head-banner__title .ra-page-title i {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.admin-head-banner .ra-page-subtitle {
+    color: rgba(255, 255, 255, 0.82);
+}
+
 body{
        font-size: 0.9rem;
     background-color: #e6eeff;

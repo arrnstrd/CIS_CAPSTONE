@@ -12,7 +12,7 @@
                 $teacherName = $teacherProfile?->full_name ?? ($teacherUser?->first_name . ' ' . $teacherUser?->last_name);
                 $teacherEmail = $teacherUser?->email ?? '';
             @endphp
-<div class="sidebar-teacher-info">
+            <div class="sidebar-teacher-info">
                 <div class="sidebar-teacher-avatar">
                     <i class="fa-solid fa-circle-user"></i>
                 </div>
@@ -34,9 +34,9 @@
                     <small>General</small>
                 </li>
                 <li>
-                    <a href="{{ route('teacher.dashboard') }}">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
+                    <a href="{{ route('room-attendance.index') }}">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span>Room Attendance</span>
                     </a>
                 </li>
 
@@ -47,9 +47,15 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('teacher.grading-system') }}">
-                        <i class="fas fa-user-shield"></i>
+                    <a href="{{ route('teacher.grading-system.dashboard') }}">
+                        <i class="fas fa-user-graduate"></i>
                         <span>Grading System</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('teacher.grading-system') }}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analytics</span>
                     </a>
                 </li>
 

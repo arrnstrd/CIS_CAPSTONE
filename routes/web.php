@@ -52,10 +52,16 @@ Route::get('/role-selection', fn() => view('login.role_selection'));
 Route::get('/user-login', fn() => view('login.admin-login'));
 
 // layout preview
-Route::get('/layout', fn() => view('components.layouts.admin'));
-Route::get('/layout/teacher', function () {
-    return view('components.layouts.teacher');
-});
+Route::get('/layout', fn() => view('components.layouts.admin', [
+    'pageName' => 'Admin Layout Preview',
+    'subtitle' => 'Head banner preview with live date + help button.',
+    'slot' => '<div class="p-4"><h4 class="fw-bold">Slot Content</h4><p class="text-muted">This area renders the page content beneath the banner.</p></div>',
+]));
+Route::get('/layout/teacher', fn() => view('components.layouts.teacher', [
+    'pageName' => 'Teacher Layout Preview',
+    'subtitle' => 'Teacher head area preview.',
+    'slot' => '<div class="p-4"><h4 class="fw-bold">Slot Content</h4><p class="text-muted">Teacher page content renders here.</p></div>',
+]));
 
 
 // ============================================================
@@ -74,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
         // academic
         Route::get('/academic', [AcademicController::class, 'index'])->name('academic.index');
 
-        
+
 
         // section
         Route::get('/sections', [SectionController::class, 'index'])->name('sections.index');
@@ -136,6 +142,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/qr-station', [QrStationController::class, 'index'])->name('qr-station.index');
         Route::post('/qr-station/scan', [ScanController::class, 'scan'])->name('qr-station.scan');
         Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('time-in-time-out.index');
+        Route::get('/time-in-time-out-history', [AttendanceLogController::class, 'index'])->name('time-in-time-out-history.index');
+        Route::get('/time-in-time-out-history/download', [AttendanceLogController::class, 'download'])->name('time-in-time-out-history.download');
         Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
         Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
         Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
