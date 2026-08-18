@@ -3,6 +3,8 @@
         Teaching Assignments
     </x-slot>
 
+    <x-slot name="subtitle">Assign teachers to sections and subjects.</x-slot>
+
     <div class="d-flex justify-content-end mb-3">
         <button class="btn btn-dark px-4 py-2 rounded-3 fw-medium" data-bs-toggle="modal"
             data-bs-target="#assignmentModal" onclick="openCreateModal()">
@@ -31,7 +33,8 @@
                     <td>{{ $assignment->subject?->name ?? '—' }}</td>
                     <td>{{ $assignment->section?->name ?? '—' }}</td>
                     <td>{{ $assignment->schoolYear?->school_year ?? '—' }}</td>
-                    <td>{{ ucfirst($assignment->section?->session_type ?? '—') }}</td>
+                    <td>{{ $assignment->section?->session_type ? Str::headline(str_replace('_', ' ', $assignment->section->session_type)) : '—' }}
+                    </td>
                     <td>
                         <span class="badge-dot dot-{{ $assignment->status === 'active' ? 'success' : 'secondary' }}">
                             {{ ucfirst($assignment->status) }}

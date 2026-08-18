@@ -75,6 +75,7 @@
                             <option value="all" @selected($sessionType === 'all')">All</option>
                             <option value="morning" @selected($sessionType === 'morning')">Morning</option>
                             <option value="afternoon" @selected($sessionType === 'afternoon')">Afternoon</option>
+                            <option value="whole_day" @selected($sessionType === 'whole_day')">Whole Day</option>
                         </select>
                     </div>
 

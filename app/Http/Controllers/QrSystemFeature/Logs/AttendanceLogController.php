@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -141,7 +142,7 @@ class AttendanceLogController extends Controller
             $sheet->setCellValue('B' . $rowNum, $log->scan_time?->format('Y-m-d') ?? '-');
             $sheet->setCellValue('C' . $rowNum, $gradeSection);
             $sheet->setCellValue('D' . $rowNum, $log->scan_type === 'IN' ? 'Time In' : ($log->scan_type === 'OUT' ? 'Time Out' : 'Unknown'));
-            $sheet->setCellValue('E' . $rowNum, $log->session_type ? ucfirst($log->session_type) : '-');
+            $sheet->setCellValue('E' . $rowNum, $log->session_type ? Str::headline(str_replace('_', ' ', $log->session_type)) : '-');
             $sheet->setCellValue('F' . $rowNum, $log->scan_time?->format('h:i A') ?? '-');
             $sheet->setCellValue('G' . $rowNum, $flagText);
             $rowNum++;

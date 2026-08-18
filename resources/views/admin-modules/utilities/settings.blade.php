@@ -2,6 +2,8 @@
 
     <x-slot name="pageName">Settings</x-slot>
 
+    <x-slot name="subtitle">Manage system preferences and school information.</x-slot>
+
     <div class="container-fluid py-4">
         <div class="row">
 

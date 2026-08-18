@@ -19,8 +19,53 @@
             $y = 6 + (1 - $ratio) * 88;
             return ['x' => round($x, 2), 'y' => round($y, 2), 'label' => $b['label'] ?? '', 'total' => $b['total'] ?? 0];
         })->values();
-        $dailyLinePath = $dailyLinePoints->map(fn($p) => $p['x'] . ',' . $p['y'])->implode(' ');
-        $dailyLineArea = 'M 4 94 L ' . $dailyLinePath . ' L 96 94 Z';
+
+        // Smooth (Catmull-Rom -> Bezier) path builder for the minimal line chart.
+        $toSmoothPath = function (array $pts): string {
+            $n = count($pts);
+            if ($n === 0) return '';
+            if ($n === 1) return 'M ' . $pts[0]['x'] . ',' . $pts[0]['y'];
+            $d = 'M ' . $pts[0]['x'] . ',' . $pts[0]['y'];
+            for ($i = 0; $i < $n - 1; $i++) {
+                $p0 = $pts[$i - 1] ?? $pts[$i];
+                $p1 = $pts[$i];
+                $p2 = $pts[$i + 1];
+                $p3 = $pts[$i + 2] ?? $p2;
+                $c1x = $p1['x'] + ($p2['x'] - $p0['x']) / 6;
+                $c1y = $p1['y'] + ($p2['y'] - $p0['y']) / 6;
+                $c2x = $p2['x'] - ($p3['x'] - $p1['x']) / 6;
+                $c2y = $p2['y'] - ($p3['y'] - $p1['y']) / 6;
+                $d .= ' C ' . round($c1x, 2) . ',' . round($c1y, 2)
+                    . ' ' . round($c2x, 2) . ',' . round($c2y, 2)
+                    . ' ' . $p2['x'] . ',' . $p2['y'];
+            }
+            return $d;
+        };
+
+        $dailyLinePath = $toSmoothPath($dailyLinePoints->all());
+        $dailyLineArea = $dailyLinePath !== '' ? $dailyLinePath . ' L 96 94 L 4 94 Z' : '';
+
+        // Per-department-level line data (Line view shows 3 colored lines).
+        $dailyLevelLines = collect($departmentLevels)
+            ->filter(fn($meta, $level) => $level !== 'unknown')
+            ->map(function ($meta, $level) use ($scanBuckets, $chartBucketCount, $maxBucketTotal, $toSmoothPath) {
+                $span = max($chartBucketCount - 1, 1);
+                $points = [];
+                foreach (($scanBuckets ?? []) as $i => $b) {
+                    $x = 4 + ($i / $span) * 92;
+                    $ratio = $maxBucketTotal > 0 ? (($b['levels'][$level] ?? 0) / $maxBucketTotal) : 0;
+                    $y = 6 + (1 - $ratio) * 88;
+                    $points[] = ['x' => round($x, 2), 'y' => round($y, 2)];
+                }
+                return [
+                    'level' => $level,
+                    'label' => $meta['label'],
+                    'color' => $meta['color'],
+                    'path' => $toSmoothPath($points),
+                    'last' => $points ? $points[count($points) - 1] : null,
+                ];
+            })
+            ->values();
 
         $weeklyChartBuckets = collect($weeklyScanBuckets ?? [])->values();
         $weeklyChartBucketCount = max($weeklyChartBuckets->count(), 1);
@@ -34,8 +79,41 @@
             $y = 6 + (1 - $ratio) * 88;
             return ['x' => round($x, 2), 'y' => round($y, 2), 'label' => $b['label'] ?? '', 'total' => $b['total'] ?? 0];
         })->values();
-        $weeklyLinePath = $weeklyLinePoints->map(fn($p) => $p['x'] . ',' . $p['y'])->implode(' ');
-        $weeklyLineArea = 'M 4 94 L ' . $weeklyLinePath . ' L 96 94 Z';
+        $weeklyLinePath = $toSmoothPath($weeklyLinePoints->all());
+        $weeklyLineArea = $weeklyLinePath !== '' ? $weeklyLinePath . ' L 96 94 L 4 94 Z' : '';
+
+        // Per-department-level line data for the weekly chart (grouped grades).
+        $weeklyLevelLines = collect($departmentLevels)
+            ->filter(fn($meta, $level) => $level !== 'unknown')
+            ->map(function ($meta, $level) use ($weeklyChartBuckets, $weeklyChartBucketCount, $weeklyMaxBucketTotal, $toSmoothPath) {
+                $gradeKeys = array_map('strval', match ($level) {
+                    'elementary' => [1, 2, 3, 4, 5, 6],
+                    'highschool' => [7, 8, 9, 10],
+                    'senior_high_school' => [11, 12],
+                    default => [],
+                });
+                $span = max($weeklyChartBucketCount - 1, 1);
+                $points = [];
+                foreach ($weeklyChartBuckets as $i => $week) {
+                    $grades = $week['grades'] ?? [];
+                    $count = 0;
+                    foreach ($gradeKeys as $gk) {
+                        $count += $grades[$gk] ?? 0;
+                    }
+                    $x = 4 + ($i / $span) * 92;
+                    $ratio = $weeklyMaxBucketTotal > 0 ? ($count / $weeklyMaxBucketTotal) : 0;
+                    $y = 6 + (1 - $ratio) * 88;
+                    $points[] = ['x' => round($x, 2), 'y' => round($y, 2)];
+                }
+                return [
+                    'level' => $level,
+                    'label' => $meta['label'],
+                    'color' => $meta['color'],
+                    'path' => $toSmoothPath($points),
+                    'last' => $points ? $points[count($points) - 1] : null,
+                ];
+            })
+            ->values();
 
         $weeklyChartPeakBucket = $weeklyPeakBucket ?? $weeklyChartBuckets->sortByDesc('total')->first();
         $weeklyChartPeakLabel = $weeklyChartPeakBucket['range'] ?? 'No scans yet';
@@ -863,6 +941,33 @@
             font-weight: 800;
             color: #111827;
         }
+
+        /* ===== Minimal line chart (Line view) ===== */
+        .line-chart__frame.sp-line {
+            height: 180px;
+            border: none;
+            background: transparent;
+            overflow: visible;
+        }
+        .sp-line__stroke {
+            fill: none;
+            stroke-width: 1.75;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 2px 5px rgba(79, 70, 229, 0.22));
+        }
+        .sp-line__stroke--multi {
+            stroke-width: 1.4;
+            filter: none;
+        }
+        .sp-line__area {
+            stroke: none;
+        }
+        .sp-line__dot {
+            fill: #fff;
+            stroke: #6366f1;
+            stroke-width: 1.6;
+        }
     </style>
 
     <div class="dashboard-shell mx-3 mb-2">
@@ -979,30 +1084,27 @@
 
                     {{-- Line view --}}
                     <div class="chart-view d-none" data-view="line">
-                        <div class="line-chart__frame">
+                        <div class="line-chart__frame sp-line">
                             <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
-                                aria-label="Scan volume line chart">
-                                <defs>
-                                    <linearGradient id="dailyTrendArea" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.22"></stop>
-                                        <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.02"></stop>
-                                    </linearGradient>
-                                </defs>
-                                <line x1="0" y1="84" x2="100" y2="84" class="axis-line"></line>
-                                <line x1="0" y1="50" x2="100" y2="50" class="axis-line" opacity="0.55"></line>
-                                <line x1="0" y1="16" x2="100" y2="16" class="axis-line" opacity="0.4"></line>
-                                <path d="{{ $dailyLineArea }}" class="trend-area" style="fill: url(#dailyTrendArea)"></path>
-                                <polyline points="{{ $dailyLinePath }}" class="trend-line" style="stroke: #4f46e5"></polyline>
-                                @foreach ($dailyLinePoints as $point)
-                                    <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="1.5" class="trend-dot">
-                                        <title>{{ $point['label'] }}: {{ $point['total'] }} scans</title>
-                                    </circle>
+                                aria-label="Scan volume trend by department level">
+                                @foreach ($dailyLevelLines as $ll)
+                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke sp-line__stroke--multi"
+                                        style="stroke: {{ $ll['color'] }}"></path>
+                                    @if ($ll['last'])
+                                        <circle cx="{{ $ll['last']['x'] }}" cy="{{ $ll['last']['y'] }}" r="1.8"
+                                            class="sp-line__dot" style="stroke: {{ $ll['color'] }}">
+                                            <title>{{ $ll['label'] }}</title>
+                                        </circle>
+                                    @endif
                                 @endforeach
                             </svg>
                         </div>
-                        <div class="line-chart__ticks">
-                            @foreach ($scanBuckets as $i => $bucket)
-                                <span>{{ $i % 4 === 0 ? $bucket['label'] : '·' }}</span>
+                        <div class="chart-legend mt-2">
+                            @foreach ($dailyLevelLines as $ll)
+                                <div class="chart-legend__item">
+                                    <span class="chart-legend__swatch" style="background: {{ $ll['color'] }}"></span>
+                                    <span>{{ $ll['label'] }}</span>
+                                </div>
                             @endforeach
                         </div>
                     </div>
@@ -1128,30 +1230,27 @@
 
                     {{-- Line view --}}
                     <div class="chart-view d-none" data-view="line">
-                        <div class="line-chart__frame">
+                        <div class="line-chart__frame sp-line">
                             <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
-                                aria-label="Weekly scan volume line chart">
-                                <defs>
-                                    <linearGradient id="weeklyTrendArea" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.22"></stop>
-                                        <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.02"></stop>
-                                    </linearGradient>
-                                </defs>
-                                <line x1="0" y1="84" x2="100" y2="84" class="axis-line"></line>
-                                <line x1="0" y1="50" x2="100" y2="50" class="axis-line" opacity="0.55"></line>
-                                <line x1="0" y1="16" x2="100" y2="16" class="axis-line" opacity="0.4"></line>
-                                <path d="{{ $weeklyLineArea }}" class="trend-area" style="fill: url(#weeklyTrendArea)"></path>
-                                <polyline points="{{ $weeklyLinePath }}" class="trend-line" style="stroke: #0ea5e9"></polyline>
-                                @foreach ($weeklyLinePoints as $point)
-                                    <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="1.5" class="trend-dot">
-                                        <title>{{ $point['label'] }}: {{ $point['total'] }} scans</title>
-                                    </circle>
+                                aria-label="Weekly scan volume trend by department level">
+                                @foreach ($weeklyLevelLines as $ll)
+                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke sp-line__stroke--multi"
+                                        style="stroke: {{ $ll['color'] }}"></path>
+                                    @if ($ll['last'])
+                                        <circle cx="{{ $ll['last']['x'] }}" cy="{{ $ll['last']['y'] }}" r="1.8"
+                                            class="sp-line__dot" style="stroke: {{ $ll['color'] }}">
+                                            <title>{{ $ll['label'] }}</title>
+                                        </circle>
+                                    @endif
                                 @endforeach
                             </svg>
                         </div>
-                        <div class="line-chart__ticks">
-                            @foreach ($weeklyChartBuckets as $week)
-                                <span>{{ $week['label'] }}</span>
+                        <div class="chart-legend mt-2">
+                            @foreach ($weeklyLevelLines as $ll)
+                                <div class="chart-legend__item">
+                                    <span class="chart-legend__swatch" style="background: {{ $ll['color'] }}"></span>
+                                    <span>{{ $ll['label'] }}</span>
+                                </div>
                             @endforeach
                         </div>
                     </div>
@@ -1244,7 +1343,7 @@
                                                 {{ ['IN' => 'Time In', 'OUT' => 'Time Out'][$scan['scan_type']] ?? 'Unknown' }}
                                             </span>
                                         </td>
-                                        <td>{{ $scan['session_type'] ? ucfirst($scan['session_type']) : '-' }}</td>
+                                        <td>{{ $scan['session_type'] ? Str::headline(str_replace('_', ' ', $scan['session_type'])) : '-' }}</td>
                                         <td>{{ $scan['scan_time'] ?? '-' }}</td>
                                         <td class="fw-semibold text-danger">
                                             {{ $remarks !== '' ? $remarks : '-' }}

@@ -105,6 +105,7 @@
                             <option value="all" @selected($sessionTypeValue === 'all')>All</option>
                             <option value="morning" @selected($sessionTypeValue === 'morning')>Morning</option>
                             <option value="afternoon" @selected($sessionTypeValue === 'afternoon')>Afternoon</option>
+                            <option value="whole_day" @selected($sessionTypeValue === 'whole_day')>Whole Day</option>
                         </select>
                     </div>
 
@@ -226,7 +227,7 @@
                         @endphp
                         <span class="badge-dot dot-{{ $dotScanType }}">{{ $scanTypeLabels[$attendance_log->scan_type] ?? 'Unknown' }}</span>
                     </td>
-                    <td>{{ $attendance_log->session_type ? ucfirst($attendance_log->session_type) : '-' }}</td>
+                    <td>{{ $attendance_log->session_type ? Str::headline(str_replace('_', ' ', $attendance_log->session_type)) : '-' }}</td>
                     <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
                     <td>
                         @php
@@ -352,7 +353,7 @@
                                 </div>
                                 <div class="scan-item">
                                     <span class="scan-label">Session</span>
-                                    <span class="scan-value">{{ ucfirst($attendance_log->session_type ?? '-') }}</span>
+                                    <span class="scan-value">{{ $attendance_log->session_type ? Str::headline(str_replace('_', ' ', $attendance_log->session_type)) : '-' }}</span>
                                 </div>
                                 <div class="scan-item">
                                     <span class="scan-label">Scan Type</span>

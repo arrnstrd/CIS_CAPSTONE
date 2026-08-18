@@ -288,7 +288,7 @@ async function loadValidationIssuePreview() {
                 <span class="badge-dot dot-${i.severity} mt-1"></span>
                 <div class="small w-100">
                     <span class="text-muted me-2">Row ${i.row_number ?? "—"}</span>
-                    <span class="text-muted">${esc(i.issue_type)}</span>
+                    <span class="text-muted">${label(i.issue_type)}</span>
                     <div class="mt-1">${esc(i.message)}</div>
                 </div>
             </div>`,
@@ -577,9 +577,9 @@ export async function loadIssues(page) {
                 return `<tr>
                 <td>${i.row_number}</td>
                 <td><small>${esc(name)}</small></td>
-                <td><small>${esc(i.issue_type)}</small></td>
-                <td><span class="badge-dot dot-${i.severity}">${i.severity}</span></td>
-                <td><span class="badge-dot dot-${i.status}">${i.status}</span></td>
+                <td><small>${label(i.issue_type)}</small></td>
+                <td><span class="badge-dot dot-${i.severity}">${label(i.severity)}</span></td>
+                <td><span class="badge-dot dot-${i.status}">${label(i.status)}</span></td>
                 <td><small class="text-muted">${new Date(i.created_at).toLocaleDateString()}</small></td>
                 <td>${
                     `<button class="btn btn-sm btn-outline-secondary me-1" onclick="viewIssueDetail(${i.id})" title="View Details"><i class="fas fa-eye"></i></button>` +
@@ -645,9 +645,9 @@ window.viewIssueDetail = function (id) {
     document.getElementById("issueDetailSummary").innerHTML = `
         <div class="row g-2 small mb-3">
             <div class="col-3"><span class="text-muted">Row:</span><br><span class="fw-medium">${issue.row_number}</span></div>
-            <div class="col-3"><span class="text-muted">Type:</span><br><span class="fw-medium">${esc(issue.issue_type)}</span></div>
-            <div class="col-3"><span class="text-muted">Severity:</span><br><span class="badge-dot dot-${issue.severity}">${issue.severity}</span></div>
-            <div class="col-3"><span class="text-muted">Status:</span><br><span class="badge-dot dot-${issue.status}">${issue.status}</span></div>
+            <div class="col-3"><span class="text-muted">Type:</span><br><span class="fw-medium">${label(issue.issue_type)}</span></div>
+            <div class="col-3"><span class="text-muted">Severity:</span><br><span class="badge-dot dot-${issue.severity}">${label(issue.severity)}</span></div>
+            <div class="col-3"><span class="text-muted">Status:</span><br><span class="badge-dot dot-${issue.status}">${label(issue.status)}</span></div>
         </div>`;
 
     document.getElementById("issueDetailMessage").innerHTML = `

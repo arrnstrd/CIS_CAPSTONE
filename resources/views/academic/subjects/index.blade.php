@@ -1,6 +1,8 @@
 <x-layouts.admin>
     <x-slot name="pageName">Subjects</x-slot>
 
+    <x-slot name="subtitle">Manage subject records and curriculum offerings.</x-slot>
+
     <div class="col mb-3 mx-2">
         <div class="bg-white rounded p-4 border">
             <div class="d-flex justify-content-between align-items-center mb-4">

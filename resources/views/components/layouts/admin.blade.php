@@ -26,12 +26,13 @@
 
 
         <main class="page-content">
-            <div class="container-fluid px-4">
-                <section class="admin-head-banner mx-3 mt-3">
+            <div class="container-fluid p-6">
+                <section class="admin-head-banner p-4  mx-3 mt-3">
                     <div class="admin-head-banner__copy">
-                        <div class="admin-head-banner__eyebrow">{{ $pageName ?? 'Header' }}</div>
-                        <h1 class="admin-head-banner__title">{{ $pageName ?? 'Header' }}</h1>
-                        <p class="admin-head-banner__sub">{{ $subtitle ?? 'subtile here' }}</p>
+                        <h1 class="admin-head-banner__title mt-3">{{ $pageName ?? 'Header' }}</h1>
+                        @if ($subtitle ?? null)
+                            <p class="admin-head-banner__sub">{{ $subtitle }}</p>
+                        @endif
                     </div>
 
                     <div class="admin-head-banner__meta">
@@ -43,6 +44,8 @@
                             </span>
                         </div>
 
+                        <x-help-button />
+
                         @isset($headerActions)
                             <div class="admin-head-banner__actions">
                                 {{ $headerActions }}
@@ -51,7 +54,7 @@
                     </div>
                 </section>
 
-                <div class="admin-page-slot">
+                <div class="admin-page-slot mx-2">
                     {{ $slot }}
                 </div>
             </div>

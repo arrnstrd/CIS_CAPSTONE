@@ -197,6 +197,23 @@ img.logo {
   margin-top: 0;
 }
 
+.demo-select {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #374151;
+  cursor: pointer;
+  appearance: auto;
+}
+
+.demo-hint {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
 
 </style>
 <body>
@@ -242,6 +259,16 @@ img.logo {
         <p class="form-subtitle">Enter your credentials to access your assigned dashboard.</p>
 
         <div class="input-group">
+          <label for="demo-role">Quick Demo Access</label>
+          <select id="demo-role" class="form-control demo-select">
+            <option value="" selected disabled>Select a role to auto-fill…</option>
+            <option value="admin">Admin Account</option>
+            <option value="teacher">Teacher Account</option>
+          </select>
+          <p class="demo-hint">Picking an account fills in the credentials and signs you in automatically.</p>
+        </div>
+
+        <div class="input-group">
       <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" name="email" 
                        value="{{ old('email') }}" required autofocus>
@@ -270,6 +297,30 @@ img.logo {
     </div>
 
   </div>
+
+  <script>
+    const demoAccounts = {
+      admin: { email: 'superadmin@cis.edu.ph', password: 'SuperAdmin123' },
+      teacher: { email: 'trishamaemartinez8@gmail.com', password: 'password' },
+    };
+
+    const roleSelect = document.getElementById('demo-role');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+
+    roleSelect.addEventListener('change', function () {
+      const account = demoAccounts[this.value];
+      if (!account) return;
+
+      emailInput.value = account.email;
+      passwordInput.value = account.password;
+
+      // Let the browser commit the values, then submit normally.
+      setTimeout(function () {
+        roleSelect.closest('form').submit();
+      }, 150);
+    });
+  </script>
 
 </body>
 </html>

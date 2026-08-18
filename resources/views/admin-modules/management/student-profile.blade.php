@@ -5,7 +5,7 @@
     </x-slot>
 
     <x-slot name="pageName">Student Profile</x-slot>
-    <x-slot name="subtitle"></x-slot>
+    <x-slot name="subtitle">View and manage the student's complete profile and records.</x-slot>
 
     <style>
         .student-profile {
@@ -21,6 +21,7 @@
             box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
             margin-bottom: 1rem;
         }
+
         .student-profile .sp-hero__inner {
             display: flex;
             align-items: center;
@@ -28,11 +29,13 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
+
         .student-profile .sp-identity {
             display: flex;
             align-items: center;
             gap: 0.9rem;
         }
+
         .student-profile .sp-avatar {
             width: 56px;
             height: 56px;
@@ -44,11 +47,13 @@
             color: #fff;
             flex-shrink: 0;
         }
+
         .student-profile .sp-name {
             margin: 0;
             font-weight: 800;
             color: #111827;
         }
+
         .student-profile .sp-meta {
             display: flex;
             align-items: center;
@@ -56,6 +61,7 @@
             flex-wrap: wrap;
             margin-top: 0.4rem;
         }
+
         .student-profile .sp-meta-item {
             font-size: 0.78rem;
             color: #6b7280;
@@ -68,6 +74,7 @@
             gap: 0.6rem;
             flex-wrap: wrap;
         }
+
         .student-profile .sp-stat {
             background: #f8fafc;
             border: 1px solid #edf2f7;
@@ -76,11 +83,13 @@
             min-width: 96px;
             text-align: center;
         }
+
         .student-profile .sp-stat__value {
             font-weight: 800;
             color: #111827;
             margin: 0;
         }
+
         .student-profile .sp-stat__label {
             font-size: 0.62rem;
             text-transform: uppercase;
@@ -98,6 +107,7 @@
             padding: 1.15rem;
             box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
         }
+
         .student-profile .sp-card__head {
             display: flex;
             align-items: center;
@@ -107,6 +117,7 @@
             padding-bottom: 0.7rem;
             border-bottom: 1px solid #eef2f7;
         }
+
         .student-profile .sp-card__title {
             margin: 0;
             font-size: 0.78rem;
@@ -133,16 +144,19 @@
             font-weight: 700;
             transition: all 0.2s ease;
         }
+
         .student-profile .sp-edit-btn:hover {
             border-color: #4f46e5;
             background: #eef2ff;
         }
+
         .student-profile .sp-form-label {
             font-size: 0.7rem;
             font-weight: 700;
             color: #475569;
             margin-bottom: 0.2rem;
         }
+
         .student-profile .sp-edit-actions {
             display: flex;
             align-items: center;
@@ -150,6 +164,7 @@
             gap: 0.5rem;
             margin-top: 1rem;
         }
+
         .student-profile .sp-edit-error {
             margin-right: auto;
         }
@@ -163,11 +178,13 @@
             font-weight: 700;
             margin-bottom: 0.15rem;
         }
+
         .student-profile .sp-field__value {
             font-weight: 600;
             color: #111827;
             margin: 0;
         }
+
         .student-profile .sp-field__value--muted {
             color: #374151;
             font-weight: 500;
@@ -179,6 +196,7 @@
             border-bottom: 1px solid #eef2f7;
             gap: 0.35rem;
         }
+
         .student-profile .sp-tabs .nav-link {
             border: none;
             border-radius: 0.75rem 0.75rem 0 0;
@@ -186,13 +204,16 @@
             font-weight: 600;
             padding: 0.6rem 1rem;
         }
+
         .student-profile .sp-tabs .nav-link:hover {
             color: #4f46e5;
         }
+
         .student-profile .sp-tabs .nav-link.active {
             color: #4f46e5;
             background: #eef2ff;
         }
+
         .student-profile .sp-tabpanel {
             padding-top: 1.25rem;
         }
@@ -265,9 +286,9 @@
                     <div class="sp-card__head">
                         <h6 class="sp-card__title"><i class="fa-solid fa-user me-1"></i> Personal Information</h6>
                         @if(!auth()->user()?->isTeacher())
-                        <button type="button" class="sp-edit-btn" data-edit-toggle="info">
-                            <i class="fa-solid fa-pen me-1"></i> Edit
-                        </button>
+                            <button type="button" class="sp-edit-btn" data-edit-toggle="info">
+                                <i class="fa-solid fa-pen me-1"></i> Edit
+                            </button>
                         @endif
                     </div>
 
@@ -293,7 +314,8 @@
                         </div>
                         <div class="col-6">
                             <div class="sp-field__label">Mother tongue</div>
-                            <p class="sp-field__value" id="sp-info-mother-tongue">{{ $student->mother_tongue ?? '—' }}</p>
+                            <p class="sp-field__value" id="sp-info-mother-tongue">{{ $student->mother_tongue ?? '—' }}
+                            </p>
                         </div>
                         <div class="col-6">
                             <div class="sp-field__label">IP / Ethnic group</div>
@@ -305,81 +327,93 @@
                         </div>
                         <div class="col-12">
                             <div class="sp-field__label">Address</div>
-                            <p class="sp-field__value sp-field__value--muted" id="sp-info-address">{{ $student->address ?? '—' }}</p>
+                            <p class="sp-field__value sp-field__value--muted" id="sp-info-address">
+                                {{ $student->address ?? '—' }}</p>
                         </div>
                     </div>
 
                     @if(!auth()->user()?->isTeacher())
-                    <form class="sp-edit-form d-none" data-edit-form="info"
-                        action="{{ route('student.profile.update-info', $student) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="sp-form-label">First name</label>
-                                <input type="text" name="first_name" class="form-control" value="{{ $student->first_name }}" required>
+                        <form class="sp-edit-form d-none" data-edit-form="info"
+                            action="{{ route('student.profile.update-info', $student) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="sp-form-label">First name</label>
+                                    <input type="text" name="first_name" class="form-control"
+                                        value="{{ $student->first_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="sp-form-label">Middle name</label>
+                                    <input type="text" name="middle_name" class="form-control"
+                                        value="{{ $student->middle_name }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="sp-form-label">Last name</label>
+                                    <input type="text" name="last_name" class="form-control"
+                                        value="{{ $student->last_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="sp-form-label">Suffix</label>
+                                    <input type="text" name="suffix" class="form-control" value="{{ $student->suffix }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="sp-form-label">Sex</label>
+                                    <select name="sex" class="form-select" required>
+                                        <option value="female" {{ $student->sex === 'female' ? 'selected' : '' }}>Female
+                                        </option>
+                                        <option value="male" {{ $student->sex === 'male' ? 'selected' : '' }}>Male</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="sp-form-label">Age</label>
+                                    <input type="number" name="age" class="form-control" min="1" max="100"
+                                        value="{{ $student->age }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="sp-form-label">Birthplace</label>
+                                    <input type="text" name="birthplace" class="form-control"
+                                        value="{{ $student->birthplace }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="sp-form-label">Mother tongue</label>
+                                    <input type="text" name="mother_tongue" class="form-control"
+                                        value="{{ $student->mother_tongue }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="sp-form-label">IP / Ethnic group</label>
+                                    <input type="text" name="ip_ethnic_group" class="form-control"
+                                        value="{{ $student->ip_ethnic_group }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="sp-form-label">Religion</label>
+                                    <input type="text" name="religion" class="form-control"
+                                        value="{{ $student->religion }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="sp-form-label">Address</label>
+                                    <input type="text" name="address" class="form-control" value="{{ $student->address }}">
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="sp-form-label">Middle name</label>
-                                <input type="text" name="middle_name" class="form-control" value="{{ $student->middle_name }}">
+                            <div class="sp-edit-actions">
+                                <span class="sp-edit-error text-danger small" data-edit-error="info"></span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    data-edit-cancel="info">Cancel</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Save</button>
                             </div>
-                            <div class="col-md-6">
-                                <label class="sp-form-label">Last name</label>
-                                <input type="text" name="last_name" class="form-control" value="{{ $student->last_name }}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="sp-form-label">Suffix</label>
-                                <input type="text" name="suffix" class="form-control" value="{{ $student->suffix }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="sp-form-label">Sex</label>
-                                <select name="sex" class="form-select" required>
-                                    <option value="female" {{ $student->sex === 'female' ? 'selected' : '' }}>Female</option>
-                                    <option value="male" {{ $student->sex === 'male' ? 'selected' : '' }}>Male</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="sp-form-label">Age</label>
-                                <input type="number" name="age" class="form-control" min="1" max="100" value="{{ $student->age }}">
-                            </div>
-                            <div class="col-12">
-                                <label class="sp-form-label">Birthplace</label>
-                                <input type="text" name="birthplace" class="form-control" value="{{ $student->birthplace }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="sp-form-label">Mother tongue</label>
-                                <input type="text" name="mother_tongue" class="form-control" value="{{ $student->mother_tongue }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="sp-form-label">IP / Ethnic group</label>
-                                <input type="text" name="ip_ethnic_group" class="form-control" value="{{ $student->ip_ethnic_group }}">
-                            </div>
-                            <div class="col-12">
-                                <label class="sp-form-label">Religion</label>
-                                <input type="text" name="religion" class="form-control" value="{{ $student->religion }}">
-                            </div>
-                            <div class="col-12">
-                                <label class="sp-form-label">Address</label>
-                                <input type="text" name="address" class="form-control" value="{{ $student->address }}">
-                            </div>
-                        </div>
-                        <div class="sp-edit-actions">
-                            <span class="sp-edit-error text-danger small" data-edit-error="info"></span>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" data-edit-cancel="info">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                        </div>
-                    </form>
+                        </form>
                     @endif
                 </div>
 
                 {{-- Guardian Info --}}
                 <div class="sp-card" data-edit-container="guardian">
                     <div class="sp-card__head">
-                        <h6 class="sp-card__title"><i class="fa-solid fa-people-roof me-1"></i> Guardian Information</h6>
+                        <h6 class="sp-card__title"><i class="fa-solid fa-people-roof me-1"></i> Guardian Information
+                        </h6>
                         @if(!auth()->user()?->isTeacher())
-                        <button type="button" class="sp-edit-btn" data-edit-toggle="guardian">
-                            <i class="fa-solid fa-pen me-1"></i> Edit
-                        </button>
+                            <button type="button" class="sp-edit-btn" data-edit-toggle="guardian">
+                                <i class="fa-solid fa-pen me-1"></i> Edit
+                            </button>
                         @endif
                     </div>
 
@@ -390,8 +424,10 @@
                                 <i class="fa-solid fa-person text-secondary" style="font-size: 16px;"></i>
                             </div>
                             <div>
-                                <p class="mb-0 fw-semibold" id="sp-guardian-name">{{ $student->guardian?->name ?? '—' }}</p>
-                                <small class="text-muted" id="sp-guardian-relationship">{{ $student->guardian?->relationship ? Str::headline($student->guardian->relationship) : '—' }}</small>
+                                <p class="mb-0 fw-semibold" id="sp-guardian-name">{{ $student->guardian?->name ?? '—' }}
+                                </p>
+                                <small class="text-muted"
+                                    id="sp-guardian-relationship">{{ $student->guardian?->relationship ? Str::headline($student->guardian->relationship) : '—' }}</small>
                             </div>
                         </div>
 
@@ -414,38 +450,42 @@
                     </div>
 
                     @if(!auth()->user()?->isTeacher())
-                    <form class="sp-edit-form d-none" data-edit-form="guardian"
-                        action="{{ route('student.profile.update-guardian', $student) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="sp-form-label">Guardian name</label>
-                                <input type="text" name="name" class="form-control" value="{{ $student->guardian?->name }}" required>
+                        <form class="sp-edit-form d-none" data-edit-form="guardian"
+                            action="{{ route('student.profile.update-guardian', $student) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="sp-form-label">Guardian name</label>
+                                    <input type="text" name="name" class="form-control"
+                                        value="{{ $student->guardian?->name }}" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="sp-form-label">Relationship</label>
+                                    <select name="relationship" class="form-select" required>
+                                        @foreach(['mother' => 'Mother', 'father' => 'Father', 'sibling' => 'Sibling', 'guardian' => 'Guardian'] as $relValue => $relLabel)
+                                            <option value="{{ $relValue }}" {{ ($student->guardian?->relationship ?? '') === $relValue ? 'selected' : '' }}>{{ $relLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="sp-form-label">Contact number</label>
+                                    <input type="text" name="contact_number" class="form-control" maxlength="20"
+                                        value="{{ $student->guardian?->contact_number }}">
+                                </div>
+                                <div class="col-12">
+                                    <label class="sp-form-label">Email</label>
+                                    <input type="email" name="email" class="form-control"
+                                        value="{{ $student->guardian?->email }}">
+                                </div>
                             </div>
-                            <div class="col-12">
-                                <label class="sp-form-label">Relationship</label>
-                                <select name="relationship" class="form-select" required>
-                                    @foreach(['mother' => 'Mother', 'father' => 'Father', 'sibling' => 'Sibling', 'guardian' => 'Guardian'] as $relValue => $relLabel)
-                                    <option value="{{ $relValue }}" {{ ($student->guardian?->relationship ?? '') === $relValue ? 'selected' : '' }}>{{ $relLabel }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="sp-edit-actions">
+                                <span class="sp-edit-error text-danger small" data-edit-error="guardian"></span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    data-edit-cancel="guardian">Cancel</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Save</button>
                             </div>
-                            <div class="col-12">
-                                <label class="sp-form-label">Contact number</label>
-                                <input type="text" name="contact_number" class="form-control" maxlength="20" value="{{ $student->guardian?->contact_number }}">
-                            </div>
-                            <div class="col-12">
-                                <label class="sp-form-label">Email</label>
-                                <input type="email" name="email" class="form-control" value="{{ $student->guardian?->email }}">
-                            </div>
-                        </div>
-                        <div class="sp-edit-actions">
-                            <span class="sp-edit-error text-danger small" data-edit-error="guardian"></span>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" data-edit-cancel="guardian">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                        </div>
-                    </form>
+                        </form>
                     @endif
                 </div>
 

@@ -6,6 +6,8 @@
         User and Role Management
     </x-slot>
 
+    <x-slot name="subtitle">Manage user accounts, roles, and access permissions.</x-slot>
+
     <div class="main-content mx-3">
         <x-ui.table>
             <thead class="text-uppercase small">
@@ -25,7 +27,7 @@
                     <th>
                         <span class="fas fa-circle me-1"></span> Status
                     </th>
-                      <th style="width: 15%">
+                    <th style="width: 15%">
                         <span class="fas fa-sliders-h me-1"></span> Actions
                     </th>
                 </tr>

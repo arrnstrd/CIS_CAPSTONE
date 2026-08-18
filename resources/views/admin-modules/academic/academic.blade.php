@@ -3,6 +3,8 @@
         Academic Setup
     </x-slot>
 
+    <x-slot name="subtitle">Manage sections and subjects for the academic setup.</x-slot>
+
     <ul class="modern-tabs mx-2" id="academicTabs" role="tablist">
         <li class="modern-tabs__item">
             <button class="modern-tabs__link active" data-bs-toggle="tab" data-bs-target="#section-table-pane"

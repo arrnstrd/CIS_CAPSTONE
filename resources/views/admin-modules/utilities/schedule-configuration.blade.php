@@ -3,17 +3,25 @@
         Schedule Configuration
     </x-slot>
 
-    <x-slot name="pageTitle">
+    <x-slot name="subtitle">Set attendance time schedules per level and session type.</x-slot>
 
-    </x-slot>
+    @php
+        $levelLabels = [
+            'elementary' => 'Elementary',
+            'hs' => 'High School',
+            'shs' => 'Senior High School',
+        ];
+        $sessionTypeLabels = [
+            'morning' => 'Morning',
+            'afternoon' => 'Afternoon',
+            'whole_day' => 'Whole Day',
+        ];
+    @endphp
 
     <div class="main-content mx-3">
 
         {{-- Top Controls --}}
         <div class="d-flex justify-content-end align-items-center mx-3 gap-2 mb-3">
-            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#scheduleHelpModal">
-                <i class="fa-solid fa-circle-question me-1"></i> Help
-            </button>
             <button class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#addScheduleModal">
                 Add Schedule
             </button>
@@ -38,8 +46,9 @@
                 <tbody class="text-center">
                     @forelse ($scheduleConfigs as $scheduleConfig)
                         <tr>
-                            <td>{{ $scheduleConfig->level }}</td>
-                            <td>{{ $scheduleConfig->session_type }}</td>
+                            <td>{{ $levelLabels[$scheduleConfig->level] ?? $scheduleConfig->level }}</td>
+                            <td>{{ $sessionTypeLabels[$scheduleConfig->session_type] ?? $scheduleConfig->session_type }}
+                            </td>
                             <td>{{ $scheduleConfig->in_start ? \Carbon\Carbon::parse($scheduleConfig->in_start)->format('g:i A') : '—' }}
                             </td>
                             <td>{{ $scheduleConfig->in_end ? \Carbon\Carbon::parse($scheduleConfig->in_end)->format('g:i A') : '—' }}
@@ -78,7 +87,9 @@
                                                 data-bs-toggle="modal" data-bs-target="#deleteScheduleModal"
                                                 data-id="{{ $scheduleConfig->id }}"
                                                 data-level="{{ $scheduleConfig->level }}"
-                                                data-session-type="{{ $scheduleConfig->session_type }}">
+                                                data-session-type="{{ $scheduleConfig->session_type }}"
+                                                data-level-label="{{ $levelLabels[$scheduleConfig->level] ?? $scheduleConfig->level }}"
+                                                data-session-type-label="{{ $sessionTypeLabels[$scheduleConfig->session_type] ?? $scheduleConfig->session_type }}">
                                                 Delete
                                             </button>
                                         </li>
@@ -291,188 +302,6 @@
                 <button type="submit" class="btn btn-danger" data-loading-text="Deleting...">Delete</button>
             </div>
         </form>
-    </x-modal>
-
-    {{-- Help Modal --}}
-    <x-modal size="modal-lg">
-        <x-slot name="id">scheduleHelpModal</x-slot>
-        <x-slot name="modalTitle">Schedule Configuration - Help & FAQ</x-slot>
-
-        <div class="modal-body px-0 pb-3">
-            {{-- Tabs --}}
-            <ul class="nav nav-tabs nav-fill mb-0" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="help-tab" data-bs-toggle="tab"
-                        data-bs-target="#help-tab-pane" type="button" role="tab" aria-controls="help-tab-pane"
-                        aria-selected="true">
-                        <i class="fa-solid fa-book-open me-1"></i> Help
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="faq-tab" data-bs-toggle="tab" data-bs-target="#faq-tab-pane"
-                        type="button" role="tab" aria-controls="faq-tab-pane" aria-selected="false">
-                        <i class="fa-solid fa-circle-question me-1"></i> FAQ
-                    </button>
-                </li>
-            </ul>
-
-            <div class="tab-content pt-3">
-                {{-- Help Tab --}}
-                <div class="tab-pane fade show active" id="help-tab-pane" role="tabpanel"
-                    aria-labelledby="help-tab" tabindex="0">
-                    <div class="px-2 small text-secondary">
-                        <p class="fw-semibold text-dark mb-2">How schedules are organized</p>
-                        <p class="mb-1">A schedule configuration defines when students may <strong>enter</strong> and
-                            <strong> exit</strong> campus. Each configuration is tied to an
-                            <strong> Education Level</strong> and a <strong> Session Type</strong>.
-                        </p>
-
-                        <div class="row g-2 mt-1">
-                            <div class="col-sm-6">
-                                <div class="border rounded-2 p-2 h-100">
-                                    <div class="fw-semibold text-dark mb-1">1. Department</div>
-                                    <div class="text-muted">Elementary, High School (HS), or Senior High School
-                                        (SHS).
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="border rounded-2 p-2 h-100">
-                                    <div class="fw-semibold text-dark mb-1">2. Session</div>
-                                    <div class="text-muted">Morning, Afternoon, or Whole-day session.</div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="border rounded-2 p-2 h-100">
-                                    <div class="fw-semibold text-dark mb-1">3. IN Window</div>
-                                    <div class="text-muted">The allowed time range for entry scanning.</div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="border rounded-2 p-2 h-100">
-                                    <div class="fw-semibold text-dark mb-1">4. Late Threshold</div>
-                                    <div class="text-muted">Scans after this time are marked as Late.</div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="border rounded-2 p-2 h-100">
-                                    <div class="fw-semibold text-dark mb-1">5. OUT Window</div>
-                                    <div class="text-muted">The allowed time range for exit scanning.</div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="border rounded-2 p-2 h-100">
-                                    <div class="fw-semibold text-dark mb-1">6. Actions</div>
-                                    <div class="text-muted">Use the ellipsis to Edit or Delete a schedule.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- FAQ Tab --}}
-                <div class="tab-pane fade" id="faq-tab-pane" role="tabpanel" aria-labelledby="faq-tab" tabindex="0">
-                    <div class="px-2 small text-muted">
-                        <div class="accordion accordion-flush" id="scheduleFaqAccordion">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="faq-heading-1">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#faq-collapse-1"
-                                        aria-expanded="false" aria-controls="faq-collapse-1">
-                                        What is a schedule configuration?
-                                    </button>
-                                </h2>
-                                <div id="faq-collapse-1" class="accordion-collapse collapse"
-                                    aria-labelledby="faq-heading-1" data-bs-parent="#scheduleFaqAccordion">
-                                    <div class="accordion-body">
-                                        It defines the allowed entry (IN) and exit (OUT) scanning
-                                        windows for a specific Education Level and Session Type, plus
-                                        the Late Threshold used to flag late arrivals.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="faq-heading-2">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#faq-collapse-2"
-                                        aria-expanded="false" aria-controls="faq-collapse-2">
-                                        What should I do if a student scans outside the IN Window?
-                                    </button>
-                                </h2>
-                                <div id="faq-collapse-2" class="accordion-collapse collapse"
-                                    aria-labelledby="faq-heading-2" data-bs-parent="#scheduleFaqAccordion">
-                                    <div class="accordion-body">
-                                        A scan before the Entry Start Time or after the Entry End Time
-                                        is considered outside the allowed window. Adjust the schedule
-                                        if the window needs to be widened.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="faq-heading-3">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#faq-collapse-3"
-                                        aria-expanded="false" aria-controls="faq-collapse-3">
-                                        How does the Late Threshold work?
-                                    </button>
-                                </h2>
-                                <div id="faq-collapse-3" class="accordion-collapse collapse"
-                                    aria-labelledby="faq-heading-3" data-bs-parent="#scheduleFaqAccordion">
-                                    <div class="accordion-body">
-                                        Any entry scan occurring after the Late Threshold time is
-                                        marked as <em>Late</em>. It should sit between Entry Start and
-                                        Entry End.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="faq-heading-4">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#faq-collapse-4"
-                                        aria-expanded="false" aria-controls="faq-collapse-4">
-                                        Can I have different sessions for the same level?
-                                    </button>
-                                </h2>
-                                <div id="faq-collapse-4" class="accordion-collapse collapse"
-                                    aria-labelledby="faq-heading-4" data-bs-parent="#scheduleFaqAccordion">
-                                    <div class="accordion-body">
-                                        Yes. For example, Elementary can have both a Morning and an
-                                        Afternoon session. Add one schedule per level-session pair.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="faq-heading-5">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#faq-collapse-5"
-                                        aria-expanded="false" aria-controls="faq-collapse-5">
-                                        Why can't I delete a schedule?
-                                    </button>
-                                </h2>
-                                <div id="faq-collapse-5" class="accordion-collapse collapse"
-                                    aria-labelledby="faq-heading-5" data-bs-parent="#scheduleFaqAccordion">
-                                    <div class="accordion-body">
-                                        Deleting a schedule is permanent. If there are active
-                                        attendance records tied to it, coordinate with your administrator
-                                        before deleting.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                Close
-            </button>
-        </div>
     </x-modal>
 
 </x-layouts.admin>

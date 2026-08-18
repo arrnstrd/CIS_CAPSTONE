@@ -3,6 +3,8 @@
         Email Monitoring
     </x-slot>
 
+    <x-slot name="subtitle">Monitor email deliveries, pending, and failed logs.</x-slot>
+
     <x-slot name="title">
         Email Monitoring
     </x-slot>
@@ -61,9 +63,11 @@
                         <div class="col-6 col-lg-2">
                             <label class="form-label text-muted text-uppercase small fw-bold">Scan type</label>
                             <select class="form-select" name="scan_type" onchange="this.form.submit()">
-                                <option value="all" {{ request('scan_type', 'all') === 'all' ? 'selected' : '' }}>All</option>
+                                <option value="all" {{ request('scan_type', 'all') === 'all' ? 'selected' : '' }}>All
+                                </option>
                                 <option value="IN" {{ request('scan_type') === 'IN' ? 'selected' : '' }}>Time In</option>
-                                <option value="OUT" {{ request('scan_type') === 'OUT' ? 'selected' : '' }}>Time Out</option>
+                                <option value="OUT" {{ request('scan_type') === 'OUT' ? 'selected' : '' }}>Time Out
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -290,7 +294,8 @@
                         </td>
 
                         <td>
-                            <span class="badge-dot dot-secondary">{{ $emailLog->scan_type === 'IN' ? 'Time In' : ($emailLog->scan_type === 'OUT' ? 'Time Out' : 'Unknown') }}</span>
+                            <span
+                                class="badge-dot dot-secondary">{{ $emailLog->scan_type === 'IN' ? 'Time In' : ($emailLog->scan_type === 'OUT' ? 'Time Out' : 'Unknown') }}</span>
                         </td>
 
                         <td>
