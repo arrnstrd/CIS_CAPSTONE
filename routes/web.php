@@ -255,7 +255,29 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/teacher/student-management', [StudentManagementController::class, 'index'])->name('teacher.student-management');
         Route::get('/teacher/student-profile/{student}', [StudentProfileController::class, 'teacherShow'])->name('teacher.student-profile');
-        Route::get('/teacher/grading-system', fn() => view('teacher-modules.grading-system'))->name('teacher.grading-system');
+        Route::get('/teacher/grading-system', [App\Http\Controllers\Teacher\GradingSystemOverviewController::class, 'index'])->name('teacher.grading-system');
+        Route::get('/teacher/grading-system/grades', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'index'])->name('teacher.grading-system.grades');
+        Route::get('/teacher/grading-system/dashboard', [App\Http\Controllers\Teacher\GradingDashboardController::class, 'index'])->name('teacher.grading-system.dashboard');
+        Route::get('/teacher/grading-system/grade-sheet/{teachingAssignmentId}', [App\Http\Controllers\Teacher\GradeSheetController::class, 'show'])->name('teacher.grading-system.grade-sheet');
+        Route::post('/teacher/grading-system/grade-sheet/assessment', [App\Http\Controllers\Teacher\GradeSheetController::class, 'storeAssessment'])->name('teacher.grading-system.grade-sheet.assessment');
+        Route::post('/teacher/grading-system/grade-sheet/score', [App\Http\Controllers\Teacher\GradeSheetController::class, 'storeScore'])->name('teacher.grading-system.grade-sheet.score');
+        Route::get('/teacher/grading-system/import-data', [App\Http\Controllers\Teacher\ImportDataController::class, 'index'])->name('teacher.grading-system.import-data');
+        Route::get('/teacher/grading-system/grades/{gradeLevel}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'show'])->name('teacher.grading-system.grades.show');
+        Route::get('/teacher/grading-system/sections/{sectionId}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'students'])->name('teacher.grading-system.sections.show');
+        Route::get('/teacher/grading-system/students/{enrollmentId}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'studentDetail'])->name('teacher.grading-system.students.show');
+        Route::get('/teacher/grading-system/analytics', [App\Http\Controllers\Teacher\AnalyticsController::class, 'index'])->name('teacher.grading-system.analytics');
+        Route::get('/teacher/grading-system/analytics/{gradeLevel}', [App\Http\Controllers\Teacher\AnalyticsController::class, 'show'])->name('teacher.grading-system.analytics.show');
+        Route::get('/teacher/grading-system/analytics/sections/{sectionId}', [App\Http\Controllers\Teacher\AnalyticsController::class, 'students'])->name('teacher.grading-system.analytics.students');
+        Route::get('/teacher/grading-system/analytics/students/{enrollmentId}', [App\Http\Controllers\Teacher\AnalyticsController::class, 'studentSubjects'])->name('teacher.grading-system.analytics.student');
+        Route::get('/teacher/grading-system/at-risk', [App\Http\Controllers\Teacher\AtRiskController::class, 'index'])->name('teacher.grading-system.at-risk');
+        Route::get('/teacher/grading-system/attendance', [App\Http\Controllers\Teacher\AttendanceAnalyticsController::class, 'index'])->name('teacher.grading-system.attendance');
+        Route::get('/teacher/grading-system/by-level', [App\Http\Controllers\Teacher\ByLevelController::class, 'index'])->name('teacher.grading-system.by-level');
+        Route::get('/teacher/grading-system/sections', [App\Http\Controllers\Teacher\SectionsOverviewController::class, 'index'])->name('teacher.grading-system.sections');
+        Route::get('/teacher/grading-system/subjects', [App\Http\Controllers\Teacher\SubjectsOverviewController::class, 'index'])->name('teacher.grading-system.subjects');
+        Route::get('/teacher/grading-system/student-profile', [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'index'])->name('teacher.grading-system.student-profile');
+        Route::get('/teacher/grading-system/student-profile/{enrollmentId}', [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'show'])->name('teacher.grading-system.student-profile.show');
+        Route::get('/teacher/grading-system/comp-rules', [App\Http\Controllers\Teacher\CompRulesController::class, 'index'])->name('teacher.grading-system.comp-rules');
+        Route::put('/teacher/grading-system/comp-rules', [App\Http\Controllers\Teacher\CompRulesController::class, 'update'])->name('teacher.grading-system.comp-rules.update');
 
         // Teacher attendance monitoring
         Route::get('/teacher/attendance', fn() => view('teacher-modules.monitoring.class-attendance'))->name('teacher.attendance');

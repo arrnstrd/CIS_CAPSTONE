@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Room Attendance
+        <span class="ra-page-title">
+            <i class="fa-solid fa-clipboard-check"></i>
+            Room Attendance
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        Select a section to view and verify today's classroom attendance.
+        <span class="ra-page-subtitle">Select a section to view and verify today's classroom attendance.</span>
     </x-slot>
 
     <div class="row g-3">

@@ -9,23 +9,16 @@
             @php
                 $teacherUser = auth()->user();
                 $teacherProfile = $teacherUser?->teacher;
-                $advisedSection = $teacherProfile?->advisedSections()->first();
                 $teacherName = $teacherProfile?->full_name ?? ($teacherUser?->first_name . ' ' . $teacherUser?->last_name);
                 $teacherEmail = $teacherUser?->email ?? '';
-                $teacherClass = $advisedSection
-                    ? 'Grade ' . $advisedSection->grade_level . ' - ' . $advisedSection->name
-                    : '';
             @endphp
-            <div class="sidebar-teacher-info">
+<div class="sidebar-teacher-info">
                 <div class="sidebar-teacher-avatar">
                     <i class="fa-solid fa-circle-user"></i>
                 </div>
                 <div class="sidebar-teacher-details">
                     <span class="sidebar-teacher-name">{{ $teacherName }}</span>
                     <span class="sidebar-teacher-email">{{ $teacherEmail }}</span>
-                    @if ($teacherClass)
-                        <span class="sidebar-teacher-class">{{ $teacherClass }}</span>
-                    @endif
                 </div>
             </div>
 

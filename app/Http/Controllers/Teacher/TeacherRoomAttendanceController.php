@@ -320,7 +320,7 @@ class TeacherRoomAttendanceController extends Controller
             }
         }
 
-        return $rows;
+        return $rows->groupBy('date');
     }
 
     /**

@@ -1,3 +1,27 @@
+﻿import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: [
+                'resources/css/app.css',
+                'resources/css/login.css',
+                'resources/js/app.js',
+                'resources/js/teaching-assignments.js'
+            ],
+            refresh: true,
+        }),
+    ],
+    server: {
+        watch: {
+            ignored: ['**/storage/framework/views/**'],
+        },
+    },
+});
+
+=====MANIFEST=====
+
 {
   "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2": {
     "file": "assets/fa-brands-400-BP5tdqmh.woff2",
@@ -20,7 +44,7 @@
     "src": "public/images/top_head_image.webp"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CajoKA-S.css",
+    "file": "assets/app-CPOKVCe8.css",
     "name": "app",
     "names": [
       "app.css"
@@ -57,3 +81,26 @@
     "isEntry": true
   }
 }
+
+=====APP.CSS=====
+
+/* 1. Imports first */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+@import './sidebar.css';
+@import './top-nav.css';
+@import './layout.css';
+@import './table.css';
+@import './room-attendance.css';
+@import './grading-system.css';
+@import './grading-dashboard.css';
+@import './gradeLevel.css';
+@import './status-badges.css';
+
+
+/* @import './teacher-modules/t-layout.css';
+@import './teacher-modules/t-sidebar.css'; */
+
+
+@import './academic.css';
+@import './import.css';

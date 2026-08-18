@@ -4,7 +4,10 @@
     </x-slot>
 
     <x-slot name="subtitle">
-        <a href="{{ route('room-attendance.index') }}" class="text-decoration-none">&larr; Back to Room Attendance</a>
+        <a href="{{ route('room-attendance.index') }}" class="ra-back-link">
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Room Attendance
+        </a>
     </x-slot>
 
     @php
@@ -112,9 +115,6 @@
             <tr>
                 <th>Student No</th>
                 <th>Student Name</th>
-                @if (! $isSingleDay)
-                    <th>Date</th>
-                @endif
                 <th>Time In</th>
                 <th>Scan Type</th>
                 <th>Status</th>
@@ -122,34 +122,42 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($roster as $row)
-                <tr @class(['table-warning-subtle' => $row->status !== 'present'])>
-                    <td>{{ $row->student->student_number ?? '—' }}</td>
-                    <td>
-                        {{ $row->student->first_name ?? '' }}
-                        {{ $row->student->last_name ?? '' }}
-                    </td>
-                    <td>
-                        @if ($row->log)
-                            {{ $row->log?->scan_time?->format('h:i A') ?? '—' }}
-                        @else
-                            <span class="text-muted">—</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if ($row->log)
-                            <span class="badge-dot dot-success">{{ $row->log?->scan_type ?? '—' }}</span>
-                        @elseif ($row->status === \App\Models\AttendanceVerification::STATUS_NO_DATA)
-                            <span class="text-muted">—</span>
-                        @else
-                            <span class="text-muted">No scan</span>
-                        @endif
-                    </td>
-                    <td>
-                        <span class="badge-dot dot-{{ $statusDotMap[$row->status] ?? 'secondary' }}">{{ $row->status_label }}</span>
-                    </td>
-                    <td>
-                        @if ($isSingleDay)
+            @php
+                $statusDotMap = [
+                    'present' => 'success',
+                    'late' => 'warning',
+                    'not_in_classroom' => 'warning',
+                    'absent' => 'danger',
+                    'excused' => 'info',
+                ];
+            @endphp
+
+            @if ($isSingleDay)
+                @forelse ($roster as $row)
+                    <tr @class(['table-warning-subtle' => $row->status !== 'present'])>
+                        <td>{{ $row->student->student_number ?? '—' }}</td>
+                        <td>
+                            {{ $row->student->first_name ?? '' }}
+                            {{ $row->student->last_name ?? '' }}
+                        </td>
+                        <td>
+                            @if ($row->log)
+                                {{ $row->log?->scan_time?->format('h:i A') ?? '—' }}
+                            @else
+                                <span class="text-muted">No scan</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($row->log)
+                                <span class="badge-dot dot-success">{{ $row->log?->scan_type ?? '—' }}</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge-dot dot-{{ $statusDotMap[$row->status] ?? 'secondary' }}">{{ $row->status_label }}</span>
+                        </td>
+                        <td>
                             <button type="button" class="btn-view-history ra-btn-sm"
                                 data-enrollment-id="{{ $row->enrollment->id }}"
                                 data-date="{{ $row->date }}"
@@ -162,18 +170,57 @@
                                 data-bs-target="#editModal">
                                 Edit
                             </button>
-                        @else
-                            &mdash;
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="{{ $isSingleDay ? 6 : 7 }}" class="text-center text-muted py-4">
-                        No active students enrolled in this section.
-                    </td>
-                </tr>
-            @endforelse
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No active students enrolled in this section.
+                        </td>
+                    </tr>
+                @endforelse
+            @else
+                @forelse ($roster as $date => $dayRows)
+                    <tr>
+                        <td colspan="6" class="fw-bold" style="background: rgba(36,56,185,0.06);">
+                            {{ \Carbon\Carbon::parse($date)->format('l, F d, Y') }}
+                        </td>
+                    </tr>
+                    @foreach ($dayRows as $row)
+                        <tr @class(['table-warning-subtle' => $row->status !== 'present'])>
+                            <td>{{ $row->student->student_number ?? '—' }}</td>
+                            <td>
+                                {{ $row->student->first_name ?? '' }}
+                                {{ $row->student->last_name ?? '' }}
+                            </td>
+                            <td>
+                                @if ($row->log)
+                                    {{ $row->log?->scan_time?->format('h:i A') ?? '—' }}
+                                @else
+                                    <span class="text-muted">No scan</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($row->log)
+                                    <span class="badge-dot dot-success">{{ $row->log?->scan_type ?? '—' }}</span>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge-dot dot-{{ $statusDotMap[$row->status] ?? 'secondary' }}">{{ $row->status_label }}</span>
+                            </td>
+                            <td class="text-muted">&mdash;</td>
+                        </tr>
+                    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No active students enrolled in this section.
+                        </td>
+                    </tr>
+                @endforelse
+            @endif
         </tbody>
     </x-ui.table>
 
