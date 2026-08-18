@@ -1,0 +1,644 @@
+.gs-filter-bar {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.gs-filter-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #8a8a8a;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.gs-profile-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #2438b9;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.gs-rules-section {
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.gs-rules-section-last {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.gs-rules-heading {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #2438b9;
+    margin-bottom: 10px;
+}
+
+.gs-rules-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 0;
+}
+
+.gs-rules-label {
+    font-size: 0.82rem;
+    color: #666666;
+    flex-shrink: 0;
+    min-width: 200px;
+}
+
+.gs-rules-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #222222;
+    text-align: right;
+}
+
+.gs-rules-input {
+    max-width: 280px;
+}
+
+.gs-stat-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 14px 16px;
+    height: 100%;
+}
+
+.gs-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #8a8a8a;
+    margin-bottom: 4px;
+}
+
+.gs-stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    color: #222222;
+}
+
+.gs-stat-present {
+    color: #085041;
+}
+
+.gs-stat-danger {
+    color: #791F1F;
+}
+
+.gs-panel {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 18px;
+    height: 100%;
+}
+
+
+
+.gs-stat-card-success {
+    background-color: #e1f5ee;
+    border-color: #c5e8dc;
+}
+
+.gs-stat-label-success {
+    color: #0f6e56;
+}
+
+.gs-stat-card-danger {
+    background-color: #FCEBEB;
+    border-color: #f0cfcf;
+}
+
+.gs-stat-label-danger {
+    color: #993c1d;
+}
+
+.gs-row-subtext {
+    font-size: 0.75rem;
+    color: #8a8a8a;
+}
+
+.gs-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+
+.gs-badge-success {
+    background-color: #e1f5ee;
+    color: #085041;
+}
+
+.gs-badge-warning {
+    background-color: #FAEEDA;
+    color: #854F0B;
+}
+
+.gs-badge-danger {
+    background-color: #FCEBEB;
+    color: #791F1F;
+}
+
+.gs-panel-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 12px;
+}
+
+.gs-stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+}
+
+.gs-stat-icon-neutral {
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #2438b9;
+}
+
+.gs-stat-icon-success {
+    background-color: #c5e8dc;
+    color: #085041;
+}
+
+.gs-stat-icon-danger {
+    background-color: #f0cfcf;
+    color: #791F1F;
+}
+
+.gs-chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 232px;
+    color: #8a8a8a;
+    font-size: 0.85rem;
+    text-align: center;
+    gap: 8px;
+}
+
+.gs-chart-empty-icon {
+    font-size: 1.8rem;
+    color: #c5c5c5;
+}
+
+.gs-panel {
+    transition: border-color 0.15s ease;
+}
+
+.gs-panel:hover {
+    border-color: #c5c5c5;
+}
+
+.gs-tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 0;
+}
+
+.gs-tab {
+    display: inline-block;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #666666;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.gs-tab:hover {
+    color: #2438b9;
+    text-decoration: none;
+}
+
+.gs-tab-active {
+    color: #2438b9;
+    border-bottom-color: #2438b9;
+}
+
+.gs-tab-disabled {
+    color: #c5c5c5;
+    cursor: not-allowed;
+}
+
+.gs-tab-disabled:hover {
+    color: #c5c5c5;
+}
+
+.gs-note-banner {
+    background-color: #E4EEFB;
+    color: #0B3D91;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gs-grade-card-link {
+    text-decoration: none;
+    display: block;
+}
+
+.gs-grade-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 16px;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.gs-grade-card:hover {
+    border-color: #2438b9;
+    transform: translateY(-2px);
+}
+
+.gs-grade-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #222222;
+    margin: 0 0 4px;
+}
+
+.gs-grade-card-meta {
+    font-size: 0.72rem;
+    color: #8a8a8a;
+    margin: 0 0 10px;
+}
+
+.gs-grade-card-avg {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2438b9;
+    margin: 0;
+}
+
+.gs-section-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 16px;
+    height: 100%;
+}
+
+.gs-section-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #222222;
+    margin: 0 0 4px;
+}
+
+.gs-section-card-meta {
+    font-size: 0.72rem;
+    color: #8a8a8a;
+    margin: 0 0 2px;
+}
+
+.gs-section-card-avg {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2438b9;
+    margin: 10px 0 0;
+}
+
+.gs-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+}
+
+.gs-breadcrumb-icon {
+    color: #2438b9;
+    font-size: 0.8rem;
+    margin-right: 2px;
+}
+
+.gs-breadcrumb-link {
+    color: #2438b9;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.gs-breadcrumb-link:hover {
+    text-decoration: underline;
+}
+
+.gs-breadcrumb-sep {
+    color: #c5c5c5;
+    font-size: 0.65rem;
+}
+
+.gs-breadcrumb-current {
+    color: #222222;
+    font-weight: 700;
+}
+
+.gs-grade-card,
+.gs-section-card {
+    display: block;
+}
+
+.gs-card-arrow {
+    color: #c5c5c5;
+    font-size: 0.75rem;
+    margin-top: 8px;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.gs-grade-card-link:hover .gs-card-arrow {
+    color: #2438b9;
+    transform: translateX(3px);
+}
+
+.gs-section-card {
+    transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.gs-section-card:hover {
+    border-color: #c5c5c5;
+}
+
+.gs-insight-card {
+    background-color: #f7f7f5;
+    border-radius: 8px;
+    padding: 14px 16px;
+    height: 100%;
+}
+
+.gs-insight-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #2438b9;
+    margin-bottom: 6px;
+}
+
+.gs-insight-text {
+    font-size: 0.82rem;
+    color: #555555;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.gs-pill-group {
+    display: inline-flex;
+    gap: 4px;
+    background-color: #f0f0ee;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.gs-pill-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666666;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.gs-pill-btn:hover {
+    color: #2438b9;
+}
+
+.gs-pill-active {
+    background-color: #ffffff;
+    color: #2438b9;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.gs-metric-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.gs-metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.gs-metric-row-last {
+    border-bottom: none;
+}
+
+.gs-metric-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: #8a8a8a;
+}
+
+.gs-metric-label i {
+    font-size: 0.72rem;
+    color: #c5c5c5;
+    width: 12px;
+}
+
+.gs-metric-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #222222;
+}
+
+.gs-subject-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #2438b9;
+    font-size: 0.7rem;
+    margin-right: 8px;
+}
+
+/* Grading Dashboard — nested sidebar + progress bar */
+.gd-layout {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+}
+
+.gd-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 200px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+}
+
+.gd-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.5rem;
+    color: #666666;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.gd-sidebar-link:hover:not(.gd-sidebar-link-disabled) {
+    background: #f7f7f5;
+    color: #2438b9;
+}
+
+.gd-sidebar-link-active {
+    background: #e8eaf9;
+    color: #2438b9;
+}
+
+.gd-sidebar-link-disabled {
+    color: #c5c5c5;
+    cursor: not-allowed;
+}
+
+.gd-content {
+    flex: 1;
+    min-width: 0;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+}
+
+.gd-content-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.gd-progress-wrap {
+    margin-bottom: 0.75rem;
+}
+
+.gd-progress-label {
+    font-size: 0.75rem;
+    color: #666666;
+    font-weight: 600;
+}
+
+.gd-progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e5e5e5;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}
+
+.gd-progress-fill {
+    height: 100%;
+    background: #2438b9;
+    border-radius: 999px;
+}
+
+.gd-form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666666;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+/* Grade Sheet — Add Column button */
+.gs-add-col-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    margin-left: 0.4rem;
+    transition: background 0.15s ease;
+}
+
+.gs-add-col-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.gs-add-col-btn i {
+    font-size: 0.65rem;
+}
+
+.gs-score-input:focus {
+    border-color: #2438b9 !important;
+    box-shadow: 0 0 0 2px rgba(36, 56, 185, 0.15) !important;
+}
+
+/* Reports — report type selection cards */
+.gs-report-type-card {
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    border: 2px solid transparent;
+}
+
+.gs-report-type-card:hover {
+    background: #f7f7f5;
+}
+
+.gs-report-type-active {
+    border-color: #2438b9;
+    background: #e8eaf9;
+}

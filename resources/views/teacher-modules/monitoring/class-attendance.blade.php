@@ -156,8 +156,8 @@
                     $lastName = $student?->last_name ?? '';
                     $studentName = trim($firstName . ' ' . $lastName) ?: '-';
                     $initials = strtoupper(trim(substr($firstName, 0, 1) . substr($lastName, 0, 1))) ?: '--';
-                    $statusBadge = $record->remarks === 'present' 
-                        ? 'success' 
+                    $statusBadge = $record->remarks === 'present'
+                        ? 'success'
                         : ($record->remarks === 'late' ? 'warning' : 'danger');
                 @endphp
                 <tr>

@@ -10,10 +10,7 @@ class Teacher extends Model
     protected $fillable = [
         'user_id',
         'status',
-        'email',
     ];
-
-    protected $guarded = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -75,7 +72,7 @@ class Teacher extends Model
     {
         return trim(
             ($this->user?->first_name ?? '') . ' ' .
-                ($this->user?->last_name ?? '')
+            ($this->user?->last_name ?? '')
         );
     }
 

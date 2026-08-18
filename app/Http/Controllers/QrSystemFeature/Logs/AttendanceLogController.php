@@ -131,7 +131,7 @@ class AttendanceLogController extends Controller
             $flagTypes = $log->flagged_scans->pluck('flag_type')->filter()->unique();
 
             $flagText = $flagTypes->isNotEmpty()
-                ? $flagTypes->map(fn ($flagType) => match ($flagType) {
+                ? $flagTypes->map(fn($flagType) => match ($flagType) {
                     'late_arrival' => 'Late arrival',
                     'invalid_checkout' => 'Checkout issue',
                     default => 'Needs review',

@@ -225,9 +225,11 @@
                             ];
                             $dotScanType = $scanTypeDotMap[$attendance_log->scan_type] ?? 'secondary';
                         @endphp
-                        <span class="badge-dot dot-{{ $dotScanType }}">{{ $scanTypeLabels[$attendance_log->scan_type] ?? 'Unknown' }}</span>
+                        <span
+                            class="badge-dot dot-{{ $dotScanType }}">{{ $scanTypeLabels[$attendance_log->scan_type] ?? 'Unknown' }}</span>
                     </td>
-                    <td>{{ $attendance_log->session_type ? Str::headline(str_replace('_', ' ', $attendance_log->session_type)) : '-' }}</td>
+                    <td>{{ $attendance_log->session_type ? Str::headline(str_replace('_', ' ', $attendance_log->session_type)) : '-' }}
+                    </td>
                     <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
                     <td>
                         @php
@@ -353,7 +355,8 @@
                                 </div>
                                 <div class="scan-item">
                                     <span class="scan-label">Session</span>
-                                    <span class="scan-value">{{ $attendance_log->session_type ? Str::headline(str_replace('_', ' ', $attendance_log->session_type)) : '-' }}</span>
+                                    <span
+                                        class="scan-value">{{ $attendance_log->session_type ? Str::headline(str_replace('_', ' ', $attendance_log->session_type)) : '-' }}</span>
                                 </div>
                                 <div class="scan-item">
                                     <span class="scan-label">Scan Type</span>

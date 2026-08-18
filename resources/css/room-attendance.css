@@ -1,0 +1,515 @@
+.ra-filter-bar {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.ra-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: rgba(36, 56, 185, 0.12);
+    color: #1c2c94;
+    flex-shrink: 0;
+}
+
+.ra-filter-chip i {
+    font-size: 1.1rem;
+}
+
+.ra-filter-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #8a8a8a;
+    margin-bottom: 2px;
+}
+
+.ra-filter-date {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 0;
+}
+
+.ra-badge-today {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #1c2c94;
+}
+
+.ra-filter-divider {
+    width: 1px;
+    height: 40px;
+    background-color: #e5e5e5;
+}
+
+.ra-filter-input {
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    color: #333333;
+}
+
+.ra-filter-input:focus {
+    outline: none;
+    border-color: #2438b9;
+    box-shadow: 0 0 0 3px rgba(36, 56, 185, 0.15);
+}
+
+.btn-view-history {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #235bf5;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 3px 10px rgba(35, 70, 245, 0.35);
+}
+
+
+.btn-view-history:hover {
+    background-color: #1642e0;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(35, 91, 245, 0.45);
+}
+
+.btn-view-history:active {
+    transform: translateY(0);
+}
+
+.btn-back-today {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #ffffff;
+    color: #444444;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-back-today:hover {
+    background-color: #f5f5f5;
+    color: #444444;
+}
+
+/* ===== ROOM ATTENDANCE — PILL FILTERS + CUSTOM RANGE (additions) ===== */
+
+.ra-pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ra-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #d5d5d5;
+    color: #555555;
+    background-color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.ra-pill-btn:hover {
+    border-color: #2438b9;
+    color: #1c2c94;
+}
+
+.btn-check:checked + .ra-pill-btn {
+    background-color: #2438b9;
+    border-color: #2438b9;
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(36, 56, 185, 0.35);
+}
+
+
+
+.ra-range-input {
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    color: #333333;
+}
+
+.ra-range-input:focus {
+    outline: none;
+    border-color: #2438b9;
+    box-shadow: 0 0 0 3px rgba(36, 56, 185, 0.15);
+}
+
+/* ===== ROOM ATTENDANCE — LANDING PAGE + STAT CARDS (additions) ===== */
+
+.ra-section-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    padding: 18px;
+    height: 100%;
+}
+
+.ra-section-card-name {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.ra-section-card-meta {
+    font-size: 0.78rem;
+    color: #8a8a8a;
+    margin: 2px 0 0;
+}
+
+.ra-stat-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+.ra-stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    color: #222222;
+}
+
+.ra-stat-suffix {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #8a8a8a;
+}
+
+.ra-stat-present {
+    color: #085041;
+}
+
+.ra-stat-absent {
+    color: #791F1F;
+}
+
+.dot-danger {
+    background-color: #FCEBEB;
+    color: #791F1F;
+}
+
+/* ===== ROOM ATTENDANCE — STATUS OPTIONS + BADGES (additions) ===== */
+
+.ra-status-option {
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.ra-status-option-active {
+    border-color: #2438b9;
+    background-color: rgba(36, 56, 185, 0.08);
+}
+
+.dot-warning {
+    background-color: #FAEEDA;
+    color: #854F0B;
+}
+
+.dot-success {
+    background-color: #e1f5ee;
+    color: #085041;
+}
+
+.dot-danger {
+    background-color: #FCEBEB;
+    color: #791F1F;
+}
+
+.dot-info {
+    background-color: #E4EEFB;
+    color: #0B3D91;
+}
+
+.ra-stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+}
+
+.ra-stat-icon-neutral {
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #2438b9;
+}
+
+.ra-stat-icon-present {
+    background-color: #e1f5ee;
+    color: #085041;
+}
+
+.ra-stat-icon-absent {
+    background-color: #FCEBEB;
+    color: #791F1F;
+}
+
+/* ===== ROOM ATTENDANCE — HELP/RULES SECTION (additions) ===== */
+
+.ra-help-section {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.ra-help-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ra-help-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #222222;
+}
+
+.ra-help-subtitle {
+    font-size: 0.78rem;
+    color: #8a8a8a;
+}
+
+.ra-help-column-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #555555;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ra-help-column-label i {
+    color: #2438b9;
+    font-size: 0.85rem;
+}
+
+.ra-status-item,
+.ra-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.ra-status-item-last {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.ra-status-item .badge-dot {
+    flex-shrink: 0;
+    white-space: nowrap;
+    margin-top: 1px;
+}
+
+.ra-status-text {
+    font-size: 0.82rem;
+    color: #666666;
+    line-height: 1.5;
+}
+
+.ra-step-number {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #2438b9;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* ===== ROOM ATTENDANCE — ENHANCED SECTION CARD (additions) ===== */
+
+.ra-section-card {
+    transition: border-color 0.15s ease;
+}
+
+.ra-section-card:hover {
+    border-color: #c5c5c5;
+}
+
+.ra-grade-pill {
+    display: inline-block;
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #1c2c94;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+}
+
+.ra-enrolled-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #f7f7f5;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 14px 0;
+}
+
+.ra-enrolled-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    color: #222222;
+}
+
+.ra-enrolled-label {
+    font-size: 0.75rem;
+    color: #8a8a8a;
+    margin: 0;
+}
+
+.ra-mini-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.ra-mini-stat {
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.ra-mini-stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.ra-mini-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin: 2px 0 0;
+}
+
+.ra-mini-stat-present {
+    background-color: #e1f5ee;
+}
+
+.ra-mini-stat-present .ra-mini-stat-value,
+.ra-mini-stat-present .ra-mini-stat-label {
+    color: #085041;
+}
+
+.ra-mini-stat-absent {
+    background-color: #FCEBEB;
+}
+
+.ra-mini-stat-absent .ra-mini-stat-value,
+.ra-mini-stat-absent .ra-mini-stat-label {
+    color: #791F1F;
+}
+
+.ra-mini-stat-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ===== ROOM ATTENDANCE — BACK LINK STYLES ===== */
+
+.ra-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #ffffff;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #2438b9;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    margin-top: 10px;
+}
+
+.ra-back-link:hover {
+    background-color: #2438b9;
+    border-color: #2438b9;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.ra-back-link i {
+    font-size: 0.75rem;
+}
+
+/* ===== ROOM ATTENDANCE — PAGE TITLE & SUBTITLE STYLES ===== */
+
+.ra-page-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ra-page-title i {
+    color: #2438b9;
+    font-size: 0.85em;
+    background-color: rgba(36, 56, 185, 0.1);
+    width: 1.7em;
+    height: 1.7em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.ra-page-subtitle {
+    color: #6b7280;
+    font-size: 0.92rem;
+}

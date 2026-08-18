@@ -146,10 +146,12 @@ export function initUpload() {
     // not pre-selected or re-uploaded the next time the modal is opened.
     // Safe for the in-flight upload: the FormData already captured the File
     // synchronously before this async "hidden" event fires.
-    document.getElementById("uploadModal")?.addEventListener("hidden.bs.modal", () => {
-        fi.value = "";
-        document.getElementById("fileInfo").classList.add("d-none");
-    });
+    document
+        .getElementById("uploadModal")
+        ?.addEventListener("hidden.bs.modal", () => {
+            fi.value = "";
+            document.getElementById("fileInfo").classList.add("d-none");
+        });
 }
 
 function showFileInfo() {
@@ -176,7 +178,10 @@ async function doValidate() {
         document.getElementById("inlineProgress").classList.add("d-none");
 
         if (!r.ok) {
-            showError("Validation Failed", apiErrorMessage(d) || "Validation error.");
+            showError(
+                "Validation Failed",
+                apiErrorMessage(d) || "Validation error.",
+            );
             resetUI();
             return;
         }

@@ -53,7 +53,9 @@
             <div class="bg-light rounded-3 px-3 py-2">
                 <p class="text-muted mb-1 text-uppercase" style="font-size: 10px; letter-spacing: 0.06em;">Session type
                 </p>
-                <p class="mb-0 fw-medium">{{ $currentEnrollment?->sectionModel?->session_type ? Str::headline(str_replace('_', ' ', $currentEnrollment->sectionModel->session_type)) : '—' }}</p>
+                <p class="mb-0 fw-medium">
+                    {{ $currentEnrollment?->sectionModel?->session_type ? Str::headline(str_replace('_', ' ', $currentEnrollment->sectionModel->session_type)) : '—' }}
+                </p>
             </div>
         </div>
         <div class="col-sm-6">
