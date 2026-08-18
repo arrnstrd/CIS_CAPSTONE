@@ -87,6 +87,7 @@
                                             data-grade-level="{{ $section->grade_level }}"
                                             data-advisor-id="{{ $section->advisor_id ?? '' }}"
                                             data-capacity="{{ $section->capacity }}" data-status="{{ $section->status }}"
+                                            data-session-type="{{ $section->session_type }}"
                                             data-ajax-scope="#section-table-pane">
                                             Edit
                                         </button>
@@ -167,6 +168,16 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label fw-semibold">Session Type</label>
+            <select name="session_type" class="form-select" required>
+                <option value="" disabled selected>Select session</option>
+                <option value="morning">Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="whole_day">Whole Day</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
             <label class="form-label fw-semibold">Adviser</label>
             <select name="advisor_id" class="form-select">
                 <option value="">Not Assigned</option>
@@ -228,6 +239,15 @@
                     @endfor
                 </select>
             </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Session Type</label>
+            <select name="session_type" id="edit_session_type" class="form-select" required>
+                <option value="morning">Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="whole_day">Whole Day</option>
+            </select>
         </div>
 
         <div class="mb-3">

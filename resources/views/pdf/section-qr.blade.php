@@ -98,7 +98,7 @@
                             </div>
                             <img class="qr" src="data:image/png;base64,{{ $student->qrImage }}">
                             <div class="section">{{ $section->grade_level }} - {{ $section->name }}</div>
-                            <div class="session">{{ ucfirst(str_replace('_', ' ', $enrollment?->session_type ?? '-')) }}</div>
+                            <div class="session">{{ ucfirst(str_replace('_', ' ', $section->session_type ?? '-')) }}</div>
                             <div class="student-name">{{ $student->last_name }}, {{ $student->first_name }}</div>
                             <div class="student-number">Student No.<br>{{ $student->student_number }}</div>
                             <div class="footer">Present this QR code for attendance scanning.</div>

@@ -53,7 +53,7 @@
             <div class="bg-light rounded-3 px-3 py-2">
                 <p class="text-muted mb-1 text-uppercase" style="font-size: 10px; letter-spacing: 0.06em;">Session type
                 </p>
-                <p class="mb-0 fw-medium">{{ $currentEnrollment?->session_type ?? '—' }}</p>
+                <p class="mb-0 fw-medium">{{ $currentEnrollment?->sectionModel?->session_type ?? '—' }}</p>
             </div>
         </div>
         <div class="col-sm-6">
@@ -82,7 +82,7 @@
             </div>
         </div>
     </div>
-{{-- 
+    {{--
     <p class="text-uppercase text-muted fw-semibold mb-2" style="font-size: 10px; letter-spacing: 0.07em;">
         Enrollment records
     </p>
@@ -100,22 +100,22 @@
             </thead>
             <tbody>
                 @forelse ($enrollmentHistory as $enrollment)
-                    <tr>
-                        <td>{{ $enrollment->schoolYear?->school_year ?? '—' }}</td>
-                        <td>{{ $enrollment->sectionModel?->grade_level ?? $enrollment->grade_level ?? '—' }}</td>
-                        <td>{{ $enrollment->sectionModel?->name ?? $enrollment->getAttribute('section') ?? '—' }}</td>
-                        <td>{{ Str::headline(str_replace('_', ' ', $enrollment->session_type ?? '—')) }}</td>
-                        <td>
-                            <span
-                                class="badge {{ $enrollment->status === 'active' ? 'bg-success-subtle text-success border-success-subtle' : 'bg-secondary-subtle text-secondary border-secondary-subtle' }} border">
-                                {{ Str::headline($enrollment->status ?? '—') }}
-                            </span>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ $enrollment->schoolYear?->school_year ?? '—' }}</td>
+                    <td>{{ $enrollment->sectionModel?->grade_level ?? $enrollment->grade_level ?? '—' }}</td>
+                    <td>{{ $enrollment->sectionModel?->name ?? $enrollment->getAttribute('section') ?? '—' }}</td>
+                    <td>{{ Str::headline(str_replace('_', ' ', $enrollment->sectionModel?->session_type ?? '—')) }}</td>
+                    <td>
+                        <span
+                            class="badge {{ $enrollment->status === 'active' ? 'bg-success-subtle text-success border-success-subtle' : 'bg-secondary-subtle text-secondary border-secondary-subtle' }} border">
+                            {{ Str::headline($enrollment->status ?? '—') }}
+                        </span>
+                    </td>
+                </tr>
                 @empty
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">No enrollment records found.</td>
-                    </tr>
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No enrollment records found.</td>
+                </tr>
                 @endforelse
             </tbody>
         </table>

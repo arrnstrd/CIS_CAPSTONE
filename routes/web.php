@@ -281,7 +281,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Teacher attendance monitoring
         Route::get('/teacher/attendance', fn() => view('teacher-modules.monitoring.class-attendance'))->name('teacher.attendance');
-        Route::get('/teacher/entry-exit', [AttendanceLogController::class, 'teacherIndex'])->name('teacher.entry-exit.index');
+        Route::get('/teacher/time-in-time-out-history', [AttendanceLogController::class, 'teacherIndex'])->name('teacher.time-in-time-out-history.index');
         Route::get('/teacher/dashboard', [TeacherRoomAttendanceController::class, 'index'])->name('teacher.dashboard');
         Route::get('/teacher/room-attendance', [TeacherRoomAttendanceController::class, 'index'])->name('room-attendance.index');
         Route::get('/teacher/room-attendance/{section}', [TeacherRoomAttendanceController::class, 'show'])->name('room-attendance.show');

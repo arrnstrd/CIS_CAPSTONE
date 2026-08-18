@@ -1,0 +1,448 @@
+TASK CONTEXT
+
+I need you to work on this as a controlled refactor. Do NOT jump directly into editing files.
+
+## CONTEXT
+
+This is a Laravel/PHP school attendance system with QR-based attendance.
+
+We currently have `session_type` stored independently in:
+
+- `enrollments.session_type`
+- `teaching_assignments.session_type`
+- `attendance_logs.session_type`
+- `schedule_configs.session_type`
+
+The intended architecture is to make:
+
+    sections.session_type
+
+the source of truth for the session assigned to a section.
+
+Therefore:
+
+    Section
+       │
+       ├── Enrollment
+       │      └── derives session_type from Section
+       │
+       └── TeachingAssignment
+              └── derives session_type from Section
+
+However:
+
+    attendance_logs.session_type
+
+MUST REMAIN.
+
+It represents the session type captured at the time an attendance event was recorded. It is historical/snapshot data and must not be removed or rewritten.
+
+Likewise:
+
+    schedule_configs.session_type
+
+MUST REMAIN.
+
+It is the lookup dimension used by the schedule resolver.
+
+---
+
+# VERIFIED CURRENT DEPENDENCY MAP
+
+## 1. enrollments.session_type
+
+Currently used by:
+
+- `QrScanService`
+  - passed to `ScheduleResolver`
+  - written into `AttendanceLog`
+  - returned in scan response
+- `StudentController`
+  - exposes session type to UI
+  - passes session type into enrollment-related services
+- `StudentService`
+  - enrollment payload/create/update
+- `EnrollmentController`
+  - validation
+- `EnrollmentService`
+  - creates/updates enrollment
+- enrollment/student Blade templates
+  - create/edit/display
+- enrollment/student JS
+  - edit modal population
+- student academic tab
+  - display
+- student QR PDF
+  - display
+- section QR PDF
+  - display
+- import pipeline
+  - spreadsheet parser
+  - validator
+  - DTO
+  - processor
+- tests
+  - EnrollmentTest
+  - AcademicTabsTest
+
+## 2. teaching_assignments.session_type
+
+Currently used by:
+
+- `ClassroomScanService`
+  - response
+  - AttendanceLog creation
+- TeachingAssignment services
+  - create/update
+- TeachingAssignment requests
+  - validation
+- TeachingAssignment controllers
+  - create/update
+- teaching assignment Blade UI
+  - display
+  - independent session type select
+- teaching assignment JS
+  - edit modal population
+
+## 3. attendance_logs.session_type
+
+Used for:
+
+- AttendanceLog model
+- attendance filtering
+- attendance history
+- QR station recent scans
+- dashboard recent scans
+- display of the session associated with each recorded scan
+
+It is written by:
+
+- `QrScanService`
+- `ClassroomScanService`
+
+DO NOT REMOVE OR REDESIGN THIS.
+
+## 4. schedule_configs.session_type
+
+Used by:
+
+- `ScheduleResolver`
+- `ScheduleConfig`
+- `ScheduleConfigController`
+
+It determines which schedule configuration applies to:
+
+- time-in window
+- time-out window
+- late threshold
+
+DO NOT redesign this.
+
+---
+
+# IMPORTANT ATTENDANCE ARCHITECTURE
+
+We already have attendance functionality.
+
+There is already:
+
+    attendance_logs
+
+There is also an attendance verification layer.
+
+A teammate introduced a separate:
+
+    room_attendance
+
+table containing things such as:
+
+- id
+- teaching_assignment_id
+- enrollment_id
+- attendance_date
+- time_in
+- time_out
+
+DO NOT automatically incorporate or expand `room_attendance` into this refactor.
+
+A UI table does NOT require a new database attendance table.
+
+Teaching assignment can determine which students/section/subject a teacher is responsible for, and existing attendance records can be filtered/querying through the appropriate relationships.
+
+Do NOT create another attendance source unless the existing codebase proves there is a concrete business requirement that cannot be satisfied by the existing attendance/verification architecture.
+
+If `room_attendance` is unrelated to the `session_type` ownership refactor, leave it untouched and report that it is outside scope.
+
+---
+
+# QR / ATTENDANCE BUSINESS LOGIC
+
+The existing QR attendance behavior is already established.
+
+DO NOT redesign it.
+
+This includes:
+
+- QR validation
+- student resolution
+- enrollment resolution
+- time-in
+- time-out
+- schedule window checking
+- late detection
+- duplicate scan handling
+- duplicate/excess scan rules
+- cooldown/spam protection
+- flagged scans
+- guardian email notifications
+- attendance log creation
+- existing attendance verification behavior
+
+The goal is ONLY to change where `session_type` comes from.
+
+Example:
+
+CURRENT:
+
+    $enrollment->session_type
+
+TARGET:
+
+    $enrollment->section->session_type
+
+Likewise:
+
+CURRENT:
+
+    $assignment->session_type
+
+TARGET:
+
+    $assignment->section->session_type
+
+The behavior controlled by that value must otherwise remain the same.
+
+---
+
+# CRITICAL TIME-IN / TIME-OUT RULE
+
+`session_type` is used by the gate QR flow to select the correct `ScheduleConfig`.
+
+Conceptually:
+
+    Section.session_type
+          ↓
+    ScheduleResolver
+          ↓
+    schedule_configs
+          ↓
+    in_start / in_end / late_threshold
+    out_start / out_end
+          ↓
+    existing QR attendance logic
+
+Only the SOURCE of `session_type` should change.
+
+Do not modify the actual time comparison/state-machine logic.
+
+---
+
+# TARGET ARCHITECTURE
+
+The desired relationship is:
+
+    sections.session_type
+          │
+          ├── enrollments.section_id
+          │
+          └── teaching_assignments.section_id
+
+Therefore Enrollment and TeachingAssignment should no longer be independent owners of session type.
+
+The eventual target is:
+
+    Section owns session_type
+    Enrollment derives session_type from Section
+    TeachingAssignment derives session_type from Section
+    AttendanceLog stores a snapshot of session_type
+    ScheduleConfig uses session_type as its schedule dimension
+
+---
+
+# IMPORTANT: I WANT A PLAN FIRST
+
+Before editing ANY file:
+
+1. Re-audit the current repository.
+2. Search for all:
+   - `session_type`
+   - `sessionType`
+   - enrollment session type references
+   - teaching assignment session type references
+   - attendance log session type references
+   - schedule config session type references
+3. Check the actual current code rather than assuming the dependency map above is still 100% accurate.
+4. Identify files that will be affected.
+5. Identify files that must NOT be touched.
+6. Identify dependencies that will temporarily break when the old columns are removed.
+7. Identify any pre-existing unrelated bugs that you encounter, but DO NOT fix them unless required for this task.
+8. Pay special attention to merge-sensitive files and duplicate/parallel service/controller implementations.
+
+Then create a concrete implementation plan.
+
+The plan must contain:
+
+- Phase/order of changes
+- Exact files to modify
+- Exact responsibility of each modification
+- Database changes
+- Data/backfill considerations
+- What happens to existing `enrollments.session_type`
+- What happens to existing `teaching_assignments.session_type`
+- What happens to `attendance_logs.session_type`
+- What happens to `schedule_configs.session_type`
+- QR scan impact
+- classroom scan impact
+- import impact
+- UI impact
+- tests that need updating
+- files explicitly excluded from the change
+- risks/blockers
+
+DO NOT implement yet.
+
+After presenting the plan, proceed with implementation.
+
+---
+
+# IMPLEMENTATION RULES
+
+Once the plan is established:
+
+1. Implement the plan in the repository.
+2. Do not make unrelated refactors.
+3. Do not redesign existing attendance logic.
+4. Do not create another attendance source.
+5. Do not modify historical attendance logs.
+6. Do not modify `schedule_configs` architecture.
+7. Do not redesign `ScheduleResolver`.
+8. Do not change QR behavior except where necessary to obtain the new session type source.
+9. Do not "clean up" unrelated code you happen to encounter.
+10. If something breaks because the architecture is intentionally being changed, report it instead of silently redesigning around it.
+11. If a decision is required that cannot be safely inferred from the existing code, stop and report the exact decision required rather than inventing a business rule.
+
+---
+
+# VERY IMPORTANT ABOUT `room_attendance`
+
+Do not assume:
+
+    "Teacher needs attendance UI → therefore room_attendance is required."
+
+First determine whether the existing architecture can support:
+
+    Teacher
+      ↓
+    TeachingAssignment
+      ↓
+    Section
+      ↓
+    Enrollment
+      ↓
+    AttendanceLog / AttendanceVerification
+
+If existing attendance records can be filtered by the teacher's teaching assignment/section, then a duplicate `room_attendance` table may not be necessary.
+
+Do NOT drop `room_attendance` automatically either.
+
+First determine:
+
+- whether it is currently referenced anywhere
+- what code depends on it
+- whether it contains unique information
+- whether it duplicates existing attendance data
+- whether attendance verification already fulfills its intended purpose
+
+If it is outside this refactor, leave it alone and report it separately.
+
+---
+
+# FINAL REPORT REQUIRED
+
+After implementation, give me a concise but complete report:
+
+## Files modified
+- path
+- what changed
+
+## Files created
+- path
+- purpose
+
+## Files deleted
+- path
+- reason
+
+## Session type dependencies changed
+For every changed dependency:
+
+    BEFORE → AFTER
+
+Example:
+
+    Enrollment.session_type
+    →
+    Enrollment.section.session_type
+
+## Logic intentionally untouched
+
+List the attendance/QR/schedule logic that was deliberately preserved.
+
+## Database changes
+
+List migrations/schema changes and explain whether old columns were removed or temporarily retained.
+
+## Room attendance
+
+Explain:
+
+- whether `room_attendance` was touched
+- whether it is actually used
+- whether it duplicates existing attendance
+- whether it should remain outside this refactor
+
+Do NOT remove it unless the implementation plan explicitly determines that it is safe and necessary.
+
+## Tests / verification
+
+Report:
+
+- tests run
+- tests passed
+- tests failed
+- failures caused by this refactor
+- pre-existing failures
+
+## Merge-sensitive files
+
+List files that are likely to conflict with other branches.
+
+## Remaining issues
+
+Only list actual issues found. Do not invent issues.
+
+---
+
+MOST IMPORTANT:
+
+This is a dependency/ownership refactor.
+
+I am NOT asking you to redesign the entire attendance system.
+
+Change:
+
+    WHERE session_type comes from
+
+without unnecessarily changing:
+
+    WHAT session_type does.

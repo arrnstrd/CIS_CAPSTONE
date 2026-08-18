@@ -19,16 +19,16 @@
                     <p class="text-muted small mb-0">Students currently associated with Grade {{ $grade }}.</p>
                 </div>
 
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
-                            data-bs-toggle="modal" data-bs-target="#addStudentModal" data-grade="{{ $grade }}">
-                            <span>+ Add Student</span>
-                        </button>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
+                        data-bs-toggle="modal" data-bs-target="#addStudentModal" data-grade="{{ $grade }}">
+                        <span>+ Add Student</span>
+                    </button>
 
-                        <a href="{{ route('student-management.index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i> Grade Selection
-                        </a>
-                    </div>
+                    <a href="{{ route('student-management.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Grade Selection
+                    </a>
+                </div>
             </div>
 
             <form action="{{ route('student-management.grade', $grade) }}" method="GET">
@@ -144,17 +144,12 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="#editStudentModal" data-bs-toggle="modal"
-                                            data-bs-target="#editStudentModal"
-                                            data-id="{{ $student->id }}"
-                                            data-lrn="{{ $student->lrn }}"
-                                            data-first_name="{{ $student->first_name }}"
+                                            data-bs-target="#editStudentModal" data-id="{{ $student->id }}"
+                                            data-lrn="{{ $student->lrn }}" data-first_name="{{ $student->first_name }}"
                                             data-middle_name="{{ $student->middle_name }}"
-                                            data-last_name="{{ $student->last_name }}"
-                                            data-suffix="{{ $student->suffix }}"
-                                            data-sex="{{ $student->sex }}"
-                                            data-address="{{ $student->address }}"
-                                            data-birthdate="{{ $student->birthdate }}"
-                                            data-status="{{ $student->status }}"
+                                            data-last_name="{{ $student->last_name }}" data-suffix="{{ $student->suffix }}"
+                                            data-sex="{{ $student->sex }}" data-address="{{ $student->address }}"
+                                            data-age="{{ $student->age }}" data-status="{{ $student->status }}"
                                             data-guardian_name="{{ $student->guardian->name ?? '' }}"
                                             data-guardian_relationship="{{ $student->guardian->relationship ?? '' }}"
                                             data-guardian_contact="{{ $student->guardian->contact_number ?? '' }}"
@@ -162,7 +157,6 @@
                                             data-school_year_id="{{ $student->school_year_id ?? '' }}"
                                             data-grade_level="{{ $student->grade_level }}"
                                             data-section_id="{{ $student->section_id ?? '' }}"
-                                            data-session_type="{{ $student->session_type ?? '' }}"
                                             data-enrollment_status="{{ $student->enrollment_status ?? 'active' }}">
                                             Edit
                                         </a>

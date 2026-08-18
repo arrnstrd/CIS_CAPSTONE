@@ -101,7 +101,7 @@ document.addEventListener("show.bs.modal", function (event) {
         setValue(modal, "#edit_suffix", btn.dataset.suffix);
         setValue(modal, "#edit_sex", btn.dataset.sex);
         setValue(modal, "#edit_address", btn.dataset.address);
-        setValue(modal, "#edit_birthdate", btn.dataset.birthdate);
+        setValue(modal, "#edit_age", btn.dataset.age);
         setValue(modal, "#edit_status", btn.dataset.status);
         setValue(modal, "#edit_guardian_name", btn.dataset.guardian_name);
         setValue(
@@ -114,7 +114,6 @@ document.addEventListener("show.bs.modal", function (event) {
         setValue(modal, "#edit_school_year_id", btn.dataset.school_year_id);
         setValue(modal, "#edit_grade_level", btn.dataset.grade_level);
         setValue(modal, "#edit_section_id", btn.dataset.section_id);
-        setValue(modal, "#edit_session_type", btn.dataset.session_type);
         setValue(
             modal,
             "#edit_enrollment_status",

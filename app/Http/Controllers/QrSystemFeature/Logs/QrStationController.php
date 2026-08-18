@@ -10,7 +10,7 @@ class QrStationController extends Controller
 {
     public function index(Request $request)
     {
-        $recentLogs = AttendanceLog::with(['enrollment.student', 'flagged_scans'])
+        $recentLogs = AttendanceLog::with(['enrollment.student', 'enrollment.section', 'flagged_scans'])
             ->todayOnly()
             ->orderBy('scan_time', 'desc')
             ->limit(25)
@@ -22,6 +22,10 @@ class QrStationController extends Controller
                         ($log->enrollment?->student?->last_name ?? '')
                 ) ?: 'Unknown',
                 'student_number' => $log->enrollment?->student?->student_number ?? '-',
+                'grade' => $log->enrollment?->section?->grade_level
+                    ? 'Grade ' . $log->enrollment->section->grade_level
+                    : '-',
+                'section' => $log->enrollment?->section?->name ?? '-',
                 'scan_type' => $log->scan_type,
                 'scan_time' => $log->scan_time?->format('h:i A'),
                 'session_type' => $log->session_type,
@@ -50,13 +54,7 @@ class QrStationController extends Controller
             ")
             ->first();
 
-        // Latest scan state for the live left panel (Redis; display-only).
-        $latestScan = null;
-        try {
-            $latestScan = \Illuminate\Support\Facades\Cache::store('redis')->get('qr-station:latest');
-        } catch (\Throwable $e) {
-            // Redis unavailable — the page still renders from Postgres.
-        }
+
 
         return view('admin-modules.monitoring.qr-station', [
             'initialData' => [
@@ -68,7 +66,7 @@ class QrStationController extends Controller
                     'late' => (int) $stats->late,
                     'flagged' => (int) $stats->flagged,
                 ],
-                'latest_scan' => $latestScan,
+
             ],
         ]);
     }

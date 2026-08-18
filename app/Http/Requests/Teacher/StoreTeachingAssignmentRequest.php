@@ -28,7 +28,6 @@ class StoreTeachingAssignmentRequest extends FormRequest
             'subject_id' => ['required', 'exists:subjects,id'],
             'section_id' => ['required', 'exists:sections,id'],
             'school_year_id' => ['required', 'exists:school_years,id'],
-            'session_type' => ['required', 'in:morning,afternoon,whole_day'],
             'status' => ['required', 'in:active,inactive'],
         ];
     }

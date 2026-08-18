@@ -44,7 +44,6 @@ class EnrollmentTest extends TestCase
             'section_id' => $section->id,
             'school_year_id' => $schoolYear->id,
             'level' => 'elementary',
-            'session_type' => 'morning',
             'status' => 'active',
         ]);
 

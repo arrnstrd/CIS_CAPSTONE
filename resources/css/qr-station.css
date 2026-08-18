@@ -107,7 +107,23 @@
     padding: 1.25rem;
     background: rgba(248, 250, 252, 0.72);
     backdrop-filter: blur(2px);
+    overflow-y: auto;
     z-index: 5;
+}
+.qr-popup .qr-card {
+    padding: 1.25rem 1.1rem;
+}
+.qr-popup .qr-card__icon {
+    margin-bottom: 0.7rem;
+}
+.qr-popup .qr-card__chips {
+    margin-bottom: 0.7rem;
+}
+.qr-popup .qr-card__name {
+    font-size: 1.35rem;
+}
+.qr-popup .qr-card__meta {
+    margin-bottom: 0.9rem;
 }
 .qr-popup__card {
     width: 100%;

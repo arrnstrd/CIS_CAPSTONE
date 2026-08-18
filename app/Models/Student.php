@@ -10,7 +10,6 @@ use Override;
 class Student extends Model
 {
     protected $fillable = [
-
         'lrn',
         'first_name',
         'last_name',
@@ -18,7 +17,11 @@ class Student extends Model
         'suffix',
         'sex',
         'address',
-        'birthdate',
+        'age',
+        'birthplace',
+        'mother_tongue',
+        'ip_ethnic_group',
+        'religion',
         'status',
         'student_number'
     ];
@@ -50,13 +53,5 @@ static::created(function($student){
     public function enrollments()
     {
         return $this->hasMany(Enrollment::class);
-    }
-
-    // for overview cards in enrollment webpage
-    public function scopeWithoutCurrentEnrollment($query, $school_year_id)
-    {
-        return $query->whereDoesntHave('enrollments', function ($q) use ($school_year_id) {
-            $q->where('school_year_id', $school_year_id);
-        });
     }
 }

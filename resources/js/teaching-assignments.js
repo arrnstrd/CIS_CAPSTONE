@@ -47,8 +47,6 @@ window.openEditModal = function (id) {
         row.dataset.sectionId || "";
     document.getElementById("field_school_year_id").value =
         row.dataset.schoolYearId || "";
-    document.getElementById("field_session_type").value =
-        row.dataset.sessionType || "";
     document.getElementById("field_status").value =
         row.dataset.status || "active";
 };

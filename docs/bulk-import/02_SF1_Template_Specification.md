@@ -31,20 +31,20 @@ Data begins on Row 2.
 
 # 2. Column Mapping
 
-| Excel Header | System Field | Required | Notes |
-|--------------|-------------|----------|------|
-| LRN | students.lrn | Yes | 12 digits |
-| Learner Name | Parsed into first_name, middle_name, last_name | Yes | Format: LASTNAME, FIRSTNAME MIDDLENAME |
-| Sex | students.sex | Yes | M/F |
-| Birth Date | students.birthdate | Yes | Valid date |
-| Complete Address | students.address | Yes | Full address |
-| Guardian Name | guardians.name | Yes | Full name |
-| Guardian Relationship | guardians.relationship | Yes | Must match supported values |
-| Guardian Email | guardians.email | Yes | Valid email |
-| Department Level | sections.level | Yes | Elementary / High School / Senior High School |
-| Grade Level | sections.grade_level | Yes | Numeric |
-| Section | sections.name | Yes | Existing section |
-| Session Type | enrollments.session_type | Yes | Morning / Afternoon / Whole Day |
+| Excel Header          | System Field                                   | Required        | Notes                                                                                                                                                                                                |
+| --------------------- | ---------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LRN                   | students.lrn                                   | Yes             | 12 digits                                                                                                                                                                                            |
+| Learner Name          | Parsed into first_name, middle_name, last_name | Yes             | Format: LASTNAME, FIRSTNAME MIDDLENAME                                                                                                                                                               |
+| Sex                   | students.sex                                   | Yes             | M/F                                                                                                                                                                                                  |
+| Birth Date            | students.birthdate                             | Yes             | Valid date                                                                                                                                                                                           |
+| Complete Address      | students.address                               | Yes             | Full address                                                                                                                                                                                         |
+| Guardian Name         | guardians.name                                 | Yes             | Full name                                                                                                                                                                                            |
+| Guardian Relationship | guardians.relationship                         | Yes             | Must match supported values                                                                                                                                                                          |
+| Guardian Email        | guardians.email                                | Yes             | Valid email                                                                                                                                                                                          |
+| Department Level      | sections.level                                 | Yes             | Elementary / High School / Senior High School                                                                                                                                                        |
+| Grade Level           | sections.grade_level                           | Yes             | Numeric                                                                                                                                                                                              |
+| Section               | sections.name                                  | Yes             | Existing section                                                                                                                                                                                     |
+| Session Type          | —                                              | No (deprecated) | Accepted for backward compatibility only. Session type is now derived from the resolved Section (`sections.session_type`). If provided, the value is parsed but no longer written to the enrollment. |
 
 ---
 
@@ -54,15 +54,15 @@ The following values are NOT included in the spreadsheet.
 
 The system generates them automatically.
 
-| Field | Value |
-|--------|------|
-| Student Number | Generated by StudentService |
-| Student Status | active |
-| Enrollment Status | active |
-| QR Code | Generated automatically |
-| School Year | Current Active School Year |
-| Import Date | Current Timestamp |
-| Uploaded By | Current Administrator |
+| Field             | Value                       |
+| ----------------- | --------------------------- |
+| Student Number    | Generated by StudentService |
+| Student Status    | active                      |
+| Enrollment Status | active                      |
+| QR Code           | Generated automatically     |
+| School Year       | Current Active School Year  |
+| Import Date       | Current Timestamp           |
+| Uploaded By       | Current Administrator       |
 
 ---
 
@@ -130,7 +130,7 @@ male
 
 male
 
-----------------
+---
 
 F
 
@@ -154,16 +154,16 @@ The spreadsheet uses a human-friendly value.
 
 The system converts it into the database enum.
 
-| Accepted Value | Stored Value |
-|---------------|-------------|
-| Elementary | elementary |
-| Elem | elementary |
-| ELEM | elementary |
-| High School | highschool |
-| HS | highschool |
-| Junior High | highschool |
+| Accepted Value     | Stored Value       |
+| ------------------ | ------------------ |
+| Elementary         | elementary         |
+| Elem               | elementary         |
+| ELEM               | elementary         |
+| High School        | highschool         |
+| HS                 | highschool         |
+| Junior High        | highschool         |
 | Senior High School | senior_high_school |
-| SHS | senior_high_school |
+| SHS                | senior_high_school |
 
 Matching is case-insensitive.
 
@@ -171,15 +171,15 @@ Matching is case-insensitive.
 
 # 7. Session Type Normalization
 
-| Accepted Value | Stored Value |
-|---------------|-------------|
-| Morning | morning |
-| AM | morning |
-| Afternoon | afternoon |
-| PM | afternoon |
-| Whole Day | whole_day |
-| WholeDay | whole_day |
-| Whole Day Session | whole_day |
+| Accepted Value    | Stored Value |
+| ----------------- | ------------ |
+| Morning           | morning      |
+| AM                | morning      |
+| Afternoon         | afternoon    |
+| PM                | afternoon    |
+| Whole Day         | whole_day    |
+| WholeDay          | whole_day    |
+| Whole Day Session | whole_day    |
 
 Matching is case-insensitive.
 
@@ -237,11 +237,11 @@ Instead, the system resolves the section using
 
 Department Level
 
-+
+-
 
 Grade Level
 
-+
+-
 
 Section Name
 
@@ -348,7 +348,7 @@ X
 
 Validation Error
 
----------------
+---
 
 Department Level
 
@@ -358,7 +358,7 @@ College
 
 Validation Error
 
----------------
+---
 
 Guardian Relationship
 
@@ -368,7 +368,7 @@ Aunt
 
 Validation Error
 
----------------
+---
 
 Session Type
 

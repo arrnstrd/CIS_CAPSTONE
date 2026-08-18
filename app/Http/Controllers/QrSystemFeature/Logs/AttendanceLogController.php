@@ -4,7 +4,12 @@ namespace App\Http\Controllers\QrSystemFeature\Logs;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class AttendanceLogController extends Controller
 {
@@ -48,10 +53,10 @@ class AttendanceLogController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        \Illuminate\Support\Facades\Log::debug('[PROFILE-CTRL:entry-exit] ms=' . round((microtime(true) - $t0) * 1000, 1)); // TEMP
+        \Illuminate\Support\Facades\Log::debug('[PROFILE-CTRL:time-in-time-out-history] ms=' . round((microtime(true) - $t0) * 1000, 1)); // TEMP
 
         return view(
-            'admin-modules.monitoring.entry-exit',
+            'admin-modules.monitoring.time-in-time-out-history',
             compact(
                 'attendance_logs',
                 'scan_type',
@@ -64,6 +69,104 @@ class AttendanceLogController extends Controller
                 'query'
             )
         );
+    }
+
+    /**
+     * Export the filtered time in / time out logs to an Excel file.
+     * Date range is supplied by the modal (max one month = 31 days).
+     */
+    public function download(Request $request)
+    {
+        $validated = $request->validate([
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $start = Carbon::parse($validated['start_date']);
+        $end   = Carbon::parse($validated['end_date']);
+
+        // Enforce a maximum of one month (31 days) on the exported range.
+        if ($start->diffInDays($end) > 31) {
+            return back()
+                ->with('error', 'The selected date range cannot exceed one month (31 days).')
+                ->withInput();
+        }
+
+        $logs = AttendanceLog::with([
+            'enrollment.student',
+            'enrollment.section',
+            'flagged_scans',
+        ])
+            ->filterByDateRange($validated['start_date'], $validated['end_date'])
+            ->search($request->input('query'))
+            ->filterByScanType($request->input('scan_type'))
+            ->filterBySessionType($request->input('session_type'))
+            ->filterByFlagType($request->input('flag_type'))
+            ->orderBy('scan_time', 'desc')
+            ->get();
+
+        // Build the spreadsheet following the same pattern as BulkImportController::exportErrors.
+        $spreadsheet = new Spreadsheet();
+        $sheet       = $spreadsheet->getActiveSheet();
+
+        $columns = ['Date', 'Student Name', 'Grade & Section', 'Scan Type', 'Session', 'Gate Time', 'Flag Type'];
+
+        foreach ($columns as $colIndex => $header) {
+            $column = Coordinate::stringFromColumnIndex($colIndex + 1);
+            $sheet->setCellValue($column . '1', $header);
+            $sheet->getStyle($column . '1')->getFont()->setBold(true);
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
+        $rowNum = 2;
+
+        foreach ($logs as $log) {
+            $student     = $log->enrollment?->student;
+            $section     = $log->enrollment?->section;
+            $studentName = trim(($student?->first_name ?? '') . ' ' . ($student?->last_name ?? '')) ?: '-';
+            $gradeSection = 'Grade ' . ($section?->grade_level ?? '-') . ' — ' . ($section?->name ?? '-');
+
+            $flagTypes = $log->flagged_scans->pluck('flag_type')->filter()->unique();
+
+            $flagText = $flagTypes->isNotEmpty()
+                ? $flagTypes->map(fn ($flagType) => ucfirst(str_replace('_', ' ', $flagType)))->join(', ')
+                : '-';
+
+            $sheet->setCellValue('A' . $rowNum, $log->scan_time?->format('Y-m-d') ?? '-');
+            $sheet->setCellValue('B' . $rowNum, $studentName);
+            $sheet->setCellValue('C' . $rowNum, $gradeSection);
+            $sheet->setCellValue('D' . $rowNum, $log->scan_type ?? '-');
+            $sheet->setCellValue('E' . $rowNum, $log->session_type ? ucfirst($log->session_type) : '-');
+            $sheet->setCellValue('F' . $rowNum, $log->scan_time?->format('h:i A') ?? '-');
+            $sheet->setCellValue('G' . $rowNum, $flagText);
+            $rowNum++;
+        }
+
+        $headerRange = 'A1:' . Coordinate::stringFromColumnIndex(count($columns)) . '1';
+        $sheet->getStyle($headerRange)
+            ->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setRGB('E8E8E8');
+
+        $sheet->freezePane('A2');
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'attendance_export_') . '.xlsx';
+        (new Xlsx($spreadsheet))->save($tempPath);
+
+        $filename = 'attendance-logs-' . $start->format('Ymd') . '-' . $end->format('Ymd') . '.xlsx';
+
+        return response()->download($tempPath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Teacher index method for time in time out history
+     */
+    public function teacherIndex(Request $request)
+    {
+        return $this->index($request);
     }
 
     /**
@@ -106,3 +209,4 @@ class AttendanceLogController extends Controller
         }
     }
 }
+

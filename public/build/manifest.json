@@ -28,6 +28,11 @@
     "src": "resources/css/app.css",
     "isEntry": true,
     "assets": [
+      {
+        "file": "assets/app-BR5vn13v.css",
+        "name": "app",
+        "src": "resources/css/app.css"
+      }
       "assets/fa-brands-400-BP5tdqmh.woff2",
       "assets/fa-regular-400-nyy7hhHF.woff2",
       "assets/fa-solid-900-DRAAbZTg.woff2",

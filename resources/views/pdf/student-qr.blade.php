@@ -74,7 +74,7 @@
         .footer {
             margin-top: 18px;
             font-size: 10px;
-           padding-bottom: 5px;
+            padding-bottom: 5px;
         }
     </style>
 
@@ -88,7 +88,7 @@
 
     <div class="card">
 
-       <img class="logo" src="{{ public_path('images/CIS-logo.png') }}">
+        <img class="logo" src="{{ public_path('images/CIS-logo.png') }}">
 
         <div class="school">
             CONCEPCION<br>
@@ -96,9 +96,7 @@
         </div>
 
         <div class="qr">
-            <img
-                src="data:image/png;base64,{{ $qrImage }}"
-                alt="QR Code">
+            <img src="data:image/png;base64,{{ $qrImage }}" alt="QR Code">
         </div>
 
         <div class="section">
@@ -108,7 +106,7 @@
         </div>
 
         <div class="session">
-            {{ ucfirst(str_replace('_', ' ', $enrollment?->session_type ?? '-')) }}
+            {{ ucfirst(str_replace('_', ' ', $enrollment?->section?->session_type ?? '-')) }}
         </div>
 
         <div class="student-name">

@@ -39,7 +39,7 @@ class SectionResolver
     {
         $sections = Section::query()
             ->where('status', 'active')
-            ->get(['id', 'name', 'level', 'grade_level', 'capacity', 'status']);
+            ->get(['id', 'name', 'level', 'grade_level', 'session_type', 'capacity', 'status']);
 
         $this->indexSections($sections);
     }

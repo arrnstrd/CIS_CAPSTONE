@@ -1,10 +1,9 @@
 <?php
 
-use App\Http\Controllers\AcademicFeature\EnrollmentController;
 use App\Http\Controllers\AcademicFeature\SchoolYearController;
 use App\Http\Controllers\AcademicFeature\SectionController;
 use App\Http\Controllers\AdministrationFeature\User\UserController;
-use App\Http\Controllers\QrSystemFeature\ClassroomScanner\ClassroomScanController;
+use App\Http\Controllers\Api\ClassroomVerificationController;
 use App\Http\Controllers\QrSystemFeature\GateScanSchedule\ScheduleConfigController;
 use App\Http\Controllers\QrSystemFeature\Scanner\ScanController;
 use App\Http\Controllers\Student\StudentController;
@@ -21,8 +20,13 @@ Route::get('/user', function (Request $request) {
 
 // QR SCANNING
 Route::post('/scan', [ScanController::class, 'scan']);
-Route::post('/classroom-scan', [ClassroomScanController::class, 'scan'])
-    ->middleware('auth:sanctum');
+
+
+// CLASSROOM VERIFICATIONS
+Route::prefix('classroom')->middleware('auth:sanctum')->group(function () {
+    Route::get('/roster/{teaching_assignment_id}', [ClassroomVerificationController::class, 'roster']);
+    Route::post('/verify', [ClassroomVerificationController::class, 'verify']);
+});
 
 
 // STUDENTS
@@ -32,15 +36,6 @@ Route::post('/students', [StudentController::class, 'store'])
 Route::post('/students/{id}', [StudentController::class, 'update']);
 
 Route::get('/students/{id}', [StudentController::class, 'show']);
-
-
-// ENROLLMENT
-Route::post('/enrollment', [EnrollmentController::class, 'store'])
-    ->name('api.enrollments.store');
-
-Route::post('/enrollment/{id}', [EnrollmentController::class, 'update']);
-
-Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy']);
 
 
 // USERS
@@ -53,7 +48,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'archive']);
 
     Route::patch('/users/{id}/restore', [UserController::class, 'restore']);
-
 });
 
 
@@ -113,5 +107,4 @@ Route::prefix('teachers')->group(function () {
 
     Route::patch('/{id}/restore', [TeacherController::class, 'restore'])
         ->name('api.teachers.restore');
-
 });

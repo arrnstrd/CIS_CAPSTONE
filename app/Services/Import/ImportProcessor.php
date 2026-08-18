@@ -5,6 +5,8 @@ namespace App\Services\Import;
 use App\DTOs\ImportRowData;
 use App\Models\BulkImport;
 use App\Models\BulkImportIssue;
+use App\Models\Guardian;
+use App\Models\Student;
 use App\Services\EnrollmentService;
 use App\Services\StudentService;
 use Illuminate\Database\QueryException;
@@ -58,6 +60,11 @@ class ImportProcessor
                 );
 
                 $successCount++;
+
+                // Create/update father & mother records (the primary
+                // 'guardian' record is created by StudentService from
+                // toGuardianData()).
+                $this->createParentGuardians($student, $row);
 
                 // ── Enrollment (if section is available) ─────────────────
                 $sectionId = $sectionIds[$row->rowNumber] ?? null;
@@ -149,6 +156,39 @@ class ImportProcessor
             'success_count' => $successCount,
             'failed_count'  => $failedCount,
         ]);
+    }
+
+    /**
+     * Create or update the father and mother Guardian records for a student.
+     *
+     * The primary guardian (from toGuardianData(), relationship 'guardian')
+     * is created by StudentService. Father/mother come from the SF1 form and
+     * are keyed on (student_id, relationship) so re-imports update instead
+     * of duplicating. Contact number and email are shared and nullable-safe.
+     */
+    private function createParentGuardians(Student $student, ImportRowData $row): void
+    {
+        $guardians = [
+            ['name' => $row->fatherName, 'relationship' => 'father'],
+            ['name' => $row->motherMaidenName, 'relationship' => 'mother'],
+        ];
+
+        foreach ($guardians as $g) {
+            $name = trim((string) $g['name']);
+
+            if ($name === '') {
+                continue;
+            }
+
+            Guardian::updateOrCreate(
+                ['student_id' => $student->id, 'relationship' => $g['relationship']],
+                [
+                    'name'           => strip_tags($name),
+                    'contact_number' => $row->guardianContactNumber,
+                    'email'          => $row->guardianEmail,
+                ]
+            );
+        }
     }
 
     // ── Issue helpers ───────────────────────────────────────────────────

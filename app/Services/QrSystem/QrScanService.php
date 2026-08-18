@@ -27,8 +27,6 @@ class QrScanService
         // 1. Resolve student from QR code or student_id
         $student = $this->resolveStudent($data);
         if (!$student) {
-            $this->rememberLatestResult(['status' => 'invalid', 'message' => 'Invalid QR or student not found']);
-
             return response()->json(['message' => 'Invalid QR or student not found'], 404);
         }
         $guardian = $student->guardian;
@@ -39,7 +37,8 @@ class QrScanService
                 'enrollments.*',
                 'sections.level as section_level',
                 'sections.name as section_name',
-                'sections.grade_level as section_grade'
+                'sections.grade_level as section_grade',
+                'sections.session_type as section_session_type'
             )
             ->leftJoin('sections', 'sections.id', '=', 'enrollments.section_id')
             ->where('enrollments.student_id', $student->id)
@@ -47,26 +46,20 @@ class QrScanService
             ->first();
 
         if (!$enrollment) {
-            $this->rememberLatestResult(['status' => 'error', 'message' => 'No active enrollment']);
-
             return response()->json(['message' => 'No active enrollment'], 404);
         }
         if (!$enrollment->section_level) {
-            $this->rememberLatestResult(['status' => 'error', 'message' => 'Enrollment section not found']);
-
             return response()->json(['message' => 'Enrollment section not found'], 404);
         }
 
         // 3. Resolve today's active schedule
         $schedule = (new ScheduleResolver())->resolve(
             $enrollment->section_level,
-            $enrollment->session_type,
+            $enrollment->section_session_type,
             $currentTime
         );
 
         if (!$schedule) {
-            $this->rememberLatestResult(['status' => 'error', 'message' => 'No active schedule for current time']);
-
             return response()->json(['message' => 'No active schedule for current time'], 400);
         }
 
@@ -83,7 +76,7 @@ class QrScanService
             ->first();
 
         // 5. Spam shield: block scans still inside the cooldown window
-        //    (cooldown/max-attempts settings are cached in Redis — they change rarely)
+        //    (cooldown/max-attempts settings are cached — they change rarely)
         $settings = $this->scanSettings();
         $cooldownSeconds = $settings['cooldown_seconds'];
         $maxDuplicateAttempts = $settings['max_duplicate_attempts'];
@@ -94,8 +87,6 @@ class QrScanService
                 'flag_type' => 'excess_scan',
                 'description' => 'Scan blocked by cooldown (spam shield)',
             ]);
-
-            $this->rememberLatestResult(['status' => 'excess', 'message' => 'Too many scans. Please wait for the cooldown to expire.']);
 
             return response()->json([
                 'message' => 'Too many scans. Please wait for the cooldown to expire.',
@@ -128,8 +119,6 @@ class QrScanService
         // 9. Enforce IN/OUT time windows
         // Note: OUT window only reaches this check when inside it (duplicate-IN returned above)
         if ($scanType === 'IN' && !($currentTime >= $inStart && $currentTime <= $inEnd)) {
-            $this->rememberLatestResult(['status' => 'error', 'message' => 'Outside of allowed check-in window']);
-
             return response()->json([
                 'message' => 'Outside of allowed check-in window',
                 'in_window' => "{$inStart} – {$inEnd}",
@@ -137,8 +126,6 @@ class QrScanService
             ], 400);
         }
         if ($scanType === 'OUT' && !($currentTime >= $outStart && $currentTime <= $outEnd)) {
-            $this->rememberLatestResult(['status' => 'error', 'message' => 'Outside of allowed check-out window']);
-
             return response()->json([
                 'message' => 'Outside of allowed check-out window',
                 'out_window' => "{$outStart} – {$outEnd}",
@@ -155,7 +142,7 @@ class QrScanService
             $log = AttendanceLog::create([
                 'enrollment_id' => $enrollment->id,
                 'scan_type' => $scanType,
-                'session_type' => $enrollment->session_type,
+                'session_type' => $enrollment->section_session_type,
                 'scan_time' => $now,
                 'scanned_by_user_id' => $data['scanned_by_user_id'] ?? null,
                 'device_id' => $data['device_id'] ?? null,
@@ -199,23 +186,7 @@ class QrScanService
         // 11. Notify guardian by email
         $this->sendGuardianEmail($student, $guardian, $log, $scanType, $now);
 
-        // Publish the latest result for the QR Station live display (Redis only;
-        // the PostgreSQL write above remains the source of truth).
-        $this->rememberLatestResult([
-            'status' => $isLate ? 'late' : ($scanType === 'OUT' ? 'time-out' : 'time-in'),
-            'student' => [
-                'name' => "{$student->first_name} {$student->last_name}",
-                'student_number' => $student->student_number,
-                'section' => $enrollment->section_grade
-                    ? "Grade {$enrollment->section_grade} - {$enrollment->section_name}"
-                    : null,
-            ],
-            'attendance_log' => [
-                'scan_type' => $scanType,
-                'scan_time' => $log->scan_time->toIso8601String(),
-            ],
-            'message' => 'Scan successful',
-        ]);
+
 
         return response()->json([
             'message' => 'Scan successful',
@@ -224,7 +195,7 @@ class QrScanService
                 'name' => "{$student->first_name} {$student->last_name}",
                 'student_number' => $student->student_number,
                 'level' => $schedule->level,
-                'session_type' => $enrollment->session_type,
+                'session_type' => $enrollment->section_session_type,
                 'section' => $enrollment->section_grade
                     ? "Grade {$enrollment->section_grade} - {$enrollment->section_name}"
                     : null,
@@ -263,18 +234,7 @@ class QrScanService
         }
     }
 
-    /**
-     * Publish the latest scan result for the QR Station live display.
-     * Redis is display-only — PostgreSQL remains the source of truth.
-     */
-    private function rememberLatestResult(array $result): void
-    {
-        try {
-            Cache::store('redis')->put('qr-station:latest', $result, 86400);
-        } catch (\Throwable $e) {
-            Log::warning("Failed to cache latest QR station result: {$e->getMessage()}");
-        }
-    }
+
 
     private function resolveStudent(array $data): ?Student
     {
@@ -318,7 +278,7 @@ class QrScanService
         $log = AttendanceLog::create([
             'enrollment_id' => $enrollment->id,
             'scan_type' => $scanType,
-            'session_type' => $enrollment->session_type,
+            'session_type' => $enrollment->section_session_type,
             'scan_time' => $now,
         ]);
 
@@ -326,12 +286,6 @@ class QrScanService
             'attendance_log_id' => $log->id,
             'flag_type' => 'duplicate_scan',
             'description' => "Duplicate {$scanType} scan rejected",
-        ]);
-
-        $this->rememberLatestResult([
-            'status' => 'duplicate',
-            'attendance_log' => ['scan_type' => $scanType, 'scan_time' => $now->toIso8601String()],
-            'message' => "Duplicate {$scanType} scan rejected",
         ]);
 
         return response()->json([
@@ -349,7 +303,7 @@ class QrScanService
         $log = AttendanceLog::create([
             'enrollment_id' => $enrollment->id,
             'scan_type' => 'IN',
-            'session_type' => $enrollment->session_type,
+            'session_type' => $enrollment->section_session_type,
             'scan_time' => $now,
         ]);
 
@@ -361,12 +315,6 @@ class QrScanService
             ]);
 
             $qrAttendance->increment('spam_offense_count');
-
-            $this->rememberLatestResult([
-                'status' => 'duplicate',
-                'attendance_log' => ['scan_type' => 'IN', 'scan_time' => $now->toIso8601String()],
-                'message' => 'Duplicate scan warning. Please wait for check-out time.',
-            ]);
 
             return response()->json([
                 'message' => 'Duplicate scan warning. Please wait for check-out time.',
@@ -381,12 +329,6 @@ class QrScanService
 
         $qrAttendance->cooldown_expires_at = $now->copy()->addSeconds($cooldownSeconds);
         $qrAttendance->save();
-
-        $this->rememberLatestResult([
-            'status' => 'excess',
-            'attendance_log' => ['scan_type' => 'IN', 'scan_time' => $now->toIso8601String()],
-            'message' => 'Too many duplicate scans. You are now on cooldown.',
-        ]);
 
         return response()->json([
             'message' => 'Too many duplicate scans. You are now on cooldown.',

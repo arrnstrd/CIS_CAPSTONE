@@ -123,7 +123,34 @@ class BulkImportService
         }
 
         // ── Parse ───────────────────────────────────────────────────────
-        $allRows = $this->parser->parse($filePath);
+        try {
+            $allRows = $this->parser->parse($filePath);
+        } catch (MissingFormHeaderException $e) {
+            // File-level SF1 header problem: record ONE blocking issue and
+            // skip per-row processing (every row would fail identically).
+            BulkImportIssue::create([
+                'bulk_import_id' => $import->id,
+                'row_number'     => null,
+                'issue_type'     => 'missing_form_header',
+                'severity'       => 'error',
+                'field'          => 'form_header',
+                'message'        => $e->getMessage(),
+                'raw_data'       => null,
+                'status'         => 'unresolved',
+            ]);
+
+            $import->update([
+                'status'        => 'validated',
+                'total_rows'    => 0,
+                'valid_count'   => 0,
+                'error_count'   => 1,
+                'warning_count' => 0,
+                'success_count' => 0,
+                'failed_count'  => 0,
+            ]);
+
+            return $import->fresh();
+        }
 
         $import->update(['total_rows' => count($allRows)]);
 
@@ -157,8 +184,18 @@ class BulkImportService
                 }
             }
 
-            if (empty($rowIssues)) {
-                // Row is valid — resolve section
+            // Errors block the row; warnings are persisted but do NOT block it
+            $hasErrors = false;
+
+            foreach ($rowIssues as $issue) {
+                if (($issue['severity'] ?? 'error') === 'error') {
+                    $hasErrors = true;
+                    break;
+                }
+            }
+
+            if (!$hasErrors) {
+                // Row is importable — resolve section
                 $validRows[] = $row;
 
                 if ($row->hasEnrollmentData()) {
@@ -191,28 +228,29 @@ class BulkImportService
                     $sectionIds[$row->rowNumber] = null;
                 }
             } else {
-                // Row has validation errors — collect with row data
                 $sectionIds[$row->rowNumber] = null;
+            }
 
-                foreach ($rowIssues as $issue) {
-                    $persistIssues[] = [
-                        'bulk_import_id' => $import->id,
-                        'row_number'     => $row->rowNumber,
-                        'issue_type'     => $issue['issue_type'],
-                        'severity'       => $issue['severity'],
-                        'field'          => $issue['field'] ?? null,
-                        'message'        => $issue['message'],
-                        'raw_data'       => json_encode($row->toRawData()),
-                        'status'         => 'unresolved',
-                        'created_at'     => now(),
-                        'updated_at'     => now(),
-                    ];
+            // Persist ALL issues for this row (warnings on valid rows,
+            // errors + warnings on invalid rows)
+            foreach ($rowIssues as $issue) {
+                $persistIssues[] = [
+                    'bulk_import_id' => $import->id,
+                    'row_number'     => $row->rowNumber,
+                    'issue_type'     => $issue['issue_type'],
+                    'severity'       => $issue['severity'],
+                    'field'          => $issue['field'] ?? null,
+                    'message'        => $issue['message'],
+                    'raw_data'       => json_encode($row->toRawData()),
+                    'status'         => 'unresolved',
+                    'created_at'     => now(),
+                    'updated_at'     => now(),
+                ];
 
-                    if ($issue['severity'] === 'error') {
-                        $errorCount++;
-                    } else {
-                        $warningCount++;
-                    }
+                if (($issue['severity'] ?? 'error') === 'error') {
+                    $errorCount++;
+                } else {
+                    $warningCount++;
                 }
             }
         }
@@ -276,7 +314,18 @@ class BulkImportService
         foreach ($allRows as $row) {
             $rowIssues = $this->validator->validate($row);
 
-            if (empty($rowIssues)) {
+            // Warnings (e.g. no_guardian) do not block a row — only hard
+            // errors exclude it from processing.
+            $hasErrors = false;
+
+            foreach ($rowIssues as $issue) {
+                if (($issue['severity'] ?? 'error') === 'error') {
+                    $hasErrors = true;
+                    break;
+                }
+            }
+
+            if (!$hasErrors) {
                 $validRows[] = $row;
 
                 if ($row->hasEnrollmentData()) {

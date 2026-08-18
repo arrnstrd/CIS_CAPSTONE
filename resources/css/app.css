@@ -17,4 +17,14 @@
 
 
 @import './academic.css';
+@import './bulk-import.css';
+@import './flagged-modal.css';
+@import './gradeLevel.css';
 @import './import.css';
+@import './layout.css';
+@import './qr-generation.css';
+@import './qr-station.css';
+@import './sidebar.css';
+@import './status-badges.css';
+@import './table.css';
+@import './top-nav.css';
