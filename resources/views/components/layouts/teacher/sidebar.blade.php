@@ -4,24 +4,12 @@
 
     <div class="sidebar-content">
 
-        <div class="sidebar-brand  ">
-            <!-- Brand -->
-            @php
-                $teacherUser = auth()->user();
-                $teacherProfile = $teacherUser?->teacher;
-                $teacherName = $teacherProfile?->full_name ?? ($teacherUser?->first_name . ' ' . $teacherUser?->last_name);
-                $teacherEmail = $teacherUser?->email ?? '';
-            @endphp
-            <div class="sidebar-teacher-info">
-                <div class="sidebar-teacher-avatar">
-                    <i class="fa-solid fa-circle-user"></i>
-                </div>
-                <div class="sidebar-teacher-details">
-                    <span class="sidebar-teacher-name">{{ $teacherName }}</span>
-                    <span class="sidebar-teacher-email">{{ $teacherEmail }}</span>
-                </div>
-            </div>
-
+        <div class="sidebar-brand d-flex flex-column align-items-center py-3 px-4 text-center">
+            <img src="{{ asset('./images/CIS-logo.png') }}" alt="Concepcion Integrated School Logo" class="sidebar-brand-logo mb-2" style="width: 50px; height: 50px; object-fit: contain;">
+            <h5 class="text-white mb-0 fw-bold" style="font-size: 1.05rem;">TEACHER PORTAL</h5>
+            <small class="text-uppercase text-white fw-semibold" style="font-size: 0.62rem; letter-spacing: 1px;">
+                CONCEPCION INTEGRATED SCHOOL
+            </small>
         </div>
 
 
