@@ -25,7 +25,7 @@ class CompRulesController extends Controller
     {
         $settings = $this->getSettings();
 
-        return view('teacher-modules.comp-rules', compact('settings'));
+        return view('teacher-modules.grading.comp-rules', compact('settings'));
     }
 
     public function update(Request $request)

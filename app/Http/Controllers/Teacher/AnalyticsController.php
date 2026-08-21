@@ -21,7 +21,7 @@ class AnalyticsController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.analytics-index', ['gradeLevels' => collect(), 'schoolYears' => collect(), 'selectedSchoolYearId' => null]);
+            return view('teacher-modules.analytics.analytics-index', ['gradeLevels' => collect(), 'schoolYears' => collect(), 'selectedSchoolYearId' => null]);
         }
 
         $selectedSchoolYearId = $request->input('school_year_id') ?: null;
@@ -67,7 +67,7 @@ class AnalyticsController extends Controller
 
         $schoolYears = SchoolYear::orderByDesc('school_year')->get();
 
-        return view('teacher-modules.analytics-index', compact('gradeLevels', 'schoolYears', 'selectedSchoolYearId'));
+        return view('teacher-modules.analytics.analytics-index', compact('gradeLevels', 'schoolYears', 'selectedSchoolYearId'));
     }
 
     public function show(Request $request, int $gradeLevel)
@@ -119,7 +119,7 @@ class AnalyticsController extends Controller
 
         $schoolYears = SchoolYear::orderByDesc('school_year')->get();
 
-        return view('teacher-modules.analytics-sections-index', compact(
+        return view('teacher-modules.analytics.analytics-sections-index', compact(
             'sections', 'gradeLevel', 'schoolYears', 'selectedSchoolYearId'
         ));
     }
@@ -182,7 +182,7 @@ class AnalyticsController extends Controller
             ];
         })->sortBy('name')->values();
 
-        return view('teacher-modules.analytics-students-index', compact('students', 'section'));
+        return view('teacher-modules.analytics.analytics-students-index', compact('students', 'section'));
     }
 
     public function studentSubjects(Request $request, int $enrollmentId)
@@ -227,6 +227,6 @@ class AnalyticsController extends Controller
             ];
         });
 
-        return view('teacher-modules.analytics-student-subjects', compact('enrollment', 'subjects'));
+        return view('teacher-modules.analytics.analytics-student-subjects', compact('enrollment', 'subjects'));
     }
 }

@@ -2,7 +2,7 @@
     <x-slot name="pageName">Grading System</x-slot>
     <x-slot name="subtitle">{{ $ta->section->name }} · {{ $ta->subject->name }}</x-slot>
 
-    @include('teacher-modules.partials.grading-tabs', ['activeTab' => 'grading'])
+    @include('teacher-modules.partials.grading-tabs', ['activeTab' => 'gradesheet'])
 
     <div class="gd-layout">
         @include('teacher-modules.partials.grading-dashboard-sidebar', ['gdActive' => 'grade-sheet'])

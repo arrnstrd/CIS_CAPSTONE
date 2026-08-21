@@ -17,7 +17,7 @@ class ByLevelController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.by-level-index', [
+            return view('teacher-modules.analytics.by-level-index', [
                 'gradeData' => ['labels' => [], 'avgGrade' => [], 'passingRate' => [], 'atRisk' => []],
                 'sectionRows' => collect(),
                 'subjectRows' => collect(),
@@ -165,7 +165,7 @@ class ByLevelController extends Controller
                 : 0;
         }
 
-        return view('teacher-modules.by-level-index', [
+        return view('teacher-modules.analytics.by-level-index', [
             'gradeData' => ['labels' => $gradeLabels, 'avgGrade' => $gradeAvg, 'passingRate' => $gradePassing, 'atRisk' => $gradeAtRisk],
             'sectionRows' => $sectionRows,
             'subjectRows' => $subjectRows,

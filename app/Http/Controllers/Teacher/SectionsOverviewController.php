@@ -16,7 +16,7 @@ class SectionsOverviewController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.sections-overview-index', [
+            return view('teacher-modules.overview.sections-overview-index', [
                 'gradeLevels' => collect(),
                 'selectedGradeLevel' => null,
                 'sections' => collect(),
@@ -82,6 +82,6 @@ class SectionsOverviewController extends Controller
         }
         $sections = $sections->sortBy('section_name')->values();
 
-        return view('teacher-modules.sections-overview-index', compact('gradeLevels', 'selectedGradeLevel', 'sections'));
+        return view('teacher-modules.overview.sections-overview-index', compact('gradeLevels', 'selectedGradeLevel', 'sections'));
     }
 }

@@ -22,7 +22,7 @@ class ReportsController extends Controller
                 ->get()
             : collect();
 
-        return view('teacher-modules.reports', compact('teachingAssignments'));
+        return view('teacher-modules.utilities.reports', compact('teachingAssignments'));
     }
 
     public function classRecordData(Request $request, int $teachingAssignmentId)

@@ -16,7 +16,7 @@ class GradingLevelsController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.grading-levels-index', ['gradeLevels' => collect()]);
+            return view('teacher-modules.grading.grading-levels-index', ['gradeLevels' => collect()]);
         }
 
         $selectedSchoolYearId = $request->input('school_year_id') ?: null;
@@ -62,7 +62,7 @@ class GradingLevelsController extends Controller
 
         $schoolYears = SchoolYear::orderByDesc('school_year')->get();
 
-        return view('teacher-modules.grading-levels-index', compact('gradeLevels', 'schoolYears', 'selectedSchoolYearId'));
+        return view('teacher-modules.grading.grading-levels-index', compact('gradeLevels', 'schoolYears', 'selectedSchoolYearId'));
     }
 
     public function show(Request $request, int $gradeLevel)
@@ -116,7 +116,7 @@ class GradingLevelsController extends Controller
 
         $schoolYears = SchoolYear::orderByDesc('school_year')->get();
 
-        return view('teacher-modules.grading-sections-index', compact(
+        return view('teacher-modules.grading.grading-sections-index', compact(
             'sections', 'gradeLevel', 'schoolYears', 'selectedSchoolYearId'
         ));
     }
@@ -171,7 +171,7 @@ class GradingLevelsController extends Controller
 
         $sectionAvg = $students->filter(fn ($s) => $s->avg_grade !== null)->avg('avg_grade');
 
-        return view('teacher-modules.grading-students-index', [
+        return view('teacher-modules.grading.grading-students-index', [
             'section' => $section,
             'students' => $students,
             'sectionAvg' => $sectionAvg !== null ? round($sectionAvg, 1) : null,
@@ -223,6 +223,6 @@ class GradingLevelsController extends Controller
             ->distinct('scan_time')
             ->count();
 
-        return view('teacher-modules.grading-student-detail', compact('enrollment', 'subjects', 'presentCount'));
+        return view('teacher-modules.grading.grading-student-detail', compact('enrollment', 'subjects', 'presentCount'));
     }
 }

@@ -15,7 +15,7 @@ class SubjectsOverviewController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.subjects-overview-index', [
+            return view('teacher-modules.overview.subjects-overview-index', [
                 'gradeLevels' => collect(),
                 'sections' => collect(),
                 'selectedGradeLevel' => null,
@@ -94,7 +94,7 @@ class SubjectsOverviewController extends Controller
 
         $divisionChart = $this->buildDivisionChart($allAssignments);
 
-        return view('teacher-modules.subjects-overview-index', [
+        return view('teacher-modules.overview.subjects-overview-index', [
             'gradeLevels' => $gradeLevels,
             'sections' => $sections,
             'selectedGradeLevel' => $selectedGradeLevel,

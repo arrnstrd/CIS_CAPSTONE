@@ -54,7 +54,7 @@
 
 
 
-        <main class="page-content teacher-page-bg">
+        <main class="page-content">
             <div class="container-fluid p-6">
                 <section class="admin-head-banner p-4 mx-3 mt-3">
                     <div class="admin-head-banner__copy">
