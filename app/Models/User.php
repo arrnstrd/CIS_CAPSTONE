@@ -121,7 +121,11 @@ class User extends Authenticatable
 
     public function isProtectedAdmin(): bool
     {
-        return $this->isAdmin() && ($this->id === 1 || $this->employee_id === 'EMP-2026-0001');
+        return $this->isAdmin() && (
+            $this->email === 'superadmin@cis.edu.ph' ||
+            $this->id === 1 ||
+            $this->employee_id === 'EMP-2026-0001'
+        );
     }
 
     public function isTeacher(): bool

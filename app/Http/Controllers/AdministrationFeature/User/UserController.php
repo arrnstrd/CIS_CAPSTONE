@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AdministrationFeature\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminActivityLog;
 use App\Models\User;
 use App\Services\InvitationService;
 use App\Mail\InvitationMail;
@@ -12,12 +13,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
     public function store(Request $request)
     {
+        $actor = Auth::user();
+
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted User Creation', $request->email, 'denied', 'Only the Super Admin can create new users.');
+
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can create new user accounts.',
+            ], 403);
+        }
+
         // Build validation rules without current_password for user creation
         $rules = [
             'first_name' => [
@@ -40,7 +50,6 @@ class UserController extends Controller
         ];
 
         $validatedData = $request->validate($rules);
-
         $validatedData = $this->normalizeEmail($validatedData);
 
         // New users are created as pending with no usable password
@@ -63,6 +72,8 @@ class UserController extends Controller
                 $expiresAt
             ));
 
+            AdminActivityLog::record($actor, 'Created User', $user->email, 'success', "Created {$user->role} account for {$user->first_name} {$user->last_name}", 'User', $user->id);
+
             return response()->json([
                 'message' => 'User created successfully',
                 'data' => $user,
@@ -84,40 +95,49 @@ class UserController extends Controller
 
     public function update(Request $request, string $id)
     {
+        $actor = Auth::user();
         $user = User::findOrFail($id);
 
-        if (Auth::id() === $user->id) {
+        if ($user->isProtectedAdmin() && Auth::id() !== $user->id) {
+            AdminActivityLog::record($actor, 'Attempted Protected Admin Modification', $user->email, 'denied', 'The Protected Administrator account cannot be modified by another user.', 'User', $user->id);
+
             return response()->json([
-                'message' => 'You cannot update your own account.',
+                'message' => 'The protected administrator account cannot be modified by another user.',
             ], 403);
         }
 
-        $validatedData = $request->validate(array_merge(
-            $this->sharedValidationRules($request),
-            [
-                'email' => [
-                    'required',
-                    'email',
-                    'max:255',
-                    Rule::unique('users', 'email')->ignore($user->id),
-                ],
-                'password' => [
-                    'sometimes',
-                    'confirmed',
-                    'string',
-                    Password::min(8)
-                        ->letters()
-                        ->mixedCase()
-                        ->numbers()
-                        ->symbols(),
-                ],
-            ]
-        ));
+        if (! $user->isProtectedAdmin() && ! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted User Modification', $user->email, 'denied', 'Only the Super Admin can edit user accounts.', 'User', $user->id);
 
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can modify user accounts.',
+            ], 403);
+        }
+
+        $rules = [
+            'first_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-]+$/'],
+            'last_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-]+$/'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'role' => ['sometimes', 'required', 'in:admin,teacher,scanner_operator'],
+            'status' => ['sometimes', 'required', 'in:active,inactive,suspended,pending'],
+        ];
+
+        if ($request->has('current_password')) {
+            $rules['current_password'] = ['required', 'current_password'];
+        }
+
+        $validatedData = $request->validate($rules);
         $validatedData = $this->normalizeEmail($validatedData);
+
+        if ($user->isProtectedAdmin()) {
+            $validatedData['role'] = 'admin';
+            $validatedData['status'] = 'active';
+        }
 
         try {
             $user->update($validatedData);
+
+            AdminActivityLog::record($actor, 'Updated User Details', $user->email, 'success', "Updated account details for {$user->first_name} {$user->last_name}", 'User', $user->id);
 
             return response()->json([
                 'message' => 'User updated successfully',
@@ -138,16 +158,29 @@ class UserController extends Controller
 
     public function archive(string $id)
     {
+        $actor = Auth::user();
         $user = User::findOrFail($id);
 
-        if (Auth::id() === $user->id) {
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted User Deletion', $user->email, 'denied', 'Only the Super Admin can delete user accounts.', 'User', $user->id);
+
             return response()->json([
-                'message' => 'You cannot archive your own account.',
+                'message' => 'Unauthorized. Only the Super Admin can delete user accounts.',
+            ], 403);
+        }
+
+        if ($user->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Protected Admin Deletion', $user->email, 'denied', 'The Protected Administrator account cannot be deleted.', 'User', $user->id);
+
+            return response()->json([
+                'message' => 'The protected administrator account cannot be deleted or archived.',
             ], 403);
         }
 
         try {
             $user->delete();
+
+            AdminActivityLog::record($actor, 'Deleted User', $user->email, 'success', "Archived user account for {$user->first_name} {$user->last_name}", 'User', $user->id);
 
             return response()->json([
                 'message' => 'User archived successfully',
@@ -163,7 +196,16 @@ class UserController extends Controller
 
     public function restore(string $id)
     {
+        $actor = Auth::user();
         $user = User::withTrashed()->findOrFail($id);
+
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted User Restoration', $user->email, 'denied', 'Only the Super Admin can restore user accounts.', 'User', $user->id);
+
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can restore user accounts.',
+            ], 403);
+        }
 
         if (! $user->trashed()) {
             return response()->json([
@@ -173,6 +215,8 @@ class UserController extends Controller
 
         try {
             $user->restore();
+
+            AdminActivityLog::record($actor, 'Restored User', $user->email, 'success', "Restored user account for {$user->first_name} {$user->last_name}", 'User', $user->id);
 
             return response()->json([
                 'message' => 'User restored successfully',
@@ -188,7 +232,16 @@ class UserController extends Controller
 
     public function resendInvitation(Request $request, string $id)
     {
+        $actor = Auth::user();
         $user = User::findOrFail($id);
+
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Resending Invitation', $user->email, 'denied', 'Only the Super Admin can resend setup invitations.', 'User', $user->id);
+
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can resend setup invitations.',
+            ], 403);
+        }
 
         // Only pending users can receive a resend
         if ($user->status !== 'pending') {
@@ -211,6 +264,8 @@ class UserController extends Controller
                 $expiresAt
             ));
 
+            AdminActivityLog::record($actor, 'Resent Invitation', $user->email, 'success', "Resent setup invitation email to {$user->email}", 'User', $user->id);
+
             return response()->json([
                 'message' => 'Invitation resent successfully.',
                 'setup_link' => $setupLink,
@@ -230,11 +285,20 @@ class UserController extends Controller
      */
     public function deactivate(Request $request, string $id)
     {
+        $actor = Auth::user();
+        $user = User::findOrFail($id);
+
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted User Deactivation', $user->email, 'denied', 'Only the Super Admin can deactivate user accounts.', 'User', $user->id);
+
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can deactivate user accounts.',
+            ], 403);
+        }
+
         if ($request->has('current_password')) {
             $request->validate(['current_password' => ['required', 'current_password']]);
         }
-
-        $user = User::findOrFail($id);
 
         if (Auth::id() === $user->id) {
             return response()->json([
@@ -243,6 +307,8 @@ class UserController extends Controller
         }
 
         if ($user->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Protected Admin Deactivation', $user->email, 'denied', 'The Protected Administrator account cannot be deactivated.', 'User', $user->id);
+
             return response()->json([
                 'message' => 'The protected administrator account cannot be deactivated.',
             ], 403);
@@ -256,6 +322,8 @@ class UserController extends Controller
 
         try {
             $user->update(['status' => 'inactive']);
+
+            AdminActivityLog::record($actor, 'Deactivated User', $user->email, 'success', "Deactivated user account for {$user->first_name} {$user->last_name}", 'User', $user->id);
 
             return response()->json([
                 'message' => 'User deactivated successfully',
@@ -275,11 +343,20 @@ class UserController extends Controller
      */
     public function reactivate(Request $request, string $id)
     {
+        $actor = Auth::user();
+        $user = User::findOrFail($id);
+
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted User Reactivation', $user->email, 'denied', 'Only the Super Admin can reactivate user accounts.', 'User', $user->id);
+
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can reactivate user accounts.',
+            ], 403);
+        }
+
         if ($request->has('current_password')) {
             $request->validate(['current_password' => ['required', 'current_password']]);
         }
-
-        $user = User::findOrFail($id);
 
         if (Auth::id() === $user->id) {
             return response()->json([
@@ -288,6 +365,8 @@ class UserController extends Controller
         }
 
         if ($user->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Protected Admin Modification', $user->email, 'denied', 'The Protected Administrator account cannot be modified.', 'User', $user->id);
+
             return response()->json([
                 'message' => 'The protected administrator account cannot be modified.',
             ], 403);
@@ -301,6 +380,8 @@ class UserController extends Controller
 
         try {
             $user->update(['status' => 'active']);
+
+            AdminActivityLog::record($actor, 'Reactivated User', $user->email, 'success', "Reactivated user account for {$user->first_name} {$user->last_name}", 'User', $user->id);
 
             return response()->json([
                 'message' => 'User reactivated successfully',
@@ -319,13 +400,28 @@ class UserController extends Controller
      */
     public function bulkDeactivate(Request $request)
     {
+        $actor = Auth::user();
+
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Bulk Deactivation', 'Multiple Users', 'denied', 'Only the Super Admin can execute bulk user actions.');
+
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can execute bulk user actions.',
+            ], 403);
+        }
+
         $request->validate([
             'user_ids' => ['required', 'array', 'min:1'],
             'user_ids.*' => ['required', 'integer', 'exists:users,id'],
             'current_password' => ['required', 'current_password'],
         ]);
 
-        $protectedIds = User::where('id', 1)->orWhere('employee_id', 'EMP-2026-0001')->pluck('id')->toArray();
+        $protectedIds = User::where('email', 'superadmin@cis.edu.ph')
+            ->orWhere('employee_id', 'EMP-2026-0001')
+            ->orWhere('id', 1)
+            ->pluck('id')
+            ->toArray();
+
         $userIds = array_diff($request->user_ids, array_merge([Auth::id()], $protectedIds));
 
         if (empty($userIds)) {
@@ -338,6 +434,8 @@ class UserController extends Controller
             ->where('status', 'active')
             ->update(['status' => 'inactive']);
 
+        AdminActivityLog::record($actor, 'Bulk Deactivated Users', "{$count} User(s)", 'success', "Bulk deactivated {$count} active user accounts");
+
         return response()->json([
             'message' => "{$count} user(s) deactivated successfully.",
             'affected' => $count,
@@ -349,13 +447,28 @@ class UserController extends Controller
      */
     public function bulkReactivate(Request $request)
     {
+        $actor = Auth::user();
+
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Bulk Reactivation', 'Multiple Users', 'denied', 'Only the Super Admin can execute bulk user actions.');
+
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can execute bulk user actions.',
+            ], 403);
+        }
+
         $request->validate([
             'user_ids' => ['required', 'array', 'min:1'],
             'user_ids.*' => ['required', 'integer', 'exists:users,id'],
             'current_password' => ['required', 'current_password'],
         ]);
 
-        $protectedIds = User::where('id', 1)->orWhere('employee_id', 'EMP-2026-0001')->pluck('id')->toArray();
+        $protectedIds = User::where('email', 'superadmin@cis.edu.ph')
+            ->orWhere('employee_id', 'EMP-2026-0001')
+            ->orWhere('id', 1)
+            ->pluck('id')
+            ->toArray();
+
         $userIds = array_diff($request->user_ids, array_merge([Auth::id()], $protectedIds));
 
         if (empty($userIds)) {
@@ -368,6 +481,8 @@ class UserController extends Controller
             ->where('status', 'inactive')
             ->update(['status' => 'active']);
 
+        AdminActivityLog::record($actor, 'Bulk Reactivated Users', "{$count} User(s)", 'success', "Bulk reactivated {$count} inactive user accounts");
+
         return response()->json([
             'message' => "{$count} user(s) reactivated successfully.",
             'affected' => $count,
@@ -379,6 +494,16 @@ class UserController extends Controller
      */
     public function bulkResendInvitation(Request $request)
     {
+        $actor = Auth::user();
+
+        if (! $actor?->isProtectedAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Bulk Resending Invitations', 'Multiple Users', 'denied', 'Only the Super Admin can execute bulk user actions.');
+
+            return response()->json([
+                'message' => 'Unauthorized. Only the Super Admin can execute bulk user actions.',
+            ], 403);
+        }
+
         $request->validate([
             'user_ids' => ['required', 'array', 'min:1'],
             'user_ids.*' => ['required', 'integer', 'exists:users,id'],
@@ -407,6 +532,8 @@ class UserController extends Controller
                 // Continue sending to remaining users
             }
         }
+
+        AdminActivityLog::record($actor, 'Bulk Resent Invitations', "{$count} User(s)", 'success', "Bulk resent setup invitations to {$count} pending user(s)");
 
         return response()->json([
             'message' => "Invitation resent to {$count} pending user(s).",

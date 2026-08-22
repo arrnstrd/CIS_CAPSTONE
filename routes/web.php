@@ -218,12 +218,18 @@ Route::middleware(['auth'])->group(function () {
             }
 
             $users = $query->latest('created_at')->get();
+            
             $activityLogs = \App\Models\LoginLog::with('user')
                 ->latest('attempted_at')
                 ->paginate(20, ['*'], 'log_page')
                 ->appends($request->query());
 
-            return view('admin-modules.management.users', compact('users', 'activityLogs'));
+            $recentActivities = \App\Models\AdminActivityLog::with('actor')
+                ->latest('created_at')
+                ->paginate(20, ['*'], 'activity_page')
+                ->appends($request->query());
+
+            return view('admin-modules.management.users', compact('users', 'activityLogs', 'recentActivities'));
         })->name('users.index');
         Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
 

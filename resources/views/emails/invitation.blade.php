@@ -4,7 +4,7 @@
 <body
     style="margin: 0; padding: 20px; background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
 
-    <!-- Wrapper Table para sa Centering (Email standard) -->
+    <!-- Wrapper Table for Centering (Email standard) -->
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
         <tr>
             <td align="center">
@@ -29,14 +29,14 @@
                     <!-- Body Content -->
                     <div style="padding: 0 25px 20px 25px;">
                         <p style="font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 20px;">
-                            <strong>Magandang araw!</strong><br>
-                            Nais naming ipabatid na may bagong account setup na kailangan ninyong gawin.
+                            <strong>Good day!</strong><br>
+                            We would like to inform you that a new account setup requires your attention.
                         </p>
 
                         <p style="font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 20px;">
                             <strong>{{ $recipientName }},</strong><br>
-                            Nawa po nating isama ang inyong account sa Concepcion Integrated School system.
-                            Gumawa po ng account setup gamit ang link na ibaba bago ang expiration date.
+                            Your account has been created for the Concepcion Integrated School system.
+                            Please complete your account setup using the link below before the expiration date.
                         </p>
 
                         <!-- Setup Link Table -->
@@ -54,13 +54,13 @@
                         </table>
 
                         <p style="font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 20px;">
-                            Ang link na ito ay mag-expiri ng 72 oras mula sa oras na ipadala ang email na ito.
-                            Pagkatapos mag-expiri, mag-uudyong ng bagong invitation para sa bagong setup.
+                            This link will expire 72 hours after this email is sent.
+                            Once the link expires, a new invitation will need to be requested to complete the account setup.
                         </p>
 
                         <p style="font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 20px;">
-                            Huwag po itaguyod ang anumang password o credential sa pamamagitan ng email.
-                            Ang account setup ay dapat gawin gamit ang secure link na ibaba.
+                            Do not share any password or credentials through email.
+                            Account setup should only be completed using the secure link provided below.
                         </p>
 
                         <hr style="border: 0; border-top: 1px solid #dee2e6; margin: 15px 0;">
@@ -68,8 +68,8 @@
                         <!-- Footer -->
                         <div style="padding: 0 25px 20px 25px;">
                             <p style="font-size: 11px; color: #adb5bd; line-height: 1.4; margin: 0;">
-                                * Ang abisong ito ay automatic na ipinadala para sa seguridad ng mag-aaral.
-                                Hindi na kailangang mag-reply sa email na ito.
+                                * This notification was automatically sent for account security purposes.
+                                Please do not reply to this email.
                             </p>
                         </div>
 

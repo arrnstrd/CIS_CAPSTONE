@@ -1,10 +1,16 @@
 <x-layouts.admin>
     <x-slot name="title">User Management</x-slot>
     <x-slot name="pageName">User & Access Control</x-slot>
-    <x-slot name="subtitle">Manage system user accounts, assigned roles, account statuses, and issue setup invitations.</x-slot>
+    <x-slot name="subtitle">Manage system user accounts, assigned roles, account statuses, issue setup invitations, and review audit logs.</x-slot>
 
     @php
-        $activeTab = request()->has('log_page') ? 'activity' : 'directory';
+        $isSuperAdmin = auth()->check() && auth()->user()->isProtectedAdmin();
+        $activeTab = 'directory';
+        if (request()->has('activity_page')) {
+            $activeTab = 'recent';
+        } elseif (request()->has('log_page')) {
+            $activeTab = 'security';
+        }
     @endphp
 
     <style>
@@ -148,7 +154,7 @@
             </div>
         @endif
 
-        <!-- Header Actions & Tab Navigation -->
+        <!-- Header Actions & Three-Tab Navigation -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
             <ul class="nav nav-pills gap-2 bg-white p-1.5 rounded-3 border shadow-sm" id="userTabs" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -157,16 +163,28 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $activeTab === 'activity' ? 'active' : '' }} px-3 py-2 fw-semibold" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity-pane" type="button" role="tab">
+                    <button class="nav-link {{ $activeTab === 'security' ? 'active' : '' }} px-3 py-2 fw-semibold" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-pane" type="button" role="tab">
                         <i class="fas fa-shield-alt me-2"></i> Security Audit Log
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ $activeTab === 'recent' ? 'active' : '' }} px-3 py-2 fw-semibold" id="recent-tab" data-bs-toggle="tab" data-bs-target="#recent-pane" type="button" role="tab">
+                        <i class="fas fa-list-alt me-2"></i> Recent Activity
                     </button>
                 </li>
             </ul>
 
-            <button type="button" class="btn btn-dark px-3.5 py-2.5 rounded-3 fw-medium d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
-                <i class="fas fa-user-plus"></i>
-                <span>Create New User</span>
-            </button>
+            @if($isSuperAdmin)
+                <button type="button" class="btn btn-dark px-3.5 py-2.5 rounded-3 fw-medium d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Create New User</span>
+                </button>
+            @else
+                <button type="button" class="btn btn-secondary px-3.5 py-2.5 rounded-3 fw-medium d-flex align-items-center gap-2 shadow-sm" disabled title="Only the Super Admin can create new user accounts.">
+                    <i class="fas fa-lock"></i>
+                    <span>Create New User (Super Admin Only)</span>
+                </button>
+            @endif
         </div>
 
         <div class="tab-content" id="userTabsContent">
@@ -213,26 +231,28 @@
                 </div>
 
                 <!-- Contextual Bulk Actions Bar -->
-                <div id="bulkActionBar" class="bulk-actions-bar d-none">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-primary rounded-pill px-2.5 py-1 fs-6" id="selectedCount">0</span>
-                        <span class="fw-semibold fs-7">user(s) selected for administrative action</span>
+                @if($isSuperAdmin)
+                    <div id="bulkActionBar" class="bulk-actions-bar d-none">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary rounded-pill px-2.5 py-1 fs-6" id="selectedCount">0</span>
+                            <span class="fw-semibold fs-7">user(s) selected for administrative action</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" id="bulkDeactivateBtn" class="btn btn-sm btn-warning fw-semibold d-none" onclick="openBulkConfirmModal('deactivate')">
+                                <i class="fas fa-pause me-1.5"></i> Deactivate Selected
+                            </button>
+                            <button type="button" id="bulkReactivateBtn" class="btn btn-sm btn-success fw-semibold d-none" onclick="openBulkConfirmModal('reactivate')">
+                                <i class="fas fa-play me-1.5"></i> Reactivate Selected
+                            </button>
+                            <button type="button" id="bulkResendBtn" class="btn btn-sm btn-info text-white fw-semibold d-none" onclick="executeBulkResend()">
+                                <i class="fas fa-paper-plane me-1.5"></i> Resend Invitations
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light ms-2" onclick="clearSelection()">
+                                <i class="fas fa-times me-1"></i> Deselect
+                            </button>
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <button type="button" id="bulkDeactivateBtn" class="btn btn-sm btn-warning fw-semibold d-none" onclick="openBulkConfirmModal('deactivate')">
-                            <i class="fas fa-pause me-1.5"></i> Deactivate Selected
-                        </button>
-                        <button type="button" id="bulkReactivateBtn" class="btn btn-sm btn-success fw-semibold d-none" onclick="openBulkConfirmModal('reactivate')">
-                            <i class="fas fa-play me-1.5"></i> Reactivate Selected
-                        </button>
-                        <button type="button" id="bulkResendBtn" class="btn btn-sm btn-info text-white fw-semibold d-none" onclick="executeBulkResend()">
-                            <i class="fas fa-paper-plane me-1.5"></i> Resend Invitations
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-light ms-2" onclick="clearSelection()">
-                            <i class="fas fa-times me-1"></i> Deselect
-                        </button>
-                    </div>
-                </div>
+                @endif
 
                 <!-- Table Panel -->
                 @if($users->isEmpty())
@@ -248,7 +268,7 @@
                             <thead class="text-uppercase small">
                                 <tr>
                                     <th style="width: 4%" class="text-center">
-                                        <input type="checkbox" id="selectAllUsers" class="form-check-input custom-check-input">
+                                        <input type="checkbox" id="selectAllUsers" class="form-check-input custom-check-input" {{ !$isSuperAdmin ? 'disabled' : '' }}>
                                     </th>
                                     <th style="width: 32%">User Identity</th>
                                     <th style="width: 24%">Email</th>
@@ -262,11 +282,12 @@
                                     @php
                                         $firstName = trim($user->first_name);
                                         $lastName = trim($user->last_name);
-                                        $fullName = $firstName . ' ' . $lastName;
+                                        $fullName = $user->isProtectedAdmin() ? 'Super Admin' : ($firstName . ' ' . $lastName);
                                         $initials = mb_strtoupper(mb_substr($firstName, 0, 1) . mb_substr($lastName, 0, 1));
                                         $isSelf = auth()->check() && auth()->id() === $user->id;
                                         $isProtected = $user->isProtectedAdmin();
-                                        $cannotModify = $isSelf || $isProtected;
+                                        $cannotModifyStatus = !$isSuperAdmin || $isSelf || $isProtected;
+                                        $canEditProfile = $isSuperAdmin && (!$isProtected || $isSelf);
                                     @endphp
                                     <tr id="user-row-{{ $user->id }}">
                                         <td class="text-center">
@@ -274,7 +295,7 @@
                                                    value="{{ $user->id }}" 
                                                    data-name="{{ $fullName }}"
                                                    data-status="{{ $user->status }}"
-                                                   {{ $cannotModify ? 'disabled' : '' }}>
+                                                   {{ $cannotModifyStatus ? 'disabled' : '' }}>
                                         </td>
                                         <td class="table-name-cell">
                                             <div class="table-name-wrap">
@@ -327,47 +348,86 @@
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                                                     <li>
                                                         <a class="dropdown-item py-2" href="#" 
-                                                           onclick="openViewModal('{{ $fullName }}', '{{ $initials }}', '{{ $user->email }}', '{{ $user->employee_id ?? ('ID: ' . $user->id) }}', '{{ ucfirst($user->role) }}', '{{ ucfirst($user->status) }}', '{{ $user->created_at->format('M d, Y H:i') }}')">
+                                                           onclick="openViewModal('{{ addslashes($fullName) }}', '{{ addslashes($initials) }}', '{{ addslashes($user->email) }}', '{{ addslashes($user->employee_id ?? ('ID: ' . $user->id)) }}', '{{ ucfirst($user->role) }}', '{{ ucfirst($user->status) }}', '{{ $user->created_at->format('M d, Y H:i') }}')">
                                                             <i class="fas fa-id-card text-muted me-2"></i> View Account Details
                                                         </a>
                                                     </li>
 
-                                                    @if($user->status === 'pending')
+                                                    <!-- Edit Profile Details Option -->
+                                                    @if($canEditProfile)
+                                                        <li>
+                                                            <a class="dropdown-item py-2" href="#" 
+                                                               onclick="openEditModal('{{ $user->id }}', '{{ addslashes($firstName) }}', '{{ addslashes($lastName) }}', '{{ addslashes($user->email) }}', '{{ $user->role }}', {{ $isProtected ? 'true' : 'false' }})">
+                                                                <i class="fas fa-user-edit text-muted me-2"></i> Edit Account Details
+                                                            </a>
+                                                        </li>
+                                                    @else
+                                                        <li>
+                                                            <span class="dropdown-item text-muted disabled py-2">
+                                                                <i class="fas fa-lock me-2"></i> {{ $isProtected ? 'Protected Account' : 'Requires Super Admin' }}
+                                                            </span>
+                                                        </li>
+                                                    @endif
+
+                                                    @if(!$isSuperAdmin)
                                                         <li><hr class="dropdown-divider"></li>
                                                         <li>
-                                                            <form method="POST" action="{{ route('api.users.resend-invitation', $user->id) }}" data-ajax-form="resend">
-                                                                @csrf
-                                                                <button type="submit" class="dropdown-item py-2 text-primary">
-                                                                    <i class="fas fa-paper-plane me-2"></i> Resend Setup Invitation
-                                                                </button>
-                                                            </form>
+                                                            <span class="dropdown-item text-muted disabled py-2">
+                                                                <i class="fas fa-shield-alt me-2 text-secondary"></i> Requires Super Admin
+                                                            </span>
                                                         </li>
-                                                    @elseif($user->status === 'active')
-                                                        @if(!$cannotModify)
+                                                    @else
+                                                        @if($user->status === 'pending')
                                                             <li><hr class="dropdown-divider"></li>
                                                             <li>
-                                                                <a class="dropdown-item py-2 text-warning" href="#" 
-                                                                   onclick="openSingleConfirmModal('deactivate', '{{ $user->id }}', '{{ $fullName }}')">
-                                                                    <i class="fas fa-pause me-2"></i> Deactivate Account
-                                                                </a>
+                                                                <form method="POST" action="{{ route('api.users.resend-invitation', $user->id) }}" data-ajax-form="resend">
+                                                                    @csrf
+                                                                    <button type="submit" class="dropdown-item py-2 text-primary">
+                                                                        <i class="fas fa-paper-plane me-2"></i> Resend Setup Invitation
+                                                                    </button>
+                                                                </form>
                                                             </li>
-                                                        @else
-                                                            <li><hr class="dropdown-divider"></li>
-                                                            <li>
-                                                                <span class="dropdown-item text-muted disabled py-2">
-                                                                    <i class="fas fa-lock me-2"></i> {{ $isProtected ? 'Protected Account' : 'Cannot Deactivate Self' }}
-                                                                </span>
-                                                            </li>
-                                                        @endif
-                                                    @elseif($user->status === 'inactive')
-                                                        @if(!$cannotModify)
-                                                            <li><hr class="dropdown-divider"></li>
-                                                            <li>
-                                                                <a class="dropdown-item py-2 text-success" href="#" 
-                                                                   onclick="openSingleConfirmModal('reactivate', '{{ $user->id }}', '{{ $fullName }}')">
-                                                                    <i class="fas fa-play me-2"></i> Reactivate Account
-                                                                </a>
-                                                            </li>
+                                                        @elseif($user->status === 'active')
+                                                            @if($isProtected)
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li>
+                                                                    <span class="dropdown-item text-muted disabled py-2">
+                                                                        <i class="fas fa-shield-alt me-2 text-warning"></i> Protected Account
+                                                                    </span>
+                                                                </li>
+                                                            @elseif($isSelf)
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li>
+                                                                    <span class="dropdown-item text-muted disabled py-2">
+                                                                        <i class="fas fa-lock me-2"></i> Cannot Deactivate Self
+                                                                    </span>
+                                                                </li>
+                                                            @else
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li>
+                                                                    <a class="dropdown-item py-2 text-warning" href="#" 
+                                                                       onclick="openSingleConfirmModal('deactivate', '{{ $user->id }}', '{{ addslashes($fullName) }}')">
+                                                                        <i class="fas fa-pause me-2"></i> Deactivate Account
+                                                                    </a>
+                                                                </li>
+                                                            @endif
+                                                        @elseif($user->status === 'inactive')
+                                                            @if($isProtected)
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li>
+                                                                    <span class="dropdown-item text-muted disabled py-2">
+                                                                        <i class="fas fa-shield-alt me-2 text-warning"></i> Protected Account
+                                                                    </span>
+                                                                </li>
+                                                            @elseif(!$isSelf)
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li>
+                                                                    <a class="dropdown-item py-2 text-success" href="#" 
+                                                                       onclick="openSingleConfirmModal('reactivate', '{{ $user->id }}', '{{ addslashes($fullName) }}')">
+                                                                        <i class="fas fa-play me-2"></i> Reactivate Account
+                                                                    </a>
+                                                                </li>
+                                                            @endif
                                                         @endif
                                                     @endif
                                                 </ul>
@@ -381,15 +441,15 @@
                 @endif
             </div>
 
-            <!-- System-Wide Security Audit Log Tab Pane -->
-            <div class="tab-pane fade {{ $activeTab === 'activity' ? 'show active' : '' }}" id="activity-pane" role="tabpanel">
+            <!-- System-Wide Security Audit Log Tab Pane (Authentication Events) -->
+            <div class="tab-pane fade {{ $activeTab === 'security' ? 'show active' : '' }}" id="security-pane" role="tabpanel">
                 <div class="bg-white rounded-3 p-4 border shadow-sm">
                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 border-bottom pb-3 gap-2">
                         <div>
                             <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-shield-alt text-primary me-2"></i>System-Wide Security Audit Log</h5>
-                            <p class="text-muted small mb-0">Monitors real-time authentication activity, IP addresses, devices, and security attempts across all user accounts.</p>
+                            <p class="text-muted small mb-0">Monitors real-time authentication activity, IP addresses, devices, and security login attempts across all user accounts.</p>
                         </div>
-                        <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7"><i class="fas fa-database me-1 text-success"></i> Live Security Events</span>
+                        <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7"><i class="fas fa-key me-1 text-success"></i> Authentication Log</span>
                     </div>
 
                     @if(empty($activityLogs) || $activityLogs->isEmpty())
@@ -399,8 +459,8 @@
                         </div>
                     @else
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light text-uppercase fs-7 text-muted">
+                            <x-ui.table>
+                                <thead class="text-uppercase small">
                                     <tr>
                                         <th style="width: 24%">User Account</th>
                                         <th style="width: 15%">Authentication Event</th>
@@ -455,7 +515,7 @@
                                         </tr>
                                     @endforeach
                                 </tbody>
-                            </table>
+                            </x-ui.table>
                         </div>
 
                         <!-- Server-Side Pagination Links (20 items per page) -->
@@ -466,6 +526,111 @@
                                 </div>
                                 <div>
                                     {{ $activityLogs->links() }}
+                                </div>
+                            </div>
+                        @endif
+                    @endif
+                </div>
+            </div>
+
+            <!-- Recent Activity Tab Pane (Administrative Actions & Security Auditing) -->
+            <div class="tab-pane fade {{ $activeTab === 'recent' ? 'show active' : '' }}" id="recent-pane" role="tabpanel">
+                <div class="bg-white rounded-3 p-4 border shadow-sm">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 border-bottom pb-3 gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list-alt text-primary me-2"></i>Recent Administrative Activity</h5>
+                            <p class="text-muted small mb-0">Tracks administrative security operations, account changes, setup invitation resends, and access attempts.</p>
+                        </div>
+                        <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7"><i class="fas fa-user-shield me-1 text-primary"></i> Administrative Audit</span>
+                    </div>
+
+                    @if(empty($recentActivities) || $recentActivities->isEmpty())
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-clipboard-list fa-2x mb-3 opacity-50"></i>
+                            <p class="mb-0">No administrative activity events recorded yet.</p>
+                        </div>
+                    @else
+                        <div class="table-responsive">
+                            <x-ui.table>
+                                <thead class="text-uppercase small">
+                                    <tr>
+                                        <th style="width: 22%">Actor Account</th>
+                                        <th style="width: 20%">Administrative Action</th>
+                                        <th style="width: 20%">Target Account</th>
+                                        <th style="width: 15%">Date & Time</th>
+                                        <th style="width: 13%">Device / IP</th>
+                                        <th style="width: 10%">Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($recentActivities as $activity)
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold text-dark">
+                                                    {{ $activity->actor_name ?? 'System' }}
+                                                </div>
+                                                <div class="text-muted fs-7">
+                                                    <i class="far fa-envelope me-1"></i> {{ $activity->actor_email }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if($activity->result === 'denied')
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-7">
+                                                        <i class="fas fa-ban me-1"></i> {{ $activity->action }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fs-7">
+                                                        <i class="fas fa-user-cog me-1"></i> {{ $activity->action }}
+                                                    </span>
+                                                @endif
+                                                @if($activity->details)
+                                                    <div class="text-muted fs-7 mt-1">{{ $activity->details }}</div>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold text-dark fs-7">
+                                                    {{ $activity->target_identifier ?? 'System Object' }}
+                                                </div>
+                                                <div class="text-muted fs-7">
+                                                    Type: {{ $activity->target_type }}
+                                                </div>
+                                            </td>
+                                            <td class="text-muted fs-7">
+                                                {{ $activity->created_at ? \Illuminate\Support\Carbon::parse($activity->created_at)->format('M d, Y H:i:s') : '-' }}
+                                            </td>
+                                            <td>
+                                                <div class="text-secondary small fw-medium fs-7">
+                                                    <i class="fas fa-desktop me-1 text-muted"></i> {{ $activity->formatted_device }}
+                                                </div>
+                                                <div class="text-muted fs-7">
+                                                    <code>{{ $activity->ip_address ?? 'Unknown IP' }}</code>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if($activity->result === 'success')
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                                        <i class="fas fa-check-circle me-1"></i> Success
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                                                        <i class="fas fa-times-circle me-1"></i> Denied
+                                                    </span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </x-ui.table>
+                        </div>
+
+                        <!-- Server-Side Pagination Links (20 items per page) -->
+                        @if($recentActivities->hasPages())
+                            <div class="px-3 py-3 border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 mt-2">
+                                <div class="small text-muted">
+                                    Showing {{ $recentActivities->firstItem() }} to {{ $recentActivities->lastItem() }} of {{ $recentActivities->total() }} administrative activities
+                                </div>
+                                <div>
+                                    {{ $recentActivities->links() }}
                                 </div>
                             </div>
                         @endif
@@ -509,6 +674,49 @@
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="submit" class="btn btn-dark" data-loading-text="Creating...">Create User</button>
+            </div>
+        </form>
+    </x-modal>
+
+    <!-- Edit User Modal -->
+    <x-modal id="editUserModal" modalTitle="Edit User Account" size="modal-md">
+        <form id="editUserForm" method="POST" data-ajax-form="editUser">
+            @csrf
+            @method('PUT')
+
+            <div data-ajax-errors></div>
+
+            <div class="mb-3">
+                <label class="form-label">First Name</label>
+                <input type="text" name="first_name" id="edit_first_name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Last Name</label>
+                <input type="text" name="last_name" id="edit_last_name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" id="edit_email" class="form-control" required>
+            </div>
+
+            <div class="mb-3" id="editRoleContainer">
+                <label class="form-label">Role</label>
+                <select name="role" id="edit_role" class="form-select" required>
+                    <option value="admin">Admin</option>
+                    <option value="teacher">Teacher</option>
+                    <option value="scanner_operator">Scanner Operator</option>
+                </select>
+            </div>
+
+            <div id="protectedNotice" class="alert alert-info py-2 fs-7 mb-3 d-none">
+                <i class="fas fa-shield-alt me-1 text-primary"></i> <strong>Protected Administrator</strong>: Administrative privileges and active account status are permanently protected.
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-dark" data-loading-text="Saving Changes...">Save Changes</button>
             </div>
         </form>
     </x-modal>
@@ -590,6 +798,7 @@
             const bulkResendBtn = document.getElementById('bulkResendBtn');
 
             function updateBulkBar() {
+                if (!bulkBar) return;
                 const checked = Array.from(rowCheckboxes).filter(cb => cb.checked);
                 const count = checked.length;
 
@@ -602,15 +811,15 @@
 
                 if (count > 0) {
                     bulkBar.classList.remove('d-none');
-                    selectedCountSpan.textContent = count;
+                    if (selectedCountSpan) selectedCountSpan.textContent = count;
 
                     const hasActive = checked.some(cb => cb.dataset.status === 'active');
                     const hasInactive = checked.some(cb => cb.dataset.status === 'inactive');
                     const hasPending = checked.some(cb => cb.dataset.status === 'pending');
 
-                    bulkDeactivateBtn.classList.toggle('d-none', !hasActive);
-                    bulkReactivateBtn.classList.toggle('d-none', !hasInactive);
-                    bulkResendBtn.classList.toggle('d-none', !hasPending);
+                    if (bulkDeactivateBtn) bulkDeactivateBtn.classList.toggle('d-none', !hasActive);
+                    if (bulkReactivateBtn) bulkReactivateBtn.classList.toggle('d-none', !hasInactive);
+                    if (bulkResendBtn) bulkResendBtn.classList.toggle('d-none', !hasPending);
                 } else {
                     bulkBar.classList.add('d-none');
                 }
@@ -651,6 +860,30 @@
                 document.getElementById('viewCreated').textContent = created;
 
                 const modal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+                modal.show();
+            };
+
+            window.openEditModal = function (userId, firstName, lastName, email, role, isProtected) {
+                const form = document.getElementById('editUserForm');
+                form.action = `/api/users/${userId}`;
+                document.getElementById('edit_first_name').value = firstName;
+                document.getElementById('edit_last_name').value = lastName;
+                document.getElementById('edit_email').value = email;
+
+                const roleSelect = document.getElementById('edit_role');
+                const protectedNotice = document.getElementById('protectedNotice');
+
+                if (isProtected) {
+                    roleSelect.value = 'admin';
+                    roleSelect.disabled = true;
+                    protectedNotice.classList.remove('d-none');
+                } else {
+                    roleSelect.value = role;
+                    roleSelect.disabled = false;
+                    protectedNotice.classList.add('d-none');
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
                 modal.show();
             };
 
