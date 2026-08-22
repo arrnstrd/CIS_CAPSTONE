@@ -39,7 +39,7 @@ Route::get('/students/{id}', [StudentController::class, 'show']);
 
 
 // USERS
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['web', 'auth', 'role:admin'])->group(function () {
 
     Route::post('/users', [UserController::class, 'store']);
 
@@ -48,6 +48,24 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'archive']);
 
     Route::patch('/users/{id}/restore', [UserController::class, 'restore']);
+
+    Route::post('/users/{id}/resend-invitation', [UserController::class, 'resendInvitation'])
+        ->name('api.users.resend-invitation');
+
+    Route::post('/users/{id}/deactivate', [UserController::class, 'deactivate'])
+        ->name('api.users.deactivate');
+
+    Route::post('/users/{id}/reactivate', [UserController::class, 'reactivate'])
+        ->name('api.users.reactivate');
+
+    Route::post('/users/bulk-deactivate', [UserController::class, 'bulkDeactivate'])
+        ->name('api.users.bulk-deactivate');
+
+    Route::post('/users/bulk-reactivate', [UserController::class, 'bulkReactivate'])
+        ->name('api.users.bulk-reactivate');
+
+    Route::post('/users/bulk-resend-invitation', [UserController::class, 'bulkResendInvitation'])
+        ->name('api.users.bulk-resend-invitation');
 });
 
 

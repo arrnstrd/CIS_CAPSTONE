@@ -65,6 +65,50 @@ class User extends Authenticatable
         return $this->hasOne(Teacher::class);
     }
 
+    /**
+     * Get the invitation tokens for this user.
+     */
+    public function invitationTokens()
+    {
+        return $this->hasMany(InvitationToken::class);
+    }
+
+    /**
+     * Get the most recent unused invitation token for this user.
+     */
+    public function latestInvitation()
+    {
+        return $this->hasOne(InvitationToken::class)
+            ->whereNull('used_at')
+            ->latest('created_at');
+    }
+
+    /**
+     * Check if the user has an active (unused, non-expired) invitation.
+     */
+    public function hasActiveInvitation(): bool
+    {
+        return $this->latestInvitation !== null
+            && $this->latestInvitation->isValid();
+    }
+
+    /**
+     * Get the invitation expiration time, if an active invitation exists.
+     */
+    public function getInvitationExpiresAtAttribute()
+    {
+        $invitation = $this->latestInvitation;
+        return $invitation ? $invitation->expires_at : null;
+    }
+
+    /**
+     * Check if the user has any invitation token (used or unused).
+     */
+    public function getInvitationTokenExistsAttribute(): bool
+    {
+        return $this->invitationTokens()->exists();
+    }
+
     public function hasRole(string ...$roles): bool
     {
         return in_array($this->role, $roles, true);
@@ -73,6 +117,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->hasRole(self::ROLE_ADMIN);
+    }
+
+    public function isProtectedAdmin(): bool
+    {
+        return $this->isAdmin() && ($this->id === 1 || $this->employee_id === 'EMP-2026-0001');
     }
 
     public function isTeacher(): bool

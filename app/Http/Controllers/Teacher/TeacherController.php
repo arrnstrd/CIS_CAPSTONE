@@ -5,11 +5,14 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Mail\InvitationMail;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Services\InvitationService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
 class TeacherController extends Controller
@@ -71,19 +74,39 @@ class TeacherController extends Controller
                     'last_name' => ucwords(strtolower(trim($validated['last_name']))),
                     'email' => strtolower(trim($validated['email'])),
                     'role' => 'teacher',
-                    'status' => 'active',
-                    'password' => 'Password123',
+                    'status' => 'pending',
+                    'password' => null,
                 ]);
 
-                return Teacher::create([
-                    'user_id' => $user->id,
-                    'status' => 'active',
-                ]);
+                // Generate invitation (plaintext token exists only in memory)
+                $invitationService = app(InvitationService::class);
+                $result = $invitationService->generate($user);
+
+                // Create teacher within same transaction
+                return [
+                    'user' => $user,
+                    'teacher' => Teacher::create([
+                        'user_id' => $user->id,
+                        'status' => 'pending',
+                    ]),
+                    'result' => $result,
+                ];
             });
 
+            // Send invitation email AFTER transaction commits successfully
+            $result = $teacher['result'];
+            $setupLink = url('/setup/' . $result['plainToken']);
+            $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
+
+            Mail::to($teacher['user']->email)->send(new InvitationMail(
+                $teacher['user']->first_name . ' ' . $teacher['user']->last_name,
+                $setupLink,
+                $expiresAt
+            ));
+
             return response()->json([
-                'message' => 'Teacher created successfully.',
-                'data' => $teacher->fresh()->load('user'),
+                'message' => 'Teacher created successfully. Invitation sent to email.',
+                'data' => $teacher['teacher']->fresh()->load('user'),
             ]);
         } catch (QueryException $e) {
 

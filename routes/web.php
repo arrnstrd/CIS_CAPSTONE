@@ -25,6 +25,7 @@ use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Teacher\TeachingAssignmentController;
 use App\Http\Controllers\Teacher\TeacherRoomAttendanceController;
 use App\Models\AttendanceLog;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 
@@ -49,6 +50,10 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 // auth / login
 Route::get('/role-selection', fn() => view('login.role_selection'));
+
+// Password setup routes (outside auth middleware)
+Route::get('/setup/{token}', [\App\Http\Controllers\Setup\SetupController::class, 'show'])->name('setup.show');
+Route::post('/setup/{token}', [\App\Http\Controllers\Setup\SetupController::class, 'submit'])->name('setup.submit');
 Route::get('/user-login', fn() => view('login.admin-login'));
 
 // layout preview
@@ -190,7 +195,36 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/school-years/{id}', [SchoolYearController::class, 'destroy'])->name('school-years.destroy');
         Route::patch('/school-years/{id}', [SchoolYearController::class, 'restore'])->name('school-years.restore');
 
-        Route::get('/users', fn() => view('admin-modules.management.users'));
+        Route::get('/users', function (\Illuminate\Http\Request $request) {
+            $query = User::query();
+
+            if ($request->filled('search')) {
+                $search = strtolower(trim($request->search));
+                $query->where(function ($q) use ($search) {
+                    $q->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(COALESCE(employee_id, \'\')) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", ["%{$search}%"]);
+                });
+            }
+
+            if ($request->filled('role')) {
+                $query->where('role', $request->role);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $users = $query->latest('created_at')->get();
+            $activityLogs = \App\Models\LoginLog::with('user')
+                ->latest('attempted_at')
+                ->paginate(20, ['*'], 'log_page')
+                ->appends($request->query());
+
+            return view('admin-modules.management.users', compact('users', 'activityLogs'));
+        })->name('users.index');
         Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
 
         // schedule configuration

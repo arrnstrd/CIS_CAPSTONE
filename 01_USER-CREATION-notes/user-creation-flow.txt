@@ -1,0 +1,70 @@
+ADMIN
+  │
+  ▼
+Create User
+  │
+  ├── Name
+  ├── Email
+  └── Role
+  │
+  ▼
+System creates account
+Status = PENDING
+  │
+  ▼
+Generate secure invitation token
+  │
+  ▼
+Send invitation email
+  │
+  ▼
+USER
+  │
+  ▼
+Opens invitation link
+  │
+  ▼
+┌──────────────────────────────────────┐
+│        ACCOUNT SETUP PAGE            │
+│                                      │
+│  Set Your Password                   │
+│                                      │
+│  New Password                        │
+│  [••••••••••••••] [Show/Hide]       │
+│                                      │
+│  Confirm Password                    │
+│  [••••••••••••••] [Show/Hide]       │
+│                                      │
+│  [ Set Password ]                    │
+│                                      │
+└──────────────────────────────────────┘
+  │
+  ▼
+Validate:
+  ├── Password requirements
+  ├── Password confirmation matches
+  └── Invitation token is valid
+  │
+  ├── INVALID
+  │     └── Show error on setup page
+  │
+  └── VALID
+        │
+        ▼
+    Hash password
+        │
+        ▼
+    Save password
+        │
+        ▼
+    Mark invitation as used
+        │
+        ▼
+    Change status:
+    PENDING → ACTIVE
+        │
+        ▼
+    Show "Account Setup Complete"
+        │
+        ▼
+    [ Login ]
