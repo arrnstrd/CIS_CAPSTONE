@@ -14,6 +14,36 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+        if ($user && $user->isProtectedAdmin()) {
+            $totalUsers = \App\Models\User::count();
+            $activeAccounts = \App\Models\User::where('status', 'active')->count();
+            $pendingInvitations = \App\Models\User::where('status', 'pending')->count();
+            $inactiveAccounts = \App\Models\User::where('status', 'inactive')->count();
+
+            $pendingUsers = \App\Models\User::where('status', 'pending')->latest('created_at')->take(10)->get();
+
+            $recentLoginLogs = \App\Models\LoginLog::with('user')
+                ->latest('attempted_at')
+                ->take(6)
+                ->get();
+
+            $recentActivities = \App\Models\AdminActivityLog::with('actor')
+                ->latest('created_at')
+                ->take(6)
+                ->get();
+
+            return view('admin-modules.super-admin-dashboard', compact(
+                'totalUsers',
+                'activeAccounts',
+                'pendingInvitations',
+                'inactiveAccounts',
+                'pendingUsers',
+                'recentLoginLogs',
+                'recentActivities'
+            ));
+        }
+
         $today = Carbon::today();
         $now = now();
         $intervalMinutes = 15;

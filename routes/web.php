@@ -195,7 +195,22 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/school-years/{id}', [SchoolYearController::class, 'destroy'])->name('school-years.destroy');
         Route::patch('/school-years/{id}', [SchoolYearController::class, 'restore'])->name('school-years.restore');
 
+        // 1. User Management Page (Super Admin Only)
         Route::get('/users', function (\Illuminate\Http\Request $request) {
+            $user = auth()->user();
+            if (!$user || !$user->isProtectedAdmin()) {
+                if ($user) {
+                    \App\Models\AdminActivityLog::record(
+                        $user,
+                        'Attempted User Management Access',
+                        '/users',
+                        'denied',
+                        'Unauthorized access attempt to User Management.'
+                    );
+                }
+                abort(403, 'Unauthorized. Only the Protected Super Admin can access User Management.');
+            }
+
             $query = User::query();
 
             if ($request->filled('search')) {
@@ -217,20 +232,58 @@ Route::middleware(['auth'])->group(function () {
                 $query->where('status', $request->status);
             }
 
-            $users = $query->latest('created_at')->get();
-            
+            $users = $query->latest('created_at')->paginate(20)->appends($request->query());
+
+            return view('admin-modules.management.users', compact('users'));
+        })->name('users.index');
+
+        // 2. Security Audit Log Page (Super Admin Only)
+        Route::get('/security-audit-log', function (\Illuminate\Http\Request $request) {
+            $user = auth()->user();
+            if (!$user || !$user->isProtectedAdmin()) {
+                if ($user) {
+                    \App\Models\AdminActivityLog::record(
+                        $user,
+                        'Attempted Security Audit Log Access',
+                        '/security-audit-log',
+                        'denied',
+                        'Unauthorized access attempt to Security Audit Log.'
+                    );
+                }
+                abort(403, 'Unauthorized. Only the Protected Super Admin can access Security Audit Log.');
+            }
+
             $activityLogs = \App\Models\LoginLog::with('user')
                 ->latest('attempted_at')
-                ->paginate(20, ['*'], 'log_page')
+                ->paginate(20)
                 ->appends($request->query());
+
+            return view('admin-modules.management.security-audit-log', compact('activityLogs'));
+        })->name('security-audit-log.index');
+
+        // 3. Recent Activity Page (Super Admin Only)
+        Route::get('/recent-activity', function (\Illuminate\Http\Request $request) {
+            $user = auth()->user();
+            if (!$user || !$user->isProtectedAdmin()) {
+                if ($user) {
+                    \App\Models\AdminActivityLog::record(
+                        $user,
+                        'Attempted Recent Activity Access',
+                        '/recent-activity',
+                        'denied',
+                        'Unauthorized access attempt to Recent Activity.'
+                    );
+                }
+                abort(403, 'Unauthorized. Only the Protected Super Admin can access Recent Activity.');
+            }
 
             $recentActivities = \App\Models\AdminActivityLog::with('actor')
                 ->latest('created_at')
-                ->paginate(20, ['*'], 'activity_page')
+                ->paginate(20)
                 ->appends($request->query());
 
-            return view('admin-modules.management.users', compact('users', 'activityLogs', 'recentActivities'));
-        })->name('users.index');
+            return view('admin-modules.management.recent-activity', compact('recentActivities'));
+        })->name('recent-activity.index');
         Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
 
         // schedule configuration

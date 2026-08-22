@@ -1,16 +1,10 @@
 <x-layouts.admin>
     <x-slot name="title">User Management</x-slot>
-    <x-slot name="pageName">User & Access Control</x-slot>
-    <x-slot name="subtitle">Manage system user accounts, assigned roles, account statuses, issue setup invitations, and review audit logs.</x-slot>
+    <x-slot name="pageName">User Management</x-slot>
+    <x-slot name="subtitle">Manage system user accounts, assigned roles, account statuses, and issue setup invitations.</x-slot>
 
     @php
         $isSuperAdmin = auth()->check() && auth()->user()->isProtectedAdmin();
-        $activeTab = 'directory';
-        if (request()->has('activity_page')) {
-            $activeTab = 'recent';
-        } elseif (request()->has('log_page')) {
-            $activeTab = 'security';
-        }
     @endphp
 
     <style>
@@ -154,25 +148,11 @@
             </div>
         @endif
 
-        <!-- Header Actions & Three-Tab Navigation -->
+        <!-- Header Actions & Title Bar -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-            <ul class="nav nav-pills gap-2 bg-white p-1.5 rounded-3 border shadow-sm" id="userTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $activeTab === 'directory' ? 'active' : '' }} px-3 py-2 fw-semibold" id="directory-tab" data-bs-toggle="tab" data-bs-target="#directory-pane" type="button" role="tab">
-                        <i class="fas fa-users-cog me-2"></i> User Directory
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $activeTab === 'security' ? 'active' : '' }} px-3 py-2 fw-semibold" id="security-tab" data-bs-toggle="tab" data-bs-target="#security-pane" type="button" role="tab">
-                        <i class="fas fa-shield-alt me-2"></i> Security Audit Log
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $activeTab === 'recent' ? 'active' : '' }} px-3 py-2 fw-semibold" id="recent-tab" data-bs-toggle="tab" data-bs-target="#recent-pane" type="button" role="tab">
-                        <i class="fas fa-list-alt me-2"></i> Recent Activity
-                    </button>
-                </li>
-            </ul>
+            <div>
+                <h4 class="fw-bold text-dark mb-0"><i class="fas fa-users-cog text-primary me-2"></i>User Directory</h4>
+            </div>
 
             @if($isSuperAdmin)
                 <button type="button" class="btn btn-dark px-3.5 py-2.5 rounded-3 fw-medium d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
@@ -186,10 +166,6 @@
                 </button>
             @endif
         </div>
-
-        <div class="tab-content" id="userTabsContent">
-            <!-- Directory Tab Pane -->
-            <div class="tab-pane fade {{ $activeTab === 'directory' ? 'show active' : '' }}" id="directory-pane" role="tabpanel">
                 
                 <!-- Search & Filters Toolbar -->
                 <div class="bg-white rounded-3 p-3 border shadow-sm mb-3">
@@ -440,204 +416,6 @@
                     </div>
                 @endif
             </div>
-
-            <!-- System-Wide Security Audit Log Tab Pane (Authentication Events) -->
-            <div class="tab-pane fade {{ $activeTab === 'security' ? 'show active' : '' }}" id="security-pane" role="tabpanel">
-                <div class="bg-white rounded-3 p-4 border shadow-sm">
-                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 border-bottom pb-3 gap-2">
-                        <div>
-                            <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-shield-alt text-primary me-2"></i>System-Wide Security Audit Log</h5>
-                            <p class="text-muted small mb-0">Monitors real-time authentication activity, IP addresses, devices, and security login attempts across all user accounts.</p>
-                        </div>
-                        <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7"><i class="fas fa-key me-1 text-success"></i> Authentication Log</span>
-                    </div>
-
-                    @if(empty($activityLogs) || $activityLogs->isEmpty())
-                        <div class="text-center text-muted py-5">
-                            <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
-                            <p class="mb-0">No login or authentication audit events recorded yet.</p>
-                        </div>
-                    @else
-                        <div class="table-responsive">
-                            <x-ui.table>
-                                <thead class="text-uppercase small">
-                                    <tr>
-                                        <th style="width: 24%">User Account</th>
-                                        <th style="width: 15%">Authentication Event</th>
-                                        <th style="width: 15%">IP Address</th>
-                                        <th style="width: 18%">Device / Browser</th>
-                                        <th style="width: 16%">Date & Time</th>
-                                        <th style="width: 12%">Result</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($activityLogs as $log)
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">
-                                                    {{ $log->user ? ($log->user->first_name . ' ' . $log->user->last_name) : 'External / Unregistered User' }}
-                                                </div>
-                                                <div class="text-muted fs-7">
-                                                    <i class="far fa-envelope me-1"></i> {{ $log->email_attempted }}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-light text-dark border fs-7">
-                                                    <i class="fas fa-key me-1 text-primary"></i> Login Attempt
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <code class="fs-7">{{ $log->ip_address ?? 'Unknown IP' }}</code>
-                                            </td>
-                                            <td>
-                                                <span class="text-secondary small fw-medium">
-                                                    <i class="fas fa-desktop me-1 text-muted"></i> {{ $log->formatted_device }}
-                                                </span>
-                                            </td>
-                                            <td class="text-muted fs-7">
-                                                {{ $log->attempted_at ? \Illuminate\Support\Carbon::parse($log->attempted_at)->format('M d, Y H:i:s') : '-' }}
-                                            </td>
-                                            <td>
-                                                @if($log->status === 'success')
-                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                                        <i class="fas fa-check-circle me-1"></i> Success
-                                                    </span>
-                                                @elseif($log->status === 'locked_out')
-                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
-                                                        <i class="fas fa-lock me-1"></i> Locked Out
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
-                                                        <i class="fas fa-times-circle me-1"></i> Failed
-                                                    </span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </x-ui.table>
-                        </div>
-
-                        <!-- Server-Side Pagination Links (20 items per page) -->
-                        @if($activityLogs->hasPages())
-                            <div class="px-3 py-3 border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 mt-2">
-                                <div class="small text-muted">
-                                    Showing {{ $activityLogs->firstItem() }} to {{ $activityLogs->lastItem() }} of {{ $activityLogs->total() }} security audit events
-                                </div>
-                                <div>
-                                    {{ $activityLogs->links() }}
-                                </div>
-                            </div>
-                        @endif
-                    @endif
-                </div>
-            </div>
-
-            <!-- Recent Activity Tab Pane (Administrative Actions & Security Auditing) -->
-            <div class="tab-pane fade {{ $activeTab === 'recent' ? 'show active' : '' }}" id="recent-pane" role="tabpanel">
-                <div class="bg-white rounded-3 p-4 border shadow-sm">
-                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 border-bottom pb-3 gap-2">
-                        <div>
-                            <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list-alt text-primary me-2"></i>Recent Administrative Activity</h5>
-                            <p class="text-muted small mb-0">Tracks administrative security operations, account changes, setup invitation resends, and access attempts.</p>
-                        </div>
-                        <span class="badge bg-light text-dark border px-2.5 py-1.5 fs-7"><i class="fas fa-user-shield me-1 text-primary"></i> Administrative Audit</span>
-                    </div>
-
-                    @if(empty($recentActivities) || $recentActivities->isEmpty())
-                        <div class="text-center text-muted py-5">
-                            <i class="fas fa-clipboard-list fa-2x mb-3 opacity-50"></i>
-                            <p class="mb-0">No administrative activity events recorded yet.</p>
-                        </div>
-                    @else
-                        <div class="table-responsive">
-                            <x-ui.table>
-                                <thead class="text-uppercase small">
-                                    <tr>
-                                        <th style="width: 22%">Actor Account</th>
-                                        <th style="width: 20%">Administrative Action</th>
-                                        <th style="width: 20%">Target Account</th>
-                                        <th style="width: 15%">Date & Time</th>
-                                        <th style="width: 13%">Device / IP</th>
-                                        <th style="width: 10%">Result</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($recentActivities as $activity)
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold text-dark">
-                                                    {{ $activity->actor_name ?? 'System' }}
-                                                </div>
-                                                <div class="text-muted fs-7">
-                                                    <i class="far fa-envelope me-1"></i> {{ $activity->actor_email }}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                @if($activity->result === 'denied')
-                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fs-7">
-                                                        <i class="fas fa-ban me-1"></i> {{ $activity->action }}
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fs-7">
-                                                        <i class="fas fa-user-cog me-1"></i> {{ $activity->action }}
-                                                    </span>
-                                                @endif
-                                                @if($activity->details)
-                                                    <div class="text-muted fs-7 mt-1">{{ $activity->details }}</div>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <div class="fw-semibold text-dark fs-7">
-                                                    {{ $activity->target_identifier ?? 'System Object' }}
-                                                </div>
-                                                <div class="text-muted fs-7">
-                                                    Type: {{ $activity->target_type }}
-                                                </div>
-                                            </td>
-                                            <td class="text-muted fs-7">
-                                                {{ $activity->created_at ? \Illuminate\Support\Carbon::parse($activity->created_at)->format('M d, Y H:i:s') : '-' }}
-                                            </td>
-                                            <td>
-                                                <div class="text-secondary small fw-medium fs-7">
-                                                    <i class="fas fa-desktop me-1 text-muted"></i> {{ $activity->formatted_device }}
-                                                </div>
-                                                <div class="text-muted fs-7">
-                                                    <code>{{ $activity->ip_address ?? 'Unknown IP' }}</code>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                @if($activity->result === 'success')
-                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                                        <i class="fas fa-check-circle me-1"></i> Success
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
-                                                        <i class="fas fa-times-circle me-1"></i> Denied
-                                                    </span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </x-ui.table>
-                        </div>
-
-                        <!-- Server-Side Pagination Links (20 items per page) -->
-                        @if($recentActivities->hasPages())
-                            <div class="px-3 py-3 border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 mt-2">
-                                <div class="small text-muted">
-                                    Showing {{ $recentActivities->firstItem() }} to {{ $recentActivities->lastItem() }} of {{ $recentActivities->total() }} administrative activities
-                                </div>
-                                <div>
-                                    {{ $recentActivities->links() }}
-                                </div>
-                            </div>
-                        @endif
-                    @endif
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Create User Modal (Preserved untouched) -->

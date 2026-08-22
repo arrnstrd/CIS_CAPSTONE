@@ -138,6 +138,20 @@ class User extends Authenticatable
         return $this->hasRole(self::ROLE_SCANNER_OPERATOR);
     }
 
+    public function getRoleLabelAttribute(): string
+    {
+        if ($this->isProtectedAdmin()) {
+            return 'Super Admin';
+        }
+
+        return match ($this->role) {
+            self::ROLE_ADMIN => 'School Admin',
+            self::ROLE_TEACHER => 'Teacher',
+            self::ROLE_SCANNER_OPERATOR => 'Scanner Operator',
+            default => ucfirst(str_replace('_', ' ', $this->role)),
+        };
+    }
+
     // for future expansion on scanner operator
     // public function scannerOperator()
     // {
