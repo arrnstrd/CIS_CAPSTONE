@@ -142,13 +142,19 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/assessments/{assessment}', [AssessmentController::class, 'destroy'])->name('assessments.destroy');
         Route::get('/teaching-assignments/{teachingAssignment}/assessments', [AssessmentController::class, 'byTeachingAssignment'])->name('teaching-assignments.assessments');
         Route::get('/teaching-assignments/{teachingAssignment}/grading-periods/{gradingPeriod}/assessments', [AssessmentController::class, 'byTeachingAssignmentAndGradingPeriod'])->name('teaching-assignments.grading-periods.assessments');
+    });
 
-        // monitoring logs
+    // monitoring logs & dashboard (Accessible by Admin and Scanner Operator)
+    Route::middleware(['role:admin,scanner_operator'])->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
         Route::get('/qr-station', [QrStationController::class, 'index'])->name('qr-station.index');
         Route::post('/qr-station/scan', [ScanController::class, 'scan'])->name('qr-station.scan');
         Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('time-in-time-out.index');
         Route::get('/time-in-time-out-history', [AttendanceLogController::class, 'index'])->name('time-in-time-out-history.index');
         Route::get('/time-in-time-out-history/download', [AttendanceLogController::class, 'download'])->name('time-in-time-out-history.download');
+    });
+
+    Route::middleware(['role:admin'])->group(function () {
         Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
         Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
         Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
@@ -181,8 +187,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/student-profile/{student}/info', [StudentProfileController::class, 'updateInfo'])->name('student.profile.update-info');
         Route::put('/student-profile/{student}/guardian', [StudentProfileController::class, 'updateGuardian'])->name('student.profile.update-guardian');
 
-        // dashboard and settings
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+        // settings
         Route::get('/settings', fn() => view('admin-modules.utilities.settings', [
             'schoolYears' => \App\Models\SchoolYear::orderByDesc('is_active')
                 ->orderBy('school_year', 'desc')
@@ -365,6 +370,5 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['role:scanner_operator'])->group(function () {
         Route::post('/scan', [ScanController::class, 'scan'])->name('scan');
-        Route::get('/scanner', fn() => view('scanner.index'))->name('scanner.dashboard');
     });
 });

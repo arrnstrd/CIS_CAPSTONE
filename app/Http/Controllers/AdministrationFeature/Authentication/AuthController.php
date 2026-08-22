@@ -49,7 +49,7 @@ class AuthController extends Controller
         return match (true) {
             $user->isAdmin() => redirect()->route('admin.dashboard'),
             $user->isTeacher() => redirect()->route('teacher.dashboard'),
-            $user->isScannerOperator() => redirect()->route('scanner.dashboard'),
+            $user->isScannerOperator() => redirect()->route('qr-station.index'),
             default => redirect()->route('login'),
         };
     }

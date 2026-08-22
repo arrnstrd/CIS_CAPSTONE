@@ -15,6 +15,11 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        if ($user && $user->isScannerOperator()) {
+            return redirect()->route('qr-station.index');
+        }
+
         if ($user && $user->isProtectedAdmin()) {
             $totalUsers = \App\Models\User::count();
             $activeAccounts = \App\Models\User::where('status', 'active')->count();

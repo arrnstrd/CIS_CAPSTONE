@@ -14,8 +14,18 @@ class QRCodeService
             return $qrCode;
         }
 
-        $path = "qr-codes/student-{$qrCode->student_id}.png";
-        $image = QrGenerator::format('png')->size(300)->margin(1)->generate($qrCode->code);
+        try {
+            if (extension_loaded('imagick')) {
+                $path = "qr-codes/student-{$qrCode->student_id}.png";
+                $image = QrGenerator::format('png')->size(300)->margin(1)->generate($qrCode->code);
+            } else {
+                $path = "qr-codes/student-{$qrCode->student_id}.svg";
+                $image = QrGenerator::format('svg')->size(300)->margin(1)->generate($qrCode->code);
+            }
+        } catch (\Throwable $e) {
+            $path = "qr-codes/student-{$qrCode->student_id}.svg";
+            $image = QrGenerator::format('svg')->size(300)->margin(1)->generate($qrCode->code);
+        }
 
         Storage::disk('public')->put($path, $image);
 

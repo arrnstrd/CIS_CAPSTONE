@@ -6,7 +6,9 @@ WORKDIR /var/www/html
 
 # 3. I-install ang mga system dependencies, PHP extensions, at NODE.JS
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip libpq-dev \
+    git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip libpq-dev libmagickwand-dev \
+    && pecl install imagick || true \
+    && docker-php-ext-enable imagick || true \
     && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs

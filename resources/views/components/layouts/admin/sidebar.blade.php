@@ -83,21 +83,22 @@
                             <span>In/Out History</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="/attendance">
-                            <i class="fas fa-user-check"></i>
-                            <span>Class Attendance</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a href="/emails">
-                            <i class="fas fa-envelope"></i>
-                            <span>Email Logs</span>
-                        </a>
-                    </li>
 
                     @if(!$isScannerOperator)
+                        <li>
+                            <a href="/attendance">
+                                <i class="fas fa-user-check"></i>
+                                <span>Class Attendance</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="/emails">
+                                <i class="fas fa-envelope"></i>
+                                <span>Email Logs</span>
+                            </a>
+                        </li>
+
                         <!-- MANAGEMENT SECTION -->
                         <li class="sidebar-section-label">
                             <small>MANAGEMENT</small>
