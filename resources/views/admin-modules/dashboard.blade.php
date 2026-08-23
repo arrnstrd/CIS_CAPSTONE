@@ -57,11 +57,14 @@
                     $y = 6 + (1 - $ratio) * 88;
                     $points[] = ['x' => round($x, 2), 'y' => round($y, 2)];
                 }
+                $path = $toSmoothPath($points);
+                $area = $path !== '' ? $path . ' L 96 94 L 4 94 Z' : '';
                 return [
                     'level' => $level,
                     'label' => $meta['label'],
                     'color' => $meta['color'],
-                    'path' => $toSmoothPath($points),
+                    'path' => $path,
+                    'area' => $area,
                     'last' => $points ? $points[count($points) - 1] : null,
                 ];
             })
@@ -105,11 +108,14 @@
                     $y = 6 + (1 - $ratio) * 88;
                     $points[] = ['x' => round($x, 2), 'y' => round($y, 2)];
                 }
+                $path = $toSmoothPath($points);
+                $area = $path !== '' ? $path . ' L 96 94 L 4 94 Z' : '';
                 return [
                     'level' => $level,
                     'label' => $meta['label'],
                     'color' => $meta['color'],
-                    'path' => $toSmoothPath($points),
+                    'path' => $path,
+                    'area' => $area,
                     'last' => $points ? $points[count($points) - 1] : null,
                 ];
             })
@@ -654,9 +660,10 @@
         .line-chart__svg .trend-line {
             fill: none;
             stroke: #2563eb;
-            stroke-width: 2.25;
+            stroke-width: 1.75px;
             stroke-linecap: round;
             stroke-linejoin: round;
+            vector-effect: non-scaling-stroke;
         }
 
         .line-chart__svg .trend-area {
@@ -666,7 +673,8 @@
         .line-chart__svg .trend-dot {
             fill: #fff;
             stroke: #2563eb;
-            stroke-width: 1.6;
+            stroke-width: 1.75px;
+            vector-effect: non-scaling-stroke;
         }
 
         .line-chart__svg .axis-label {
@@ -945,28 +953,35 @@
         /* ===== Minimal line chart (Line view) ===== */
         .line-chart__frame.sp-line {
             height: 180px;
-            border: none;
-            background: transparent;
-            overflow: visible;
+            border: 1px solid #edf2f7;
+            border-radius: 0.9rem;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            padding: 0.5rem;
+            position: relative;
+            overflow: hidden;
         }
         .sp-line__stroke {
             fill: none;
-            stroke-width: 1.75;
+            stroke-width: 1.75px;
             stroke-linecap: round;
             stroke-linejoin: round;
-            filter: drop-shadow(0 2px 5px rgba(79, 70, 229, 0.22));
+            vector-effect: non-scaling-stroke;
+            filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.12));
         }
         .sp-line__stroke--multi {
-            stroke-width: 1.4;
+            stroke-width: 1.5px;
+            vector-effect: non-scaling-stroke;
             filter: none;
         }
         .sp-line__area {
             stroke: none;
+            opacity: 0.08;
         }
         .sp-line__dot {
             fill: #fff;
             stroke: #6366f1;
-            stroke-width: 1.6;
+            stroke-width: 1.75px;
+            vector-effect: non-scaling-stroke;
         }
     </style>
 
@@ -1088,16 +1103,27 @@
                             <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
                                 aria-label="Scan volume trend by department level">
                                 @foreach ($dailyLevelLines as $ll)
+                                    @if (!empty($ll['area']))
+                                        <path d="{{ $ll['area'] }}" class="sp-line__area"
+                                            style="fill: {{ $ll['color'] }}"></path>
+                                    @endif
                                     <path d="{{ $ll['path'] }}" class="sp-line__stroke sp-line__stroke--multi"
-                                        style="stroke: {{ $ll['color'] }}"></path>
+                                        style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke"></path>
                                     @if ($ll['last'])
-                                        <circle cx="{{ $ll['last']['x'] }}" cy="{{ $ll['last']['y'] }}" r="1.8"
-                                            class="sp-line__dot" style="stroke: {{ $ll['color'] }}">
+                                        <circle cx="{{ $ll['last']['x'] }}" cy="{{ $ll['last']['y'] }}" r="1.2"
+                                            class="sp-line__dot" style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke">
                                             <title>{{ $ll['label'] }}</title>
                                         </circle>
                                     @endif
                                 @endforeach
                             </svg>
+                        </div>
+                        <div class="line-chart__ticks mt-1">
+                            @foreach ($scanBuckets as $bucket)
+                                @if ($loop->iteration % 4 === 1 || $loop->last)
+                                    <span>{{ $bucket['label'] }}</span>
+                                @endif
+                            @endforeach
                         </div>
                         <div class="chart-legend mt-2">
                             @foreach ($dailyLevelLines as $ll)
@@ -1234,16 +1260,25 @@
                             <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
                                 aria-label="Weekly scan volume trend by department level">
                                 @foreach ($weeklyLevelLines as $ll)
+                                    @if (!empty($ll['area']))
+                                        <path d="{{ $ll['area'] }}" class="sp-line__area"
+                                            style="fill: {{ $ll['color'] }}"></path>
+                                    @endif
                                     <path d="{{ $ll['path'] }}" class="sp-line__stroke sp-line__stroke--multi"
-                                        style="stroke: {{ $ll['color'] }}"></path>
+                                        style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke"></path>
                                     @if ($ll['last'])
-                                        <circle cx="{{ $ll['last']['x'] }}" cy="{{ $ll['last']['y'] }}" r="1.8"
-                                            class="sp-line__dot" style="stroke: {{ $ll['color'] }}">
+                                        <circle cx="{{ $ll['last']['x'] }}" cy="{{ $ll['last']['y'] }}" r="1.2"
+                                            class="sp-line__dot" style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke">
                                             <title>{{ $ll['label'] }}</title>
                                         </circle>
                                     @endif
                                 @endforeach
                             </svg>
+                        </div>
+                        <div class="line-chart__ticks mt-1">
+                            @foreach ($weeklyChartBuckets as $week)
+                                <span>{{ $week['label'] }}</span>
+                            @endforeach
                         </div>
                         <div class="chart-legend mt-2">
                             @foreach ($weeklyLevelLines as $ll)

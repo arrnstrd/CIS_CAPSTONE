@@ -225,7 +225,10 @@
                     label: 'Average Grade',
                     data: @json($chartData['trendData']),
                     borderColor: '#f5a623',
-                    backgroundColor: 'rgba(245, 166, 35, 0.15)',
+                    backgroundColor: 'rgba(245, 166, 35, 0.08)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
                     tension: 0.35,
                     fill: true,
                 }]

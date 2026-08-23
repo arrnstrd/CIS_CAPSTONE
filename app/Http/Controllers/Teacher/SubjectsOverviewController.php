@@ -87,7 +87,10 @@ class SubjectsOverviewController extends Controller
                 'data' => $series,
                 'borderColor' => $colors[$colorIndex % count($colors)],
                 'backgroundColor' => $colors[$colorIndex % count($colors)],
-                'tension' => 0.3,
+                'borderWidth' => 2,
+                'pointRadius' => 3,
+                'pointHoverRadius' => 5,
+                'tension' => 0.35,
             ];
             $colorIndex++;
         }
