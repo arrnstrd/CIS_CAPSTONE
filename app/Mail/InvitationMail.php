@@ -19,6 +19,15 @@ class InvitationMail extends Mailable
     public function __construct(string $recipientName, string $setupLink, string $expiresAt)
     {
         $this->recipientName = $recipientName;
+
+        // Failsafe: Ensure setup links never output localhost/127.0.0.1 in emails
+        if (str_contains($setupLink, 'localhost') || str_contains($setupLink, '127.0.0.1')) {
+            $path = parse_url($setupLink, PHP_URL_PATH) ?? '';
+            $query = parse_url($setupLink, PHP_URL_QUERY);
+            $queryString = $query ? '?' . $query : '';
+            $setupLink = 'https://cis-capstone.onrender.com' . $path . $queryString;
+        }
+
         $this->setupLink = $setupLink;
         $this->expiresAt = $expiresAt;
     }

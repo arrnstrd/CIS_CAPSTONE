@@ -95,7 +95,7 @@ class TeacherController extends Controller
 
             // Send invitation email AFTER transaction commits successfully
             $result = $teacher['result'];
-            $setupLink = url('/setup/' . $result['plainToken']);
+            $setupLink = $this->buildSetupLink($result['plainToken']);
             $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
 
             Mail::to($teacher['user']->email)->send(new InvitationMail(
@@ -220,5 +220,18 @@ class TeacherController extends Controller
                 'message' => 'Failed to restore teacher.',
             ], 500);
         }
+    }
+
+    private function buildSetupLink(string $plainToken): string
+    {
+        $appUrl = config('app.url');
+
+        if (empty($appUrl) || str_contains($appUrl, 'localhost') || str_contains($appUrl, '127.0.0.1')) {
+            $baseUrl = 'https://cis-capstone.onrender.com';
+        } else {
+            $baseUrl = rtrim($appUrl, '/');
+        }
+
+        return $baseUrl . '/setup/' . $plainToken;
     }
 }
