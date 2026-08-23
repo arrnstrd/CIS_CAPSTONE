@@ -39,7 +39,7 @@ Route::get('/students/{id}', [StudentController::class, 'show']);
 
 
 // USERS
-Route::middleware(['web', 'auth', 'role:admin'])->group(function () {
+Route::middleware(['web', 'auth', 'role:super_admin'])->group(function () {
 
     Route::post('/users', [UserController::class, 'store']);
 

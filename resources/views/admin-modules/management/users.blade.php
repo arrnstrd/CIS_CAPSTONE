@@ -4,7 +4,7 @@
     <x-slot name="subtitle">Manage system user accounts, assigned roles, account statuses, and issue setup invitations.</x-slot>
 
     @php
-        $isSuperAdmin = auth()->check() && auth()->user()->isProtectedAdmin();
+        $isSuperAdmin = auth()->check() && auth()->user()->isSuperAdmin();
     @endphp
 
     <style>
@@ -84,6 +84,7 @@
             font-weight: 600;
             border: 1px solid transparent;
         }
+        .role-super_admin { background-color: #fef3c7; color: #92400e; border-color: #fde68a; }
         .role-admin { background-color: #f0f3ff; color: #2438b9; border-color: #c7d2fe; }
         .role-teacher { background-color: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
         .role-scanner { background-color: #fff7ed; color: #c2410c; border-color: #ffedd5; }
@@ -184,7 +185,8 @@
                             <div class="col-lg-3 col-md-6">
                                 <select name="role" class="form-select" onchange="document.getElementById('filterForm').submit()">
                                     <option value="">All Roles</option>
-                                    <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                                    <option value="super_admin" {{ request('role') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
+                                    <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>School Admin</option>
                                     <option value="teacher" {{ request('role') === 'teacher' ? 'selected' : '' }}>Teacher</option>
                                     <option value="scanner_operator" {{ request('role') === 'scanner_operator' ? 'selected' : '' }}>Scanner Operator</option>
                                 </select>
@@ -258,10 +260,10 @@
                                     @php
                                         $firstName = trim($user->first_name);
                                         $lastName = trim($user->last_name);
-                                        $fullName = $user->isProtectedAdmin() ? 'Super Admin' : ($firstName . ' ' . $lastName);
+                                        $fullName = $firstName . ' ' . $lastName;
                                         $initials = mb_strtoupper(mb_substr($firstName, 0, 1) . mb_substr($lastName, 0, 1));
                                         $isSelf = auth()->check() && auth()->id() === $user->id;
-                                        $isProtected = $user->isProtectedAdmin();
+                                        $isProtected = $user->isSuperAdmin();
                                         $cannotModifyStatus = !$isSuperAdmin || $isSelf || $isProtected;
                                         $canEditProfile = $isSuperAdmin && (!$isProtected || $isSelf);
                                     @endphp
@@ -282,7 +284,7 @@
                                                     <div class="table-name-main fw-bold text-dark">
                                                         {{ $fullName }}
                                                         @if($isProtected)
-                                                            <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65rem;" title="Protected Administrator Account">Protected</span>
+                                                            <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65rem;" title="Super Administrator Account">Super Admin</span>
                                                         @endif
                                                     </div>
                                                     <div class="table-name-sub text-muted fs-7">
@@ -295,8 +297,10 @@
                                             <i class="far fa-envelope me-1.5 text-muted"></i> {{ $user->email }}
                                         </td>
                                         <td>
-                                            @if($user->isAdmin())
-                                                <span class="role-pill role-admin"><i class="fas fa-user-shield me-1"></i> Admin</span>
+                                            @if($user->isSuperAdmin())
+                                                <span class="role-pill role-super_admin"><i class="fas fa-crown me-1"></i> Super Admin</span>
+                                            @elseif($user->role === 'admin')
+                                                <span class="role-pill role-admin"><i class="fas fa-user-shield me-1"></i> School Admin</span>
                                             @elseif($user->isTeacher())
                                                 <span class="role-pill role-teacher"><i class="fas fa-chalkboard-teacher me-1"></i> Teacher</span>
                                             @elseif($user->isScannerOperator())
@@ -443,7 +447,8 @@
             <div class="mb-3">
                 <label class="form-label">Role</label>
                 <select name="role" class="form-select" required>
-                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                    <option value="admin">School Admin</option>
                     <option value="teacher">Teacher</option>
                     <option value="scanner_operator">Scanner Operator</option>
                 </select>
@@ -482,7 +487,8 @@
             <div class="mb-3" id="editRoleContainer">
                 <label class="form-label">Role</label>
                 <select name="role" id="edit_role" class="form-select" required>
-                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                    <option value="admin">School Admin</option>
                     <option value="teacher">Teacher</option>
                     <option value="scanner_operator">Scanner Operator</option>
                 </select>

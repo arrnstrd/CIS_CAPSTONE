@@ -20,7 +20,7 @@ class DashboardController extends Controller
             return redirect()->route('qr-station.index');
         }
 
-        if ($user && $user->isProtectedAdmin()) {
+        if ($user && $user->isSuperAdmin()) {
             $totalUsers = \App\Models\User::count();
             $activeAccounts = \App\Models\User::where('status', 'active')->count();
             $pendingInvitations = \App\Models\User::where('status', 'pending')->count();

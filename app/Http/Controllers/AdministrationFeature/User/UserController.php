@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         $actor = Auth::user();
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted User Creation', $request->email, 'denied', 'Only the Super Admin can create new users.');
 
             return response()->json([
@@ -44,7 +44,7 @@ class UserController extends Controller
             ],
             'role' => [
                 'required',
-                'in:admin,teacher,scanner_operator',
+                'in:super_admin,admin,teacher,scanner_operator',
             ],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
         ];
@@ -98,15 +98,15 @@ class UserController extends Controller
         $actor = Auth::user();
         $user = User::findOrFail($id);
 
-        if ($user->isProtectedAdmin() && Auth::id() !== $user->id) {
-            AdminActivityLog::record($actor, 'Attempted Protected Admin Modification', $user->email, 'denied', 'The Protected Administrator account cannot be modified by another user.', 'User', $user->id);
+        if ($user->isSuperAdmin() && Auth::id() !== $user->id) {
+            AdminActivityLog::record($actor, 'Attempted Super Admin Modification', $user->email, 'denied', 'Super Admin accounts cannot be modified by another user.', 'User', $user->id);
 
             return response()->json([
-                'message' => 'The protected administrator account cannot be modified by another user.',
+                'message' => 'Super Admin accounts cannot be modified by another user.',
             ], 403);
         }
 
-        if (! $user->isProtectedAdmin() && ! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted User Modification', $user->email, 'denied', 'Only the Super Admin can edit user accounts.', 'User', $user->id);
 
             return response()->json([
@@ -118,7 +118,7 @@ class UserController extends Controller
             'first_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-]+$/'],
             'last_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-]+$/'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role' => ['sometimes', 'required', 'in:admin,teacher,scanner_operator'],
+            'role' => ['sometimes', 'required', 'in:super_admin,admin,teacher,scanner_operator'],
             'status' => ['sometimes', 'required', 'in:active,inactive,suspended,pending'],
         ];
 
@@ -129,8 +129,8 @@ class UserController extends Controller
         $validatedData = $request->validate($rules);
         $validatedData = $this->normalizeEmail($validatedData);
 
-        if ($user->isProtectedAdmin()) {
-            $validatedData['role'] = 'admin';
+        if ($user->isSuperAdmin()) {
+            $validatedData['role'] = 'super_admin';
             $validatedData['status'] = 'active';
         }
 
@@ -161,7 +161,7 @@ class UserController extends Controller
         $actor = Auth::user();
         $user = User::findOrFail($id);
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted User Deletion', $user->email, 'denied', 'Only the Super Admin can delete user accounts.', 'User', $user->id);
 
             return response()->json([
@@ -169,11 +169,11 @@ class UserController extends Controller
             ], 403);
         }
 
-        if ($user->isProtectedAdmin()) {
-            AdminActivityLog::record($actor, 'Attempted Protected Admin Deletion', $user->email, 'denied', 'The Protected Administrator account cannot be deleted.', 'User', $user->id);
+        if ($user->isSuperAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Super Admin Deletion', $user->email, 'denied', 'Super Admin accounts cannot be deleted.', 'User', $user->id);
 
             return response()->json([
-                'message' => 'The protected administrator account cannot be deleted or archived.',
+                'message' => 'Super Admin accounts cannot be deleted or archived.',
             ], 403);
         }
 
@@ -199,7 +199,7 @@ class UserController extends Controller
         $actor = Auth::user();
         $user = User::withTrashed()->findOrFail($id);
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted User Restoration', $user->email, 'denied', 'Only the Super Admin can restore user accounts.', 'User', $user->id);
 
             return response()->json([
@@ -235,7 +235,7 @@ class UserController extends Controller
         $actor = Auth::user();
         $user = User::findOrFail($id);
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted Resending Invitation', $user->email, 'denied', 'Only the Super Admin can resend setup invitations.', 'User', $user->id);
 
             return response()->json([
@@ -255,7 +255,7 @@ class UserController extends Controller
             $result = $invitationService->resend($user);
 
             // Send the invitation email
-            $setupLink = url('/setup/' . $result['plainToken']);
+            $setupLink = $this->buildSetupLink($result['plainToken']);
             $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
 
             Mail::to($user->email)->send(new InvitationMail(
@@ -288,7 +288,7 @@ class UserController extends Controller
         $actor = Auth::user();
         $user = User::findOrFail($id);
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted User Deactivation', $user->email, 'denied', 'Only the Super Admin can deactivate user accounts.', 'User', $user->id);
 
             return response()->json([
@@ -306,11 +306,11 @@ class UserController extends Controller
             ], 403);
         }
 
-        if ($user->isProtectedAdmin()) {
-            AdminActivityLog::record($actor, 'Attempted Protected Admin Deactivation', $user->email, 'denied', 'The Protected Administrator account cannot be deactivated.', 'User', $user->id);
+        if ($user->isSuperAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Super Admin Deactivation', $user->email, 'denied', 'Super Admin accounts cannot be deactivated.', 'User', $user->id);
 
             return response()->json([
-                'message' => 'The protected administrator account cannot be deactivated.',
+                'message' => 'Super Admin accounts cannot be deactivated.',
             ], 403);
         }
 
@@ -346,7 +346,7 @@ class UserController extends Controller
         $actor = Auth::user();
         $user = User::findOrFail($id);
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted User Reactivation', $user->email, 'denied', 'Only the Super Admin can reactivate user accounts.', 'User', $user->id);
 
             return response()->json([
@@ -364,11 +364,11 @@ class UserController extends Controller
             ], 403);
         }
 
-        if ($user->isProtectedAdmin()) {
-            AdminActivityLog::record($actor, 'Attempted Protected Admin Modification', $user->email, 'denied', 'The Protected Administrator account cannot be modified.', 'User', $user->id);
+        if ($user->isSuperAdmin()) {
+            AdminActivityLog::record($actor, 'Attempted Super Admin Modification', $user->email, 'denied', 'Super Admin accounts cannot be modified.', 'User', $user->id);
 
             return response()->json([
-                'message' => 'The protected administrator account cannot be modified.',
+                'message' => 'Super Admin accounts cannot be modified.',
             ], 403);
         }
 
@@ -402,7 +402,7 @@ class UserController extends Controller
     {
         $actor = Auth::user();
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted Bulk Deactivation', 'Multiple Users', 'denied', 'Only the Super Admin can execute bulk user actions.');
 
             return response()->json([
@@ -416,9 +416,7 @@ class UserController extends Controller
             'current_password' => ['required', 'current_password'],
         ]);
 
-        $protectedIds = User::where('email', 'superadmin@cis.edu.ph')
-            ->orWhere('employee_id', 'EMP-2026-0001')
-            ->orWhere('id', 1)
+        $protectedIds = User::where('role', 'super_admin')
             ->pluck('id')
             ->toArray();
 
@@ -449,7 +447,7 @@ class UserController extends Controller
     {
         $actor = Auth::user();
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted Bulk Reactivation', 'Multiple Users', 'denied', 'Only the Super Admin can execute bulk user actions.');
 
             return response()->json([
@@ -463,9 +461,7 @@ class UserController extends Controller
             'current_password' => ['required', 'current_password'],
         ]);
 
-        $protectedIds = User::where('email', 'superadmin@cis.edu.ph')
-            ->orWhere('employee_id', 'EMP-2026-0001')
-            ->orWhere('id', 1)
+        $protectedIds = User::where('role', 'super_admin')
             ->pluck('id')
             ->toArray();
 
@@ -496,7 +492,7 @@ class UserController extends Controller
     {
         $actor = Auth::user();
 
-        if (! $actor?->isProtectedAdmin()) {
+        if (! $actor?->isSuperAdmin()) {
             AdminActivityLog::record($actor, 'Attempted Bulk Resending Invitations', 'Multiple Users', 'denied', 'Only the Super Admin can execute bulk user actions.');
 
             return response()->json([
@@ -558,7 +554,7 @@ class UserController extends Controller
             ],
             'role' => [
                 'required',
-                'in:admin,teacher,scanner_operator',
+                'in:super_admin,admin,teacher,scanner_operator',
             ],
             'status' => [
                 'required',

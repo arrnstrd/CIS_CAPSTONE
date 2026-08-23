@@ -47,7 +47,7 @@ class AuthController extends Controller
     protected function redirectBasedOnRole(User $user)
     {
         return match (true) {
-            $user->isAdmin() => redirect()->route('admin.dashboard'),
+            $user->isSuperAdmin() || $user->isAdmin() => redirect()->route('admin.dashboard'),
             $user->isTeacher() => redirect()->route('teacher.dashboard'),
             $user->isScannerOperator() => redirect()->route('qr-station.index'),
             default => redirect()->route('login'),

@@ -14,6 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
+    public const ROLE_SUPER_ADMIN = 'super_admin';
     public const ROLE_ADMIN = 'admin';
     public const ROLE_TEACHER = 'teacher';
     public const ROLE_SCANNER_OPERATOR = 'scanner_operator';
@@ -114,6 +115,11 @@ class User extends Authenticatable
         return in_array($this->role, $roles, true);
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole(self::ROLE_SUPER_ADMIN);
+    }
+
     public function isAdmin(): bool
     {
         return $this->hasRole(self::ROLE_ADMIN);
@@ -121,11 +127,7 @@ class User extends Authenticatable
 
     public function isProtectedAdmin(): bool
     {
-        return $this->isAdmin() && (
-            $this->email === 'superadmin@cis.edu.ph' ||
-            $this->id === 1 ||
-            $this->employee_id === 'EMP-2026-0001'
-        );
+        return $this->isSuperAdmin();
     }
 
     public function isTeacher(): bool
@@ -140,11 +142,8 @@ class User extends Authenticatable
 
     public function getRoleLabelAttribute(): string
     {
-        if ($this->isProtectedAdmin()) {
-            return 'Super Admin';
-        }
-
         return match ($this->role) {
+            self::ROLE_SUPER_ADMIN => 'Super Admin',
             self::ROLE_ADMIN => 'School Admin',
             self::ROLE_TEACHER => 'Teacher',
             self::ROLE_SCANNER_OPERATOR => 'Scanner Operator',

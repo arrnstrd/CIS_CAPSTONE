@@ -144,9 +144,64 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/teaching-assignments/{teachingAssignment}/grading-periods/{gradingPeriod}/assessments', [AssessmentController::class, 'byTeachingAssignmentAndGradingPeriod'])->name('teaching-assignments.grading-periods.assessments');
     });
 
-    // monitoring logs & dashboard (Accessible by Admin and Scanner Operator)
-    Route::middleware(['role:admin,scanner_operator'])->group(function () {
+    // Dashboard Landing (Accessible by Super Admin, Admin, and Scanner Operator)
+    Route::middleware(['role:super_admin,admin,scanner_operator'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    });
+
+    // Super Admin Routes ONLY
+    Route::middleware(['role:super_admin'])->group(function () {
+        // 1. User Management Page
+        Route::get('/users', function (\Illuminate\Http\Request $request) {
+            $query = User::query();
+
+            if ($request->filled('search')) {
+                $search = strtolower(trim($request->search));
+                $query->where(function ($q) use ($search) {
+                    $q->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(COALESCE(employee_id, \'\')) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", ["%{$search}%"]);
+                });
+            }
+
+            if ($request->filled('role')) {
+                $query->where('role', $request->role);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $users = $query->latest('created_at')->paginate(20)->appends($request->query());
+
+            return view('admin-modules.management.users', compact('users'));
+        })->name('users.index');
+
+        // 2. Security Audit Log Page
+        Route::get('/security-audit-log', function (\Illuminate\Http\Request $request) {
+            $activityLogs = \App\Models\LoginLog::with('user')
+                ->latest('attempted_at')
+                ->paginate(20)
+                ->appends($request->query());
+
+            return view('admin-modules.management.security-audit-log', compact('activityLogs'));
+        })->name('security-audit-log.index');
+
+        // 3. Recent Activity Page
+        Route::get('/recent-activity', function (\Illuminate\Http\Request $request) {
+            $recentActivities = \App\Models\AdminActivityLog::with('actor')
+                ->latest('created_at')
+                ->paginate(20)
+                ->appends($request->query());
+
+            return view('admin-modules.management.recent-activity', compact('recentActivities'));
+        })->name('recent-activity.index');
+    });
+
+    // Monitoring logs & station (Accessible by Admin and Scanner Operator)
+    Route::middleware(['role:admin,scanner_operator'])->group(function () {
         Route::get('/qr-station', [QrStationController::class, 'index'])->name('qr-station.index');
         Route::post('/qr-station/scan', [ScanController::class, 'scan'])->name('qr-station.scan');
         Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('time-in-time-out.index');
@@ -154,7 +209,67 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/time-in-time-out-history/download', [AttendanceLogController::class, 'download'])->name('time-in-time-out-history.download');
     });
 
+    // School Admin Routes ONLY
     Route::middleware(['role:admin'])->group(function () {
+        // academic
+        Route::get('/academic', [AcademicController::class, 'index'])->name('academic.index');
+
+        // section
+        Route::get('/sections', [SectionController::class, 'index'])->name('sections.index');
+        Route::post('/sections', [SectionController::class, 'store'])->name('sections.store');
+        Route::put('/sections/{id}', [SectionController::class, 'update'])->name('sections.update');
+        Route::delete('/sections/{id}', [SectionController::class, 'destroy'])->name('sections.destroy');
+        Route::patch('/sections/{section}/restore', [SectionController::class, 'restore'])->name('sections.restore');
+
+        // subjects
+        Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.index');
+        Route::get('/subjects/create', [SubjectController::class, 'create'])->name('subjects.create');
+        Route::post('/subjects', [SubjectController::class, 'store'])->name('subjects.store');
+        Route::get('/subjects/{subject}', [SubjectController::class, 'show'])->name('subjects.show');
+        Route::get('/subjects/{subject}/edit', [SubjectController::class, 'edit'])->name('subjects.edit');
+        Route::put('/subjects/{subject}', [SubjectController::class, 'update'])->name('subjects.update');
+        Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy'])->name('subjects.destroy');
+
+        // teaching assignments
+        Route::get('/teaching-assignments', [TeachingAssignmentController::class, 'index'])->name('teaching-assignments.index');
+        Route::get('/teaching-assignments/create', [TeachingAssignmentController::class, 'create'])->name('teaching-assignments.create');
+        Route::post('/teaching-assignments', [TeachingAssignmentController::class, 'store'])->name('teaching-assignments.store');
+        Route::get('/teaching-assignments/{teachingAssignment}', [TeachingAssignmentController::class, 'show'])->name('teaching-assignments.show');
+        Route::get('/teaching-assignments/{teachingAssignment}/edit', [TeachingAssignmentController::class, 'edit'])->name('teaching-assignments.edit');
+        Route::put('/teaching-assignments/{teachingAssignment}', [TeachingAssignmentController::class, 'update'])->name('teaching-assignments.update');
+        Route::delete('/teaching-assignments/{teachingAssignment}', [TeachingAssignmentController::class, 'destroy'])->name('teaching-assignments.destroy');
+        Route::get('/teachers/{teacher}/teaching-assignments', [TeachingAssignmentController::class, 'byTeacher'])->name('teachers.teaching-assignments');
+        Route::get('/sections/{section}/teaching-assignments', [TeachingAssignmentController::class, 'bySection'])->name('sections.teaching-assignments');
+
+        // assessment categories
+        Route::get('/assessment-categories', [AssessmentCategoryController::class, 'index'])->name('assessment-categories.index');
+        Route::get('/assessment-categories/create', [AssessmentCategoryController::class, 'create'])->name('assessment-categories.create');
+        Route::post('/assessment-categories', [AssessmentCategoryController::class, 'store'])->name('assessment-categories.store');
+        Route::get('/assessment-categories/{assessmentCategory}', [AssessmentCategoryController::class, 'show'])->name('assessment-categories.show');
+        Route::get('/assessment-categories/{assessmentCategory}/edit', [AssessmentCategoryController::class, 'edit'])->name('assessment-categories.edit');
+        Route::put('/assessment-categories/{assessmentCategory}', [AssessmentCategoryController::class, 'update'])->name('assessment-categories.update');
+        Route::delete('/assessment-categories/{assessmentCategory}', [AssessmentCategoryController::class, 'destroy'])->name('assessment-categories.destroy');
+
+        // grading periods
+        Route::get('/grading-periods', [GradingPeriodController::class, 'index'])->name('grading-periods.index');
+        Route::get('/grading-periods/create', [GradingPeriodController::class, 'create'])->name('grading-periods.create');
+        Route::post('/grading-periods', [GradingPeriodController::class, 'store'])->name('grading-periods.store');
+        Route::get('/grading-periods/{gradingPeriod}', [GradingPeriodController::class, 'show'])->name('grading-periods.show');
+        Route::get('/grading-periods/{gradingPeriod}/edit', [GradingPeriodController::class, 'edit'])->name('grading-periods.edit');
+        Route::put('/grading-periods/{gradingPeriod}', [GradingPeriodController::class, 'update'])->name('grading-periods.update');
+        Route::delete('/grading-periods/{gradingPeriod}', [GradingPeriodController::class, 'destroy'])->name('grading-periods.destroy');
+
+        // assessments
+        Route::get('/assessments', [AssessmentController::class, 'index'])->name('assessments.index');
+        Route::get('/assessments/create', [AssessmentController::class, 'create'])->name('assessments.create');
+        Route::post('/assessments', [AssessmentController::class, 'store'])->name('assessments.store');
+        Route::get('/assessments/{assessment}', [AssessmentController::class, 'show'])->name('assessments.show');
+        Route::get('/assessments/{assessment}/edit', [AssessmentController::class, 'edit'])->name('assessments.edit');
+        Route::put('/assessments/{assessment}', [AssessmentController::class, 'update'])->name('assessments.update');
+        Route::delete('/assessments/{assessment}', [AssessmentController::class, 'destroy'])->name('assessments.destroy');
+        Route::get('/teaching-assignments/{teachingAssignment}/assessments', [AssessmentController::class, 'byTeachingAssignment'])->name('teaching-assignments.assessments');
+        Route::get('/teaching-assignments/{teachingAssignment}/grading-periods/{gradingPeriod}/assessments', [AssessmentController::class, 'byTeachingAssignmentAndGradingPeriod'])->name('teaching-assignments.grading-periods.assessments');
+
         Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
         Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
         Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
@@ -200,95 +315,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/school-years/{id}', [SchoolYearController::class, 'destroy'])->name('school-years.destroy');
         Route::patch('/school-years/{id}', [SchoolYearController::class, 'restore'])->name('school-years.restore');
 
-        // 1. User Management Page (Super Admin Only)
-        Route::get('/users', function (\Illuminate\Http\Request $request) {
-            $user = auth()->user();
-            if (!$user || !$user->isProtectedAdmin()) {
-                if ($user) {
-                    \App\Models\AdminActivityLog::record(
-                        $user,
-                        'Attempted User Management Access',
-                        '/users',
-                        'denied',
-                        'Unauthorized access attempt to User Management.'
-                    );
-                }
-                abort(403, 'Unauthorized. Only the Protected Super Admin can access User Management.');
-            }
-
-            $query = User::query();
-
-            if ($request->filled('search')) {
-                $search = strtolower(trim($request->search));
-                $query->where(function ($q) use ($search) {
-                    $q->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
-                      ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
-                      ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"])
-                      ->orWhereRaw('LOWER(COALESCE(employee_id, \'\')) LIKE ?', ["%{$search}%"])
-                      ->orWhereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", ["%{$search}%"]);
-                });
-            }
-
-            if ($request->filled('role')) {
-                $query->where('role', $request->role);
-            }
-
-            if ($request->filled('status')) {
-                $query->where('status', $request->status);
-            }
-
-            $users = $query->latest('created_at')->paginate(20)->appends($request->query());
-
-            return view('admin-modules.management.users', compact('users'));
-        })->name('users.index');
-
-        // 2. Security Audit Log Page (Super Admin Only)
-        Route::get('/security-audit-log', function (\Illuminate\Http\Request $request) {
-            $user = auth()->user();
-            if (!$user || !$user->isProtectedAdmin()) {
-                if ($user) {
-                    \App\Models\AdminActivityLog::record(
-                        $user,
-                        'Attempted Security Audit Log Access',
-                        '/security-audit-log',
-                        'denied',
-                        'Unauthorized access attempt to Security Audit Log.'
-                    );
-                }
-                abort(403, 'Unauthorized. Only the Protected Super Admin can access Security Audit Log.');
-            }
-
-            $activityLogs = \App\Models\LoginLog::with('user')
-                ->latest('attempted_at')
-                ->paginate(20)
-                ->appends($request->query());
-
-            return view('admin-modules.management.security-audit-log', compact('activityLogs'));
-        })->name('security-audit-log.index');
-
-        // 3. Recent Activity Page (Super Admin Only)
-        Route::get('/recent-activity', function (\Illuminate\Http\Request $request) {
-            $user = auth()->user();
-            if (!$user || !$user->isProtectedAdmin()) {
-                if ($user) {
-                    \App\Models\AdminActivityLog::record(
-                        $user,
-                        'Attempted Recent Activity Access',
-                        '/recent-activity',
-                        'denied',
-                        'Unauthorized access attempt to Recent Activity.'
-                    );
-                }
-                abort(403, 'Unauthorized. Only the Protected Super Admin can access Recent Activity.');
-            }
-
-            $recentActivities = \App\Models\AdminActivityLog::with('actor')
-                ->latest('created_at')
-                ->paginate(20)
-                ->appends($request->query());
-
-            return view('admin-modules.management.recent-activity', compact('recentActivities'));
-        })->name('recent-activity.index');
         Route::get('/grades', fn() => view('admin-modules.management.grade.grades'));
 
         // schedule configuration

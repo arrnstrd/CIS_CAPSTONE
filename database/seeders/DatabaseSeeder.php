@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'first_name' => 'CIS',
             'last_name' => 'Admin',
-            'role' => 'admin',
+            'role' => 'super_admin',
             'status' => 'active',
             'email' => 'superadmin@cis.edu.ph',
         ]);

@@ -30,7 +30,7 @@ class RoomAttendanceSeeder extends Seeder
 
         // Create a section if none exists
         $section = Section::firstOrCreate([
-            'name' => 'Grade 10 - Rizal',
+            'name' => 'Rizal',
             'level' => 'highschool',
             'grade_level' => 10
         ], [

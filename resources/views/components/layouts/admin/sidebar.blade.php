@@ -2,7 +2,7 @@
 
 @php
     $currentUser = auth()->user();
-    $isSuperAdmin = $currentUser && $currentUser->isProtectedAdmin();
+    $isSuperAdmin = $currentUser && $currentUser->isSuperAdmin();
     $isSchoolAdmin = $currentUser && $currentUser->isAdmin() && !$isSuperAdmin;
     $isScannerOperator = $currentUser && $currentUser->isScannerOperator();
 @endphp
@@ -23,7 +23,7 @@
                 <div class="mt-2 pt-2 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
                     <span class="text-white small fw-medium">{{ $currentUser->first_name }} {{ $currentUser->last_name }}</span>
                     @if($isSuperAdmin)
-                        <span class="badge bg-warning text-dark fw-bold px-2 py-0.5" style="font-size: 0.65rem;">Protected</span>
+                        <span class="badge bg-warning text-dark fw-bold px-2 py-0.5" style="font-size: 0.65rem;">Super Admin</span>
                     @else
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5" style="font-size: 0.65rem;">{{ $currentUser->role_label }}</span>
                     @endif
