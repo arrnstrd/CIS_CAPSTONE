@@ -62,7 +62,6 @@
                         @if ($subtitle ?? null)
                             <p class="admin-head-banner__sub">{{ $subtitle }}</p>
                         @endif
-                            <span class="fw-bold small text-uppercase" id="liveDate"> </span>
                         </div>
                     </div>
 
