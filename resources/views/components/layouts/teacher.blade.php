@@ -21,7 +21,36 @@
         <x-layouts.teacher.sidebar />
 
         <header class="top-nav">
-        </header>
+    @php
+        $teacherUser = auth()->user();
+        $teacherProfile = $teacherUser?->teacher;
+        $teacherName = $teacherProfile?->full_name ?? ($teacherUser?->first_name . ' ' . $teacherUser?->last_name);
+        $teacherFirstName = $teacherUser?->first_name ?? trim(explode(' ', $teacherName)[0] ?? '');
+        $teacherEmail = $teacherUser?->email ?? '';
+
+        $hour = now()->hour;
+        if ($hour < 12) {
+            $greeting = 'Good morning';
+        } elseif ($hour < 18) {
+            $greeting = 'Good afternoon';
+        } else {
+            $greeting = 'Good evening';
+        }
+    @endphp
+    <div class="top-nav-greeting">
+        <div class="top-nav-greeting-text">{{ $greeting }}, {{ $teacherFirstName }}!</div>
+        <div class="top-nav-greeting-subtext">Here's what's happening in your classes today.</div>
+    </div>
+    <div class="top-nav-profile">
+        <div class="top-nav-profile-avatar">
+            <i class="fa-solid fa-circle-user"></i>
+        </div>
+        <div class="top-nav-profile-details">
+            <span class="top-nav-profile-name">{{ $teacherName }}</span>
+            <span class="top-nav-profile-email">{{ $teacherEmail }}</span>
+        </div>
+    </div>
+</header>
 
 
 

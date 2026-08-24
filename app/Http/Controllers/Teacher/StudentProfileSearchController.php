@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Models\QuarterlyGrade;
 use App\Models\TeachingAssignment;
+use App\Models\GradingPeriod;
 use Illuminate\Http\Request;
 
 class StudentProfileSearchController extends Controller
@@ -15,39 +16,104 @@ class StudentProfileSearchController extends Controller
         $teacher = $request->user()->teacher;
 
         $query = trim($request->input('q', ''));
-        $results = collect();
+        $classFilter = $request->input('class');
+        $gradeLevelFilter = $request->input('grade_level');
+        $subjectFilter = $request->input('subject');
+        $termFilter = $request->input('term');
 
-        if ($teacher && $query !== '') {
-            $teachingAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+        $results = collect();
+        $classes = collect();
+        $gradeLevels = collect();
+        $subjects = collect();
+
+        if ($teacher) {
+            // First get the full, unfiltered list of teaching assignments for filter options
+            $allTeachingAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
                 ->where('status', 'active')
                 ->with('section', 'subject')
                 ->get();
 
+            // Build filter options from the full list (always showing all options)
+            $classes = $allTeachingAssignments->map(function ($ta) {
+                return (object) [
+                    'id' => $ta->id,
+                    'name' => $ta->section->name . ' - ' . $ta->subject->name
+                ];
+            })->unique('id')->values();
+
+            $gradeLevels = $allTeachingAssignments->pluck('section.grade_level')->unique()->sort()->values();
+            $subjects = $allTeachingAssignments->pluck('subject.name')->unique()->sort()->values();
+
+            // Separately, get filtered teaching assignments for determining which students to show
+            $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('status', 'active')
+                ->with('section', 'subject');
+
+            // Apply class filter to the query used for determining results
+            if ($classFilter) {
+                if (is_numeric($classFilter)) {
+                    $teachingAssignmentsQuery->where('id', $classFilter);
+                } else {
+                    $teachingAssignmentsQuery->whereHas('section', function ($q) use ($classFilter) {
+                        $q->where('name', 'like', '%' . $classFilter . '%');
+                    });
+                }
+            }
+
+            $teachingAssignments = $teachingAssignmentsQuery->get();
+
             $sectionIds = $teachingAssignments->pluck('section_id')->unique();
 
-            $enrollments = Enrollment::whereIn('section_id', $sectionIds)
+            $enrollmentsQuery = Enrollment::whereIn('section_id', $sectionIds)
                 ->where('status', 'active')
-                ->with('student', 'section')
-                ->get()
-                ->filter(function ($enrollment) use ($query) {
+                ->with('student', 'section');
+
+            $enrollments = $enrollmentsQuery->get();
+
+            foreach ($enrollments as $enrollment) {
+                // Apply grade level filter
+                if ($gradeLevelFilter && $enrollment->section->grade_level != $gradeLevelFilter) {
+                    continue;
+                }
+
+                // Apply subject filter
+                if ($subjectFilter) {
+                    $taSubjects = $teachingAssignments->where('section_id', $enrollment->section_id)
+                        ->pluck('subject.name');
+                    if (!$taSubjects->contains($subjectFilter)) {
+                        continue;
+                    }
+                }
+
+                $sectionTaIds = $teachingAssignments->where('section_id', $enrollment->section_id)->pluck('id');
+
+                // Apply term filter
+                $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $sectionTaIds)
+                    ->where('enrollment_id', $enrollment->id);
+
+                if ($termFilter) {
+                    $gradingPeriod = GradingPeriod::where('sequence', $termFilter)->first();
+                    if ($gradingPeriod) {
+                        $gradesQuery->where('grading_period_id', $gradingPeriod->id);
+                    }
+                }
+
+                $grades = $gradesQuery->whereNotNull('transmuted_grade')->get();
+
+                // Apply search filter
+                if ($query !== '') {
                     $student = $enrollment->student;
                     if (! $student) {
-                        return false;
+                        continue;
                     }
                     $fullName = strtolower(trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')));
                     $studentNumber = strtolower($student->student_number ?? '');
                     $needle = strtolower($query);
 
-                    return str_contains($fullName, $needle) || str_contains($studentNumber, $needle);
-                });
-
-            foreach ($enrollments as $enrollment) {
-                $sectionTaIds = $teachingAssignments->where('section_id', $enrollment->section_id)->pluck('id');
-
-                $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $sectionTaIds)
-                    ->where('enrollment_id', $enrollment->id)
-                    ->whereNotNull('transmuted_grade')
-                    ->get();
+                    if (!str_contains($fullName, $needle) && !str_contains($studentNumber, $needle)) {
+                        continue;
+                    }
+                }
 
                 $avgGrade = $grades->count() ? round($grades->avg('transmuted_grade'), 1) : null;
 
@@ -77,7 +143,10 @@ class StudentProfileSearchController extends Controller
             $results = $results->sortBy('name')->values();
         }
 
-        return view('teacher-modules.student-profile-search', compact('query', 'results'));
+        return view('teacher-modules.students.student-profile-search', compact(
+            'query', 'results', 'classes', 'gradeLevels', 'subjects', 'classFilter', 
+            'gradeLevelFilter', 'subjectFilter', 'termFilter'
+        ));
     }
 
     public function show(Request $request, int $enrollmentId)
@@ -136,7 +205,7 @@ class StudentProfileSearchController extends Controller
 
         $riskLevel = AnalyticsController::riskLevel($overallAvg !== null ? round($overallAvg, 1) : null);
 
-        return view('teacher-modules.student-profile-detail', [
+        return view('teacher-modules.students.student-profile-detail', [
             'enrollment' => $enrollment,
             'subjects' => $subjects,
             'overallAvg' => $overallAvg !== null ? round($overallAvg, 1) : null,

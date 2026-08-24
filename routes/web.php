@@ -353,6 +353,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:teacher'])->group(function () {
 
         Route::get('/teacher/student-management', [StudentManagementController::class, 'index'])->name('teacher.student-management');
+        Route::get('/teacher/student-profile/{student}/summary', [StudentProfileController::class, 'teacherSummary'])->name('teacher.student-profile.summary');
         Route::get('/teacher/student-profile/{student}', [StudentProfileController::class, 'teacherShow'])->name('teacher.student-profile');
         Route::get('/teacher/grading-system', [App\Http\Controllers\Teacher\GradingSystemOverviewController::class, 'index'])->name('teacher.grading-system');
         Route::get('/teacher/grading-system/grades', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'index'])->name('teacher.grading-system.grades');

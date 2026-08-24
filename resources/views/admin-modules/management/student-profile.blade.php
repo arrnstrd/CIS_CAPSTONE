@@ -8,6 +8,31 @@
     <x-slot name="subtitle">View and manage the student's complete profile and records.</x-slot>
 
     <style>
+        @if (request()->boolean('embedded'))
+            .sidebar-wrapper,
+            #sidebar,
+            .top-nav,
+            .admin-head-banner {
+                display: none !important;
+            }
+
+            .page-wrapper {
+                display: block !important;
+            }
+
+            .page-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 0 !important;
+            }
+
+            .page-content > .container-fluid,
+            .admin-page-slot {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+        @endif
+
         .student-profile {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }

@@ -21,7 +21,7 @@ class TeacherRoomAttendanceController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.room-attendance-index', ['sections' => collect()]);
+            return view('teacher-modules.attendance.room-attendance-index', ['sections' => collect()]);
         }
 
         $sectionIds = TeachingAssignment::where('teacher_id', $teacher->id)
@@ -57,7 +57,7 @@ class TeacherRoomAttendanceController extends Controller
             }
         }
 
-        return view('teacher-modules.room-attendance-index', compact('sections'));
+        return view('teacher-modules.attendance.room-attendance-index', compact('sections'));
     }
 
     /**
@@ -101,7 +101,7 @@ class TeacherRoomAttendanceController extends Controller
 
         $totalStudents = $enrollments->count();
 
-        return view('teacher-modules.room-attendance-show', compact(
+        return view('teacher-modules.attendance.room-attendance-show', compact(
             'section', 'roster', 'totalStudents', 'isSingleDay',
             'dateFilter', 'customStartDate', 'customEndDate', 'rangeStart', 'rangeEnd'
         ));

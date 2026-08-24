@@ -19,7 +19,7 @@ class GradingDashboardController extends Controller
         $schoolYears = SchoolYear::orderByDesc('school_year')->get();
 
         if (! $teacher) {
-            return view('teacher-modules.grading-dashboard', [
+            return view('teacher-modules.grading.grading-dashboard', [
                 'classes' => collect(),
                 'schoolYears' => $schoolYears,
             ]);
@@ -76,6 +76,6 @@ class GradingDashboardController extends Controller
             ];
         })->filter()->values();
 
-        return view('teacher-modules.grading-dashboard', compact('classes', 'schoolYears'));
+        return view('teacher-modules.grading.grading-dashboard', compact('classes', 'schoolYears'));
     }
 }

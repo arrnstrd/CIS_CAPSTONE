@@ -15,9 +15,10 @@
     padding: 1.3rem 1.4rem;
     margin-bottom: 1rem;
     border-radius: 1.4rem;
-    background: linear-gradient(135deg, #122458 0%, #2442a6 48%, #0f766e 100%);
-    color: #fff;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+    background: #f5f8fa;
+    border: 1px solid #d6dfe6;
+    color: #0f1013;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     overflow: hidden;
 }
 
@@ -43,7 +44,7 @@
 .admin-head-banner__sub {
     margin: 0.45rem 0 0;
     max-width: 52rem;
-    color: rgba(255, 255, 255, 0.82);
+    color: #55565c;
 }
 
 .admin-head-banner__meta {
@@ -60,9 +61,8 @@
     gap: 0.75rem;
     padding: 0.8rem 1rem;
     border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
+    background: #ffffff;
+    border: 1px solid #d6dfe6;
     white-space: nowrap;
 }
 
@@ -98,17 +98,14 @@
     min-width: 0;
 }
 
-/* ===== HEAD BANNER — READABLE TITLE/SUBTITLE ON GRADIENT =====
-   Teacher pages may pass styled spans (e.g. .ra-page-title/.ra-page-subtitle)
-   that were designed for a light header. Re-style them inside the dark
-   gradient banner so they stay readable. */
+/* ===== HEAD BANNER — light steel-blue style ===== */
 .admin-head-banner__title .ra-page-title i {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    background-color: #1a2a72;
 }
 
 .admin-head-banner .ra-page-subtitle {
-    color: rgba(255, 255, 255, 0.82);
+    color: #55565c;
 }
 
 body{

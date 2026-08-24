@@ -10,6 +10,6 @@ class ImportDataController extends Controller
     public function index(Request $request)
     {
         $teacher = $request->user()->teacher;
-        return view('teacher-modules.import-data');
+        return view('teacher-modules.utilities.import-data');
     }
 }
