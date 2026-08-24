@@ -96,6 +96,13 @@
 
 .admin-page-slot {
     min-width: 0;
+    margin-top: 2rem;
+}
+
+@media (max-width: 767px) {
+    .admin-page-slot {
+        margin-top: 1.5rem;
+    }
 }
 
 /* ===== HEAD BANNER — light steel-blue style ===== */
