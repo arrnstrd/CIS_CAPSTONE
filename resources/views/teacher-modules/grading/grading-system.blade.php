@@ -155,8 +155,8 @@
                     @forelse ($sectionBreakdown as $row)
                         <tr>
                             <td>
-                                {{ $row->section_name }}
-                                <span class="gs-row-subtext">· Grade {{ $row->grade_level }}</span>
+                                <div>{{ $row->section_name }}</div>
+                                <div class="gs-grade-subtext">Grade {{ $row->grade_level }}</div>
                             </td>
                             <td>{{ $row->subject_name }}</td>
                             <td>{{ $row->total_students }}</td>

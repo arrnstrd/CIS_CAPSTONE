@@ -99,7 +99,7 @@
             const secLabels = @json($sections->pluck('section_name'));
             new Chart(document.getElementById('secAvgChart'), {
                 type: 'bar',
-                data: { labels: secLabels, datasets: [{ data: @json($sections->map(fn($s) => $s->avg_grade ?? 0)), backgroundColor: '#2438b9', borderRadius: 6 }] },
+                data: { labels: secLabels, datasets: [{ label: 'Average Grade', data: @json($sections->map(fn($s) => $s->avg_grade ?? 0)), backgroundColor: '#2438b9', borderRadius: 6 }] },
                 options: { 
                     plugins: { legend: { display: false } }, 
                     scales: { 
@@ -122,7 +122,7 @@
             });
             new Chart(document.getElementById('secAttChart'), {
                 type: 'bar',
-                data: { labels: secLabels, datasets: [{ data: @json($sections->map(fn($s) => $s->attendance_rate ?? 0)), backgroundColor: '#6c63ff', borderRadius: 6 }] },
+                data: { labels: secLabels, datasets: [{ label: 'Attendance Rate', data: @json($sections->map(fn($s) => $s->attendance_rate ?? 0)), backgroundColor: '#6c63ff', borderRadius: 6 }] },
                 options: { 
                     plugins: { legend: { display: false } }, 
                     scales: { 
@@ -145,7 +145,7 @@
             });
             new Chart(document.getElementById('secPassChart'), {
                 type: 'bar',
-                data: { labels: secLabels, datasets: [{ data: @json($sections->map(fn($s) => $s->passing_rate ?? 0)), backgroundColor: '#0f9d58', borderRadius: 6 }] },
+                data: { labels: secLabels, datasets: [{ label: 'Passing Rate', data: @json($sections->map(fn($s) => $s->passing_rate ?? 0)), backgroundColor: '#0f9d58', borderRadius: 6 }] },
                 options: { 
                     plugins: { legend: { display: false } }, 
                     scales: { 

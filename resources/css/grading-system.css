@@ -642,3 +642,22 @@
     border-color: #2438b9;
     background: #e8eaf9;
 }
+
+/* Grade level pill badge */
+.gs-grade-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background-color: #e8eaf9;
+    color: #2438b9;
+    border: 1px solid #c5c5f5;
+}
+
+/* Muted grade-level subtext, shown below section names in tables */
+.gs-grade-subtext {
+    font-size: 0.75rem;
+    color: #8a8a8a;
+    line-height: 1.4;
+}

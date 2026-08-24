@@ -14,7 +14,4 @@
     <a href="{{ route('teacher.grading-system.reports') }}" class="gd-sidebar-link {{ $gdActive === 'reports' ? 'gd-sidebar-link-active' : '' }}">
         <i class="fa-solid fa-file-lines"></i> Reports
     </a>
-    <span class="gd-sidebar-link gd-sidebar-link-disabled" title="See Comp. Rules tab instead">
-        <i class="fa-solid fa-gear"></i> Settings
-    </span>
 </div>

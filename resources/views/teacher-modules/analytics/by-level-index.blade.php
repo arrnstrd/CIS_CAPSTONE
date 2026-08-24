@@ -48,7 +48,6 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>Grade</th>
                             <th>Section</th>
                             <th>Students</th>
                             <th>Avg Grade</th>
@@ -60,8 +59,10 @@
                     <tbody>
                         @forelse ($sectionRows as $row)
                             <tr>
-                                <td>{{ $row->grade_level }}</td>
-                                <td>{{ $row->section_name }}</td>
+                                <td>
+                                    <div>{{ $row->section_name }}</div>
+                                    <div class="gs-grade-subtext">Grade {{ $row->grade_level }}</div>
+                                </td>
                                 <td>{{ $row->total_students }}</td>
                                 <td>{{ $row->avg_grade !== null ? $row->avg_grade : '—' }}</td>
                                 <td>{{ $row->passing_rate !== null ? $row->passing_rate.'%' : '—' }}</td>
@@ -69,7 +70,7 @@
                                 <td>{{ $row->at_risk_count }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center text-muted py-4">No active teaching assignments found.</td></tr>
+                            <tr><td colspan="6" class="text-center text-muted py-4">No active teaching assignments found.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
