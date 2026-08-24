@@ -16,7 +16,7 @@ class AtRiskController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.at-risk-index', [
+            return view('teacher-modules.analytics.at-risk-index', [
                 'students' => collect(),
                 'gradeLevels' => collect(),
                 'selectedGradeLevel' => null,
@@ -107,7 +107,7 @@ class AtRiskController extends Controller
             'moderate' => $students->where('risk_level', 'Moderate')->count(),
         ];
 
-        return view('teacher-modules.at-risk-index', compact(
+        return view('teacher-modules.analytics.at-risk-index', compact(
             'students', 'gradeLevels', 'selectedGradeLevel', 'selectedRiskLevel', 'stats'
         ));
     }

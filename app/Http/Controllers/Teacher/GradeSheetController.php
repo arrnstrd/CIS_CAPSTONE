@@ -106,7 +106,7 @@ class GradeSheetController extends Controller
             ];
         });
 
-        return view('teacher-modules.grade-sheet', [
+        return view('teacher-modules.grading.grade-sheet', [
             'ta' => $ta,
             'gradingPeriods' => $gradingPeriods,
             'selectedPeriodId' => $selectedPeriodId,

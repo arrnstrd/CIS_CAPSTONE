@@ -17,7 +17,7 @@ class AttendanceAnalyticsController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.attendance-analytics-index', [
+            return view('teacher-modules.analytics.attendance-analytics-index', [
                 'studentPoints' => collect(),
                 'sectionPoints' => collect(),
                 'gradeLevels' => collect(),
@@ -132,7 +132,7 @@ class AttendanceAnalyticsController extends Controller
         $insights = $this->computeInsights($studentPoints, $sectionPoints);
         $termTrend = $this->computeTermTrend($teachingAssignments, $studentPoints);
 
-        return view('teacher-modules.attendance-analytics-index', compact(
+        return view('teacher-modules.analytics.attendance-analytics-index', compact(
             'studentPoints', 'sectionPoints', 'gradeLevels', 'selectedGradeLevel', 'insights', 'termTrend'
         ));
     }

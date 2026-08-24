@@ -23,7 +23,7 @@ class GradingSystemOverviewController extends Controller
         $gradingPeriods = GradingPeriod::orderBy('sequence')->where('sequence', '<=', 3)->get();
 
         if (! $teacher) {
-            return view('teacher-modules.grading-system', [
+            return view('teacher-modules.grading.grading-system', [
                 'schoolYears' => $schoolYears,
                 'gradingPeriods' => $gradingPeriods,
                 'selectedSchoolYearId' => $request->input('school_year_id'),
@@ -148,7 +148,7 @@ class GradingSystemOverviewController extends Controller
             'attendanceRates' => $sectionBreakdown->map(fn ($s) => $s->attendance_rate)->values(),
         ];
 
-        return view('teacher-modules.grading-system', compact(
+        return view('teacher-modules.grading.grading-system', compact(
             'schoolYears', 'gradingPeriods', 'selectedSchoolYearId', 'selectedGradingPeriodId',
             'stats', 'sectionBreakdown', 'chartData'
         ));

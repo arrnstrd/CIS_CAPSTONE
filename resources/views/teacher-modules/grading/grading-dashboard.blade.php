@@ -48,6 +48,14 @@
                                 <div class="gs-row-subtext">
                                     <span><i class="fa-solid fa-users me-1"></i>{{ $class->learner_count }} learners</span>
                                 </div>
+
+                                <div class="gs-row-subtext mt-2">
+                                    <span class="me-3">Average Grade: {{ $class->avg_grade !== null ? $class->avg_grade : '—' }}</span>
+                                    <span class="me-3">Passing Rate: {{ $class->passing_rate !== null ? $class->passing_rate . '%' : '—' }}</span>
+                                    <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
+                                        {{ $class->status }}
+                                    </span>
+                                </div>
                             </div>
                         </a>
                     </div>
@@ -60,6 +68,55 @@
                     </div>
                 @endforelse
             </div>
+        </div>
+    </div>
+
+    <div class="gd-panel mt-4">
+        <p class="gs-panel-title mb-3">Grading Progress</p>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Subject</th>
+                        <th>Students</th>
+                        <th>Encoded</th>
+                        <th>Completion</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($classes as $class)
+                        <tr>
+                            <td>Grade {{ $class->grade_level }} - {{ $class->section_name }}</td>
+                            <td>{{ $class->subject_name }}</td>
+                            <td>{{ $class->learner_count }}</td>
+                            <td>{{ $class->encoded_count }} / {{ $class->learner_count }}</td>
+                            <td>
+                                <div class="gd-progress-wrap">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="gd-progress-label">
+                                            {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '—' }}
+                                        </span>
+                                    </div>
+                                    <div class="gd-progress-bar">
+                                        <div class="gd-progress-fill" style="width: {{ $class->completion_percent ?? 0 }}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
+                                    {{ $class->status }}
+                                </span>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center">No active classes found yet.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 

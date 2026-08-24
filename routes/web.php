@@ -28,6 +28,8 @@ use App\Models\AttendanceLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\AdministrationFeature\Setup\SetupController;
+
 
 
 
@@ -55,6 +57,10 @@ Route::get('/role-selection', fn() => view('login.role_selection'));
 Route::get('/setup/{token}', [\App\Http\Controllers\Setup\SetupController::class, 'show'])->name('setup.show');
 Route::post('/setup/{token}', [\App\Http\Controllers\Setup\SetupController::class, 'submit'])->name('setup.submit');
 Route::get('/user-login', fn() => view('login.admin-login'));
+
+// Account Setup Routes
+Route::get('/setup/{token}', [SetupController::class, 'show'])->name('setup.show');
+Route::post('/setup/complete', [SetupController::class, 'complete'])->name('setup.complete');
 
 // layout preview
 Route::get('/layout', fn() => view('components.layouts.admin', [
@@ -353,6 +359,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:teacher'])->group(function () {
 
         Route::get('/teacher/student-management', [StudentManagementController::class, 'index'])->name('teacher.student-management');
+        Route::get('/teacher/student-profile/{student}/summary', [StudentProfileController::class, 'teacherSummary'])->name('teacher.student-profile.summary');
         Route::get('/teacher/student-profile/{student}', [StudentProfileController::class, 'teacherShow'])->name('teacher.student-profile');
         Route::get('/teacher/grading-system', [App\Http\Controllers\Teacher\GradingSystemOverviewController::class, 'index'])->name('teacher.grading-system');
         Route::get('/teacher/grading-system/grades', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'index'])->name('teacher.grading-system.grades');
