@@ -27,6 +27,8 @@ use App\Http\Controllers\Teacher\TeacherRoomAttendanceController;
 use App\Models\AttendanceLog;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\AdministrationFeature\Setup\SetupController;
+
 
 
 
@@ -50,6 +52,10 @@ Route::post('/logout', [AuthController::class, 'logout'])
 // auth / login
 Route::get('/role-selection', fn() => view('login.role_selection'));
 Route::get('/user-login', fn() => view('login.admin-login'));
+
+// Account Setup Routes
+Route::get('/setup/{token}', [SetupController::class, 'show'])->name('setup.show');
+Route::post('/setup/complete', [SetupController::class, 'complete'])->name('setup.complete');
 
 // layout preview
 Route::get('/layout', fn() => view('components.layouts.admin', [
