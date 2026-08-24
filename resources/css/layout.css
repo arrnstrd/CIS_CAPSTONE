@@ -105,6 +105,17 @@
     }
 }
 
+.date-display-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+    .date-display-container {
+        justify-content: center;
+    }
+}
+
 /* ===== HEAD BANNER — light steel-blue style ===== */
 .admin-head-banner__title .ra-page-title i {
     color: #ffffff;
@@ -139,16 +150,12 @@ body{
 
 .teacher-page-bg {
     position: relative;
-    background-image: linear-gradient(rgba(230, 238, 255, 0.55), rgba(230, 238, 255, 0.75)), url('/images/cis-school-bg.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-color: #fff;
 }
 
 @media (max-width: 767px) {
     .teacher-page-bg {
-        background-attachment: scroll;
+        background-color: #fff;
     }
 }
 
