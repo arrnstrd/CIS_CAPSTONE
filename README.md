@@ -3,7 +3,6 @@
 
 An enterprise-grade educational platform currently under active development. The system is designed to automate gate access tracking, detect attendance anomalies, and centralize student records for Concepcion Integrated School (CIS) spanning Grades 1 to 12.
 
-<img src="public/images/assets/entry-exit.png" alt="Entry Exit Dashboard" width="750">
 
 ## 🛠️ Project Status: In Development
 This project is currently in its active development phase. Core database architecture and initial module structures are being implemented. 
