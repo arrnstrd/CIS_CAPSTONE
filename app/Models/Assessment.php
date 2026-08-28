@@ -13,7 +13,10 @@ class Assessment extends Model
         'title',
         'total_items',
         'assessment_date',
+        'description',
         'status',
+        'slot_number',
+        'slot_number',
     ];
 
     protected $casts = [

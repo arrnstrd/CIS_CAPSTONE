@@ -71,4 +71,33 @@ class ReportsController extends Controller
             'rows' => $rows,
         ]);
     }
+
+    /**
+     * Get students for a specific teaching assignment.
+     */
+    public function studentsData(Request $request, int $teachingAssignmentId)
+    {
+        $teacher = $request->user()->teacher;
+
+        $ta = TeachingAssignment::where('id', $teachingAssignmentId)
+            ->where('teacher_id', $teacher->id)
+            ->with(['section'])
+            ->firstOrFail();
+
+        $enrollments = Enrollment::where('section_id', $ta->section_id)
+            ->where('status', 'active')
+            ->with('student')
+            ->get()
+            ->filter(fn ($e) => $e->student !== null)
+            ->sortBy(fn ($e) => $e->student->last_name . $e->student->first_name)
+            ->values();
+
+        return response()->json($enrollments->map(function ($e) {
+            return [
+                'enrollment_id' => $e->id,
+                'name' => $e->student->full_name,
+                'lrn' => $e->student->lrn,
+            ];
+        }));
+    }
 }

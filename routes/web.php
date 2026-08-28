@@ -364,12 +364,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/teacher/grading-system', [App\Http\Controllers\Teacher\GradingSystemOverviewController::class, 'index'])->name('teacher.grading-system');
         Route::get('/teacher/grading-system/grades', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'index'])->name('teacher.grading-system.grades');
         Route::get('/teacher/grading-system/dashboard', [App\Http\Controllers\Teacher\GradingDashboardController::class, 'index'])->name('teacher.grading-system.dashboard');
+        Route::get('/teacher/grading-system/debug-risk-scores', [App\Http\Controllers\Teacher\GradingDashboardController::class, 'debugRiskScores'])->name('teacher.grading-system.debug-risk-scores');
         Route::get('/teacher/grading-system/grade-sheet/{teachingAssignmentId}', [App\Http\Controllers\Teacher\GradeSheetController::class, 'show'])->name('teacher.grading-system.grade-sheet');
         Route::post('/teacher/grading-system/grade-sheet/assessment', [App\Http\Controllers\Teacher\GradeSheetController::class, 'storeAssessment'])->name('teacher.grading-system.grade-sheet.assessment');
         Route::post('/teacher/grading-system/grade-sheet/score', [App\Http\Controllers\Teacher\GradeSheetController::class, 'storeScore'])->name('teacher.grading-system.grade-sheet.score');
         Route::get('/teacher/grading-system/import-data', [App\Http\Controllers\Teacher\ImportDataController::class, 'index'])->name('teacher.grading-system.import-data');
         Route::get('/teacher/grading-system/reports', [App\Http\Controllers\Teacher\ReportsController::class, 'index'])->name('teacher.grading-system.reports');
         Route::get('/teacher/grading-system/reports/class-record/{teachingAssignmentId}', [App\Http\Controllers\Teacher\ReportsController::class, 'classRecordData'])->name('teacher.grading-system.reports.class-record');
+        Route::get('/teacher/grading-system/reports/students/{teachingAssignmentId}', [App\Http\Controllers\Teacher\ReportsController::class, 'studentsData'])->name('teacher.grading-system.reports.students');
         Route::get('/teacher/grading-system/grades/{gradeLevel}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'show'])->name('teacher.grading-system.grades.show');
         Route::get('/teacher/grading-system/sections/{sectionId}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'students'])->name('teacher.grading-system.sections.show');
         Route::get('/teacher/grading-system/students/{enrollmentId}', [App\Http\Controllers\Teacher\GradingLevelsController::class, 'studentDetail'])->name('teacher.grading-system.students.show');
@@ -386,6 +388,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/teacher/grading-system/student-profile/{enrollmentId}', [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'show'])->name('teacher.grading-system.student-profile.show');
         Route::get('/teacher/grading-system/comp-rules', [App\Http\Controllers\Teacher\CompRulesController::class, 'index'])->name('teacher.grading-system.comp-rules');
         Route::put('/teacher/grading-system/comp-rules', [App\Http\Controllers\Teacher\CompRulesController::class, 'update'])->name('teacher.grading-system.comp-rules.update');
+        Route::get('/teacher/grading-system/grading-rules', [App\Http\Controllers\Teacher\GradingRulesController::class, 'index'])->name('teacher.grading-system.grading-rules');
+        Route::get('/teacher/grading-system/assessments/log', [App\Http\Controllers\Teacher\GradeSheetController::class, 'getAssessmentLog'])->name('teacher.grading-system.assessments.log');
+        Route::get('/teacher/grading-system/report-card/{enrollmentId}', [App\Http\Controllers\Teacher\ReportCardController::class, 'show'])->name('teacher.grading-system.report-card');
+        Route::get('/teacher/grading-system/report-card/{enrollmentId}/pdf', [App\Http\Controllers\Teacher\ReportCardController::class, 'generatePdf'])->name('teacher.grading-system.report-card.pdf');
 
         // Teacher attendance monitoring
         Route::get('/teacher/attendance', fn() => view('teacher-modules.monitoring.class-attendance'))->name('teacher.attendance');

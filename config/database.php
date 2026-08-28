@@ -100,6 +100,7 @@ return [
 
             'options' => [
                 PDO::ATTR_TIMEOUT               => 5,
+                PDO::ATTR_EMULATE_PREPARES      => true,
             ],
         ],
 

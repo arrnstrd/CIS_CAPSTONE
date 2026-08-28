@@ -3,34 +3,46 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
-use App\Models\AttendanceLog;
-use App\Models\Enrollment;
-use App\Models\QuarterlyGrade;
+use App\Models\GradingPeriod;
 use App\Models\TeachingAssignment;
+use App\Models\Enrollment;
+use App\Services\Grading\RiskScoreService;
 use Illuminate\Http\Request;
 
 class AtRiskController extends Controller
 {
+    protected RiskScoreService $riskScoreService;
+
+    public function __construct(RiskScoreService $riskScoreService)
+    {
+        $this->riskScoreService = $riskScoreService;
+    }
+
     public function index(Request $request)
     {
         $teacher = $request->user()->teacher;
 
-        if (! $teacher) {
-            return view('teacher-modules.analytics.at-risk-index', [
+        if (!$teacher) {
+            return view('teacher-modules.grading.at-risk-index', [
                 'students' => collect(),
                 'gradeLevels' => collect(),
                 'selectedGradeLevel' => null,
                 'selectedRiskLevel' => null,
-                'stats' => ['total' => 0, 'high' => 0, 'moderate' => 0],
+                'stats' => ['low' => 0, 'moderate' => 0, 'high' => 0],
             ]);
         }
+
+        // Get current period using same logic as GradingDashboardController
+        // TODO: Once "Finalize Term" is implemented, this should pick the lowest sequence <=3 
+        // whose status is NOT "Finalized" (so it naturally advances as terms get locked)
+        $currentPeriod = GradingPeriod::where('is_active', true)->where('sequence', '<=', 3)->orderBy('sequence')->first() ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
 
         $selectedGradeLevel = $request->input('grade_level') ?: null;
         $selectedRiskLevel = $request->input('risk_level') ?: null;
 
         $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
-            ->with('section');
+            ->with(['section', 'subject']);
 
         if ($selectedGradeLevel) {
             $teachingAssignmentsQuery->whereHas('section', fn ($q) => $q->where('grade_level', $selectedGradeLevel));
@@ -47,68 +59,70 @@ class AtRiskController extends Controller
             ->sort()
             ->values();
 
-        $students = collect();
+        $allStudents = collect();
 
-        foreach ($teachingAssignments->groupBy('section_id') as $sectionAssignments) {
-            $section = $sectionAssignments->first()->section;
-            $taIds = $sectionAssignments->pluck('id');
-
-            $enrollments = Enrollment::where('section_id', $section->id)
-                ->where('status', 'active')
-                ->with('student')
-                ->get();
-
-            $enrollmentIds = $enrollments->pluck('id');
-
-            $gradesByEnrollment = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
-                ->whereNotNull('transmuted_grade')
-                ->get()
-                ->groupBy('enrollment_id');
-
-            $attendanceCountsByEnrollment = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
-                ->where('scan_type', 'IN')
-                ->selectRaw('enrollment_id, COUNT(DISTINCT scan_time) as present_count')
-                ->groupBy('enrollment_id')
-                ->pluck('present_count', 'enrollment_id');
-
-            foreach ($enrollments as $enrollment) {
-                $grades = $gradesByEnrollment->get($enrollment->id, collect());
-                $avgGrade = $grades->count() ? round($grades->avg('transmuted_grade'), 1) : null;
-                $riskLevel = AnalyticsController::riskLevel($avgGrade);
-
-                if (! in_array($riskLevel, ['High', 'Moderate'])) {
-                    continue;
+        if ($currentPeriod) {
+            foreach ($teachingAssignments as $ta) {
+                if ($ta->section && $ta->subject) {
+                    $riskData = $this->riskScoreService->calculateRiskScoresForClass($ta, $currentPeriod);
+                    
+                    foreach ($riskData['risk_scores'] as $studentRisk) {
+                        // Only include at-risk students (Moderate/High)
+                        if (in_array($studentRisk['risk_level'], ['Moderate', 'High'])) {
+                            $attendanceRate = $this->riskScoreService->getAttendanceRate($studentRisk['enrollment_id'], $currentPeriod->id);
+                            
+                            // Get the enrollment to access student details directly
+                            $enrollment = \App\Models\Enrollment::find($studentRisk['enrollment_id']);
+                            
+                            $allStudents->push((object) [
+                                'enrollment_id' => $studentRisk['enrollment_id'],
+                                'name' => $enrollment->student->full_name ?? 'Unknown Student',
+                                'student_number' => $enrollment->student->student_number ?? 'N/A',
+                                'grade_level' => $ta->section->grade_level,
+                                'section_name' => $ta->section->name,
+                                'subject_name' => $ta->subject->name,
+                                'avg_grade' => $this->getStudentAverageGrade($studentRisk['enrollment_id'], $ta->id, $currentPeriod->id),
+                                'attendance_rate' => $attendanceRate,
+                                'risk_score' => $studentRisk['risk_score'],
+                                'risk_level' => $studentRisk['risk_level'],
+                                'indicators' => $studentRisk['indicators'],
+                                'teaching_assignment_id' => $ta->id,
+                            ]);
+                        }
+                    }
                 }
-
-                $presentCount = $attendanceCountsByEnrollment->get($enrollment->id, 0);
-
-                $students->push((object) [
-                    'name' => trim(($enrollment->student->first_name ?? '') . ' ' . ($enrollment->student->last_name ?? '')),
-                    'student_number' => $enrollment->student->student_number,
-                    'grade_level' => $section->grade_level,
-                    'section_name' => $section->name,
-                    'avg_grade' => $avgGrade,
-                    'present_count' => $presentCount,
-                    'risk_level' => $riskLevel,
-                ]);
             }
         }
 
+        // Apply filters
         if ($selectedRiskLevel) {
-            $students = $students->where('risk_level', $selectedRiskLevel);
+            $allStudents = $allStudents->where('risk_level', $selectedRiskLevel);
         }
 
-        $students = $students->sortBy('name')->values();
+        $students = $allStudents->sortBy('name')->values();
 
-        $allAtRisk = $teachingAssignments->isNotEmpty() ? $students : collect();
         $stats = [
-            'total' => $students->count(),
-            'high' => $students->where('risk_level', 'High')->count(),
+            'low' => $students->where('risk_level', 'Low')->count(),
             'moderate' => $students->where('risk_level', 'Moderate')->count(),
+            'high' => $students->where('risk_level', 'High')->count(),
         ];
 
-        return view('teacher-modules.analytics.at-risk-index', compact(
-            'students', 'gradeLevels', 'selectedGradeLevel', 'selectedRiskLevel', 'stats'
+        return view('teacher-modules.grading.at-risk-index', compact(
+            'students', 'gradeLevels', 'selectedGradeLevel', 'selectedRiskLevel', 'stats', 'currentPeriod'
         ));
+    }
+
+    /**
+     * Get student's average grade for a specific teaching assignment and period.
+     */
+    private function getStudentAverageGrade(int $enrollmentId, int $teachingAssignmentId, int $gradingPeriodId): ?float
+    {
+        $grades = \App\Models\QuarterlyGrade::where('enrollment_id', $enrollmentId)
+            ->where('teaching_assignment_id', $teachingAssignmentId)
+            ->where('grading_period_id', $gradingPeriodId)
+            ->whereNotNull('transmuted_grade')
+            ->get();
+
+        return $grades->isNotEmpty() ? round($grades->avg('transmuted_grade'), 1) : null;
     }
 }

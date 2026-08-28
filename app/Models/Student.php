@@ -54,4 +54,10 @@ static::created(function($student){
     {
         return $this->hasMany(Enrollment::class);
     }
+
+    public function getFullNameAttribute(): string
+    {
+        $mi = $this->middle_name ? ' ' . mb_substr($this->middle_name, 0, 1) . '.' : '';
+        return trim(($this->last_name ?? '') . ', ' . ($this->first_name ?? '') . $mi);
+    }
 }

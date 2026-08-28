@@ -6,27 +6,36 @@ use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\SchoolYear;
+
 use App\Models\StudentAssessmentScore;
 use App\Models\TeachingAssignment;
+use App\Services\Grading\RiskScoreService;
 use Illuminate\Http\Request;
 
 class GradingDashboardController extends Controller
 {
+    protected RiskScoreService $riskScoreService;
+
+    public function __construct(RiskScoreService $riskScoreService)
+    {
+        $this->riskScoreService = $riskScoreService;
+    }
+
     public function index(Request $request)
     {
         $teacher = $request->user()->teacher;
-        $schoolYears = SchoolYear::orderByDesc('school_year')->get();
+
 
         if (! $teacher) {
             return view('teacher-modules.grading.grading-dashboard', [
                 'classes' => collect(),
-                'schoolYears' => $schoolYears,
             ]);
         }
 
         $validPeriodIds = GradingPeriod::where('sequence', '<=', 3)->pluck('id');
-        $currentPeriod = GradingPeriod::where('is_active', true)->orderByDesc('sequence')->first() ?? GradingPeriod::orderByDesc('sequence')->first();
+        // TODO: Once "Finalize Term" is implemented, this should pick the lowest sequence <=3 
+        // whose status is NOT "Finalized" (so it naturally advances as terms get locked)
+        $currentPeriod = GradingPeriod::where('is_active', true)->where('sequence', '<=', 3)->orderBy('sequence')->first() ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
 
         $teachingAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
@@ -114,6 +123,187 @@ class GradingDashboardController extends Controller
             ];
         })->filter()->values();
 
-        return view('teacher-modules.grading.grading-dashboard', compact('classes', 'schoolYears'));
+    $totalClasses = $classes->count();
+    $totalStudents = $classes->sum('learner_count');
+    $currentTermLabel = $currentPeriod ? 'Term ' . $currentPeriod->sequence : '—';
+
+        // Calculate total at-risk students across all classes
+        $totalAtRisk = 0;
+        $classAtRiskCounts = [];
+        $classRiskReasons = [];
+        
+        if ($currentPeriod) {
+            foreach ($teachingAssignments as $ta) {
+                if ($ta->section && $ta->subject) {
+                    $riskData = $this->riskScoreService->calculateRiskScoresForClass($ta, $currentPeriod);
+                    $atRiskCount = $riskData['stats']['high'] + $riskData['stats']['moderate'];
+                    $totalAtRisk += $atRiskCount;
+                    $classAtRiskCounts[$ta->id] = $atRiskCount;
+                    
+                    // Find the most common cause among at-risk students
+                    $mostCommonCause = $this->findMostCommonRiskCause($riskData['risk_scores']);
+                    $classRiskReasons[$ta->id] = $mostCommonCause;
+                }
+            }
+        }
+
+        return view('teacher-modules.grading.grading-dashboard', compact(
+            'classes', 
+            'totalClasses', 
+            'totalStudents', 
+            'currentTermLabel',
+            'totalAtRisk',
+            'classAtRiskCounts',
+            'classRiskReasons'
+        ));
+    }
+
+    /**
+     * Debug method to investigate the "At-Risk" issue
+     */
+    public function debugRiskScores(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        
+        if (!$teacher) {
+            return response()->json(['error' => 'Teacher not found'], 404);
+        }
+
+        // Get current period (this is the first issue to investigate)
+        // TODO: Once "Finalize Term" is implemented, this should pick the lowest sequence <=3 
+        // whose status is NOT "Finalized" (so it naturally advances as terms get locked)
+        $currentPeriod = GradingPeriod::where('is_active', true)->where('sequence', '<=', 3)->orderBy('sequence')->first() ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+        $allPeriods = GradingPeriod::orderBy('sequence')->get();
+        
+        $debugInfo = [
+            'current_period' => $currentPeriod ? [
+                'id' => $currentPeriod->id,
+                'name' => $currentPeriod->name,
+                'sequence' => $currentPeriod->sequence,
+                'is_active' => $currentPeriod->is_active,
+            ] : null,
+            'all_periods' => $allPeriods->map(function ($period) {
+                return [
+                    'id' => $period->id,
+                    'name' => $period->name,
+                    'sequence' => $period->sequence,
+                    'is_active' => $period->is_active,
+                ];
+            })->values(),
+            'periods_with_sequence_le_3' => GradingPeriod::where('sequence', '<=', 3)->count(),
+        ];
+
+        // Get teaching assignments
+        $teachingAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->with(['section', 'subject'])
+            ->get();
+
+        $riskAnalysis = [];
+        
+        if ($currentPeriod) {
+            foreach ($teachingAssignments as $ta) {
+                if ($ta->section && $ta->subject) {
+                    $enrollments = Enrollment::where('section_id', $ta->section_id)
+                        ->where('status', 'active')
+                        ->get();
+
+                    $classRiskData = [
+                        'teaching_assignment_id' => $ta->id,
+                        'section_name' => $ta->section->name,
+                        'subject_name' => $ta->subject->name,
+                        'total_students' => $enrollments->count(),
+                        'at_risk_students' => 0,
+                        'student_details' => [],
+                    ];
+
+                    foreach ($enrollments as $enrollment) {
+                        $riskData = $this->riskScoreService->calculateRiskScore($enrollment, $ta, $currentPeriod);
+                        
+                        $classRiskData['student_details'][] = [
+                            'student_name' => $enrollment->student->full_name ?? 'Unknown Student',
+                            'enrollment_id' => $enrollment->id,
+                            'risk_score' => $riskData['risk_score'],
+                            'risk_level' => $riskData['risk_level'],
+                            'indicators' => $riskData['indicators'],
+                            'attendance_rate' => $this->riskScoreService->calculateAttendanceRate($enrollment->id, $currentPeriod->id),
+                        ];
+
+                        if ($riskData['risk_level'] !== 'Low') {
+                            $classRiskData['at_risk_students']++;
+                        }
+                    }
+
+                    $riskAnalysis[] = $classRiskData;
+                }
+            }
+        }
+
+        return response()->json([
+            'debug_info' => $debugInfo,
+            'risk_analysis' => $riskAnalysis,
+        ]);
+    }
+
+    /**
+     * Find the most common risk cause among at-risk students.
+     *
+     * @param array $riskScores
+     * @return string|null
+     */
+    private function findMostCommonRiskCause(array $riskScores): ?string
+    {
+        $indicatorCounts = [
+            'low_grade' => 0,
+            'missing_grades' => 0,
+            'low_attendance' => 0,
+            'declining_performance' => 0,
+        ];
+
+        // Count indicators for at-risk students (Moderate/High risk levels)
+        foreach ($riskScores as $studentRisk) {
+            if (in_array($studentRisk['risk_level'], ['Moderate', 'High'])) {
+                foreach ($studentRisk['indicators'] as $indicator => $isTrue) {
+                    if ($isTrue) {
+                        $indicatorCounts[$indicator]++;
+                    }
+                }
+            }
+        }
+
+        // Find the indicator with the highest count
+        $maxCount = 0;
+        $mostCommonCause = null;
+        
+        // Priority order: low_grade, missing_grades, low_attendance, declining_performance
+        $priorityOrder = ['low_grade', 'missing_grades', 'low_attendance', 'declining_performance'];
+        
+        foreach ($priorityOrder as $indicator) {
+            if ($indicatorCounts[$indicator] > $maxCount) {
+                $maxCount = $indicatorCounts[$indicator];
+                $mostCommonCause = $indicator;
+            }
+        }
+
+        // Return human-readable label if there's at least one at-risk student with this cause
+        return $maxCount > 0 ? $this->getRiskIndicatorLabel($mostCommonCause) : null;
+    }
+
+    /**
+     * Get human-readable label for risk indicator.
+     *
+     * @param string $indicator
+     * @return string
+     */
+    private function getRiskIndicatorLabel(string $indicator): string
+    {
+        $labels = [
+            'low_grade' => 'Low Grades',
+            'missing_grades' => 'Missing Grades',
+            'low_attendance' => 'Low Attendance',
+            'declining_performance' => 'Declining Performance',
+        ];
+
+        return $labels[$indicator] ?? $indicator;
     }
 }
