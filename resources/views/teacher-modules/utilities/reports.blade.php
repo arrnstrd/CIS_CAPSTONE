@@ -24,12 +24,6 @@
                         <option value="">Select a class first</option>
                     </select>
                 </div>
-                <div class="col-12 col-md-4">
-                    <label class="gd-form-label">&nbsp;</label>
-                    <button type="button" id="viewReportCardBtn" class="btn btn-primary btn-sm w-100" disabled>
-                        <i class="fa-solid fa-id-card me-1"></i> View Report Card
-                    </button>
-                </div>
             </div>
 
             <div class="row g-3">
@@ -161,13 +155,6 @@
             const viewReportCardBtn = document.getElementById('viewReportCardBtn');
             
             viewReportCardBtn.disabled = !studentSelect.value;
-        });
-
-        document.getElementById('viewReportCardBtn').addEventListener('click', () => {
-            const enrollmentId = document.getElementById('studentSelect').value;
-            if (enrollmentId) {
-                window.location.href = `/teacher/grading-system/report-card/${enrollmentId}`;
-            }
         });
 
         document.getElementById('exportPdfBtn').addEventListener('click', () => {

@@ -390,8 +390,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/teacher/grading-system/comp-rules', [App\Http\Controllers\Teacher\CompRulesController::class, 'update'])->name('teacher.grading-system.comp-rules.update');
         Route::get('/teacher/grading-system/grading-rules', [App\Http\Controllers\Teacher\GradingRulesController::class, 'index'])->name('teacher.grading-system.grading-rules');
         Route::get('/teacher/grading-system/assessments/log', [App\Http\Controllers\Teacher\GradeSheetController::class, 'getAssessmentLog'])->name('teacher.grading-system.assessments.log');
-        Route::get('/teacher/grading-system/report-card/{enrollmentId}', [App\Http\Controllers\Teacher\ReportCardController::class, 'show'])->name('teacher.grading-system.report-card');
-        Route::get('/teacher/grading-system/report-card/{enrollmentId}/pdf', [App\Http\Controllers\Teacher\ReportCardController::class, 'generatePdf'])->name('teacher.grading-system.report-card.pdf');
 
         // Teacher attendance monitoring
         Route::get('/teacher/attendance', fn() => view('teacher-modules.monitoring.class-attendance'))->name('teacher.attendance');
