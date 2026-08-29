@@ -277,6 +277,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/teaching-assignments/{teachingAssignment}/grading-periods/{gradingPeriod}/assessments', [AssessmentController::class, 'byTeachingAssignmentAndGradingPeriod'])->name('teaching-assignments.grading-periods.assessments');
 
         Route::get('/attendance', fn() => view('admin-modules.monitoring.class-attendance'))->name('attendance');
+        Route::get('/school_admin/attendance/grade_level', [\App\Http\Controllers\AttendanceNavigationController::class, 'gradeLevel'])->name('attendance.grade-level');
+        Route::get('/school_admin/attendance/section/{grade}', [\App\Http\Controllers\AttendanceNavigationController::class, 'section'])->name('attendance.section');
         Route::get('/emails', [EmailLogController::class, 'index'])->name('emails.index');
         Route::post('/emails/{id}/retry', [EmailLogController::class, 'retry'])->name('retry.email');
         Route::post('/emails', [EmailLogController::class, 'retryAll'])->name('retryAll.email');

@@ -1,4 +1,26 @@
 
+.grade-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.25rem;
+}
+
+@media (min-width: 576px) {
+    .grade-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 992px) {
+    .grade-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1400px) {
+    .grade-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.grade-section { margin-bottom: 2.5rem; }
+.grade-section-title {
+    font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: #5a5c69; margin-bottom: 1.25rem; padding-left: 0.25rem;
+}
+
 /* Container Spacing */
 .grade-selection-wrapper {
     max-width: 10000px;

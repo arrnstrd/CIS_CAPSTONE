@@ -15,10 +15,10 @@
     padding: 1.3rem 1.4rem;
     margin-bottom: 1rem;
     border-radius: 1.4rem;
-    background: #f5f8fa;
-    border: 1px solid #d6dfe6;
-    color: #0f1013;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3b82f6 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #f8fafc;
+    box-shadow: 0 10px 30px rgba(30, 58, 138, 0.25), 0 1px 3px rgba(0,0,0,0.1);
     overflow: hidden;
 }
 
@@ -44,7 +44,7 @@
 .admin-head-banner__sub {
     margin: 0.45rem 0 0;
     max-width: 52rem;
-    color: #55565c;
+    color: #cbd5e1;
 }
 
 .admin-head-banner__meta {
@@ -61,9 +61,11 @@
     gap: 0.75rem;
     padding: 0.8rem 1rem;
     border-radius: 1rem;
-    background: #ffffff;
-    border: 1px solid #d6dfe6;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
     white-space: nowrap;
+    backdrop-filter: blur(4px);
 }
 
 .admin-head-banner__date i {

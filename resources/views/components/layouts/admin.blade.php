@@ -20,14 +20,10 @@
         {{-- sidebar --}}
         <x-layouts.admin.sidebar />
 
-        <header class="top-nav">
-        </header>
-
-
 
         <main class="page-content">
             <div class="container-fluid p-6">
-                <section class="admin-head-banner p-4  mx-3 mt-3">
+                <section class="admin-head-banner p-4  mx-3 mt-1.5">
                     <div class="admin-head-banner__copy">
                         <h1 class="admin-head-banner__title mt-3">{{ $pageName ?? 'Header' }}</h1>
                         @if ($subtitle ?? null)
@@ -44,8 +40,6 @@
                             </span>
                         </div>
 
-                        <x-help-button />
-
                         @isset($headerActions)
                             <div class="admin-head-banner__actions">
                                 {{ $headerActions }}
@@ -53,6 +47,10 @@
                         @endisset
                     </div>
                 </section>
+
+                <div class="d-flex justify-content-end align-items-center gap-2 mb-3 mx-2">
+                    <x-help-button />
+                </div>
 
                 <div class="admin-page-slot mx-2">
                     {{ $slot }}

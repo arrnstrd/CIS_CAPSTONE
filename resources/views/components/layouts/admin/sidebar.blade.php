@@ -86,9 +86,9 @@
 
                     @if(!$isScannerOperator)
                         <li>
-                            <a href="/attendance">
+                            <a href="{{ route('attendance.grade-level') }}">
                                 <i class="fas fa-user-check"></i>
-                                <span>Class Attendance</span>
+                                <span>Attendance</span>
                             </a>
                         </li>
 

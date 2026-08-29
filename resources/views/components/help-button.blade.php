@@ -28,7 +28,7 @@ faqs → accordion items: [['q' =>, 'a' =>], ...]
         $hasFaqs = !empty($help['faqs']);
     @endphp
 
-    <button type="button" class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-1 admin-help-btn"
+    <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 admin-help-btn"
         data-bs-toggle="modal" data-bs-target="#adminHelpModal" title="Help & FAQ">
         <i class="fa-solid fa-circle-question"></i>
         <span class="d-none d-sm-inline">Help</span>
