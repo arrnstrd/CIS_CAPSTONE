@@ -191,3 +191,40 @@ teacher */
     color: rgba(255,255,255,0.65);
 }
 
+/* ===== GRADING SYSTEM SUBMENU ===== */
+.sidebar-submenu-toggle {
+    cursor: pointer;
+}
+
+.sidebar-submenu-caret {
+    font-size: 11px;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-submenu-toggle[aria-expanded="true"] .sidebar-submenu-caret {
+    transform: rotate(180deg);
+}
+
+.sidebar-submenu {
+    list-style: none;
+    padding: 4px 0 4px 20px;
+    margin: 0;
+}
+
+.sidebar-submenu li a {
+    padding: 10px 25px 10px 20px !important;
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.sidebar-submenu li a:hover {
+    color: #ffffff !important;
+}
+
+.sidebar-submenu li.active > a {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    font-weight: 600;
+}
+

@@ -9,15 +9,68 @@
     border-collapse: collapse; /* collapse so row dividers show cleanly */
 }
 
+/* Sticky header and first column for Grade Sheet */
+#gradeSheetTable {
+    position: relative;
+}
+
+#gradeSheetTable thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #2438b9 !important;
+}
+
+#gradeSheetTable th:first-child,
+#gradeSheetTable td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background-color: #ffffff !important;
+    border-right: 2px solid #dee2e6 !important;
+}
+
+#gradeSheetTable th:first-child {
+    z-index: 11;
+}
+
+/* Ensure table scrolls smoothly */
+.table-panel {
+    overflow-x: auto;
+    position: relative;
+}
+
+.table-panel::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-panel::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-panel::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
 /* Compact row cells */
 .table td {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     padding: 7px 8px;           /* Reduced from 16px — tighter rows */
     font-size: 0.80rem;
     vertical-align: middle;
     border-bottom: 1px solid #dddddd; /* Subtle row divider */
+}
+
+/* Student column - allow text wrap (At-Risk Students table only) */
+.gs-atrisk-table td:first-child {
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
 }
 
 /* Table header */
@@ -91,4 +144,11 @@
     font-size: 0.72rem;
     line-height: 1.2;
     color: #6c757d;
+}
+
+/* Students table - allow text wrap for student column */
+.gs-students-table td:first-child {
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
 }

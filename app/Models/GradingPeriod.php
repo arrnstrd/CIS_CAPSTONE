@@ -11,6 +11,8 @@ class GradingPeriod extends Model
         'sequence',
         'period_type',
         'is_active',
+        'start_date',
+        'end_date',
     ];
 
     protected $casts = [

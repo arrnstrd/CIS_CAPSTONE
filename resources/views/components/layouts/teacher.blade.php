@@ -52,18 +52,15 @@
     </div>
 </header>
 
-
-
-        <main class="page-content">
+        <main class="page-content teacher-page-bg">
             <div class="container-fluid p-6">
-                <section class="admin-head-banner p-4 mx-3 mt-3">
+                <section class="admin-head-banner p-4 mx-3">
                     <div class="admin-head-banner__copy">
                         <h1 class="admin-head-banner__title mt-3">{{ $pageName ?? 'Header' }}</h1>
                         @if ($subtitle ?? null)
                             <p class="admin-head-banner__sub">{{ $subtitle }}</p>
                         @endif
                     </div>
-
                     <div class="admin-head-banner__meta">
                         <div class="admin-head-banner__date">
                             <i class="fa-regular fa-calendar-check"></i>
@@ -72,7 +69,6 @@
                                 <strong id="liveDate"></strong>
                             </span>
                         </div>
-
                         <x-help-button />
 
                         @isset($headerActions)

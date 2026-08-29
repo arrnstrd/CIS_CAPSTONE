@@ -2,11 +2,9 @@
     <x-slot name="pageName">Grading System</x-slot>
     <x-slot name="subtitle">Overview of your sections' grading performance.</x-slot>
 
-    @include('teacher-modules.partials.grading-tabs', ['activeTab' => 'grading'])
+
 
     <div class="gd-layout">
-        @include('teacher-modules.partials.grading-dashboard-sidebar', ['gdActive' => 'import-data'])
-
         <div class="gd-content">
             <p class="gs-panel-title mb-1">Import Data</p>
             <p class="text-muted small mb-3">Upload a class record (CSV) and preview how its columns map to system fields.</p>

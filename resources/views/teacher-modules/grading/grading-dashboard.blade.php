@@ -7,24 +7,64 @@
         Overview of your sections' grading performance.
     </x-slot>
 
-    @include('teacher-modules.partials.grading-tabs', ['activeTab' => 'grading'])
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="gs-stat-card d-flex align-items-center gap-3">
+                <span class="gs-stat-icon gs-stat-icon-neutral">
+                    <i class="fa-solid fa-chalkboard"></i>
+                </span>
+                <div>
+                    <p class="gs-stat-label">Total Classes</p>
+                    <p class="gs-stat-value">{{ $totalClasses }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="gs-stat-card d-flex align-items-center gap-3">
+                <span class="gs-stat-icon gs-stat-icon-neutral">
+                    <i class="fa-solid fa-users"></i>
+                </span>
+                <div>
+                    <p class="gs-stat-label">Total Students</p>
+                    <p class="gs-stat-value">{{ $totalStudents }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="gs-stat-card d-flex align-items-center gap-3">
+                <span class="gs-stat-icon gs-stat-icon-neutral">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </span>
+                <div>
+                    <p class="gs-stat-label">Current Term</p>
+                    <p class="gs-stat-value">{{ $currentTermLabel }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="gs-stat-card gs-stat-card-danger d-flex align-items-center gap-3">
+                <span class="gs-stat-icon gs-stat-icon-danger">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </span>
+                <div>
+                    <p class="gs-stat-label gs-stat-label-danger">Students At Risk</p>
+                    <p class="gs-stat-value">{{ $totalAtRisk ?? 0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="gd-layout">
-        @include('teacher-modules.partials.grading-dashboard-sidebar', ['gdActive' => 'dashboard'])
-
         <div class="gd-content">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <p class="gs-panel-title mb-0">My Classes</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClassModal">
-                    <i class="fa-solid fa-plus me-1"></i> Add Class/Section
-                </button>
             </div>
 
             <div class="row g-3">
                 @forelse ($classes as $class)
                     <div class="col-12 col-md-6 col-xl-4">
                         <a href="{{ route('teacher.grading-system.grade-sheet', $class->teaching_assignment_id) }}" class="text-decoration-none">
-                            <div class="gs-panel">
+                            <div class="gs-panel gs-card-accent gs-card-accent-{{ (($loop->iteration - 1) % 4) + 1 }}">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <p class="gs-panel-title mb-0">Grade {{ $class->grade_level }} - {{ $class->section_name }}</p>
                                     <span class="gs-badge {{ $class->format_badge === 'SHS Format' ? 'gs-badge-warning' : 'gs-badge-success' }}">
@@ -48,6 +88,21 @@
                                 <div class="gs-row-subtext">
                                     <span><i class="fa-solid fa-users me-1"></i>{{ $class->learner_count }} learners</span>
                                 </div>
+
+                                <div class="gs-row-subtext mt-2">
+                                    <span class="me-3">Average Grade: {{ $class->avg_grade !== null ? $class->avg_grade : '—' }}</span>
+                                    <span class="me-3">Passing Rate: {{ $class->passing_rate !== null ? $class->passing_rate . '%' : '—' }}</span>
+                                    @php $atRiskCount = $classAtRiskCounts[$class->teaching_assignment_id] ?? 0; @endphp
+                                    <span class="me-3">
+                                        At-Risk: {{ $atRiskCount }}
+                                        @if($atRiskCount > 0)
+                                            <span class="text-muted small">({{ $classRiskReasons[$class->teaching_assignment_id] ?? 'various reasons' }})</span>
+                                        @endif
+                                    </span>
+                                    <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
+                                        {{ $class->status }}
+                                    </span>
+                                </div>
                             </div>
                         </a>
                     </div>
@@ -63,77 +118,54 @@
         </div>
     </div>
 
-    {{-- Add Class/Section modal — UI only, submit is a no-op until Section/TeachingAssignment
-         write access is confirmed safe. --}}
-    <div class="modal fade" id="addClassModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Class/Section</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addClassForm">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <label class="gd-form-label">Region</label>
-                                <input type="text" class="form-control" name="region">
+    <div class="gd-panel mt-4">
+        <p class="gs-panel-title mb-3">Grading Progress</p>
+        <x-ui.table>
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th>Students</th>
+                    <th>Encoded</th>
+                    <th>Completion</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($classes as $class)
+                    <tr>
+                        <td>Grade {{ $class->grade_level }} - {{ $class->section_name }}</td>
+                        <td>{{ $class->subject_name }}</td>
+                        <td>{{ $class->learner_count }}</td>
+                        <td>{{ $class->encoded_count }} / {{ $class->learner_count }}</td>
+                        <td>
+                            <div class="gd-progress-wrap">
+                                <div class="d-flex justify-content-between">
+                                    <span class="gd-progress-label">
+                                        {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '—' }}
+                                    </span>
+                                </div>
+                                <div class="gd-progress-bar">
+                                    <div class="gd-progress-fill" style="width: {{ $class->completion_percent ?? 0 }}%"></div>
+                                </div>
                             </div>
-                            <div class="col-6">
-                                <label class="gd-form-label">Division</label>
-                                <input type="text" class="form-control" name="division">
-                            </div>
-                            <div class="col-6">
-                                <label class="gd-form-label">School Name</label>
-                                <input type="text" class="form-control" name="school_name">
-                            </div>
-                            <div class="col-6">
-                                <label class="gd-form-label">School ID</label>
-                                <input type="text" class="form-control" name="school_id">
-                            </div>
-                            <div class="col-6">
-                                <label class="gd-form-label">School Year</label>
-                                <select class="form-select" name="school_year_id">
-                                    @foreach ($schoolYears as $sy)
-                                        <option value="{{ $sy->id }}">{{ $sy->school_year }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label class="gd-form-label">Grade Level</label>
-                                <input type="text" class="form-control" name="grade_level">
-                            </div>
-                            <div class="col-6">
-                                <label class="gd-form-label">Section</label>
-                                <input type="text" class="form-control" name="section">
-                            </div>
-                            <div class="col-6">
-                                <label class="gd-form-label">Subject</label>
-                                <input type="text" class="form-select" name="subject">
-                            </div>
-                            <div class="col-12">
-                                <label class="gd-form-label">Grading System</label>
-                                <select class="form-select" name="grading_system">
-                                    <option value="k10">K-10</option>
-                                    <option value="shs">Senior High School</option>
-                                </select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn gd-btn-primary" id="createClassBtn">Create Class</button>
-                </div>
-            </div>
-        </div>
+                        </td>
+                        <td>
+                            <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
+                                {{ $class->status }}
+                            </span>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center">No active classes found yet.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </x-ui.table>
     </div>
 
-    <script>
-        document.getElementById('createClassBtn').addEventListener('click', function () {
-            // No-op placeholder: Section/TeachingAssignment writes are disabled until
-            // the backend owner confirms the schema is stable.
-            alert('This feature is not yet available. Class creation will be enabled once the section data flow is finalized.');
-        });
-    </script>
+
+
+
 </x-layouts.teacher>

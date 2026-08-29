@@ -2,23 +2,33 @@
     <x-slot name="pageName">Grading System</x-slot>
     <x-slot name="subtitle">Overview of your sections' grading performance.</x-slot>
 
-    @include('teacher-modules.partials.grading-tabs', ['activeTab' => 'grading'])
+
 
     <div class="gd-layout">
-        @include('teacher-modules.partials.grading-dashboard-sidebar', ['gdActive' => 'reports'])
-
         <div class="gd-content">
             <p class="gs-panel-title mb-1">Reports</p>
             <p class="text-muted small mb-3">Select a class and report type to generate a preview.</p>
 
             <div class="row g-3 mb-3">
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-md-4">
                     <label class="gd-form-label">Class</label>
                     <select id="classSelect" class="form-select form-select-sm">
                         @foreach ($teachingAssignments as $ta)
                             <option value="{{ $ta->id }}">Grade {{ $ta->section->grade_level }} - {{ $ta->section->name }} · {{ $ta->subject->name }}</option>
                         @endforeach
                     </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="gd-form-label">Student</label>
+                    <select id="studentSelect" class="form-select form-select-sm" disabled>
+                        <option value="">Select a class first</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="gd-form-label">&nbsp;</label>
+                    <button type="button" id="viewReportCardBtn" class="btn btn-primary btn-sm w-100" disabled>
+                        <i class="fa-solid fa-id-card me-1"></i> View Report Card
+                    </button>
                 </div>
             </div>
 
@@ -117,7 +127,47 @@
         });
 
         document.getElementById('classSelect').addEventListener('change', () => {
+            const taId = document.getElementById('classSelect').value;
+            const studentSelect = document.getElementById('studentSelect');
+            const viewReportCardBtn = document.getElementById('viewReportCardBtn');
+            
+            // Clear and disable student selection
+            studentSelect.innerHTML = '<option value="">Loading students...</option>';
+            studentSelect.disabled = true;
+            viewReportCardBtn.disabled = true;
+            
+            if (taId) {
+                // Fetch students for this class
+                fetch(`/teacher/grading-system/reports/students/${taId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        studentSelect.innerHTML = '<option value="">Select a student</option>';
+                        data.forEach(student => {
+                            studentSelect.innerHTML += `<option value="${student.enrollment_id}">${student.name} (${student.lrn})</option>`;
+                        });
+                        studentSelect.disabled = false;
+                    })
+                    .catch(error => {
+                        studentSelect.innerHTML = '<option value="">Error loading students</option>';
+                        console.error('Error loading students:', error);
+                    });
+            }
+            
             if (currentReportType) fetchAndRender(currentReportType);
+        });
+
+        document.getElementById('studentSelect').addEventListener('change', () => {
+            const studentSelect = document.getElementById('studentSelect');
+            const viewReportCardBtn = document.getElementById('viewReportCardBtn');
+            
+            viewReportCardBtn.disabled = !studentSelect.value;
+        });
+
+        document.getElementById('viewReportCardBtn').addEventListener('click', () => {
+            const enrollmentId = document.getElementById('studentSelect').value;
+            if (enrollmentId) {
+                window.location.href = `/teacher/grading-system/report-card/${enrollmentId}`;
+            }
         });
 
         document.getElementById('exportPdfBtn').addEventListener('click', () => {

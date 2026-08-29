@@ -138,13 +138,13 @@ class GradingSystemOverviewController extends Controller
         })->values();
 
         $chartData = [
-            'sectionLabels' => $sectionBreakdown->map(fn ($s) => $s->section_name)->values(),
+            'sectionLabels' => $sectionBreakdown->map(fn ($s) => $s->section_name . ' (Grade ' . $s->grade_level . ')')->values(),
             'sectionAvgGrades' => $sectionBreakdown->map(fn ($s) => $s->avg_grade ?? 0)->values(),
             'trendLabels' => $gradingPeriods->map(fn ($p) => 'Term ' . $p->sequence)->values(),
             'trendData' => $trendData,
             'totalPassing' => $sectionBreakdown->sum('passing_count'),
             'totalFailing' => $sectionBreakdown->sum('failing_count'),
-            'attendanceLabels' => $sectionBreakdown->map(fn ($s) => $s->section_name)->values(),
+            'attendanceLabels' => $sectionBreakdown->map(fn ($s) => $s->section_name . ' (Grade ' . $s->grade_level . ')')->values(),
             'attendanceRates' => $sectionBreakdown->map(fn ($s) => $s->attendance_rate)->values(),
         ];
 

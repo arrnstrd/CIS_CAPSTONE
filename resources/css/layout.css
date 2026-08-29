@@ -96,6 +96,24 @@
 
 .admin-page-slot {
     min-width: 0;
+    margin-top: 2rem;
+}
+
+@media (max-width: 767px) {
+    .admin-page-slot {
+        margin-top: 1.5rem;
+    }
+}
+
+.date-display-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+    .date-display-container {
+        justify-content: center;
+    }
 }
 
 /* ===== HEAD BANNER — light steel-blue style ===== */
@@ -128,4 +146,56 @@ body{
     .admin-head-banner__meta {
         justify-content: flex-start;
     }
+}
+
+.teacher-page-bg {
+    position: relative;
+    background-color: #fff;
+}
+
+@media (max-width: 767px) {
+    .teacher-page-bg {
+        background-color: #fff;
+    }
+}
+
+.page-header-box {
+    background: #f5f8fa;
+    border: 1px solid #d6dfe6;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+}
+
+.page-header-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f1013;
+    letter-spacing: -0.01em;
+}
+
+.page-header-title > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.page-header-title i {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #5a7690;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.page-header-subtitle {
+    font-size: 16px;
+    color: #52626f;
+    margin-top: 10px;
+    line-height: 1.5;
 }

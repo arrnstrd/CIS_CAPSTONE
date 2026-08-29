@@ -504,6 +504,47 @@
     margin-right: 8px;
 }
 
+/* Grade Sheet - Column Group Styling */
+.gs-hps-row {
+    background-color: #f8f9fa !important;
+    font-weight: 600;
+    color: #495057;
+}
+
+.gs-hps-row th {
+    background-color: #f8f9fa !important;
+    border-bottom: 2px solid #dee2e6 !important;
+}
+
+/* Written Works Group */
+.gs-group-written {
+    background-color: rgba(36, 56, 185, 0.05) !important;
+}
+
+.gs-group-written th {
+    background-color: rgba(36, 56, 185, 0.1) !important;
+    border-right: 2px solid #2438b9 !important;
+}
+
+/* Performance Tasks Group */
+.gs-group-performance {
+    background-color: rgba(36, 56, 185, 0.08) !important;
+}
+
+.gs-group-performance th {
+    background-color: rgba(36, 56, 185, 0.15) !important;
+    border-right: 2px solid #2438b9 !important;
+}
+
+/* Examinations Group */
+.gs-group-quarterly {
+    background-color: rgba(36, 56, 185, 0.12) !important;
+}
+
+.gs-group-quarterly th {
+    background-color: rgba(36, 56, 185, 0.2) !important;
+}
+
 /* Grading Dashboard — nested sidebar + progress bar */
 .gd-layout {
     display: flex;
@@ -641,4 +682,514 @@
 .gs-report-type-active {
     border-color: #2438b9;
     background: #e8eaf9;
+}
+
+/* Grade level pill badge */
+.gs-grade-pill {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background-color: #e8eaf9;
+    color: #2438b9;
+    border: 1px solid #c5c5f5;
+}
+
+/* Muted grade-level subtext, shown below section names in tables */
+.gs-grade-subtext {
+    font-size: 0.75rem;
+    color: #8a8a8a;
+    line-height: 1.4;
+}
+
+/* ===== CLASS CARD ACCENTS (My Classes) ===== */
+.gs-card-accent {
+    border-left-width: 4px;
+    border-left-style: solid;
+}
+.gs-card-accent-1 { border-left-color: #2438b9; }
+.gs-card-accent-2 { border-left-color: #0f6e56; }
+.gs-card-accent-3 { border-left-color: #854F0B; }
+.gs-card-accent-4 { border-left-color: #791F1F; }
+
+/* ===== SF-9 REPORT CARD STYLES ===== */
+.sf9-report-card {
+    font-family: 'Times New Roman', serif;
+    max-width: 210mm;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border: 1px solid #000;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Two-column layout */
+.sf9-two-column {
+    display: flex;
+    gap: 20px;
+}
+
+.sf9-left-column {
+    flex: 2;
+}
+
+.sf9-right-column {
+    flex: 1;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.sf9-right-placeholder {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* DepEd Header */
+.sf9-header {
+    margin-bottom: 25px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 15px;
+}
+
+.sf9-deped-branding {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.sf9-branding-text {
+    margin-bottom: 15px;
+}
+
+.sf9-branding-line {
+    font-size: 11px;
+    margin-bottom: 3px;
+    line-height: 1.3;
+}
+
+.sf9-branding-line.fw-bold {
+    font-weight: bold;
+}
+
+.sf9-logos {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sf9-logo-placeholder {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+}
+
+.sf9-logo-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.sf9-title-section {
+    text-align: center;
+}
+
+.sf9-main-title {
+    font-size: 16px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.sf9-school-year {
+    font-size: 12px;
+    font-weight: normal;
+}
+
+/* Student Information */
+.sf9-student-info {
+    margin-bottom: 20px;
+}
+
+.sf9-student-info-content {
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.sf9-info-row {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.sf9-info-item {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sf9-info-label {
+    font-weight: bold;
+}
+
+.sf9-info-value {
+    text-align: left;
+}
+
+.sf9-track-item {
+    flex: 1;
+}
+
+/* Parents Note */
+.sf9-parents-note {
+    margin-bottom: 20px;
+    background: #f0f8ff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.sf9-note-text {
+    font-size: 11px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.sf9-note-text:last-child {
+    margin-bottom: 0;
+}
+
+/* Learning Areas Table */
+.sf9-learning-areas {
+    margin-bottom: 20px;
+}
+
+.sf9-table-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.sf9-table-title {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.sf9-table-container {
+    overflow-x: auto;
+}
+
+.sf9-learning-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    border: 1px solid #000;
+}
+
+.sf9-learning-table th {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+    font-weight: bold;
+    background: #f5f5f5;
+}
+
+.sf9-learning-table td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.sf9-subject-header {
+    width: 20%;
+}
+
+.sf9-term-header {
+    width: 30%;
+}
+
+.sf9-term-col {
+    width: 10%;
+}
+
+.sf9-final-header {
+    width: 15%;
+}
+
+.sf9-remarks-header {
+    width: 15%;
+}
+
+.sf9-subject-cell {
+    text-align: left;
+    font-weight: normal;
+}
+
+.sf9-subject-cell.fw-bold {
+    font-weight: bold;
+}
+
+.sf9-subject-cell.italic {
+    font-style: italic;
+}
+
+.sf9-grade-cell {
+    text-align: center;
+}
+
+.sf9-final-cell {
+    font-weight: bold;
+    text-align: center;
+}
+
+.sf9-remarks-cell {
+    text-align: center;
+}
+
+.sf9-sub-row {
+    font-style: italic;
+    background: #f9f9f9;
+}
+
+.sf9-average-row {
+    background: #e8f4fd;
+    font-weight: bold;
+}
+
+.sf9-average-cell {
+    text-align: left;
+    font-weight: bold;
+}
+
+.sf9-average-final-cell {
+    font-weight: bold;
+    text-align: center;
+}
+
+.sf9-average-remarks-cell {
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Performance Descriptors Table */
+.sf9-performance-descriptors {
+    margin-bottom: 20px;
+}
+
+.sf9-descriptors-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    border: 1px solid #000;
+}
+
+.sf9-descriptors-table th {
+    border: 1px solid #000;
+    padding: 4px;
+    text-align: center;
+    font-weight: bold;
+    background: #f5f5f5;
+}
+
+.sf9-descriptors-table td {
+    border: 1px solid #000;
+    padding: 4px;
+    text-align: center;
+}
+
+.sf9-descriptor-scale {
+    width: 25%;
+}
+
+.sf9-descriptor-description {
+    width: 35%;
+}
+
+.sf9-descriptor-remarks {
+    width: 40%;
+}
+
+.sf9-student-info {
+    margin-bottom: 20px;
+}
+
+.sf9-student-header h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.sf9-student-info .info-group {
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.sf9-student-info .label {
+    font-weight: bold;
+    min-width: 80px;
+}
+
+.sf9-student-info .value {
+    text-align: left;
+}
+
+.sf9-learning-areas {
+    margin-bottom: 20px;
+}
+
+.sf9-table-header h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.sf9-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.sf9-table th {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: center;
+    font-weight: bold;
+    background: #f5f5f5;
+}
+
+.sf9-table td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.sf9-subject-col {
+    width: 30%;
+    font-weight: bold;
+}
+
+.sf9-grade-col {
+    width: 50%;
+}
+
+.sf9-final-col {
+    width: 20%;
+    font-weight: bold;
+}
+
+.sf9-subject-cell {
+    font-weight: bold;
+    text-align: left;
+}
+
+.sf9-grade-cell {
+    text-align: center;
+}
+
+.sf9-final-cell {
+    font-weight: bold;
+    text-align: center;
+}
+
+.sf9-summary {
+    margin-bottom: 20px;
+}
+
+.sf9-summary-box, .sf9-remarks-box {
+    border: 1px solid #000;
+    padding: 15px;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.sf9-summary-box h4, .sf9-remarks-box h4 {
+    font-size: 12px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.sf9-summary .summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.sf9-summary .label {
+    font-weight: bold;
+}
+
+.sf9-summary .value {
+    font-weight: bold;
+}
+
+.sf9-remarks-content {
+    font-size: 11px;
+}
+
+.sf9-remarks-line {
+    border-bottom: 1px solid #000;
+    margin: 5px 0;
+    min-height: 20px;
+}
+
+.sf9-certification {
+    margin-bottom: 20px;
+}
+
+.sf9-cert-box {
+    border: 1px solid #000;
+    padding: 15px;
+    font-size: 11px;
+}
+
+.sf9-cert-box h5 {
+    font-size: 11px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.sf9-cert-box .cert-signature {
+    font-size: 10px;
+}
+
+.sf9-cert-box .cert-signature p {
+    margin-bottom: 5px;
+}
+
+.sf9-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.sf9-actions .btn {
+    font-size: 12px;
+    padding: 8px 16px;
+}
+
+/* Print styles */
+@media print {
+    .sf9-report-card {
+        box-shadow: none;
+        border: 1px solid #000;
+        margin: 0;
+        padding: 15px;
+    }
+    
+    .sf9-actions {
+        display: none;
+    }
 }
