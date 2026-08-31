@@ -1,5 +1,16 @@
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+@php
+    $currentUser = auth()->user();
+    $firstName = $currentUser?->first_name ?? '';
+    $lastName = $currentUser?->last_name ?? '';
+    $fullName = trim($firstName . ' ' . $lastName) ?: ($currentUser?->name ?? 'Teacher');
+    $firstInitial = $firstName !== '' ? mb_substr($firstName, 0, 1) : '';
+    $lastInitial = $lastName !== '' ? mb_substr($lastName, 0, 1) : '';
+    $initials = mb_strtoupper($firstInitial . $lastInitial) ?: 'T';
+    $roleName = $currentUser?->role_label ?? 'Teacher';
+@endphp
+
 <nav id="sidebar" class="sidebar-wrapper">
 
     <div class="sidebar-content">
@@ -98,13 +109,21 @@
 
     </div>
 
-    <!-- Logout -->
-    <div class="sidebar-footer p-3">
-        <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
-            class="btn-logout-action w-100 d-flex align-items-center justify-content-center gap-2">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Log Out</span>
-        </a>
+    <!-- User Profile Footer -->
+    <div class="sidebar-footer">
+        <div class="sidebar-user-block">
+            <div class="sidebar-user-avatar">
+                {{ $initials }}
+            </div>
+            <div class="sidebar-user-info">
+                <span class="sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
+                <span class="sidebar-user-role">{{ $roleName }}</span>
+            </div>
+            <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
+                class="sidebar-logout-btn" title="Log Out" aria-label="Log Out">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
     </div>
 
 </nav>

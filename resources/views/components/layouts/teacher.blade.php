@@ -53,7 +53,7 @@
 </header>
 
         <main class="page-content teacher-page-bg">
-            <div class="container-fluid p-6">
+            <div class="container-fluid p-6 d-flex flex-column flex-grow-1">
                 <section class="admin-head-banner p-4 mx-3">
                     <div class="admin-head-banner__copy">
                         <h1 class="admin-head-banner__title mt-3">{{ $pageName ?? 'Header' }}</h1>
@@ -62,14 +62,16 @@
                         @endif
                     </div>
                     <div class="admin-head-banner__meta">
-                        <div class="admin-head-banner__date">
-                            <i class="fa-regular fa-calendar-check"></i>
-                            <span>
-                                <small>Today</small>
-                                <strong id="liveDate"></strong>
-                            </span>
+                        <div class="d-flex flex-column align-items-end gap-2">
+                            <div class="admin-head-banner__date">
+                                <i class="fa-regular fa-calendar-check"></i>
+                                <span>
+                                    <small>Today</small>
+                                    <strong id="liveDate"></strong>
+                                </span>
+                            </div>
+                            <x-help-button />
                         </div>
-                        <x-help-button />
 
                         @isset($headerActions)
                             <div class="admin-head-banner__actions">

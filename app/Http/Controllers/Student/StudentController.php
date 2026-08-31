@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdminActivityLog;
 use App\Models\Enrollment;
 use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Student;
+use App\Models\TeachingAssignment;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -51,17 +53,51 @@ class StudentController extends Controller
         }
 
         $activeSchoolYear = SchoolYear::query()->where('is_active', true)->first();
+        $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get(['id', 'school_year']);
+
+        $sections = Section::query()
+            ->where('grade_level', $grade)
+            ->with('advisor.user')
+            ->withCount(['enrollments as student_count' => function ($q) use ($activeSchoolYear) {
+                if ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                }
+            }])
+            ->orderBy('name')
+            ->get();
+
+        $allSections = Section::query()
+            ->where('status', 'active')
+            ->orderBy('grade_level')
+            ->orderBy('name')
+            ->get(['id', 'name', 'grade_level']);
+
+        return view('admin-modules.management.students.section-selection', compact(
+            'grade',
+            'sections',
+            'allSections',
+            'schoolYears',
+            'activeSchoolYear'
+        ));
+    }
+
+    public function bySection(Request $request, string $grade, Section $section)
+    {
+        $grade = (int) $grade;
+
+        if ($grade < 1 || $grade > 12 || (int) $section->grade_level !== $grade) {
+            abort(404);
+        }
+
+        $activeSchoolYear = SchoolYear::query()->where('is_active', true)->first();
         $schoolYearId = $request->input('school_year_id');
-        $sectionId = $request->input('section');
         $status = $request->input('status');
         $query = $request->input('query');
         $sort = $request->input('sort', 'last_name_asc');
 
         $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get(['id', 'school_year']);
-        $sections = Section::query()
-            ->where('grade_level', $grade)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $section->load(['advisor.user']);
+
         $allSections = Section::query()
             ->where('status', 'active')
             ->orderBy('grade_level')
@@ -69,17 +105,14 @@ class StudentController extends Controller
             ->get(['id', 'name', 'grade_level']);
 
         $students = Student::with(['enrollments.sectionModel', 'guardian'])
-            ->whereHas('enrollments', function ($q) use ($grade, $schoolYearId, $activeSchoolYear, $sectionId, $status) {
-                $q->where('grade_level', (string) $grade);
+            ->whereHas('enrollments', function ($q) use ($grade, $schoolYearId, $activeSchoolYear, $section, $status) {
+                $q->where('grade_level', (string) $grade)
+                    ->where('section_id', $section->id);
 
                 if ($schoolYearId && $schoolYearId !== 'all') {
                     $q->where('school_year_id', $schoolYearId);
                 } elseif ($activeSchoolYear) {
                     $q->where('school_year_id', $activeSchoolYear->id);
-                }
-
-                if ($sectionId && $sectionId !== 'all') {
-                    $q->where('section_id', $sectionId);
                 }
 
                 if ($status && $status !== 'all') {
@@ -124,12 +157,47 @@ class StudentController extends Controller
             $student->setAttribute('school_year_id', $enrollment?->school_year_id);
         });
 
-        return view('admin-modules.management.students.show', compact('students', 'grade', 'sections', 'allSections', 'schoolYears', 'activeSchoolYear', 'sort'));
+        return view('admin-modules.management.students.show', compact(
+            'students',
+            'grade',
+            'section',
+            'allSections',
+            'schoolYears',
+            'activeSchoolYear',
+            'sort'
+        ));
     }
 
     public function store(Request $request)
     {
         $validated = $this->validatedPayload($request);
+
+        if ($request->user()?->isTeacher()) {
+            $teacher = $request->user()->teacher;
+            abort_unless($teacher, 403, 'Teacher profile not found.');
+
+            $teachingSectionIds = TeachingAssignment::query()
+                ->where('teacher_id', $teacher->id)
+                ->where('status', 'active')
+                ->pluck('section_id');
+
+            $advisedSectionIds = Section::query()
+                ->where('advisor_id', $teacher->id)
+                ->where('status', 'active')
+                ->pluck('id');
+
+            $teacherSectionIds = $teachingSectionIds
+                ->concat($advisedSectionIds)
+                ->unique()
+                ->values()
+                ->all();
+
+            abort_unless(
+                in_array((int) $validated['section_id'], $teacherSectionIds, true),
+                403,
+                'You can only add students to sections you handle.'
+            );
+        }
 
         try {
             $student = $this->studentService->createStudent(
@@ -160,6 +228,24 @@ class StudentController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
+        // Notify School Admin via AdminActivityLog when a Teacher creates a student.
+        if ($request->user()?->isTeacher()) {
+            $section = Section::find($validated['section_id']);
+            $sectionLabel = $section
+                ? 'Grade ' . $section->grade_level . ' - ' . $section->name
+                : 'Section ID ' . $validated['section_id'];
+
+            AdminActivityLog::record(
+                actor: $request->user(),
+                action: 'Teacher Added Student',
+                targetIdentifier: trim($validated['first_name'] . ' ' . $validated['last_name']),
+                result: 'success',
+                details: 'Student added to ' . $sectionLabel,
+                targetType: 'Student',
+                targetId: $student->id,
+            );
+        }
+
         return response()->json([
             'message' => 'Student, guardian, and enrollment created successfully',
             'student' => $student->load(['guardian', 'enrollments', 'qrCode']),
@@ -168,6 +254,8 @@ class StudentController extends Controller
 
     public function update(Request $request, string $id)
     {
+        abort_if($request->user()?->isTeacher(), 403, 'Teachers are not authorized to edit student records.');
+
         $student = Student::findOrFail($id);
         $validated = $this->validatedPayload($request, $id);
 
@@ -239,8 +327,10 @@ class StudentController extends Controller
         ]);
     }
 
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
+        abort_if($request->user()?->isTeacher(), 403, 'Teachers are not authorized to delete student records.');
+
         $student = Student::find($id);
 
         if (!$student) {

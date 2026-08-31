@@ -11,7 +11,7 @@
 </div>
 
 <div class="container-fluid">
-    <div class="table-panel shadow-sm">
+    <div class="table-panel border bg-white shadow-sm">
         <div class="p-3 border-bottom">
             <div class="row g-3 align-items-center">
                 <div class="col-lg-6">
@@ -102,7 +102,7 @@
                                                 data-ajax-delete="section" data-ajax-scope="#section-table-pane">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="dropdown-item text-danger">Archive</button>
+                                                <button type="submit" class="dropdown-item text-warning">Archive</button>
                                             </form>
                                         </li>
                                     @else
@@ -115,6 +115,14 @@
                                             </form>
                                         </li>
                                     @endif
+                                    <li>
+                                        <button type="button" class="dropdown-item text-danger js-hard-delete-section"
+                                            data-bs-toggle="modal" data-bs-target="#hardDeleteSectionModal"
+                                            data-id="{{ $section->id }}" data-name="{{ $section->name }}"
+                                            data-ajax-scope="#section-table-pane">
+                                            Hard Delete
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>
                         </td>
@@ -279,6 +287,34 @@
         <div class="modal-footer px-0 pb-0">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-dark" data-loading-text="Saving...">Save Changes</button>
+        </div>
+    </form>
+</x-modal>
+
+<x-modal id="hardDeleteSectionModal" modalTitle="Permanently Delete Section" size="modal-md">
+    <form id="hardDeleteSectionForm" method="POST" data-delete-url="{{ route('sections.force-delete', ':id') }}"
+        data-ajax-scope="#section-table-pane">
+        @csrf
+        @method('DELETE')
+        <div data-ajax-errors></div>
+
+        <div class="alert alert-danger d-flex align-items-start gap-2 mb-3">
+            <i class="fa-solid fa-triangle-exclamation fs-5 flex-shrink-0 mt-1"></i>
+            <div>
+                <strong>Warning: Destructive Action!</strong>
+                <p class="mb-0 small">You are about to permanently delete the section <strong id="hard_delete_section_name"></strong>. This action is <strong>destructive and cannot be undone</strong>.</p>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Confirm Password</label>
+            <input type="password" name="password" id="hard_delete_password" class="form-control" placeholder="Enter your password to authenticate" required autocomplete="current-password">
+            <div class="form-text">Your password is required to confirm this hard delete.</div>
+        </div>
+
+        <div class="modal-footer px-0 pb-0">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger" data-loading-text="Deleting...">Permanently Delete</button>
         </div>
     </form>
 </x-modal>

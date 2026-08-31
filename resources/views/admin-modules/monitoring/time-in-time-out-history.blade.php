@@ -27,7 +27,7 @@
             'invalid_checkout' => 'Checkout issue',
         ];
 
-        $filterOptions = [
+        $filters = [
             'today' => 'Today',
             'yesterday' => 'Yesterday',
             'last_7_days' => 'Last 7 Days',
@@ -47,6 +47,22 @@
     @if (session('error'))
         <div class="alert alert-danger mx-3 mb-3" role="alert">{{ session('error') }}</div>
     @endif
+
+    {{-- Navigation Tabs --}}
+    <div class="d-flex align-items-center justify-content-between mx-3 mb-3 pb-2 border-bottom">
+        <ul class="nav nav-pills gap-1 p-1 bg-light rounded-3 border">
+            <li class="nav-item">
+                <a class="nav-link active px-3 py-1.5 fw-semibold" aria-current="page" href="{{ route('time-in-time-out-history.index', request()->query()) }}">
+                    <i class="fas fa-list-ul me-1.5"></i> Scan History Logs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-muted px-3 py-1.5 fw-semibold" href="{{ route('time-in-time-out-history.analytics', request()->query()) }}">
+                    <i class="fas fa-chart-pie me-1.5"></i> Attendance Analytics
+                </a>
+            </li>
+        </ul>
+    </div>
 
     {{-- Overview Cards --}}
     <div class="row g-3 mb-4 px-3">
@@ -123,16 +139,6 @@
 
                 <div class="row g-2 align-items-center">
 
-                    @php
-                        $filters = [
-                            'today' => 'Today',
-                            'week' => 'This Week',
-                            'month' => 'This Month',
-                            'custom' => 'Custom'
-                        ];
-                        $currentFilter = $dateFilter ?? request('date_filter', 'today');
-                    @endphp
-
                     <div class="col-12 col-md-auto">
                         <div class="btn-group btn-group-sm" role="group" aria-label="Date Filter">
                             @foreach($filters as $value => $label)
@@ -165,9 +171,9 @@
                             class="btn btn-outline-secondary btn-sm">
                             Reset
                         </a>
-                        <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#downloadExcelModal">
-                            <i class="fas fa-download"></i> Download Excel
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#downloadReportModal">
+                            <i class="fas fa-file-arrow-down me-1"></i> Download Report
                         </button>
                     </div>
                 </div>
@@ -175,7 +181,6 @@
             </form>
         </div>
     </div>
-
 
     <x-ui.table>
         <thead class="text-uppercase small">
@@ -395,19 +400,21 @@
         @endif
     @endforeach
 
-    {{-- Download Excel Modal --}}
-    <div class="modal fade" id="downloadExcelModal" tabindex="-1" aria-labelledby="downloadExcelModalLabel"
+    {{-- Download Report Modal --}}
+    <div class="modal fade" id="downloadReportModal" tabindex="-1" aria-labelledby="downloadReportModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <form method="GET" action="{{ route('time-in-time-out-history.download') }}">
                     {{-- Carry over the active filters so the export matches what is on screen --}}
                     @foreach (request()->except(['date_filter', 'custom_start_date', 'custom_end_date', 'page', 'start_date', 'end_date']) as $field => $value)
                         <input type="hidden" name="{{ $field }}" value="{{ $value }}">
                     @endforeach
 
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="downloadExcelModalLabel">Download Excel</h5>
+                    <div class="modal-header bg-light border-bottom py-3 px-4">
+                        <h6 class="modal-title fw-bold" id="downloadReportModalLabel">
+                            <i class="fas fa-calendar-range text-primary me-2"></i> Select Report Date Range
+                        </h6>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
 
@@ -432,7 +439,12 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-dark">Download</button>
+                        <button type="submit" formaction="{{ route('time-in-time-out-history.download') }}" class="btn btn-dark">
+                            <i class="fas fa-file-excel text-success me-1"></i> Download Excel
+                        </button>
+                        <button type="submit" formaction="{{ route('time-in-time-out-history.download-pdf') }}" class="btn btn-primary">
+                            <i class="fas fa-file-pdf text-white me-1"></i> Download PDF
+                        </button>
                     </div>
                 </form>
             </div>

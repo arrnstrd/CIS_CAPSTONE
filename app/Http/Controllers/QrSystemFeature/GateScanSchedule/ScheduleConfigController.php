@@ -4,6 +4,7 @@ namespace App\Http\Controllers\QrSystemFeature\GateScanSchedule;
 
 use App\Http\Controllers\Controller;
 use App\Models\ScheduleConfig;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 class ScheduleConfigController extends Controller
@@ -12,8 +13,7 @@ class ScheduleConfigController extends Controller
     {
         $scheduleConfigs = ScheduleConfig::orderBy('level')
             ->orderBy('session_type')
-            ->paginate(15)
-            ->withQueryString();
+            ->get();
 
         return view('admin-modules.utilities.schedule-configuration', compact('scheduleConfigs'));
     }

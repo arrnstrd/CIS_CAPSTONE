@@ -77,16 +77,30 @@ class SectionController extends Controller
                 }
             ],
             'session_type' => ['required', 'in:morning,afternoon,whole_day'],
-            'advisor_id' => ['nullable', 'exists:teachers,id'],
+            'advisor_id' => [
+                'nullable',
+                'exists:teachers,id',
+                Rule::unique('sections', 'advisor_id')
+                    ->ignore($section?->id)
+                    ->whereNotNull('advisor_id'),
+            ],
             'capacity' => ['required', 'integer', 'min:1', 'max:100'],
             'status' => ['required', 'in:active,inactive'],
+        ];
+    }
+
+    private function validationMessages(): array
+    {
+        return [
+            'advisor_id.unique' => 'The selected teacher is already assigned as an adviser to another section.',
         ];
     }
 
     public function store(Request $request)
     {
         $validatedData = $request->validate(
-            $this->validationRules()
+            $this->validationRules(),
+            $this->validationMessages()
         );
 
         try {
@@ -108,7 +122,8 @@ class SectionController extends Controller
         $section = Section::findOrFail($id);
 
         $validatedData = $request->validate(
-            $this->validationRules($section)
+            $this->validationRules($section),
+            $this->validationMessages()
         );
 
         try {
@@ -173,6 +188,36 @@ class SectionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to restore the section',
+            ], 500);
+        }
+    }
+
+    public function forceDelete(Request $request, string $id)
+    {
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        if (!\Illuminate\Support\Facades\Hash::check($request->password, $request->user()->password)) {
+            return response()->json([
+                'message' => 'The provided password does not match our records.',
+                'errors' => [
+                    'password' => ['The provided password does not match our records.']
+                ]
+            ], 422);
+        }
+
+        $section = Section::findOrFail($id);
+
+        try {
+            $section->delete();
+
+            return response()->json([
+                'message' => 'Section permanently deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to permanently delete section. It may have associated records (e.g. enrollments or teaching assignments).',
             ], 500);
         }
     }

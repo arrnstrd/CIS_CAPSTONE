@@ -144,7 +144,7 @@
                     <label class="form-label">Grade Level</label>
                     <select id="add_grade_level" name="grade_level" class="form-select" required>
                         @for ($g = 1; $g <= 12; $g++)
-                            <option value="{{ $g }}" {{ $g == $grade ? 'selected' : '' }}>
+                            <option value="{{ $g }}" {{ (isset($grade) && $g == $grade) ? 'selected' : '' }}>
                                 Grade {{ $g }}
                             </option>
                         @endfor

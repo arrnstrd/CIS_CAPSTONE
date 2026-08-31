@@ -5,6 +5,13 @@
     $isSuperAdmin = $currentUser && $currentUser->isSuperAdmin();
     $isSchoolAdmin = $currentUser && $currentUser->isAdmin() && !$isSuperAdmin;
     $isScannerOperator = $currentUser && $currentUser->isScannerOperator();
+    $firstName = $currentUser?->first_name ?? '';
+    $lastName = $currentUser?->last_name ?? '';
+    $fullName = trim($firstName . ' ' . $lastName) ?: ($currentUser?->name ?? 'User');
+    $firstInitial = $firstName !== '' ? mb_substr($firstName, 0, 1) : '';
+    $lastInitial = $lastName !== '' ? mb_substr($lastName, 0, 1) : '';
+    $initials = mb_strtoupper($firstInitial . $lastInitial) ?: 'U';
+    $roleName = $currentUser?->role_label ?? ($isSuperAdmin ? 'Super Admin' : ($isSchoolAdmin ? 'School Admin' : ($isScannerOperator ? 'Scanner Operator' : 'Admin')));
 @endphp
 
 <nav id="sidebar" class="sidebar-wrapper">
@@ -19,16 +26,6 @@
             <small class="text-uppercase text-white fw-semibold" style="font-size: 0.6rem; letter-spacing: 1px;">
                 CONCEPCION INTEGRATED SCHOOL
             </small>
-            @if($currentUser)
-                <div class="mt-2 pt-2 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
-                    <span class="text-white small fw-medium">{{ $currentUser->first_name }} {{ $currentUser->last_name }}</span>
-                    @if($isSuperAdmin)
-                        <span class="badge bg-warning text-dark fw-bold px-2 py-0.5" style="font-size: 0.65rem;">Super Admin</span>
-                    @else
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5" style="font-size: 0.65rem;">{{ $currentUser->role_label }}</span>
-                    @endif
-                </div>
-            @endif
         </div>
 
         <!-- Navigation Menu -->
@@ -107,7 +104,7 @@
                         <li>
                             <a href="/teachers">
                                 <i class="fas fa-chalkboard-teacher"></i>
-                                <span>Teacher Management</span>
+                                <span>Teachers</span>
                             </a>
                         </li>
                         <li>
@@ -134,12 +131,6 @@
                             </a>
                         </li>
 
-                        <li>
-                            <a href="{{ route('teaching-assignments.index') }}">
-                                <i class="fas fa-user-cog"></i>
-                                <span>Teaching Assignments</span>
-                            </a>
-                        </li>
 
                         <li>
                             <a href="/schedule-configuration">
@@ -172,13 +163,21 @@
 
     </div>
 
-    <!-- Logout -->
-    <div class="sidebar-footer p-3">
-        <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
-            class="btn-logout-action w-100 d-flex align-items-center justify-content-center gap-2">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Log Out</span>
-        </a>
+    <!-- User Profile Footer -->
+    <div class="sidebar-footer">
+        <div class="sidebar-user-block">
+            <div class="sidebar-user-avatar">
+                {{ $initials }}
+            </div>
+            <div class="sidebar-user-info">
+                <span class="sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
+                <span class="sidebar-user-role">{{ $roleName }}</span>
+            </div>
+            <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
+                class="sidebar-logout-btn" title="Log Out" aria-label="Log Out">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
     </div>
 
 </nav>

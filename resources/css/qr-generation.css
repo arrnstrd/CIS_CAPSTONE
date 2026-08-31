@@ -3,35 +3,10 @@
 /* Import QR Station Base Styles */
 @import url('qr-station.css');
 
-/* Responsive Layout for Dual-Column Design */
-@media (min-width: 992px) {
-    .qr-generation-container {
-        display: grid;
-        grid-template-columns: 1fr 1.2fr;
-        gap: 2rem;
-        align-items: start;
-    }
-    
-    .qr-scanner-column {
-        min-height: 600px;
-    }
-    
-    .qr-generation-column {
-        min-height: 600px;
-    }
-}
-
-@media (max-width: 991px) {
-    .qr-generation-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-    
-    .qr-scanner-column,
-    .qr-generation-column {
-        min-height: auto;
-    }
+/* Full-width Layout for QR Generation */
+.qr-generation-container {
+    width: 100%;
+    display: block;
 }
 
 /* Scanner Terminal Styling for Integration */

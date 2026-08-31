@@ -10,17 +10,7 @@
         $peakTotal = $peakBucket['total'] ?? 0;
         $chartBucketCount = max(count($scanBuckets ?? []), 1);
 
-        // Daily line-chart points (for the Line view). Points are padded inside
-        // the 0-100 viewBox so the stroke never clips at the frame edges.
-        $dailyLinePoints = collect($scanBuckets ?? [])->map(function ($b, $i) use ($chartBucketCount, $maxBucketTotal) {
-            $span = max($chartBucketCount - 1, 1);
-            $x = 4 + ($i / $span) * 92;
-            $ratio = $maxBucketTotal > 0 ? (($b['total'] ?? 0) / $maxBucketTotal) : 0;
-            $y = 6 + (1 - $ratio) * 88;
-            return ['x' => round($x, 2), 'y' => round($y, 2), 'label' => $b['label'] ?? '', 'total' => $b['total'] ?? 0];
-        })->values();
-
-        // Smooth (Catmull-Rom -> Bezier) path builder for the minimal line chart.
+        // Catmull-Rom -> Bezier smooth curve generator
         $toSmoothPath = function (array $pts): string {
             $n = count($pts);
             if ($n === 0) return '';
@@ -42,30 +32,30 @@
             return $d;
         };
 
-        $dailyLinePath = $toSmoothPath($dailyLinePoints->all());
-        $dailyLineArea = $dailyLinePath !== '' ? $dailyLinePath . ' L 96 94 L 4 94 Z' : '';
-
-        // Per-department-level line data (Line view shows 3 colored lines).
-        $dailyLevelLines = collect($departmentLevels)
+        // Per-department-level line data for daily attendance
+        $dailyLevelLines = collect($departmentLevels ?? [])
             ->filter(fn($meta, $level) => $level !== 'unknown')
             ->map(function ($meta, $level) use ($scanBuckets, $chartBucketCount, $maxBucketTotal, $toSmoothPath) {
                 $span = max($chartBucketCount - 1, 1);
                 $points = [];
+                $totalForLevel = 0;
                 foreach (($scanBuckets ?? []) as $i => $b) {
-                    $x = 4 + ($i / $span) * 92;
-                    $ratio = $maxBucketTotal > 0 ? (($b['levels'][$level] ?? 0) / $maxBucketTotal) : 0;
-                    $y = 6 + (1 - $ratio) * 88;
+                    $x = 3 + ($i / $span) * 94;
+                    $count = $b['levels'][$level] ?? 0;
+                    $totalForLevel += $count;
+                    $ratio = $maxBucketTotal > 0 ? ($count / $maxBucketTotal) : 0;
+                    $y = 8 + (1 - $ratio) * 84;
                     $points[] = ['x' => round($x, 2), 'y' => round($y, 2)];
                 }
                 $path = $toSmoothPath($points);
-                $area = $path !== '' ? $path . ' L 96 94 L 4 94 Z' : '';
+                $area = $path !== '' ? $path . ' L 97 92 L 3 92 Z' : '';
                 return [
                     'level' => $level,
                     'label' => $meta['label'],
                     'color' => $meta['color'],
                     'path' => $path,
                     'area' => $area,
-                    'last' => $points ? $points[count($points) - 1] : null,
+                    'total' => $totalForLevel,
                 ];
             })
             ->values();
@@ -73,20 +63,8 @@
         $weeklyChartBuckets = collect($weeklyScanBuckets ?? [])->values();
         $weeklyChartBucketCount = max($weeklyChartBuckets->count(), 1);
 
-        // Weekly line-chart points (for the Line view). Points are padded inside
-        // the 0-100 viewBox so the stroke never clips at the frame edges.
-        $weeklyLinePoints = $weeklyChartBuckets->map(function ($b, $i) use ($weeklyChartBucketCount, $weeklyMaxBucketTotal) {
-            $span = max($weeklyChartBucketCount - 1, 1);
-            $x = 4 + ($i / $span) * 92;
-            $ratio = $weeklyMaxBucketTotal > 0 ? (($b['total'] ?? 0) / $weeklyMaxBucketTotal) : 0;
-            $y = 6 + (1 - $ratio) * 88;
-            return ['x' => round($x, 2), 'y' => round($y, 2), 'label' => $b['label'] ?? '', 'total' => $b['total'] ?? 0];
-        })->values();
-        $weeklyLinePath = $toSmoothPath($weeklyLinePoints->all());
-        $weeklyLineArea = $weeklyLinePath !== '' ? $weeklyLinePath . ' L 96 94 L 4 94 Z' : '';
-
-        // Per-department-level line data for the weekly chart (grouped grades).
-        $weeklyLevelLines = collect($departmentLevels)
+        // Weekly department lines
+        $weeklyLevelLines = collect($departmentLevels ?? [])
             ->filter(fn($meta, $level) => $level !== 'unknown')
             ->map(function ($meta, $level) use ($weeklyChartBuckets, $weeklyChartBucketCount, $weeklyMaxBucketTotal, $toSmoothPath) {
                 $gradeKeys = array_map('strval', match ($level) {
@@ -97,26 +75,28 @@
                 });
                 $span = max($weeklyChartBucketCount - 1, 1);
                 $points = [];
+                $totalForLevel = 0;
                 foreach ($weeklyChartBuckets as $i => $week) {
                     $grades = $week['grades'] ?? [];
                     $count = 0;
                     foreach ($gradeKeys as $gk) {
                         $count += $grades[$gk] ?? 0;
                     }
+                    $totalForLevel += $count;
                     $x = 4 + ($i / $span) * 92;
                     $ratio = $weeklyMaxBucketTotal > 0 ? ($count / $weeklyMaxBucketTotal) : 0;
-                    $y = 6 + (1 - $ratio) * 88;
+                    $y = 8 + (1 - $ratio) * 84;
                     $points[] = ['x' => round($x, 2), 'y' => round($y, 2)];
                 }
                 $path = $toSmoothPath($points);
-                $area = $path !== '' ? $path . ' L 96 94 L 4 94 Z' : '';
+                $area = $path !== '' ? $path . ' L 96 92 L 4 92 Z' : '';
                 return [
                     'level' => $level,
                     'label' => $meta['label'],
                     'color' => $meta['color'],
                     'path' => $path,
                     'area' => $area,
-                    'last' => $points ? $points[count($points) - 1] : null,
+                    'total' => $totalForLevel,
                 ];
             })
             ->values();
@@ -126,8 +106,21 @@
         $weeklyChartPeakTotal = $weeklyChartPeakBucket['total'] ?? 0;
         $weeklyChartAverage = $weeklyAverage ?? round($weeklyChartBuckets->avg('total') ?? 0, 1);
         $weeklyChartTotal = $weeklyTotalScans ?? $weeklyChartBuckets->sum('total');
-        $departmentLevels = $departmentLevels ?? [];
-        $levelTotals = $levelTotals ?? [];
+
+        // Select 5 evenly spaced milestone labels for daily timeline ticks to prevent overlap
+        $dailyTickMilestones = collect($scanBuckets ?? []);
+        $tickIndices = [];
+        if ($dailyTickMilestones->count() > 1) {
+            $totalB = $dailyTickMilestones->count();
+            $tickIndices = [
+                0,
+                (int) round($totalB * 0.25),
+                (int) round($totalB * 0.5),
+                (int) round($totalB * 0.75),
+                $totalB - 1,
+            ];
+            $tickIndices = array_unique($tickIndices);
+        }
     @endphp
 
     <style>
@@ -136,76 +129,7 @@
             gap: 1rem;
         }
 
-        .dashboard-hero {
-            background: linear-gradient(135deg, #172554 0%, #233f9e 52%, #0f766e 100%);
-            color: #fff;
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
-        }
-
-        .dashboard-hero__wrap {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .dashboard-hero__eyebrow {
-            text-transform: uppercase;
-            letter-spacing: 0.18em;
-            font-size: 0.7rem;
-            opacity: 0.8;
-            margin-bottom: 0.35rem;
-        }
-
-        .dashboard-hero__title {
-            font-size: clamp(1.7rem, 3vw, 2.6rem);
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 0.45rem;
-        }
-
-        .dashboard-hero__sub {
-            max-width: 44rem;
-            color: rgba(255, 255, 255, 0.82);
-            margin-bottom: 0;
-        }
-
-        .dashboard-hero__actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.65rem;
-        }
-
-        .dashboard-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.55rem;
-            border-radius: 999px;
-            padding: 0.75rem 1rem;
-            font-weight: 700;
-            text-decoration: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-        }
-
-        .dashboard-btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .dashboard-btn--light {
-            background: #fff;
-            color: #172554;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
-        }
-
-        .dashboard-btn--ghost {
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            color: #fff;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
+        /* ===== Metric Stat Cards ===== */
         .dashboard-cards {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -229,95 +153,91 @@
             text-decoration: none;
             color: inherit;
             background: #fff;
-            border: 1px solid #e5e9f2;
-            border-radius: 1.2rem;
-            padding: 0.85rem 0.9rem;
-            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            border: 1px solid #e9eef5;
+            border-radius: 1rem;
+            padding: 0.85rem 1rem;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         }
 
         .dashboard-card:hover {
             transform: translateY(-2px);
-            border-color: #cfd8e8;
-            box-shadow: 0 16px 38px rgba(15, 23, 42, 0.1);
+            border-color: #cbd5e1;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
             color: inherit;
         }
 
         .dashboard-card__top {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .dashboard-card__icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.95rem;
+            width: 2.65rem;
+            height: 2.65rem;
+            border-radius: 0.8rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             color: #fff;
+            font-size: 1.05rem;
             flex-shrink: 0;
         }
 
         .card-tone-primary .dashboard-card__icon {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
         }
 
         .card-tone-success .dashboard-card__icon {
-            background: linear-gradient(135deg, #16a34a, #0f766e);
+            background: linear-gradient(135deg, #10b981, #047857);
         }
 
         .card-tone-dark .dashboard-card__icon {
-            background: linear-gradient(135deg, #111827, #374151);
+            background: linear-gradient(135deg, #1e293b, #0f172a);
         }
 
         .card-tone-indigo .dashboard-card__icon {
-            background: linear-gradient(135deg, #4f46e5, #233f9e);
+            background: linear-gradient(135deg, #6366f1, #4338ca);
         }
 
         .dashboard-card__label {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #667085;
-            margin-bottom: 0.25rem;
-            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            margin-bottom: 0.2rem;
+            font-weight: 700;
         }
 
         .dashboard-card__value {
-            font-size: 1.65rem;
+            font-size: 1.55rem;
             font-weight: 800;
-            line-height: 1;
-            color: #111827;
+            line-height: 1.1;
+            color: #0f172a;
+            letter-spacing: -0.02em;
         }
 
         .dashboard-card__hint {
             margin-top: 0.35rem;
             font-size: 0.72rem;
-            color: #6b7280;
+            color: #64748b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .dashboard-analytics-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-            gap: 0.85rem;
-        }
-
-        @media (max-width: 991px) {
-            .dashboard-analytics-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
+        /* ===== Analytics & Layout Grid ===== */
+        .dashboard-analytics-grid,
         .dashboard-lower-grid {
             display: grid;
-            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-            gap: 0.85rem;
+            grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+            gap: 1rem;
         }
 
-        @media (max-width: 991px) {
+        @media (max-width: 1024px) {
+            .dashboard-analytics-grid,
             .dashboard-lower-grid {
                 grid-template-columns: 1fr;
             }
@@ -325,99 +245,240 @@
 
         .panel {
             background: #fff;
-            border: 1px solid #e5e9f2;
-            border-radius: 1.2rem;
-            padding: 0.9rem;
-            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+            border: 1px solid #e9eef5;
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
             min-width: 0;
-            overflow: visible;
-        }
-
-        .chart-card {
-            display: grid;
-            gap: 0.75rem;
-        }
-
-        .chart-card__summary {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem;
-        }
-
-        .chart-card__summary-item {
-            padding: 0.55rem 0.7rem;
-            border-radius: 0.9rem;
-            background: #f8fafc;
-            border: 1px solid #edf2f7;
-            min-width: 0;
-        }
-
-        .chart-card__summary-label {
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #64748b;
-            font-weight: 800;
-        }
-
-        .chart-card__summary-value {
-            margin-top: 0.15rem;
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: #111827;
         }
 
         .panel__header {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.75rem;
+            margin-bottom: 0.85rem;
+            flex-wrap: wrap;
         }
 
         .panel__title {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.96rem;
             font-weight: 800;
-            color: #111827;
+            color: #0f172a;
+            letter-spacing: -0.01em;
         }
 
         .panel__meta {
-            margin: 0.15rem 0 0;
-            font-size: 0.8rem;
-            color: #6b7280;
+            margin: 0.1rem 0 0;
+            font-size: 0.75rem;
+            color: #64748b;
         }
 
+        /* ===== Refined, Compact Metric Chips ===== */
+        .chart-stat-strip {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.45rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.55rem;
+            border-radius: 0.55rem;
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            font-size: 0.72rem;
+            color: #475569;
+            line-height: 1.2;
+        }
+
+        .stat-pill strong {
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-pill--success {
+            background: #ecfdf5;
+            border-color: #d1fae5;
+            color: #065f46;
+        }
+        .stat-pill--success strong {
+            color: #047857;
+        }
+
+        .stat-pill--warning {
+            background: #fffbeb;
+            border-color: #fef3c7;
+            color: #92400e;
+        }
+        .stat-pill--warning strong {
+            color: #b45309;
+        }
+
+        .stat-pill--info {
+            background: #eff6ff;
+            border-color: #dbeafe;
+            color: #1e40af;
+        }
+        .stat-pill--info strong {
+            color: #1d4ed8;
+        }
+
+        /* ===== Chart style toggle (Bars / Line / Table) ===== */
+        .chart-view-toggle {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem;
+            border-radius: 999px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chart-view-toggle__btn {
+            border: none;
+            background: transparent;
+            color: #64748b;
+            border-radius: 999px;
+            padding: 0.25rem 0.65rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .chart-view-toggle__btn:hover {
+            color: #0f172a;
+        }
+
+        .chart-view-toggle__btn.active {
+            background: #fff;
+            color: #4338ca;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.1);
+        }
+
+        /* ===== Sleek Chart Legend ===== */
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .chart-legend__item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.55rem;
+            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .chart-legend__swatch {
+            width: 0.55rem;
+            height: 0.55rem;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+
+        .chart-legend__value {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* ===== Line Chart (Crisp, Thin, Clean, No Circles) ===== */
+        .line-chart__frame {
+            position: relative;
+            height: 175px;
+            border-radius: 0.75rem;
+            border: 1px solid #edf2f7;
+            background: linear-gradient(180deg, #fbfcfe 0%, #ffffff 100%);
+            padding: 0.35rem;
+            overflow: hidden;
+        }
+
+        .line-chart__svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            overflow: visible;
+        }
+
+        .line-chart__grid-line {
+            stroke: #f1f5f9;
+            stroke-width: 1;
+            stroke-dasharray: 3 3;
+        }
+
+        .line-chart__guide-text {
+            fill: #94a3b8;
+            font-size: 3.2px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .sp-line__stroke {
+            fill: none;
+            stroke-width: 1.25px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            vector-effect: non-scaling-stroke;
+            transition: stroke-width 0.15s ease;
+        }
+
+        .sp-line__stroke:hover {
+            stroke-width: 2px;
+        }
+
+        .sp-line__area {
+            stroke: none;
+            opacity: 0.06;
+            pointer-events: none;
+        }
+
+        /* ===== Horizontal Ticks without Overlap ===== */
+        .chart-tick-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.25rem 0.2rem 0;
+            font-size: 0.65rem;
+            color: #64748b;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        /* ===== Clean Stacked Bar Chart ===== */
         .scan-chart {
             overflow: visible;
-            padding-bottom: 0.25rem;
+            padding-bottom: 0.1rem;
         }
 
         .scan-chart__inner {
             width: 100%;
             display: grid;
             align-items: end;
-            gap: 0.3rem;
-            padding-top: 0.5rem;
-            min-height: 180px;
+            gap: 0.25rem;
+            height: 175px;
+            padding-top: 0.25rem;
         }
 
         .scan-chart__col {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.2rem;
             min-width: 0;
             position: relative;
-            isolation: isolate;
-        }
-
-        .scan-chart__count {
-            font-size: 0.7rem;
-            font-weight: 800;
-            color: #0f172a;
-            min-height: 0.8rem;
-            line-height: 1;
         }
 
         .scan-chart__bar-wrap {
@@ -426,337 +487,163 @@
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            min-height: 160px;
-            z-index: 1;
-        }
-
-        .scan-chart__tooltip {
-            position: absolute;
-            left: 50%;
-            bottom: calc(100% + 12px);
-            transform: translate(-50%, 6px);
-            min-width: 180px;
-            max-width: 240px;
-            background: rgba(15, 23, 42, 0.96);
-            color: #fff;
-            border-radius: 0.85rem;
-            padding: 0.75rem;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.18s ease, transform 0.18s ease;
-            z-index: 20;
-            text-align: left;
-            white-space: normal;
-        }
-
-        .scan-chart__bar-wrap:hover .scan-chart__tooltip,
-        .scan-chart__bar-wrap:focus-within .scan-chart__tooltip {
-            opacity: 1;
-            transform: translate(-50%, 0);
-        }
-
-        .scan-chart__col:hover .scan-chart__tooltip,
-        .scan-chart__col:focus-within .scan-chart__tooltip {
-            opacity: 1;
-            transform: translate(-50%, 0);
-        }
-
-        .scan-chart__tooltip-title {
-            font-size: 0.78rem;
-            font-weight: 800;
-            margin-bottom: 0.45rem;
-        }
-
-        .scan-chart__tooltip-total {
-            font-size: 0.95rem;
-            font-weight: 800;
-            margin-bottom: 0.45rem;
-        }
-
-        .scan-chart__tooltip-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-            font-size: 0.72rem;
-            color: rgba(255, 255, 255, 0.82);
-            margin-top: 0.35rem;
-        }
-
-        .scan-chart__tooltip-row:first-of-type {
-            margin-top: 0;
-        }
-
-        .scan-chart__tooltip-key {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-        }
-
-        .scan-chart__tooltip-swatch {
-            width: 0.65rem;
-            height: 0.65rem;
-            border-radius: 999px;
-            flex-shrink: 0;
+            height: 155px;
         }
 
         .scan-chart__bar {
             width: 100%;
-            height: 140px;
-            border-radius: 999px;
+            max-width: 32px;
+            border-radius: 4px;
             background: #edf2f7;
             overflow: hidden;
             display: flex;
             flex-direction: column-reverse;
             justify-content: flex-start;
-            align-self: flex-end;
+            transition: opacity 0.15s ease;
+        }
+
+        .scan-chart__col:hover .scan-chart__bar {
+            opacity: 0.85;
         }
 
         .scan-chart__segment {
             width: 100%;
         }
 
-        .scan-chart__segment--elementary {
-            background: linear-gradient(180deg, #34d399, #16a34a);
+        .scan-chart__tooltip {
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 8px);
+            transform: translate(-50%, 4px);
+            min-width: 170px;
+            max-width: 220px;
+            background: rgba(15, 23, 42, 0.95);
+            color: #fff;
+            border-radius: 0.65rem;
+            padding: 0.6rem 0.75rem;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.2);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            z-index: 30;
+            text-align: left;
+            white-space: normal;
         }
 
-        .scan-chart__segment--highschool {
-            background: linear-gradient(180deg, #60a5fa, #2563eb);
+        .scan-chart__col:hover .scan-chart__tooltip,
+        .scan-chart__bar-wrap:hover .scan-chart__tooltip {
+            opacity: 1;
+            transform: translate(-50%, 0);
         }
 
-        .scan-chart__segment--senior_high_school {
-            background: linear-gradient(180deg, #fbbf24, #f59e0b);
-        }
-
-        .scan-chart__segment--unknown {
-            background: linear-gradient(180deg, #9ca3af, #6b7280);
-        }
-
-        .scan-chart__label {
-            font-size: 0.58rem;
-            color: #6b7280;
-            white-space: nowrap;
-            transform: rotate(-45deg);
-            transform-origin: center;
-            margin-top: 0.35rem;
-            max-width: 100%;
-            text-overflow: ellipsis;
-            overflow: hidden;
-        }
-
-        .chart-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .chart-legend__item {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.45rem 0.65rem;
-            border-radius: 999px;
-            background: #f8fafc;
-            border: 1px solid #edf2f7;
-            font-size: 0.72rem;
+        .scan-chart__tooltip-title {
+            font-size: 0.75rem;
             font-weight: 700;
-            color: #334155;
+            margin-bottom: 0.3rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 0.25rem;
         }
 
-        .chart-legend__swatch {
-            width: 0.7rem;
-            height: 0.7rem;
-            border-radius: 999px;
+        .scan-chart__tooltip-total {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #38bdf8;
+            margin-bottom: 0.35rem;
         }
 
-        .chart-legend__value {
-            color: #111827;
-        }
-
-        .line-chart {
-            display: grid;
-            gap: 0.55rem;
-        }
-
-        .line-chart__frame {
-            position: relative;
-            height: 214px;
-            border-radius: 1rem;
-            border: 1px solid #edf2f7;
-            background:
-                linear-gradient(180deg, rgba(37, 99, 235, 0.05), rgba(37, 99, 235, 0)),
-                repeating-linear-gradient(to top,
-                    rgba(148, 163, 184, 0.12) 0,
-                    rgba(148, 163, 184, 0.12) 1px,
-                    transparent 1px,
-                    transparent 20%);
-            overflow: hidden;
-        }
-
-        .line-chart__header {
+        .scan-chart__tooltip-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.75rem;
-            flex-wrap: wrap;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 0.2rem;
         }
 
-        .line-chart__badge {
+        .scan-chart__tooltip-key {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.4rem 0.65rem;
+            gap: 0.35rem;
+        }
+
+        .scan-chart__tooltip-swatch {
+            width: 0.55rem;
+            height: 0.55rem;
             border-radius: 999px;
-            background: rgba(34, 197, 94, 0.12);
-            color: #166534;
-            font-size: 0.7rem;
-            font-weight: 800;
-            white-space: nowrap;
+            flex-shrink: 0;
         }
 
-        .line-chart__meta-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.5rem;
-        }
-
-        .line-chart__meta-card {
-            padding: 0.55rem 0.65rem;
-            border-radius: 0.9rem;
-            background: #f8fafc;
+        /* ===== Table View ===== */
+        .chart-table-wrap {
+            max-height: 220px;
+            overflow: auto;
             border: 1px solid #edf2f7;
-            min-width: 0;
+            border-radius: 0.65rem;
         }
 
-        .line-chart__meta-label {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #64748b;
-            font-weight: 800;
-        }
-
-        .line-chart__meta-value {
-            margin-top: 0.15rem;
-            font-size: 0.92rem;
-            font-weight: 800;
-            color: #111827;
-        }
-
-        .line-chart__svg {
+        .chart-table {
             width: 100%;
-            height: 100%;
-            display: block;
+            font-size: 0.75rem;
+            border-collapse: collapse;
         }
 
-        .line-chart__svg .axis-line {
-            stroke: rgba(148, 163, 184, 0.3);
-            stroke-width: 1;
-            stroke-dasharray: 2.6 2.4;
-        }
-
-        .line-chart__svg .trend-line {
-            fill: none;
-            stroke: #2563eb;
-            stroke-width: 1.75px;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            vector-effect: non-scaling-stroke;
-        }
-
-        .line-chart__svg .trend-area {
-            fill: url(#trendAreaFill);
-        }
-
-        .line-chart__svg .trend-dot {
-            fill: #fff;
-            stroke: #2563eb;
-            stroke-width: 1.75px;
-            vector-effect: non-scaling-stroke;
-        }
-
-        .line-chart__svg .axis-label {
-            fill: #8a97b8;
-            font-size: 3px;
+        .chart-table th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            color: #64748b;
+            text-transform: uppercase;
+            font-size: 0.62rem;
             font-weight: 700;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
+            padding: 0.45rem 0.65rem;
+            border-bottom: 1px solid #edf2f7;
+            text-align: left;
         }
 
-        .line-chart__empty {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6b7280;
-            font-size: 0.9rem;
+        .chart-table td {
+            padding: 0.35rem 0.65rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            text-align: right;
+        }
+
+        .chart-table td:first-child {
+            text-align: left;
             font-weight: 600;
         }
 
-        .line-chart__ticks {
+        .chart-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .chart-table__total {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* ===== Grade Level Distribution Panel (Compact & Modern) ===== */
+        .grade-distribution-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-            gap: 0.25rem;
-            font-size: 0.62rem;
-            color: #64748b;
-            text-align: center;
-            white-space: nowrap;
-            margin-top: -0.1rem;
+            grid-template-columns: 140px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: center;
         }
 
-        .line-chart__ticks span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .line-chart__timeline {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-            gap: 0.35rem;
-            align-items: end;
-            margin-top: 0.1rem;
-        }
-
-        .line-chart__timeline-item {
-            min-width: 0;
-            display: grid;
-            justify-items: center;
-            gap: 0.3rem;
-        }
-
-        .line-chart__timeline-bar {
-            width: 100%;
-            height: 0.3rem;
-            border-radius: 999px;
-            background: #c7d2fe;
-            opacity: 0.95;
-        }
-
-        .line-chart__timeline-label {
-            font-size: 0.6rem;
-            color: #8090b8;
-            line-height: 1;
-            white-space: nowrap;
-        }
-
-        .line-chart__timeline-item--highlight .line-chart__timeline-bar {
-            background: linear-gradient(90deg, #34d399, #22c55e);
-        }
-
-        .grade-donut {
-            display: grid;
-            gap: 0.8rem;
+        @media (max-width: 575px) {
+            .grade-distribution-container {
+                grid-template-columns: 1fr;
+                justify-items: center;
+            }
         }
 
         .grade-donut__wrap {
             position: relative;
-            width: min(100%, 220px);
-            aspect-ratio: 1;
+            width: 130px;
+            height: 130px;
             margin: 0 auto;
             border-radius: 50%;
-            background: #f8fafc;
             display: grid;
             place-items: center;
         }
@@ -765,18 +652,16 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: conic-gradient(#e5e7eb 0 100%);
             position: relative;
-            overflow: hidden;
         }
 
         .grade-donut__ring::after {
             content: "";
             position: absolute;
-            inset: 18%;
+            inset: 22%;
             border-radius: 50%;
             background: #fff;
-            box-shadow: inset 0 0 0 1px #edf2f7;
+            box-shadow: inset 0 0 0 1px #f1f5f9;
         }
 
         .grade-donut__center {
@@ -792,200 +677,161 @@
         }
 
         .grade-donut__center strong {
-            font-size: 1.7rem;
+            font-size: 1.25rem;
             line-height: 1;
             font-weight: 800;
-            color: #111827;
+            color: #0f172a;
         }
 
         .grade-donut__center span {
-            margin-top: 0.2rem;
-            font-size: 0.68rem;
+            margin-top: 0.15rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: #6b7280;
-            font-weight: 800;
+            letter-spacing: 0.06em;
+            color: #64748b;
+            font-weight: 700;
         }
 
-        .grade-distribution {
+        .grade-grid {
             display: grid;
-            gap: 0.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 0.4rem;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 0.2rem;
         }
 
-        .grade-distribution__item {
+        .grade-chip {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.7rem;
-            padding: 0.5rem 0.6rem;
-            border-radius: 0.85rem;
+            padding: 0.35rem 0.55rem;
+            border-radius: 0.6rem;
             background: #f8fafc;
             border: 1px solid #edf2f7;
+            font-size: 0.72rem;
         }
 
-        .grade-distribution__label {
+        .grade-chip__left {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.35rem;
             min-width: 0;
-            font-size: 0.75rem;
-            font-weight: 700;
             color: #334155;
+            font-weight: 600;
         }
 
-        .grade-distribution__swatch {
-            width: 0.68rem;
-            height: 0.68rem;
+        .grade-chip__swatch {
+            width: 0.5rem;
+            height: 0.5rem;
             border-radius: 999px;
             flex-shrink: 0;
         }
 
-        .grade-distribution__value {
-            font-size: 0.75rem;
-            font-weight: 800;
-            color: #111827;
+        .grade-chip__right {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 0.7rem;
             white-space: nowrap;
+        }
+
+        /* ===== Recent Scans Table ===== */
+        .table-card .table {
+            font-size: 0.78rem;
+            margin-bottom: 0;
+        }
+
+        .table-card .table th {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            padding: 0.5rem 0.65rem;
+            border-bottom: 1px solid #edf2f7;
         }
 
         .table-card .table td {
-            white-space: nowrap;
+            padding: 0.45rem 0.65rem;
+            vertical-align: middle;
         }
 
-        /* ===== Chart style toggle (Bars / Line / Table) ===== */
-        .chart-view-toggle {
+        .table-name-avatar {
+            width: 1.85rem;
+            height: 1.85rem;
+            border-radius: 0.55rem;
+            background: #eff6ff;
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 0.7rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.2rem;
-            padding: 0.2rem;
-            border-radius: 999px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
+            justify-content: center;
+            flex-shrink: 0;
         }
-        .chart-view-toggle__btn {
-            border: none;
-            background: transparent;
-            color: #64748b;
-            border-radius: 999px;
-            padding: 0.3rem 0.7rem;
-            font-size: 0.72rem;
+
+        .table-name-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .table-name-main {
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.18s ease;
-        }
-        .chart-view-toggle__btn:hover {
-            color: #334155;
-        }
-        .chart-view-toggle__btn.active {
-            background: #fff;
-            color: #4f46e5;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
-        }
-        .chart-views {
-            min-width: 0;
-        }
-        .chart-view {
-            min-width: 0;
+            color: #0f172a;
+            display: block;
+            line-height: 1.2;
         }
 
-        /* ===== Slimmer, cleaner stacked bars ===== */
-        .scan-chart__inner {
-            gap: 0.35rem;
-            padding-top: 0.25rem;
-        }
-        .scan-chart__col {
-            gap: 0.25rem;
-        }
-        .scan-chart__bar {
-            width: 100%;
-            max-width: 44px;
-            margin-inline: auto;
-            border-radius: 8px;
-        }
-        .scan-chart__segment {
-            border-radius: 2px;
-        }
-        .scan-chart__label {
-            font-size: 0.56rem;
-            margin-top: 0.2rem;
-        }
-
-        /* ===== Table view ===== */
-        .chart-table-wrap {
-            max-height: 260px;
-            overflow: auto;
-            border: 1px solid #edf2f7;
-            border-radius: 0.75rem;
-        }
-        .chart-table {
-            width: 100%;
-            font-size: 0.8rem;
-            border-collapse: collapse;
-        }
-        .chart-table th {
-            position: sticky;
-            top: 0;
-            background: #f8fafc;
+        .table-name-sub {
+            font-size: 0.68rem;
             color: #64748b;
-            text-transform: uppercase;
-            font-size: 0.62rem;
-            letter-spacing: 0.06em;
-            padding: 0.5rem 0.75rem;
-            border-bottom: 1px solid #edf2f7;
-            text-align: left;
-        }
-        .chart-table td {
-            padding: 0.4rem 0.75rem;
-            border-bottom: 1px solid #f1f5f9;
-            color: #334155;
-            text-align: right;
-        }
-        .chart-table td:first-child {
-            text-align: left;
-        }
-        .chart-table tbody tr:hover {
-            background: #f8fafc;
-        }
-        .chart-table__total {
-            font-weight: 800;
-            color: #111827;
+            display: block;
         }
 
-        /* ===== Minimal line chart (Line view) ===== */
-        .line-chart__frame.sp-line {
-            height: 180px;
-            border: 1px solid #edf2f7;
-            border-radius: 0.9rem;
-            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-            padding: 0.5rem;
-            position: relative;
-            overflow: hidden;
+        .badge-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
         }
-        .sp-line__stroke {
-            fill: none;
-            stroke-width: 1.75px;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            vector-effect: non-scaling-stroke;
-            filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.12));
+
+        .badge-dot::before {
+            content: "";
+            width: 0.38rem;
+            height: 0.38rem;
+            border-radius: 50%;
         }
-        .sp-line__stroke--multi {
-            stroke-width: 1.5px;
-            vector-effect: non-scaling-stroke;
-            filter: none;
+
+        .dot-success {
+            background: #ecfdf5;
+            color: #065f46;
         }
-        .sp-line__area {
-            stroke: none;
-            opacity: 0.08;
+        .dot-success::before {
+            background: #10b981;
         }
-        .sp-line__dot {
-            fill: #fff;
-            stroke: #6366f1;
-            stroke-width: 1.75px;
-            vector-effect: non-scaling-stroke;
+
+        .dot-primary {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+        .dot-primary::before {
+            background: #3b82f6;
+        }
+
+        .dot-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .dot-secondary::before {
+            background: #94a3b8;
         }
     </style>
 
-    <div class="dashboard-shell mx-3 mb-2">
+    <div class="dashboard-shell mx-2 mb-3">
+        {{-- Top KPI Cards --}}
         <section class="dashboard-cards">
             @foreach ($dashboardCards as $card)
                 <a href="{{ $card['href'] }}" class="dashboard-card card-tone-{{ $card['tone'] }}">
@@ -1003,45 +849,106 @@
             @endforeach
         </section>
 
+        {{-- Main Attendance Analytics Grid --}}
         <section class="dashboard-analytics-grid">
-            <div class="panel chart-card">
-                <div class="panel__header mb-0">
+            {{-- Panel 1: Today's Attendance by Department --}}
+            <div class="panel">
+                <div class="panel__header">
                     <div>
-                        <h2 class="panel__title">Attendance by department level</h2>
-                        <p class="panel__meta">Today's scan totals by time window.</p>
+                        <h2 class="panel__title">Attendance timeline today</h2>
+                        <p class="panel__meta">Today's scan distribution across department levels.</p>
                     </div>
                     <div class="chart-view-toggle" data-chart-toggle="daily" role="group" aria-label="Chart style">
-                        <button type="button" class="chart-view-toggle__btn active" data-chart-view="bars">Bars</button>
-                        <button type="button" class="chart-view-toggle__btn" data-chart-view="line">Line</button>
+                        <button type="button" class="chart-view-toggle__btn active" data-chart-view="line">Line</button>
+                        <button type="button" class="chart-view-toggle__btn" data-chart-view="bars">Bars</button>
                         <button type="button" class="chart-view-toggle__btn" data-chart-view="table">Table</button>
                     </div>
                 </div>
 
-                <div class="chart-card__summary">
-                    <div class="chart-card__summary-item">
-                        <div class="chart-card__summary-label">Today</div>
-                        <div class="chart-card__summary-value">{{ $totalScansToday }} scans</div>
-                    </div>
-                    <div class="chart-card__summary-item">
-                        <div class="chart-card__summary-label">Peak window</div>
-                        <div class="chart-card__summary-value">{{ $peakLabel }}</div>
-                    </div>
-                    <div class="chart-card__summary-item">
-                        <div class="chart-card__summary-label">Peak total</div>
-                        <div class="chart-card__summary-value">{{ $peakTotal }}</div>
-                    </div>
+                {{-- Key Quick Insights --}}
+                <div class="chart-stat-strip">
+                    <span class="stat-pill stat-pill--info">
+                        Today: <strong>{{ number_format($totalScansToday) }} scans</strong>
+                    </span>
+                    <span class="stat-pill stat-pill--success">
+                        In: <strong>{{ number_format($timeInToday) }}</strong> · Out: <strong>{{ number_format($timeOutToday) }}</strong>
+                    </span>
+                    @if ($lateArrivalsToday > 0)
+                        <span class="stat-pill stat-pill--warning">
+                            Late: <strong>{{ $lateArrivalsToday }}</strong> ({{ round(100 - $onTimePercentage, 1) }}%)
+                        </span>
+                    @else
+                        <span class="stat-pill stat-pill--success">
+                            On-time: <strong>100%</strong>
+                        </span>
+                    @endif
+                    <span class="stat-pill">
+                        Peak: <strong>{{ $peakLabel }}</strong> ({{ $peakTotal }})
+                    </span>
                 </div>
 
+                {{-- Interactive Views --}}
                 <div class="chart-views" data-chart-views="daily">
-                    {{-- Bars view --}}
-                    <div class="chart-view" data-view="bars">
+                    {{-- Line View (Default) --}}
+                    <div class="chart-view" data-view="line">
+                        <div class="chart-legend">
+                            @foreach ($dailyLevelLines as $ll)
+                                <div class="chart-legend__item">
+                                    <span class="chart-legend__swatch" style="background: {{ $ll['color'] }}"></span>
+                                    <span>{{ $ll['label'] }}:</span>
+                                    <span class="chart-legend__value">{{ $levelTotals[$ll['level']] ?? $ll['total'] }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="line-chart__frame">
+                            <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
+                                aria-label="Scan volume trend by department level">
+                                {{-- Subtle Horizontal Grid Guides --}}
+                                <line x1="0" y1="29" x2="100" y2="29" class="line-chart__grid-line" />
+                                <line x1="0" y1="50" x2="100" y2="50" class="line-chart__grid-line" />
+                                <line x1="0" y1="71" x2="100" y2="71" class="line-chart__grid-line" />
+                                <line x1="0" y1="92" x2="100" y2="92" stroke="#e2e8f0" stroke-width="1" />
+
+                                <text x="1" y="27" class="line-chart__guide-text">{{ (int) round($maxBucketTotal * 0.75) }}</text>
+                                <text x="1" y="48" class="line-chart__guide-text">{{ (int) round($maxBucketTotal * 0.5) }}</text>
+                                <text x="1" y="69" class="line-chart__guide-text">{{ (int) round($maxBucketTotal * 0.25) }}</text>
+
+                                {{-- Render line paths --}}
+                                @foreach ($dailyLevelLines as $ll)
+                                    @if (!empty($ll['area']))
+                                        <path d="{{ $ll['area'] }}" class="sp-line__area"
+                                            style="fill: {{ $ll['color'] }}"></path>
+                                    @endif
+                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke"
+                                        style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke">
+                                        <title>{{ $ll['label'] }} ({{ $levelTotals[$ll['level']] ?? $ll['total'] }} total)</title>
+                                    </path>
+                                @endforeach
+                            </svg>
+                        </div>
+
+                        {{-- Horizontal Milestone Ticks (Evenly Spaced, No Overlap) --}}
+                        <div class="chart-tick-bar">
+                            @foreach ($tickIndices as $idx)
+                                @if (isset($scanBuckets[$idx]))
+                                    <span>{{ $scanBuckets[$idx]['label'] }}</span>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Bars View --}}
+                    <div class="chart-view d-none" data-view="bars">
                         <div class="chart-legend">
                             @foreach ($departmentLevels as $levelKey => $levelMeta)
-                                <div class="chart-legend__item">
-                                    <span class="chart-legend__swatch" style="background: {{ $levelMeta['color'] }}"></span>
-                                    <span>{{ $levelMeta['label'] }}</span>
-                                    <span class="chart-legend__value">{{ $levelTotals[$levelKey] ?? 0 }}</span>
-                                </div>
+                                @if ($levelKey !== 'unknown')
+                                    <div class="chart-legend__item">
+                                        <span class="chart-legend__swatch" style="background: {{ $levelMeta['color'] }}"></span>
+                                        <span>{{ $levelMeta['label'] }}</span>
+                                        <span class="chart-legend__value">{{ $levelTotals[$levelKey] ?? 0 }}</span>
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
 
@@ -1053,9 +960,8 @@
                                         $bucketTotal = $bucket['total'] ?? 0;
                                         $bucketLevels = $bucket['levels'] ?? [];
                                         $bucketHeight = $bucketTotal > 0
-                                            ? max((int) round(($bucketTotal / $maxBucketTotal) * 120), 6)
-                                            : 4;
-                                        $showLabel = $loop->iteration % 4 === 1;
+                                            ? max((int) round(($bucketTotal / $maxBucketTotal) * 145), 4)
+                                            : 2;
                                     @endphp
                                     <div class="scan-chart__col">
                                         <div class="scan-chart__bar-wrap" tabindex="0" aria-label="{{ $bucket['range'] }}">
@@ -1063,79 +969,53 @@
                                                 <div class="scan-chart__tooltip-title">{{ $bucket['range'] }}</div>
                                                 <div class="scan-chart__tooltip-total">{{ $bucketTotal }} scans</div>
                                                 @foreach ($departmentLevels as $levelKey => $levelMeta)
-                                                    <div class="scan-chart__tooltip-row">
-                                                        <span class="scan-chart__tooltip-key">
-                                                            <span class="scan-chart__tooltip-swatch"
-                                                                style="background: {{ $levelMeta['color'] }}"></span>
-                                                            <span>{{ $levelMeta['label'] }}</span>
-                                                        </span>
-                                                        <span>{{ $bucketLevels[$levelKey] ?? 0 }}</span>
-                                                    </div>
+                                                    @if ($levelKey !== 'unknown')
+                                                        <div class="scan-chart__tooltip-row">
+                                                            <span class="scan-chart__tooltip-key">
+                                                                <span class="scan-chart__tooltip-swatch"
+                                                                    style="background: {{ $levelMeta['color'] }}"></span>
+                                                                <span>{{ $levelMeta['label'] }}</span>
+                                                            </span>
+                                                            <strong>{{ $bucketLevels[$levelKey] ?? 0 }}</strong>
+                                                        </div>
+                                                    @endif
                                                 @endforeach
                                             </div>
 
                                             <div class="scan-chart__bar" style="height: {{ $bucketHeight }}px;">
                                                 @foreach ($departmentLevels as $levelKey => $levelMeta)
-                                                    @php
-                                                        $levelCount = $bucketLevels[$levelKey] ?? 0;
-                                                        $levelHeight = $bucketTotal > 0
-                                                            ? max((int) round(($levelCount / $bucketTotal) * $bucketHeight), $levelCount > 0 ? 2 : 0)
-                                                            : 0;
-                                                    @endphp
-                                                    @if ($levelHeight > 0)
-                                                        <div class="scan-chart__segment scan-chart__segment--{{ $levelKey }}"
-                                                            style="height: {{ $levelHeight }}px;"
-                                                            title="{{ $levelMeta['label'] }}: {{ $levelCount }}"></div>
+                                                    @if ($levelKey !== 'unknown')
+                                                        @php
+                                                            $levelCount = $bucketLevels[$levelKey] ?? 0;
+                                                            $levelHeight = $bucketTotal > 0
+                                                                ? max((int) round(($levelCount / $bucketTotal) * $bucketHeight), $levelCount > 0 ? 2 : 0)
+                                                                : 0;
+                                                        @endphp
+                                                        @if ($levelHeight > 0)
+                                                            <div class="scan-chart__segment"
+                                                                style="height: {{ $levelHeight }}px; background: {{ $levelMeta['color'] }};"
+                                                                title="{{ $levelMeta['label'] }}: {{ $levelCount }}"></div>
+                                                        @endif
                                                     @endif
                                                 @endforeach
                                             </div>
                                         </div>
-                                        <div class="scan-chart__label">{{ $showLabel ? $bucket['label'] : '·' }}</div>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
-                    </div>
 
-                    {{-- Line view --}}
-                    <div class="chart-view d-none" data-view="line">
-                        <div class="line-chart__frame sp-line">
-                            <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
-                                aria-label="Scan volume trend by department level">
-                                @foreach ($dailyLevelLines as $ll)
-                                    @if (!empty($ll['area']))
-                                        <path d="{{ $ll['area'] }}" class="sp-line__area"
-                                            style="fill: {{ $ll['color'] }}"></path>
-                                    @endif
-                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke sp-line__stroke--multi"
-                                        style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke"></path>
-                                    @if ($ll['last'])
-                                        <circle cx="{{ $ll['last']['x'] }}" cy="{{ $ll['last']['y'] }}" r="1.2"
-                                            class="sp-line__dot" style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke">
-                                            <title>{{ $ll['label'] }}</title>
-                                        </circle>
-                                    @endif
-                                @endforeach
-                            </svg>
-                        </div>
-                        <div class="line-chart__ticks mt-1">
-                            @foreach ($scanBuckets as $bucket)
-                                @if ($loop->iteration % 4 === 1 || $loop->last)
-                                    <span>{{ $bucket['label'] }}</span>
+                        {{-- Milestone Ticks for Bars --}}
+                        <div class="chart-tick-bar">
+                            @foreach ($tickIndices as $idx)
+                                @if (isset($scanBuckets[$idx]))
+                                    <span>{{ $scanBuckets[$idx]['label'] }}</span>
                                 @endif
                             @endforeach
                         </div>
-                        <div class="chart-legend mt-2">
-                            @foreach ($dailyLevelLines as $ll)
-                                <div class="chart-legend__item">
-                                    <span class="chart-legend__swatch" style="background: {{ $ll['color'] }}"></span>
-                                    <span>{{ $ll['label'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
                     </div>
 
-                    {{-- Table view --}}
+                    {{-- Table View --}}
                     <div class="chart-view d-none" data-view="table">
                         <div class="chart-table-wrap">
                             <table class="chart-table">
@@ -1163,43 +1043,95 @@
                 </div>
             </div>
 
-            <div class="panel chart-card">
-                <div class="panel__header mb-0">
+            {{-- Panel 2: Weekly Attendance Trend --}}
+            <div class="panel">
+                <div class="panel__header">
                     <div>
                         <h2 class="panel__title">Attendance by week</h2>
-                        <p class="panel__meta">Weekly scan totals over the last 6 weeks.</p>
+                        <p class="panel__meta">6-week historical scan totals.</p>
                     </div>
                     <div class="chart-view-toggle" data-chart-toggle="weekly" role="group" aria-label="Chart style">
-                        <button type="button" class="chart-view-toggle__btn active" data-chart-view="bars">Bars</button>
-                        <button type="button" class="chart-view-toggle__btn" data-chart-view="line">Line</button>
+                        <button type="button" class="chart-view-toggle__btn active" data-chart-view="line">Line</button>
+                        <button type="button" class="chart-view-toggle__btn" data-chart-view="bars">Bars</button>
                         <button type="button" class="chart-view-toggle__btn" data-chart-view="table">Table</button>
                     </div>
                 </div>
 
-                <div class="chart-card__summary">
-                    <div class="chart-card__summary-item">
-                        <div class="chart-card__summary-label">Last 6 weeks</div>
-                        <div class="chart-card__summary-value">{{ $weeklyChartTotal }} scans</div>
-                    </div>
-                    <div class="chart-card__summary-item">
-                        <div class="chart-card__summary-label">Peak week</div>
-                        <div class="chart-card__summary-value">{{ $weeklyChartPeakLabel }}</div>
-                    </div>
-                    <div class="chart-card__summary-item">
-                        <div class="chart-card__summary-label">Weekly avg</div>
-                        <div class="chart-card__summary-value">{{ $weeklyChartAverage }}</div>
-                    </div>
+                {{-- Key Weekly Stats --}}
+                <div class="chart-stat-strip">
+                    <span class="stat-pill stat-pill--info">
+                        6-Wk Total: <strong>{{ number_format($weeklyChartTotal) }}</strong>
+                    </span>
+                    <span class="stat-pill">
+                        Avg: <strong>{{ $weeklyChartAverage }}/wk</strong>
+                    </span>
+                    <span class="stat-pill stat-pill--success">
+                        Peak: <strong>{{ $weeklyChartPeakLabel }}</strong> ({{ $weeklyChartPeakTotal }})
+                    </span>
+                    @if ($weeklyTrend !== null)
+                        <span class="stat-pill {{ $weeklyTrend >= 0 ? 'stat-pill--success' : 'stat-pill--warning' }}">
+                            {{ $weeklyTrend >= 0 ? '▲ +' : '▼ ' }}{{ $weeklyTrend }}% vs prev week
+                        </span>
+                    @endif
                 </div>
 
                 <div class="chart-views" data-chart-views="weekly">
-                    {{-- Bars view --}}
-                    <div class="chart-view" data-view="bars">
+                    {{-- Line View (Default) --}}
+                    <div class="chart-view" data-view="line">
+                        <div class="chart-legend">
+                            @foreach ($weeklyLevelLines as $ll)
+                                <div class="chart-legend__item">
+                                    <span class="chart-legend__swatch" style="background: {{ $ll['color'] }}"></span>
+                                    <span>{{ $ll['label'] }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="line-chart__frame">
+                            <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
+                                aria-label="Weekly scan volume trend by department level">
+                                {{-- Subtle Horizontal Grid Guides --}}
+                                <line x1="0" y1="29" x2="100" y2="29" class="line-chart__grid-line" />
+                                <line x1="0" y1="50" x2="100" y2="50" class="line-chart__grid-line" />
+                                <line x1="0" y1="71" x2="100" y2="71" class="line-chart__grid-line" />
+                                <line x1="0" y1="92" x2="100" y2="92" stroke="#e2e8f0" stroke-width="1" />
+
+                                <text x="1" y="27" class="line-chart__guide-text">{{ (int) round($weeklyMaxBucketTotal * 0.75) }}</text>
+                                <text x="1" y="48" class="line-chart__guide-text">{{ (int) round($weeklyMaxBucketTotal * 0.5) }}</text>
+                                <text x="1" y="69" class="line-chart__guide-text">{{ (int) round($weeklyMaxBucketTotal * 0.25) }}</text>
+
+                                {{-- Render line paths --}}
+                                @foreach ($weeklyLevelLines as $ll)
+                                    @if (!empty($ll['area']))
+                                        <path d="{{ $ll['area'] }}" class="sp-line__area"
+                                            style="fill: {{ $ll['color'] }}"></path>
+                                    @endif
+                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke"
+                                        style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke">
+                                        <title>{{ $ll['label'] }}</title>
+                                    </path>
+                                @endforeach
+                            </svg>
+                        </div>
+
+                        {{-- Week labels without overlap --}}
+                        <div class="chart-tick-bar">
+                            @foreach ($weeklyChartBuckets as $week)
+                                <span>{{ $week['label'] }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Bars View --}}
+                    <div class="chart-view d-none" data-view="bars">
                         <div class="chart-legend">
                             @foreach ($weeklyGradeLevels as $gradeKey => $gradeMeta)
-                                <div class="chart-legend__item">
-                                    <span class="chart-legend__swatch" style="background: {{ $gradeMeta['color'] }}"></span>
-                                    <span>{{ $gradeMeta['label'] }}</span>
-                                </div>
+                                @if (in_array($gradeKey, ['1', '7', '11']))
+                                    <div class="chart-legend__item">
+                                        <span class="chart-legend__swatch" style="background: {{ $gradeMeta['color'] }}"></span>
+                                        <span>{{ ['1' => 'Elem (G1-6)', '7' => 'JHS (G7-10)', '11' => 'SHS (G11-12)'][$gradeKey] ?? $gradeMeta['label'] }}</span>
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
 
@@ -1211,8 +1143,8 @@
                                         $weekTotal = $week['total'] ?? 0;
                                         $weekGrades = $week['grades'] ?? [];
                                         $weekHeight = $weekTotal > 0
-                                            ? max((int) round(($weekTotal / $weeklyMaxBucketTotal) * 120), 6)
-                                            : 4;
+                                            ? max((int) round(($weekTotal / $weeklyMaxBucketTotal) * 145), 4)
+                                            : 2;
                                     @endphp
                                     <div class="scan-chart__col">
                                         <div class="scan-chart__bar-wrap" tabindex="0" aria-label="{{ $week['range'] }}">
@@ -1220,14 +1152,16 @@
                                                 <div class="scan-chart__tooltip-title">{{ $week['range'] }}</div>
                                                 <div class="scan-chart__tooltip-total">{{ $weekTotal }} scans</div>
                                                 @foreach ($weeklyGradeLevels as $gradeKey => $gradeMeta)
-                                                    <div class="scan-chart__tooltip-row">
-                                                        <span class="scan-chart__tooltip-key">
-                                                            <span class="scan-chart__tooltip-swatch"
-                                                                style="background: {{ $gradeMeta['color'] }}"></span>
-                                                            <span>{{ $gradeMeta['label'] }}</span>
-                                                        </span>
-                                                        <span>{{ $weekGrades[$gradeKey] ?? 0 }}</span>
-                                                    </div>
+                                                    @if (($weekGrades[$gradeKey] ?? 0) > 0)
+                                                        <div class="scan-chart__tooltip-row">
+                                                            <span class="scan-chart__tooltip-key">
+                                                                <span class="scan-chart__tooltip-swatch"
+                                                                    style="background: {{ $gradeMeta['color'] }}"></span>
+                                                                <span>{{ $gradeMeta['label'] }}</span>
+                                                            </span>
+                                                            <strong>{{ $weekGrades[$gradeKey] ?? 0 }}</strong>
+                                                        </div>
+                                                    @endif
                                                 @endforeach
                                             </div>
 
@@ -1247,64 +1181,33 @@
                                                 @endforeach
                                             </div>
                                         </div>
-                                        <div class="scan-chart__label">{{ $week['label'] }}</div>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
-                    </div>
 
-                    {{-- Line view --}}
-                    <div class="chart-view d-none" data-view="line">
-                        <div class="line-chart__frame sp-line">
-                            <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
-                                aria-label="Weekly scan volume trend by department level">
-                                @foreach ($weeklyLevelLines as $ll)
-                                    @if (!empty($ll['area']))
-                                        <path d="{{ $ll['area'] }}" class="sp-line__area"
-                                            style="fill: {{ $ll['color'] }}"></path>
-                                    @endif
-                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke sp-line__stroke--multi"
-                                        style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke"></path>
-                                    @if ($ll['last'])
-                                        <circle cx="{{ $ll['last']['x'] }}" cy="{{ $ll['last']['y'] }}" r="1.2"
-                                            class="sp-line__dot" style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke">
-                                            <title>{{ $ll['label'] }}</title>
-                                        </circle>
-                                    @endif
-                                @endforeach
-                            </svg>
-                        </div>
-                        <div class="line-chart__ticks mt-1">
+                        <div class="chart-tick-bar">
                             @foreach ($weeklyChartBuckets as $week)
                                 <span>{{ $week['label'] }}</span>
                             @endforeach
                         </div>
-                        <div class="chart-legend mt-2">
-                            @foreach ($weeklyLevelLines as $ll)
-                                <div class="chart-legend__item">
-                                    <span class="chart-legend__swatch" style="background: {{ $ll['color'] }}"></span>
-                                    <span>{{ $ll['label'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
                     </div>
 
-                    {{-- Table view --}}
+                    {{-- Table View --}}
                     <div class="chart-view d-none" data-view="table">
                         <div class="chart-table-wrap">
                             <table class="chart-table">
                                 <thead>
                                     <tr>
-                                        <th>Week</th>
-                                        <th>Scans</th>
+                                        <th>Week Range</th>
+                                        <th>Total Scans</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($weeklyChartBuckets as $week)
                                         <tr>
                                             <td>{{ $week['range'] }}</td>
-                                            <td class="chart-table__total">{{ $week['total'] }}</td>
+                                            <td class="chart-table__total">{{ number_format($week['total']) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -1315,31 +1218,29 @@
             </div>
         </section>
 
+        {{-- Lower Grid: Recent Activity & Compact Enrollment Breakdown --}}
         <section class="dashboard-lower-grid">
+            {{-- Latest Scans Table --}}
             <section class="panel table-card">
                 <div class="panel__header">
                     <div>
-                        <h2 class="panel__title">Latest scans</h2>
-                        <p class="panel__meta">Recent attendance records with grade and section context.</p>
+                        <h2 class="panel__title">Recent scan activity</h2>
+                        <p class="panel__meta">Real-time attendance checkpoints today.</p>
                     </div>
-                    <a href="{{ route('time-in-time-out-history.index') }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ route('time-in-time-out-history.index') }}" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.72rem; border-radius: 999px;">
                         View all
                     </a>
                 </div>
 
                 @if ($latestScans->isNotEmpty())
-                    <div class="table-responsive mx-4">
-                        <table class="table table-hover align-middle table-striped mb-0">
-                            <thead class="table-light text-uppercase small">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th scope="col" style="width: 20%">Student</th>
-
-                                    <th scope="col" style="width: 11%">Grade & Section</th>
-
-                                    <th scope="col" style="width: 10%">Scan Type</th>
-                                    <th scope="col" style="width: 10%">Session</th>
-                                    <th scope="col" style="width: 9%">Time</th>
-                                    <th scope="col" style="width: 6%">Remarks</th>
+                                    <th scope="col" style="width: 32%">Student</th>
+                                    <th scope="col" style="width: 26%">Grade & Section</th>
+                                    <th scope="col" style="width: 18%">Type</th>
+                                    <th scope="col" style="width: 24%">Time & Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1355,33 +1256,37 @@
                                             ->map(fn($flagType) => trim($flagType))
                                             ->filter()
                                             ->map(fn($flagType) => [
-                                                'late_arrival' => 'Late arrival',
-                                                'invalid_checkout' => 'Checkout issue',
-                                            ][$flagType] ?? 'Needs review')
+                                                'late_arrival' => 'Late',
+                                                'invalid_checkout' => 'Invalid Out',
+                                            ][$flagType] ?? 'Flagged')
                                             ->join(', ');
                                     @endphp
                                     <tr>
-                                        <td class="table-name-cell">
+                                        <td>
                                             <div class="table-name-wrap">
                                                 <div class="table-name-avatar">{{ $initials }}</div>
-                                                <div class="table-name-copy">
+                                                <div>
                                                     <span class="table-name-main">{{ $studentName }}</span>
                                                     <span class="table-name-sub">{{ $scan['student_number'] ?? '-' }}</span>
                                                 </div>
                                             </div>
                                         </td>
-
-                                        <td>Grade {{ $scan['grade_level'] ?? '-' }} - {{ $scan['section_name'] ?? '-' }}</td>
-
+                                        <td>
+                                            <span class="fw-semibold text-dark">Grade {{ $scan['grade_level'] ?? '-' }}</span>
+                                            <span class="text-muted d-block" style="font-size: 0.68rem;">{{ $scan['section_name'] ?? '-' }}</span>
+                                        </td>
                                         <td>
                                             <span class="badge-dot dot-{{ $dotScanType }}">
                                                 {{ ['IN' => 'Time In', 'OUT' => 'Time Out'][$scan['scan_type']] ?? 'Unknown' }}
                                             </span>
                                         </td>
-                                        <td>{{ $scan['session_type'] ? Str::headline(str_replace('_', ' ', $scan['session_type'])) : '-' }}</td>
-                                        <td>{{ $scan['scan_time'] ?? '-' }}</td>
-                                        <td class="fw-semibold text-danger">
-                                            {{ $remarks !== '' ? $remarks : '-' }}
+                                        <td>
+                                            <div class="fw-semibold text-dark">{{ $scan['scan_time'] ?? '-' }}</div>
+                                            @if ($remarks !== '')
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle p-1" style="font-size: 0.62rem;">
+                                                    {{ $remarks }}
+                                                </span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -1389,18 +1294,19 @@
                         </table>
                     </div>
                 @else
-                    <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
-                        <i class="fas fa-qrcode fa-2x mb-3 opacity-50"></i>
-                        <p class="mb-0">No scans recorded yet today.</p>
+                    <div class="d-flex flex-column align-items-center justify-content-center py-4 text-muted">
+                        <i class="fas fa-qrcode fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0 small">No scans recorded yet today.</p>
                     </div>
                 @endif
             </section>
 
-            <section class="panel grade-donut">
-                <div class="panel__header mb-0">
+            {{-- Compact Grade Level Distribution --}}
+            <section class="panel">
+                <div class="panel__header mb-2">
                     <div>
-                        <h2 class="panel__title">Grade level distribution</h2>
-                        <p class="panel__meta">Percentage of active enrollments by grade level.</p>
+                        <h2 class="panel__title">Enrollment distribution</h2>
+                        <p class="panel__meta">Active student distribution across grade levels.</p>
                     </div>
                 </div>
 
@@ -1419,27 +1325,29 @@
                         : '#e5e7eb 0 100%';
                 @endphp
 
-                <div class="grade-donut__wrap">
-                    <div class="grade-donut__ring"
-                        style="background: conic-gradient({{ $gradeDistributionGradient }});"></div>
-                    <div class="grade-donut__center">
-                        <strong>{{ $activeEnrollments }}</strong>
-                        <span>Active enrollments</span>
-                    </div>
-                </div>
-
-                <div class="grade-distribution">
-                    @foreach ($gradeDistribution as $grade)
-                        <div class="grade-distribution__item">
-                            <div class="grade-distribution__label">
-                                <span class="grade-distribution__swatch" style="background: {{ $grade['color'] }}"></span>
-                                <span>{{ $grade['label'] }}</span>
-                            </div>
-                            <div class="grade-distribution__value">
-                                {{ $grade['count'] }} - {{ $grade['percentage'] }}%
-                            </div>
+                <div class="grade-distribution-container">
+                    <div class="grade-donut__wrap">
+                        <div class="grade-donut__ring"
+                            style="background: conic-gradient({{ $gradeDistributionGradient }});"></div>
+                        <div class="grade-donut__center">
+                            <strong>{{ number_format($activeEnrollments) }}</strong>
+                            <span>Enrolled</span>
                         </div>
-                    @endforeach
+                    </div>
+
+                    <div class="grade-grid">
+                        @foreach ($gradeDistribution as $grade)
+                            <div class="grade-chip" title="{{ $grade['label'] }}: {{ $grade['count'] }} ({{ $grade['percentage'] }}%)">
+                                <div class="grade-chip__left">
+                                    <span class="grade-chip__swatch" style="background: {{ $grade['color'] }}"></span>
+                                    <span>{{ $grade['label'] }}</span>
+                                </div>
+                                <div class="grade-chip__right">
+                                    {{ $grade['count'] }} <span class="text-muted fw-normal">({{ $grade['percentage'] }}%)</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </section>
         </section>
@@ -1447,9 +1355,7 @@
 
     @push('scripts')
         <script>
-            // Chart style toggles (Bars / Line / Table). The admin layout renders
-            // @stack('scripts') in <head>, before the body exists, so bind after
-            // the DOM is ready or the toggles never attach.
+            // Chart style toggles (Bars / Line / Table)
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('[data-chart-toggle]').forEach(function (toggle) {
                     const scope = toggle.dataset.chartToggle;

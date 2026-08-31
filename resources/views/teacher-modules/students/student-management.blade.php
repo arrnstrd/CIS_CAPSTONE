@@ -52,13 +52,20 @@
                         @endphp
 
                         <div class="mx-3">
-                            <div class="mb-3">
-                            <a href="{{ route('teacher.student-management') }}" class="btn btn-outline-primary mb-3">
-                                <i class="fa-solid fa-arrow-left me-1"></i> Back to my classes
-                            </a>
-                            <p class="ra-section-card-name">
-                                Grade {{ $selectedClass?->grade_level }} - {{ $selectedClass?->name }}
-                            </p>
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                <div>
+                                    <a href="{{ route('teacher.student-management') }}" class="btn btn-outline-primary mb-2">
+                                        <i class="fa-solid fa-arrow-left me-1"></i> Back to my classes
+                                    </a>
+                                    <p class="ra-section-card-name mb-0">
+                                        Grade {{ $selectedClass?->grade_level }} - {{ $selectedClass?->name }}
+                                    </p>
+                                </div>
+                                <button type="button" class="btn btn-primary d-flex align-items-center gap-1"
+                                    data-bs-toggle="modal" data-bs-target="#addStudentModal"
+                                    data-grade="{{ $selectedClass?->grade_level }}">
+                                    <i class="fa-solid fa-plus me-1"></i> Add Student
+                                </button>
                             </div>
 
                         <div class="card border mb-3">
@@ -84,7 +91,7 @@
                             <tr>
                                 <th style="width: 30%">Student</th>
                                 <th style="width: 22%">LRN</th>
-                    <th style="width: 28%">Grade & Section</th>
+                    <th style="width: 28%">Grade &amp; Section</th>
                     <th style="width: 20%">Actions</th>
                 </tr>
             </thead>
@@ -115,11 +122,10 @@
                             @endif
                         </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-outline-primary"
-                                data-bs-toggle="modal" data-bs-target="#studentSummaryModal"
-                                data-profile-url="{{ route('teacher.student-profile', $student->id) . '?embedded=1' }}">
+                            <a href="{{ route('teacher.student-profile', $student->id) }}"
+                               class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-eye"></i> View
-                            </button>
+                            </a>
                         </td>
                     </tr>
                     @empty
@@ -140,57 +146,6 @@
         </div>
     @endif
 
-    <div class="modal fade" id="studentSummaryModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Student Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0" id="studentSummaryModalBody">
-                    <p class="text-muted text-center py-4">Loading...</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm"
-                        data-bs-dismiss="modal">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        (function () {
-            const summaryModal = document.getElementById('studentSummaryModal');
-            const body = document.getElementById('studentSummaryModalBody');
-
-            summaryModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                const profileUrl = button.getAttribute('data-profile-url');
-
-                body.innerHTML = '<p class="text-muted text-center py-4">Loading...</p>';
-                const iframe = document.createElement('iframe');
-                iframe.src = profileUrl;
-                iframe.title = 'Student Profile';
-                iframe.className = 'w-100 border-0';
-                iframe.style.minHeight = '70vh';
-                iframe.addEventListener('load', function () {
-                    body.innerHTML = '';
-                    body.appendChild(iframe);
-                }, { once: true });
-                iframe.addEventListener('error', function () {
-                    body.innerHTML = '<p class="text-danger text-center py-4">Unable to load student profile.</p>';
-                }, { once: true });
-                body.appendChild(iframe);
-            });
-
-            summaryModal.addEventListener('hidden.bs.modal', function () {
-                body.innerHTML = '<p class="text-muted text-center py-4">Loading...</p>';
-            });
-        })();
-    </script>
-
-
+    @include('admin-modules.management.students.partials.add-student-modal')
 
 </x-layouts.teacher>

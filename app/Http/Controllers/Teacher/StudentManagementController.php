@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\TeachingAssignment;
@@ -13,9 +14,8 @@ class StudentManagementController extends Controller
     /**
      * Show the students handled by the authenticated teacher.
      *
-     * The scope is derived from the teacher's active teaching assignments, so
-     * the teacher can never reach students from sections they do not handle —
-     * regardless of which filter parameters or IDs they pass.
+     * The scope is derived from the teacher's active teaching assignments and advised sections,
+     * so the teacher can access students they handle or within their teaching assignments.
      */
     public function index(Request $request)
     {
@@ -23,11 +23,19 @@ class StudentManagementController extends Controller
 
         abort_unless($teacher, 403, 'Only teachers can access this page.');
 
-        // Sections/classes the authenticated teacher actually handles.
-        $teacherSectionIds = TeachingAssignment::query()
+        // Sections/classes the authenticated teacher handles (teaching assignments + advised sections).
+        $teachingSectionIds = TeachingAssignment::query()
             ->where('teacher_id', $teacher->id)
             ->where('status', 'active')
-            ->pluck('section_id')
+            ->pluck('section_id');
+
+        $advisedSectionIds = Section::query()
+            ->where('advisor_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('id');
+
+        $teacherSectionIds = $teachingSectionIds
+            ->concat($advisedSectionIds)
             ->unique()
             ->values()
             ->all();
@@ -90,10 +98,21 @@ class StudentManagementController extends Controller
             ])
             ->get(['id', 'name', 'grade_level']);
 
+        $selectedClass = $sectionId ? $classCards->firstWhere('id', $sectionId) : null;
+        $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get(['id', 'school_year']);
+        $activeSchoolYear = SchoolYear::query()->where('is_active', true)->first();
+        $allSections = $classCards;
+        $grade = $selectedClass?->grade_level ?? ($allSections->first()?->grade_level ?? 1);
+
         return view('teacher-modules.students.student-management', compact(
             'students',
             'classCards',
             'sectionId',
+            'selectedClass',
+            'schoolYears',
+            'activeSchoolYear',
+            'allSections',
+            'grade'
         ));
     }
 }

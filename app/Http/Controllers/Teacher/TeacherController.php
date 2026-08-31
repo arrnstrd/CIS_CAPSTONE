@@ -6,6 +6,9 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Mail\InvitationMail;
+use App\Models\SchoolYear;
+use App\Models\Section;
+use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\User;
 use App\Services\InvitationService;
@@ -14,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+
 
 class TeacherController extends Controller
 {
@@ -56,6 +60,29 @@ class TeacherController extends Controller
             ->withQueryString();
 
         return view('admin-modules.management.teacher', compact('teachers'));
+    }
+
+
+    public function show(Teacher $teacher)
+    {
+        $teacher->load([
+            'user',
+            'teachingAssignments.subject',
+            'teachingAssignments.section',
+            'teachingAssignments.schoolYear',
+            'advisedSections',
+        ]);
+
+        $subjects = Subject::orderBy('name')->get();
+        $sections = Section::where('status', 'active')->orderBy('name')->get();
+        $schoolYears = SchoolYear::orderBy('school_year', 'desc')->get();
+
+        return view('admin-modules.management.teachers.show', compact(
+            'teacher',
+            'subjects',
+            'sections',
+            'schoolYears',
+        ));
     }
 
 

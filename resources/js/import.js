@@ -1,172 +1,328 @@
 /**
- * Bulk Import — UI controller.
+ * Bulk Import — Interactive Controller & State Machine.
  *
  * Handles the full import lifecycle:
- *   Upload → Validate → Confirm (process) → Result
- *
- * All state is managed in a single ImportState object to avoid
- * race conditions from multiple polling loops.
+ *   File Drop / Pick -> Client Validation -> Upload & Row Verification ->
+ *   Validation Summary & Issue Inspector -> Confirm / Process -> Completion Summary -> History
  */
+
 class ImportState {
     constructor() {
         this.importId = null;
-        this.pollTimer = null;
+        this.currentFilename = "";
         this.totalRows = 0;
-        this.step = "idle"; // idle | uploading | validating | validating_done | processing | done
+        this.validRows = 0;
+        this.errorRows = 0;
+        this.warningRows = 0;
+        this.step = "upload"; // upload | verifying | summary | processing | result
+        this.pollTimer = null;
     }
 
-    set(id) {
+    set(id, filename = "") {
         this.importId = id;
+        if (filename) this.currentFilename = filename;
     }
+
     get() {
         return this.importId;
     }
+
     clear() {
         this.importId = null;
+        this.currentFilename = "";
+        this.totalRows = 0;
+        this.validRows = 0;
+        this.errorRows = 0;
+        this.warningRows = 0;
+        this.step = "upload";
         this.stopPoll();
-        this.step = "idle";
     }
 
-    startPoll(fn, ms = 1500) {
-        this.stopPoll();
-        this.pollTimer = setInterval(fn, ms);
-    }
     stopPoll() {
         if (this.pollTimer) {
             clearInterval(this.pollTimer);
             this.pollTimer = null;
         }
     }
-
-    isProcessing() {
-        return this.step === "processing";
-    }
 }
 
 const state = new ImportState();
 
-// ── Bootstrap modal cache ──────────────────────────────────────────────
+// ── Bootstrap Modal Helper Cache ─────────────────────────────────────────
 const modalCache = {};
 function modal(id) {
-    if (!modalCache[id])
-        modalCache[id] = new bootstrap.Modal(document.getElementById(id));
+    const el = document.getElementById(id);
+    if (!el) return null;
+    if (!modalCache[id]) {
+        modalCache[id] = new bootstrap.Modal(el);
+    }
     return modalCache[id];
 }
-const showM = (id) => modal(id).show();
-const hideM = (id) => modal(id).hide();
+const showM = (id) => modal(id)?.show();
+const hideM = (id) => modal(id)?.hide();
 
-// ── CSRF ───────────────────────────────────────────────────────────────
+// ── CSRF Token ──────────────────────────────────────────────────────────
 function csrf() {
     const m = document.querySelector('meta[name="csrf-token"]');
     return m ? m.content : "";
 }
 
-// ── Upload ─────────────────────────────────────────────────────────────
+// ── Step Navigation & Stepper UI ─────────────────────────────────────────
+function setStep(stepName) {
+    state.step = stepName;
+
+    // Panels
+    const panels = {
+        upload: document.getElementById("stepUploadSection"),
+        verifying: document.getElementById("stepVerifyingSection"),
+        summary: document.getElementById("stepValidationSummarySection"),
+        processing: document.getElementById("stepProcessingSection"),
+        result: document.getElementById("stepResultSection"),
+    };
+
+    Object.keys(panels).forEach((k) => {
+        if (panels[k]) {
+            if (k === stepName) {
+                panels[k].classList.remove("d-none");
+            } else {
+                panels[k].classList.add("d-none");
+            }
+        }
+    });
+
+    // Stepper nodes
+    const node1 = document.getElementById("stepNode1");
+    const node2 = document.getElementById("stepNode2");
+    const node3 = document.getElementById("stepNode3");
+    const conn1 = document.getElementById("stepConnector1");
+    const conn2 = document.getElementById("stepConnector2");
+
+    if (!node1 || !node2 || !node3) return;
+
+    node1.className = "step-node";
+    node2.className = "step-node";
+    node3.className = "step-node";
+    conn1?.classList.remove("active");
+    conn2?.classList.remove("active");
+
+    if (stepName === "upload") {
+        node1.classList.add("active");
+    } else if (stepName === "verifying" || stepName === "summary") {
+        node1.classList.add("completed");
+        conn1?.classList.add("active");
+        node2.classList.add("active");
+    } else if (stepName === "processing" || stepName === "result") {
+        node1.classList.add("completed");
+        conn1?.classList.add("active");
+        node2.classList.add("completed");
+        conn2?.classList.add("active");
+        node3.classList.add("active");
+    }
+}
+
+// ── View Switcher (Import Workspace vs History) ──────────────────────────
+function initViewSwitcher() {
+    const importBtn = document.getElementById("viewImportBtn");
+    const historyBtn = document.getElementById("viewHistoryBtn");
+    const importView = document.getElementById("importWorkspaceView");
+    const historyView = document.getElementById("historyView");
+    const historyStartNewBtn = document.getElementById("historyStartNewImportBtn");
+    const refreshHistoryBtn = document.getElementById("refreshHistoryBtn");
+
+    function switchToImport() {
+        importBtn?.classList.add("active");
+        historyBtn?.classList.remove("active");
+        importView?.classList.remove("d-none");
+        historyView?.classList.add("d-none");
+    }
+
+    function switchToHistory() {
+        historyBtn?.classList.add("active");
+        importBtn?.classList.remove("active");
+        historyView?.classList.remove("d-none");
+        importView?.classList.add("d-none");
+        loadHistory();
+    }
+
+    importBtn?.addEventListener("click", switchToImport);
+    historyBtn?.addEventListener("click", switchToHistory);
+    historyStartNewBtn?.addEventListener("click", () => {
+        resetImportUI();
+        switchToImport();
+    });
+    refreshHistoryBtn?.addEventListener("click", () => loadHistory(1));
+}
+
+// ── Client-side Validation Alerts ────────────────────────────────────────
+function showClientAlert(message) {
+    const alertBox = document.getElementById("clientValidationAlert");
+    const msgBox = document.getElementById("clientValidationMessage");
+    if (alertBox && msgBox) {
+        msgBox.textContent = message;
+        alertBox.classList.remove("d-none");
+    }
+}
+
+function hideClientAlert() {
+    const alertBox = document.getElementById("clientValidationAlert");
+    if (alertBox) {
+        alertBox.classList.add("d-none");
+    }
+}
+
+// ── File Selection & Dropzone ────────────────────────────────────────────
 export function initUpload() {
     const form = document.getElementById("uploadForm");
-    if (!form) return;
+    const fileInput = document.getElementById("file");
+    const dropzone = document.getElementById("dropzone");
+    const browseLink = document.getElementById("browseLink");
+    const dropzonePrompt = document.getElementById("dropzonePrompt");
+    const filePreviewCard = document.getElementById("fileSelectedCard");
+    const selectedFileName = document.getElementById("selectedFileName");
+    const selectedFileSize = document.getElementById("selectedFileSize");
+    const clearSelectedFileBtn = document.getElementById("clearSelectedFileBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const dismissAlertBtn = document.getElementById("dismissClientAlertBtn");
 
+    if (!form || !fileInput) return;
+
+    dismissAlertBtn?.addEventListener("click", hideClientAlert);
+
+    // Browse click
+    browseLink?.addEventListener("click", (e) => {
+        e.preventDefault();
+        fileInput.click();
+    });
+
+    dropzone?.addEventListener("click", (e) => {
+        if (e.target !== browseLink && !fileInput.files.length) {
+            fileInput.click();
+        }
+    });
+
+    // Drag & Drop
+    ["dragenter", "dragover"].forEach((eventName) => {
+        dropzone?.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add("drag-over");
+        });
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+        dropzone?.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove("drag-over");
+        });
+    });
+
+    dropzone?.addEventListener("drop", (e) => {
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener("change", () => {
+        if (fileInput.files.length) {
+            handleFileSelect(fileInput.files[0]);
+        }
+    });
+
+    clearSelectedFileBtn?.addEventListener("click", () => {
+        clearSelectedFile();
+    });
+
+    function handleFileSelect(file) {
+        hideClientAlert();
+
+        if (!file) return;
+
+        // 1. Check file extension (.xlsx or .xls)
+        const validExtensions = [".xlsx", ".xls"];
+        const fileName = file.name.toLowerCase();
+        const hasValidExt = validExtensions.some((ext) => fileName.endsWith(ext));
+
+        if (!hasValidExt) {
+            showClientAlert("Invalid file format. Please upload an Excel spreadsheet (.xlsx or .xls).");
+            clearSelectedFile();
+            return;
+        }
+
+        // 2. Check file size (Max 10 MB = 10 * 1024 * 1024 bytes)
+        const maxSizeBytes = 10 * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            showClientAlert(`File exceeds the 10 MB limit (${sizeMB} MB). Please reduce or split your spreadsheet.`);
+            clearSelectedFile();
+            return;
+        }
+
+        // Put file in input if assigned from drag-and-drop
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+
+        // Update preview UI
+        selectedFileName.textContent = file.name;
+        selectedFileSize.textContent = formatBytes(file.size);
+        filePreviewCard.classList.remove("d-none");
+        dropzonePrompt.classList.add("d-none");
+        uploadBtn.disabled = false;
+    }
+
+    function clearSelectedFile() {
+        fileInput.value = "";
+        filePreviewCard?.classList.add("d-none");
+        dropzonePrompt?.classList.remove("d-none");
+        if (uploadBtn) uploadBtn.disabled = true;
+    }
+
+    // Submit handler: Upload file & proceed to verification
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const fileInput = document.getElementById("file");
         if (!fileInput.files.length) return;
 
-        state.step = "uploading";
-        const btn = document.getElementById("uploadBtn");
-        btn.disabled = true;
-        btn.innerHTML =
-            '<span class="spinner-border spinner-border-sm me-1"></span> Uploading...';
+        const file = fileInput.files[0];
+        state.currentFilename = file.name;
 
-        // Close modal, show inline progress
-        hideM("uploadModal");
-        document.getElementById("inlineProgress").classList.remove("d-none");
-        document.getElementById("inlineProgressText").textContent =
-            "Uploading file...";
+        // Transition to verifying state
+        setStep("verifying");
+        document.getElementById("verificationStateTitle").textContent = "Uploading & Verifying Rows...";
+        document.getElementById("verificationCurrentStatus").textContent = "Parsing DepEd SF-1 structure...";
 
         const fd = new FormData();
-        fd.append("file", fileInput.files[0]);
+        fd.append("file", file);
 
         try {
-            const r = await fetch("/import/upload", {
+            const uploadRes = await fetch("/import/upload", {
                 method: "POST",
                 headers: { "X-CSRF-TOKEN": csrf(), Accept: "application/json" },
                 body: fd,
             });
-            const d = await r.json();
+            const uploadData = await uploadRes.json();
 
-            if (!r.ok) {
-                showError(
-                    "Upload Failed",
-                    apiErrorMessage(d) || "Could not upload the file.",
-                );
-                resetUI();
+            if (!uploadRes.ok) {
+                setStep("upload");
+                showError("Upload Failed", apiErrorMessage(uploadData) || "Could not upload the file.");
                 return;
             }
 
-            state.set(d.data.id);
+            state.set(uploadData.data.id, file.name);
+
+            // Trigger server-side row validation
             await doValidate();
         } catch (err) {
-            showError("Upload Failed", err.message || "Network error.");
-            resetUI();
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-upload me-2"></i> Upload';
+            setStep("upload");
+            showError("Upload Failed", err.message || "Network communication error.");
         }
     });
-
-    // Dropzone
-    const dz = document.getElementById("dropzone");
-    const fi = document.getElementById("file");
-    document.getElementById("browseLink")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        fi.click();
-    });
-    dz?.addEventListener("click", () => fi.click());
-    dz?.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dz.style.borderColor = "#0d6efd";
-    });
-    dz?.addEventListener("dragleave", () => {
-        dz.style.borderColor = "#d0d5dd";
-    });
-    dz?.addEventListener("drop", (e) => {
-        e.preventDefault();
-        dz.style.borderColor = "#d0d5dd";
-        if (e.dataTransfer.files.length) fi.files = e.dataTransfer.files;
-        showFileInfo();
-    });
-    fi?.addEventListener("change", showFileInfo);
-    document.getElementById("clearFileBtn")?.addEventListener("click", () => {
-        fi.value = "";
-        document.getElementById("fileInfo").classList.add("d-none");
-    });
-
-    // Reset the file selection whenever the upload modal is dismissed
-    // (Cancel, close X, backdrop, or ESC) so a previously chosen file is
-    // not pre-selected or re-uploaded the next time the modal is opened.
-    // Safe for the in-flight upload: the FormData already captured the File
-    // synchronously before this async "hidden" event fires.
-    document
-        .getElementById("uploadModal")
-        ?.addEventListener("hidden.bs.modal", () => {
-            fi.value = "";
-            document.getElementById("fileInfo").classList.add("d-none");
-        });
 }
 
-function showFileInfo() {
-    const fi = document.getElementById("file");
-    if (fi.files.length) {
-        document.getElementById("fileName").textContent = fi.files[0].name;
-        document.getElementById("fileInfo").classList.remove("d-none");
-    }
-}
-
-// ── Validate ───────────────────────────────────────────────────────────
+// ── Row Verification ─────────────────────────────────────────────────────
 async function doValidate() {
-    state.step = "validating";
-    document.getElementById("inlineProgressText").textContent =
-        "Validating spreadsheet...";
+    document.getElementById("verificationStateTitle").textContent = "Verifying Spreadsheet Rows...";
+    document.getElementById("verificationCurrentStatus").textContent = "Scanning records, checking duplicates and section alignments...";
 
     try {
         const r = await fetch(`/import/${state.get()}/validate`, {
@@ -175,155 +331,176 @@ async function doValidate() {
         });
         const d = await r.json();
 
-        document.getElementById("inlineProgress").classList.add("d-none");
-
         if (!r.ok) {
-            showError(
-                "Validation Failed",
-                apiErrorMessage(d) || "Validation error.",
-            );
-            resetUI();
+            setStep("upload");
+            showError("Validation Failed", apiErrorMessage(d) || "Validation failed.");
             return;
         }
 
-        state.step = "validating_done";
-        state.totalRows = d.data.total_rows || 0;
-        showValidationResult(d.data);
+        const data = d.data;
+        state.totalRows = data.total_rows || 0;
+        state.validRows = data.valid_count || 0;
+        state.errorRows = data.error_count || 0;
+        state.warningRows = data.warning_count || 0;
+
+        renderValidationSummary(data);
         loadHistory();
     } catch (err) {
-        document.getElementById("inlineProgress").classList.add("d-none");
-        showError("Validation Failed", err.message || "Network error.");
-        resetUI();
+        setStep("upload");
+        showError("Validation Failed", err.message || "Network error occurred.");
     }
 }
 
-// ── Validation result modal ────────────────────────────────────────────
-function showValidationResult(data) {
-    const hasErrors = data.error_count > 0;
-    const hasWarnings = data.warning_count > 0;
-    const body = document.getElementById("validationBody");
-    const footer = document.getElementById("validationFooter");
-    const title = document.getElementById("validationTitle");
+// ── Render Validation Summary & Interactive Prompt ───────────────────────
+function renderValidationSummary(data) {
+    setStep("summary");
 
-    const summary = `
-        <div class="row g-3 text-center mb-4">
-            <div class="col-3"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold">${data.total_rows}</div><div class="text-muted small">Total Rows</div></div></div>
-            <div class="col-3"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-success">${data.valid_count}</div><div class="text-muted small">Valid</div></div></div>
-            <div class="col-3"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-danger">${data.error_count}</div><div class="text-muted small">Errors</div></div></div>
-            <div class="col-3"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-warning">${data.warning_count}</div><div class="text-muted small">Warnings</div></div></div>
-        </div>`;
+    document.getElementById("summaryFilenameLabel").textContent = state.currentFilename || "spreadsheet.xlsx";
+    document.getElementById("statTotalRows").textContent = data.total_rows || 0;
+    document.getElementById("statValidRows").textContent = data.valid_count || 0;
+    document.getElementById("statErrorRows").textContent = data.error_count || 0;
+    document.getElementById("statWarningRows").textContent = data.warning_count || 0;
 
+    const calloutContainer = document.getElementById("validationCalloutContainer");
+    const previewBox = document.getElementById("summaryIssuesPreviewBox");
+    const downloadErrorBtn = document.getElementById("downloadErrorReportBtn");
+    const openInspectorBtn = document.getElementById("openIssueInspectorBtn");
+    const proceedBtn = document.getElementById("proceedImportBtn");
+
+    const hasErrors = (data.error_count || 0) > 0;
+    const hasWarnings = (data.warning_count || 0) > 0;
+
+    // Reset buttons
+    if (downloadErrorBtn) {
+        downloadErrorBtn.href = `/import/${state.get()}/export-errors`;
+        if (hasErrors || hasWarnings) {
+            downloadErrorBtn.classList.remove("d-none");
+        } else {
+            downloadErrorBtn.classList.add("d-none");
+        }
+    }
+
+    if (openInspectorBtn) {
+        if (hasErrors || hasWarnings) {
+            openInspectorBtn.classList.remove("d-none");
+        } else {
+            openInspectorBtn.classList.add("d-none");
+        }
+    }
+
+    // Dynamic banner content & duplicate prompt
     if (!hasErrors && !hasWarnings) {
-        title.innerHTML =
-            '<i class="fas fa-check-circle me-1"></i> Validation Passed';
-        body.innerHTML =
-            summary +
-            '<p class="text-center mb-0">All rows passed validation. Ready to import.</p>';
-        footer.innerHTML = `<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-             <button type="button" class="btn btn-success" id="modalProceedBtn"><i class="fas fa-check me-1"></i> Proceed</button>`;
+        calloutContainer.innerHTML = `
+            <div class="alert alert-success d-flex align-items-center gap-3 p-3 rounded-3 mb-0" role="alert">
+                <i class="fas fa-circle-check fs-3 text-success flex-shrink-0"></i>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1">Spreadsheet Verified Successfully!</h6>
+                    <p class="small mb-0">All <strong>${data.total_rows}</strong> student records passed data integrity and duplicate checks. Ready to import.</p>
+                </div>
+            </div>`;
+        previewBox?.classList.add("d-none");
+
+        proceedBtn.innerHTML = `<i class="fas fa-check-circle me-1.5"></i> Complete Import (${data.valid_count} Students)`;
+        proceedBtn.disabled = false;
     } else {
-        title.innerHTML =
-            '<i class="fas fa-exclamation-triangle me-1"></i> Validation Issues Found';
-        const readyMsg =
-            data.valid_count > 0
-                ? `<div class="alert alert-success small d-flex align-items-center gap-2"><i class="fas fa-check-circle me-1"></i> ${data.valid_count} row(s) are ready to import. ${data.error_count} row(s) with errors will be skipped.</div>`
-                : "";
-        body.innerHTML =
-            summary +
-            readyMsg +
-            '<div class="alert alert-warning small">Some rows have issues, but you can still import the valid rows.</div>' +
-            '<h6 class="fw-semibold mb-2 mt-3"><i class="fas fa-list me-1"></i> Top Issues</h6>' +
-            '<div id="validationIssuePreview" class="list-group list-group-flush mb-3"></div>';
-        footer.innerHTML = `<a class="btn btn-outline-secondary" href="/import/${state.get()}/export-errors"><i class="fas fa-file-download me-1"></i> Download Error Report</a>
-             <button type="button" class="btn btn-outline-secondary" id="modalReuploadBtn"><i class="fas fa-file-upload me-1"></i> Re-upload</button>
-             <button type="button" class="btn btn-outline-primary" id="modalReviewBtn" data-bs-dismiss="modal"><i class="fas fa-search me-1"></i> Review Issues</button>
-             ${
-                 data.valid_count > 0
-                     ? `<button type="button" class="btn btn-success" id="modalProceedBtn"><i class="fas fa-check me-1"></i> Proceed (${data.valid_count} rows)</button>`
-                     : ""
-             }`;
-    }
+        const duplicateWarning = `<div class="alert alert-warning border-warning-subtle d-flex align-items-start gap-3 p-3 rounded-3 mb-0" role="alert">
+            <i class="fas fa-triangle-exclamation fs-3 text-warning flex-shrink-0 mt-0.5"></i>
+            <div class="flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                    <h6 class="fw-bold mb-0 text-dark">Issues Detected in Spreadsheet</h6>
+                    <button type="button" class="btn btn-warning btn-sm rounded-pill px-3 fw-semibold" id="calloutInspectIssuesBtn">
+                        <i class="fas fa-search me-1"></i> Inspect Issues (${data.error_count + data.warning_count})
+                    </button>
+                </div>
+                <p class="small text-muted mb-2">Duplicate LRNs, invalid entries, or missing required fields were found. Rows with errors will be automatically skipped.</p>
+                <div class="d-flex align-items-center gap-2 small">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">${data.valid_count} Valid Ready</span>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">${data.error_count} Errors (Blocked)</span>
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle">${data.warning_count} Warnings</span>
+                </div>
+            </div>
+        </div>`;
+        calloutContainer.innerHTML = duplicateWarning;
 
-    // Wire buttons (fresh listeners via cloning to avoid duplicates)
-    rebind("modalProceedBtn", () => {
-        hideM("validationModal");
-        doProcess();
-    });
-    rebind("modalReuploadBtn", () => {
-        hideM("validationModal");
-        resetUI();
-    });
-    if (document.getElementById("modalReviewBtn")) {
-        rebind("modalReviewBtn", () => {
-            hideM("validationModal");
-            switchTab("issues");
-            loadIssues();
+        // Load preview of top issues
+        previewBox?.classList.remove("d-none");
+        loadSummaryIssuePreview();
+
+        document.getElementById("calloutInspectIssuesBtn")?.addEventListener("click", () => {
+            openIssueInspector();
         });
+
+        if (data.valid_count > 0) {
+            proceedBtn.innerHTML = `<i class="fas fa-file-import me-1.5"></i> Proceed with Valid Rows (${data.valid_count})`;
+            proceedBtn.disabled = false;
+        } else {
+            proceedBtn.innerHTML = `<i class="fas fa-ban me-1.5"></i> No Valid Rows to Import`;
+            proceedBtn.disabled = true;
+        }
     }
 
-    showM("validationModal");
-
-    if (hasErrors || hasWarnings) loadValidationIssuePreview();
+    // Rebind action buttons
+    rebind("proceedImportBtn", () => doProcess());
+    rebind("cancelImportBtn", () => resetImportUI());
+    rebind("reuploadFileBtn", () => resetImportUI());
+    rebind("openIssueInspectorBtn", () => openIssueInspector());
+    rebind("viewAllIssuesLink", (e) => {
+        e.preventDefault();
+        openIssueInspector();
+    });
 }
 
-/**
- * Load the first few issues into the validation modal so the user can see
- * what is wrong immediately instead of having to open the Issues tab.
- */
-async function loadValidationIssuePreview() {
-    const container = document.getElementById("validationIssuePreview");
-    if (!container) return;
+// ── Load Issues Preview List ─────────────────────────────────────────────
+async function loadSummaryIssuePreview() {
+    const listEl = document.getElementById("summaryIssuesList");
+    if (!listEl || !state.get()) return;
 
     try {
-        const r = await fetch(`/import/${state.get()}/issues?per_page=5`, {
+        const r = await fetch(`/import/${state.get()}/issues?per_page=4`, {
             headers: { Accept: "application/json" },
         });
         const d = await r.json();
 
         if (!d.data || !d.data.length) {
-            container.innerHTML =
-                '<div class="text-muted small py-2">No issues to display.</div>';
+            listEl.innerHTML = '<div class="text-muted small py-1 px-2">No detailed issues.</div>';
             return;
         }
 
-        container.innerHTML = d.data
-            .map(
-                (i) => `
-            <div class="list-group-item d-flex align-items-start gap-2 py-2">
-                <span class="badge-dot dot-${i.severity} mt-1"></span>
-                <div class="small w-100">
-                    <span class="text-muted me-2">Row ${i.row_number ?? "—"}</span>
-                    <span class="text-muted">${label(i.issue_type)}</span>
-                    <div class="mt-1">${esc(i.message)}</div>
-                </div>
-            </div>`,
-            )
+        listEl.innerHTML = d.data
+            .map((i) => {
+                const isErr = i.severity === "error";
+                const badgeDotClass = isErr ? "dot-danger" : "dot-warning";
+                const icon = isErr ? "fa-circle-xmark text-danger" : "fa-triangle-exclamation text-warning";
+                return `
+                <div class="issue-preview-item">
+                    <i class="fas ${icon} mt-1 flex-shrink-0"></i>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                            <span class="fw-semibold text-dark">Row ${i.row_number ?? "—"} &bull; ${label(i.issue_type)}</span>
+                            <span class="badge-dot ${badgeDotClass}">${label(i.severity)}</span>
+                        </div>
+                        <div class="text-muted small mt-0.5">${esc(i.message)}</div>
+                    </div>
+                </div>`;
+            })
             .join("");
     } catch (e) {
-        container.innerHTML =
-            '<div class="text-muted small py-2">Could not load issues.</div>';
+        listEl.innerHTML = '<div class="text-muted small py-1 px-2">Unable to load issues preview.</div>';
     }
 }
 
-// ── Process (confirm) ──────────────────────────────────────────────────
+// ── Processing (Confirm & Save) ──────────────────────────────────────────
 async function doProcess() {
-    state.step = "processing";
+    setStep("processing");
 
-    // Show processing modal — start with actual row count from validation
     const total = state.totalRows || 0;
-    document.getElementById("processingBar").style.width = "0%";
-    document.getElementById("processingProgress").textContent =
-        `0 / ${total} rows`;
-    document.getElementById("processingPercent").textContent = "0%";
-    document.getElementById("processingSuccess").textContent = "0";
-    document.getElementById("processingFailed").textContent = "0";
-    document.getElementById("processingActivity").textContent =
-        "Importing students...";
-    showM("processingModal");
+    document.getElementById("processingProgressBar").style.width = "0%";
+    document.getElementById("processingRowCounter").textContent = `0 / ${total} rows`;
+    document.getElementById("processingPercentCounter").textContent = "0%";
+    document.getElementById("processingSuccessCounter").textContent = "0";
+    document.getElementById("processingFailedCounter").textContent = "0";
+    document.getElementById("processingStatusText").textContent = "Enrolling students and resolving sections...";
 
-    // Kick off the confirm request (it processes synchronously on the
-    // server) and poll /status while it runs so the progress bar shows
-    // real numbers instead of sitting frozen at 0%.
     const confirmRes = fetch(`/import/${state.get()}/confirm`, {
         method: "POST",
         headers: { "X-CSRF-TOKEN": csrf(), Accept: "application/json" },
@@ -336,38 +513,22 @@ async function doProcess() {
         const d = await r.json();
 
         if (!r.ok) {
-            hideM("processingModal");
-            showError(
-                "Processing Failed",
-                apiErrorMessage(d) || "Could not start import.",
-            );
+            setStep("summary");
+            showError("Processing Failed", apiErrorMessage(d) || "Could not complete import.");
             return;
         }
 
         fillProcessingUI(d.data);
-        hideM("processingModal");
-
-        state.step = "done";
-        showResultModal(d.data);
+        renderResult(d.data);
         loadHistory();
-        if (d.data.issues_count > 0) {
-            document.getElementById("issuesBadge").textContent =
-                d.data.issues_count;
-            document.getElementById("issuesBadge").classList.remove("d-none");
-        }
     } catch (err) {
         stopProgressPoll();
-        hideM("processingModal");
-        showError("Processing Failed", err.message || "Unexpected error.");
+        setStep("summary");
+        showError("Processing Failed", err.message || "An unexpected error occurred during processing.");
     }
 }
 
-/**
- * Poll the import /status endpoint while the synchronous confirm request
- * runs, feeding real counts into the processing progress UI.
- * Returns a stop() function.
- */
-function startProgressPolling(intervalMs = 1200) {
+function startProgressPolling(intervalMs = 1000) {
     let stopped = false;
     const stop = () => {
         stopped = true;
@@ -382,7 +543,7 @@ function startProgressPolling(intervalMs = 1200) {
             const d = await r.json();
             if (!stopped && d) fillProcessingUI(d);
         } catch (e) {
-            /* transient poll failure — keep waiting for the next tick */
+            /* transient poll error */
         }
         if (!stopped) setTimeout(tick, intervalMs);
     };
@@ -392,121 +553,183 @@ function startProgressPolling(intervalMs = 1200) {
 }
 
 function fillProcessingUI(data) {
-    const pct =
-        data.total_rows > 0
-            ? Math.round(
-                  ((data.success_count + data.failed_count) / data.total_rows) *
-                      100,
-              )
-            : 0;
-    document.getElementById("processingBar").style.width = pct + "%";
-    document.getElementById("processingProgress").textContent =
-        `${data.success_count + data.failed_count} / ${data.total_rows} rows`;
-    document.getElementById("processingPercent").textContent = pct + "%";
-    document.getElementById("processingSuccess").textContent =
-        data.success_count || 0;
-    document.getElementById("processingFailed").textContent =
-        data.failed_count || 0;
+    const total = data.total_rows || 1;
+    const processed = (data.success_count || 0) + (data.failed_count || 0);
+    const pct = Math.min(100, Math.round((processed / total) * 100));
+
+    const pBar = document.getElementById("processingProgressBar");
+    if (pBar) pBar.style.width = pct + "%";
+
+    const pRow = document.getElementById("processingRowCounter");
+    if (pRow) pRow.textContent = `${processed} / ${data.total_rows || 0} rows`;
+
+    const pPct = document.getElementById("processingPercentCounter");
+    if (pPct) pPct.textContent = pct + "%";
+
+    const pSucc = document.getElementById("processingSuccessCounter");
+    if (pSucc) pSucc.textContent = data.success_count || 0;
+
+    const pFail = document.getElementById("processingFailedCounter");
+    if (pFail) pFail.textContent = data.failed_count || 0;
 }
 
-// ── Result modal ───────────────────────────────────────────────────────
-function showResultModal(data) {
+// ── Completion & Result Screen ───────────────────────────────────────────
+function renderResult(data) {
+    setStep("result");
+
     const isSuccess = data.status === "completed";
-    const header = document.getElementById("resultHeader");
-    const title = document.getElementById("resultTitle");
-    const body = document.getElementById("resultBody");
-    const footer = document.getElementById("resultFooter");
+    const icon = document.getElementById("resultIcon");
+    const iconWrapper = document.getElementById("resultIconWrapper");
+    const title = document.getElementById("resultCardTitle");
+    const subtitle = document.getElementById("resultCardSubtitle");
+    const viewIssuesBtn = document.getElementById("resultViewIssuesBtn");
+
+    document.getElementById("resultTotalCount").textContent = data.total_rows || 0;
+    document.getElementById("resultSuccessCount").textContent = data.success_count || 0;
+    document.getElementById("resultFailedCount").textContent = data.failed_count || 0;
 
     if (isSuccess) {
-        header.className =
-            "modal-header border-0 bg-success text-white rounded-top";
-        title.innerHTML =
-            '<i class="fas fa-check-circle me-1"></i> Import Successful';
-        body.innerHTML = `
-            <div class="row g-3 text-center">
-                <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold">${data.total_rows}</div><div class="text-muted small">Total</div></div></div>
-                <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-success">${data.success_count}</div><div class="text-muted small">Imported</div></div></div>
-                <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold">${data.warning_count || 0}</div><div class="text-muted small">Warnings</div></div></div>
-            </div>`;
-        footer.innerHTML = `<button type="button" class="btn btn-outline-secondary" onclick="resetImportUI()"><i class="fas fa-plus me-1"></i> Import Another File</button>
-                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>`;
+        icon.className = "fas fa-circle-check fa-3x text-success";
+        iconWrapper.className = "result-icon-circle mx-auto mb-3 bg-success-subtle";
+        title.textContent = "Bulk Import Completed!";
+        subtitle.textContent = `Successfully imported ${data.success_count} student record(s) into the system.`;
+        viewIssuesBtn?.classList.add("d-none");
     } else {
-        header.className =
-            "modal-header border-0 bg-warning text-dark rounded-top";
-        title.innerHTML =
-            '<i class="fas fa-exclamation-triangle me-1"></i> Completed With Issues';
-        body.innerHTML = `
-            <div class="row g-3 text-center">
-                <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-success">${data.success_count}</div><div class="text-muted small">Imported</div></div></div>
-                <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-danger">${data.failed_count}</div><div class="text-muted small">Failed</div></div></div>
-                <div class="col-4"><div class="border rounded-3 p-3"><div class="fs-3 fw-bold text-warning">${data.warning_count || 0}</div><div class="text-muted small">Warnings</div></div></div>
-            </div>
-            <div class="alert alert-warning small mt-3 mb-0">Failed rows can be reviewed in the Issues tab.</div>`;
-        footer.innerHTML = `<button type="button" class="btn btn-outline-secondary" onclick="resetImportUI()"><i class="fas fa-plus me-1"></i> New Import</button>
-                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="setTimeout(()=>{switchTab('issues');loadIssues();},100)">View Issues</button>`;
+        icon.className = "fas fa-triangle-exclamation fa-3x text-warning";
+        iconWrapper.className = "result-icon-circle mx-auto mb-3 bg-warning-subtle";
+        title.textContent = "Import Completed with Issues";
+        subtitle.textContent = `${data.success_count} students imported, ${data.failed_count} row(s) skipped due to errors.`;
+        viewIssuesBtn?.classList.remove("d-none");
     }
 
-    showM("resultModal");
+    rebind("resultStartNewBtn", () => resetImportUI());
+    rebind("resultViewIssuesBtn", () => openIssueInspector());
+    rebind("resultGoHistoryBtn", () => {
+        document.getElementById("viewHistoryBtn")?.click();
+    });
 }
 
-// ── History ────────────────────────────────────────────────────────────
+// ── Reset Import UI ──────────────────────────────────────────────────────
+export function resetImportUI() {
+    state.clear();
+    const fileInput = document.getElementById("file");
+    if (fileInput) fileInput.value = "";
+
+    document.getElementById("fileSelectedCard")?.classList.add("d-none");
+    document.getElementById("dropzonePrompt")?.classList.remove("d-none");
+    const uploadBtn = document.getElementById("uploadBtn");
+    if (uploadBtn) uploadBtn.disabled = true;
+
+    hideClientAlert();
+    setStep("upload");
+}
+
+// ── Transaction History Table ────────────────────────────────────────────
 let historyPage = 1;
 
-export async function loadHistory(page) {
-    historyPage = page || historyPage;
+export async function loadHistory(page = 1) {
+    historyPage = page;
+    const tbody = document.getElementById("historyBody");
+    if (!tbody) return;
+
     try {
-        const r = await fetch(
-            `/import/history/list?per_page=15&page=${historyPage}`,
-            { headers: { Accept: "application/json" } },
-        );
+        const r = await fetch(`/import/history/list?per_page=15&page=${historyPage}`, {
+            headers: { Accept: "application/json" },
+        });
         const d = await r.json();
-        const tbody = document.getElementById("historyBody");
+
+        // Update badge count
+        const badge = document.getElementById("historyCountBadge");
+        if (badge && d.meta) {
+            badge.textContent = d.meta.total || d.data?.length || 0;
+        }
 
         if (!d.data || d.data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5">
-                <div class="text-muted"><i class="fas fa-inbox fa-3x mb-3 d-block"></i>
-                <p class="fw-medium">No imports yet.</p>
-                <p class="small">Upload a spreadsheet above to get started.</p></div></td></tr>`;
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3 d-block text-secondary opacity-50"></i>
+                        <p class="fw-semibold mb-1">No import transactions recorded yet.</p>
+                        <p class="small text-muted mb-0">Use the Import Workspace to upload your first DepEd SF-1 spreadsheet.</p>
+                    </td>
+                </tr>`;
             document.getElementById("historyPagination").innerHTML = "";
             return;
         }
 
         tbody.innerHTML = d.data
-            .map(
-                (h) => `
-            <tr>
-                <td><small class="text-muted">#${h.id}</small></td>
-                <td><small>${esc(h.original_filename)}</small></td>
-                <td><small>${h.created_by?.name ?? "—"}</small></td>
-                <td>
-                    <small class="text-success fw-medium">${h.success_count} ✓</small>
-                    <small class="text-muted"> / </small>
-                    <small class="text-danger fw-medium">${h.failed_count} ✗</small>
-                </td>
-                <td><small>${formatDateTime(h.created_at)}</small></td>
-                <td><span class="badge-dot dot-${dotClass(h.status)}">${label(h.status)}</span></td>
-                <td><small class="text-muted">${duration(h.created_at, h.updated_at)}</small></td>
-                <td><button class="btn btn-sm btn-outline-secondary" onclick="viewImport(${h.id})"><i class="fas fa-eye"></i></button></td>
-            </tr>
-        `,
-            )
+            .map((h) => {
+                const statusDot = dotClass(h.status);
+                const statusName = label(h.status);
+                const transactionId = `#${h.id}`;
+
+                let resultHtml = '<span class="text-muted">—</span>';
+                if (h.status === "completed") {
+                    resultHtml = `<span class="text-success fw-bold">${h.success_count ?? 0} ✓</span>`;
+                } else if (h.status === "completed_with_issues" || ((h.failed_count || 0) > 0 && (h.success_count || 0) > 0)) {
+                    resultHtml = `<span class="text-success fw-bold">${h.success_count ?? 0} ✓</span> <span class="text-muted mx-0.5">/</span> <span class="text-danger fw-bold">${h.failed_count ?? 0} ✗</span>`;
+                } else if (h.status === "failed" || (h.failed_count || 0) > 0) {
+                    resultHtml = `<span class="text-danger fw-bold">${h.failed_count ?? 0} ✗</span>`;
+                } else if ((h.total_rows || 0) > 0) {
+                    resultHtml = `<span class="text-muted">${h.total_rows} rows</span>`;
+                }
+
+                return `
+                <tr>
+                    <td>
+                        <span class="fw-bold font-monospace text-dark">${transactionId}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2" title="${esc(h.original_filename)}">
+                            <i class="far fa-file-excel text-success fs-5 flex-shrink-0"></i>
+                            <span class="text-truncate fw-medium text-dark" style="max-width: 100%;">
+                                ${esc(h.original_filename)}
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-1.5 text-truncate" title="${esc(h.created_by?.name ?? "Admin")}">
+                            <i class="far fa-user text-muted flex-shrink-0"></i>
+                            <span class="text-dark">${esc(h.created_by?.name ?? "Admin")}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small">${resultHtml}</div>
+                    </td>
+                    <td>
+                        <span class="small text-dark">${formatDateTime(h.created_at)}</span>
+                    </td>
+                    <td>
+                        <span class="badge-dot dot-${statusDot}">${statusName}</span>
+                    </td>
+                    <td>
+                        <small class="text-muted font-monospace">${duration(h.created_at, h.updated_at)}</small>
+                    </td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-primary px-2.5 py-1" onclick="viewImportTransaction(${h.id})" title="View Transaction Issues">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            })
             .join("");
 
         // Pagination
         if (d.meta && d.meta.last_page > 1) {
-            const cp = d.meta.current_page,
-                lp = d.meta.last_page;
+            const cp = d.meta.current_page;
+            const lp = d.meta.last_page;
             let p = `<ul class="pagination pagination-sm mb-0">`;
             p += `<li class="page-item ${cp <= 1 ? "disabled" : ""}"><a class="page-link" href="#" onclick="return historyPageClick(${cp - 1})">Prev</a></li>`;
-            for (let i = Math.max(1, cp - 1); i <= Math.min(lp, cp + 1); i++)
+            for (let i = Math.max(1, cp - 1); i <= Math.min(lp, cp + 1); i++) {
                 p += `<li class="page-item ${i === cp ? "active" : ""}"><a class="page-link" href="#" onclick="return historyPageClick(${i})">${i}</a></li>`;
+            }
             p += `<li class="page-item ${cp >= lp ? "disabled" : ""}"><a class="page-link" href="#" onclick="return historyPageClick(${cp + 1})">Next</a></li></ul>`;
             document.getElementById("historyPagination").innerHTML = p;
         } else {
             document.getElementById("historyPagination").innerHTML = "";
         }
     } catch (e) {
-        /* silent */
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Failed to load history.</td></tr>`;
     }
 }
 
@@ -515,44 +738,44 @@ window.historyPageClick = function (p) {
     return false;
 };
 
-// ── View import (from history) ─────────────────────────────────────────
-window.viewImport = async function (id) {
+// ── View Transaction & Open Inspector ────────────────────────────────────
+window.viewImportTransaction = async function (id) {
     try {
         const r = await fetch(`/import/${id}`, {
             headers: { Accept: "application/json" },
         });
         const d = await r.json();
-        state.set(id);
-        document.getElementById("inlineProgress").classList.add("d-none");
-        if (d.data.issues_count > 0) {
-            document.getElementById("issuesBadge").textContent =
-                d.data.issues_count;
-            document.getElementById("issuesBadge").classList.remove("d-none");
-        }
-        switchTab("issues");
-        loadIssues();
+        state.set(id, d.data.original_filename);
+        openIssueInspector();
     } catch (e) {
-        /* silent */
+        showError("Unable to Load", "Could not load transaction details.");
     }
 };
 
-// ── Issues ─────────────────────────────────────────────────────────────
+// ── Issues Inspector & Modal ─────────────────────────────────────────────
 let issuesPage = 1;
 
-export async function loadIssues(page) {
-    issuesPage = page || issuesPage;
+export function openIssueInspector() {
     if (!state.get()) return;
 
-    // Expose the error report download for the selected import.
-    const downloadBtn = document.getElementById("downloadErrorsBtn");
-    if (downloadBtn) {
-        downloadBtn.href = `/import/${state.get()}/export-errors`;
-        downloadBtn.classList.remove("d-none");
+    document.getElementById("issueInspectorSubtitle").textContent = `Transaction #${state.get()} &bull; ${state.currentFilename || "spreadsheet.xlsx"}`;
+    const exportBtn = document.getElementById("inspectorDownloadErrorsBtn");
+    if (exportBtn) {
+        exportBtn.href = `/import/${state.get()}/export-errors`;
     }
 
-    const severity = document.getElementById("severityFilter").value;
-    const status = document.getElementById("statusFilter").value;
-    const search = document.getElementById("issuesSearch").value;
+    showM("issueInspectorModal");
+    loadIssues(1);
+}
+
+export async function loadIssues(page = 1) {
+    issuesPage = page;
+    if (!state.get()) return;
+
+    const severity = document.getElementById("severityFilter")?.value || "";
+    const status = document.getElementById("statusFilter")?.value || "";
+    const search = document.getElementById("issuesSearch")?.value || "";
+
     let url = `/import/${state.get()}/issues?per_page=15&page=${issuesPage}`;
     if (severity) url += `&severity=${severity}`;
     if (status) url += `&status=${status}`;
@@ -564,13 +787,11 @@ export async function loadIssues(page) {
         const tbody = document.getElementById("issuesBody");
 
         if (!d.data || d.data.length === 0) {
-            tbody.innerHTML =
-                '<tr><td colspan="7" class="text-center py-4 text-muted">No issues found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fas fa-check-circle text-success me-1"></i> No issues matching the criteria.</td></tr>';
             document.getElementById("issuesPagination").innerHTML = "";
             return;
         }
 
-        // Index issues by ID for the detail modal
         window.__issuesMap = window.__issuesMap || {};
         d.data.forEach((issue) => {
             window.__issuesMap[issue.id] = issue;
@@ -578,21 +799,31 @@ export async function loadIssues(page) {
 
         tbody.innerHTML = d.data
             .map((i) => {
-                const name = parseLearnerName(i.raw_data);
-                return `<tr>
-                <td>${i.row_number}</td>
-                <td><small>${esc(name)}</small></td>
-                <td><small>${label(i.issue_type)}</small></td>
-                <td><span class="badge-dot dot-${i.severity}">${label(i.severity)}</span></td>
-                <td><span class="badge-dot dot-${i.status}">${label(i.status)}</span></td>
-                <td><small class="text-muted">${new Date(i.created_at).toLocaleDateString()}</small></td>
-                <td>${
-                    `<button class="btn btn-sm btn-outline-secondary me-1" onclick="viewIssueDetail(${i.id})" title="View Details"><i class="fas fa-eye"></i></button>` +
-                    (i.status === "unresolved"
-                        ? `<button class="btn btn-sm btn-outline-success" onclick="acknowledgeIssue(${i.id})">Acknowledge</button>`
-                        : '<span class="text-muted small">Done</span>')
-                }</td>
-            </tr>`;
+                const learnerName = parseLearnerName(i.raw_data);
+                const isError = i.severity === "error";
+                const dot = isError ? "dot-error" : "dot-warning";
+
+                return `
+                <tr>
+                    <td><span class="fw-bold font-monospace">Row ${i.row_number ?? "—"}</span></td>
+                    <td>
+                        <div class="fw-medium text-dark">${esc(learnerName)}</div>
+                        <small class="text-muted font-monospace">${esc(i.field ? "Field: " + i.field : "")}</small>
+                    </td>
+                    <td><span class="badge bg-light text-dark border">${label(i.issue_type)}</span></td>
+                    <td><span class="small text-dark">${esc(i.message)}</span></td>
+                    <td><span class="badge-dot ${dot}">${label(i.severity)}</span></td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-secondary me-1 rounded-pill" onclick="viewIssueDetail(${i.id})" title="View Raw Data">
+                            <i class="fas fa-circle-info"></i>
+                        </button>
+                        ${
+                            i.status === "unresolved"
+                                ? `<button type="button" class="btn btn-sm btn-outline-success rounded-pill" onclick="acknowledgeIssue(${i.id})">Acknowledge</button>`
+                                : '<span class="text-muted small"><i class="fas fa-check text-success"></i> Acknowledged</span>'
+                        }
+                    </td>
+                </tr>`;
             })
             .join("");
 
@@ -601,12 +832,9 @@ export async function loadIssues(page) {
             const cp = issuesPage;
             let p = `<ul class="pagination pagination-sm mb-0">`;
             p += `<li class="page-item ${cp <= 1 ? "disabled" : ""}"><a class="page-link" href="#" onclick="return issuesPageClick(${cp - 1})">Prev</a></li>`;
-            for (
-                let i = Math.max(1, cp - 1);
-                i <= Math.min(d.last_page, cp + 1);
-                i++
-            )
+            for (let i = Math.max(1, cp - 1); i <= Math.min(d.last_page, cp + 1); i++) {
                 p += `<li class="page-item ${i === cp ? "active" : ""}"><a class="page-link" href="#" onclick="return issuesPageClick(${i})">${i}</a></li>`;
+            }
             p += `<li class="page-item ${cp >= d.last_page ? "disabled" : ""}"><a class="page-link" href="#" onclick="return issuesPageClick(${cp + 1})">Next</a></li></ul>`;
             document.getElementById("issuesPagination").innerHTML = p;
         } else {
@@ -638,149 +866,112 @@ window.viewIssueDetail = function (id) {
     const issue = window.__issuesMap?.[id];
     if (!issue) return;
 
-    const raw = issue.raw_data || {};
+    let raw = {};
+    try {
+        raw = typeof issue.raw_data === "string" ? JSON.parse(issue.raw_data) : issue.raw_data || {};
+    } catch (e) {
+        raw = issue.raw_data || {};
+    }
+
     const rawRows = Object.entries(raw)
         .filter(([, v]) => v !== null && v !== undefined && v !== "")
         .map(
-            ([k, v]) =>
-                `<div class="d-flex small mb-1"><span class="fw-medium text-muted" style="min-width:140px;">${esc(k)}</span><span>${esc(String(v))}</span></div>`,
+            ([k, v]) => `
+            <div class="d-flex small py-1 border-bottom">
+                <span class="fw-semibold text-secondary" style="min-width:180px;">${esc(k)}</span>
+                <span class="text-dark font-monospace">${esc(String(v))}</span>
+            </div>`,
         )
         .join("");
 
     document.getElementById("issueDetailSummary").innerHTML = `
-        <div class="row g-2 small mb-3">
-            <div class="col-3"><span class="text-muted">Row:</span><br><span class="fw-medium">${issue.row_number}</span></div>
-            <div class="col-3"><span class="text-muted">Type:</span><br><span class="fw-medium">${label(issue.issue_type)}</span></div>
-            <div class="col-3"><span class="text-muted">Severity:</span><br><span class="badge-dot dot-${issue.severity}">${label(issue.severity)}</span></div>
-            <div class="col-3"><span class="text-muted">Status:</span><br><span class="badge-dot dot-${issue.status}">${label(issue.status)}</span></div>
+        <div class="row g-2 small p-3 bg-light rounded-3 mb-3 border">
+            <div class="col-3"><span class="text-muted">Row Number:</span><br><span class="fw-bold">Row ${issue.row_number}</span></div>
+            <div class="col-3"><span class="text-muted">Issue Type:</span><br><span class="fw-bold">${label(issue.issue_type)}</span></div>
+            <div class="col-3"><span class="text-muted">Severity:</span><br><span class="badge-dot ${issue.severity === "error" ? "dot-error" : "dot-warning"}">${label(issue.severity)}</span></div>
+            <div class="col-3"><span class="text-muted">Status:</span><br><span class="badge-dot ${issue.status === "unresolved" ? "dot-warning" : "dot-acknowledged"}">${label(issue.status)}</span></div>
         </div>`;
 
     document.getElementById("issueDetailMessage").innerHTML = `
-        <div class="border rounded p-3 bg-light">
-            <div class="small text-muted mb-1 fw-medium">Message</div>
-            <div class="mb-0">${esc(issue.message)}</div>
+        <div class="border rounded-3 p-3 bg-white mb-3">
+            <div class="small text-muted mb-1 fw-semibold">Validation Diagnostic Message</div>
+            <div class="text-danger fw-medium">${esc(issue.message)}</div>
         </div>`;
 
     document.getElementById("issueDetailRawData").innerHTML = rawRows
-        ? `<div class="border rounded p-3 mt-3">
-               <div class="small text-muted mb-2 fw-medium">Imported Row Data</div>
-               ${rawRows}
+        ? `<div class="border rounded-3 p-3 bg-white">
+               <div class="small text-muted mb-2 fw-semibold"><i class="fas fa-table me-1"></i> Row Raw Data from Spreadsheet</div>
+               <div style="max-height: 250px; overflow-y: auto;">${rawRows}</div>
            </div>`
         : "";
 
-    const modal = new bootstrap.Modal(
-        document.getElementById("issueDetailModal"),
-    );
-    modal.show();
+    showM("issueDetailModal");
 };
 
-// ── Acknowledge all ────────────────────────────────────────────────────
+// ── Acknowledge All & Filters ────────────────────────────────────────────
 export function initAckAll() {
-    document
-        .getElementById("acknowledgeAllBtn")
-        ?.addEventListener("click", () => {
-            if (!state.get()) return;
-            showConfirm(
-                "Acknowledge All",
-                "Mark all unresolved issues as acknowledged?",
-                async () => {
-                    try {
-                        await fetch(
-                            `/import/${state.get()}/issues/acknowledge-all`,
-                            {
-                                method: "POST",
-                                headers: {
-                                    "X-CSRF-TOKEN": csrf(),
-                                    Accept: "application/json",
-                                },
-                            },
-                        );
-                        loadIssues(1);
-                    } catch (e) {
-                        /* silent */
-                    }
-                },
-            );
+    document.getElementById("acknowledgeAllBtn")?.addEventListener("click", () => {
+        if (!state.get()) return;
+        showConfirm("Acknowledge All Issues", "Are you sure you want to mark all unresolved issues in this import as acknowledged?", async () => {
+            try {
+                await fetch(`/import/${state.get()}/issues/acknowledge-all`, {
+                    method: "POST",
+                    headers: { "X-CSRF-TOKEN": csrf(), Accept: "application/json" },
+                });
+                loadIssues(1);
+            } catch (e) {
+                /* silent */
+            }
         });
+    });
 }
 
-// ── Filter listeners ──────────────────────────────────────────────────
 export function initFilters() {
     ["severityFilter", "statusFilter"].forEach((id) => {
-        document
-            .getElementById(id)
-            ?.addEventListener("change", () => loadIssues(1));
+        document.getElementById(id)?.addEventListener("change", () => loadIssues(1));
     });
     let timer;
     document.getElementById("issuesSearch")?.addEventListener("input", () => {
         clearTimeout(timer);
-        timer = setTimeout(() => loadIssues(1), 400);
+        timer = setTimeout(() => loadIssues(1), 350);
     });
 }
 
-// ── Tab switching ─────────────────────────────────────────────────────
-export function switchTab(tab) {
-    // The Issues tab is only shown while actually viewing issues; it stays
-    // hidden on the History tab so the tab bar stays clean.
-    const issuesItem = document.getElementById("issuesTabItem");
-    if (tab === "issues" && issuesItem) issuesItem.classList.remove("d-none");
-    if (tab === "history" && issuesItem) issuesItem.classList.add("d-none");
-
-    const btn =
-        tab === "issues"
-            ? document.getElementById("issues-tab")
-            : document.getElementById("history-tab");
-    if (btn) btn.click();
-}
-
-// ── Helpers ────────────────────────────────────────────────────────────
+// ── Utility Helpers ──────────────────────────────────────────────────────
 function apiErrorMessage(d) {
-    if (!d) return "Unexpected error.";
-    // 422 validation failures put the real reason in d.errors, not d.message.
+    if (!d) return "An unexpected error occurred.";
     if (d.errors && typeof d.errors === "object") {
         const first = Object.values(d.errors)[0];
         if (Array.isArray(first) && first.length) return first[0];
     }
-    return d.message || "Unexpected error.";
+    return d.message || "An error occurred while processing the request.";
 }
 
 function showError(title, msg) {
-    document.getElementById("errorModalTitle").textContent = title;
-    document.getElementById("errorModalBody").innerHTML = "<p>" + msg + "</p>";
+    const t = document.getElementById("errorModalTitle");
+    const b = document.getElementById("errorModalBody");
+    if (t) t.textContent = title;
+    if (b) b.innerHTML = `<p class="mb-0 text-dark">${esc(msg)}</p>`;
     showM("errorModal");
 }
 
 function showConfirm(title, msg, onYes) {
-    document.getElementById("confirmModalTitle").textContent = title;
-    document.getElementById("confirmModalBody").innerHTML =
-        "<p>" + msg + "</p>";
+    const t = document.getElementById("confirmModalTitle");
+    const b = document.getElementById("confirmModalBody");
+    if (t) t.textContent = title;
+    if (b) b.innerHTML = `<p class="mb-0 text-dark">${esc(msg)}</p>`;
+
     const yesBtn = document.getElementById("confirmModalYes");
-    const clone = yesBtn.cloneNode(true);
-    yesBtn.parentNode.replaceChild(clone, yesBtn);
-    clone.addEventListener("click", () => {
-        hideM("confirmModal");
-        onYes();
-    });
+    if (yesBtn) {
+        const clone = yesBtn.cloneNode(true);
+        yesBtn.parentNode.replaceChild(clone, yesBtn);
+        clone.addEventListener("click", () => {
+            hideM("confirmModal");
+            onYes();
+        });
+    }
     showM("confirmModal");
 }
-
-function resetUI() {
-    state.clear();
-    document.getElementById("inlineProgress").classList.add("d-none");
-    document.getElementById("file").value = "";
-    document.getElementById("fileInfo").classList.add("d-none");
-    document.getElementById("issuesBadge").classList.add("d-none");
-    const issuesItem = document.getElementById("issuesTabItem");
-    if (issuesItem) issuesItem.classList.add("d-none");
-    showM("uploadModal");
-}
-
-// "Import another file" / "New import" without a full page reload: reset the
-// UI and reopen the upload modal in place (fewer clicks, keeps context).
-window.resetImportUI = function () {
-    hideM("resultModal");
-    resetUI();
-};
 
 function rebind(id, handler) {
     const el = document.getElementById(id);
@@ -802,22 +993,29 @@ function label(s) {
         .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Map backend status to badge-dot CSS class */
 function dotClass(status) {
     const map = {
-        completed_with_issues: "issues",
+        completed: "completed",
+        completed_with_issues: "completed_with_issues",
+        failed: "failed",
+        pending: "pending",
+        validated: "validated",
+        processing: "processing",
+        cancelled: "cancelled",
     };
     return map[status] || status;
 }
 
 function duration(created, updated) {
+    if (!created || !updated) return "—";
     const diff = new Date(updated) - new Date(created);
-    const secs = Math.floor(diff / 1000);
+    const secs = Math.max(0, Math.floor(diff / 1000));
     if (secs < 60) return secs + "s";
     return Math.floor(secs / 60) + "m " + (secs % 60) + "s";
 }
 
 function formatDateTime(dateStr) {
+    if (!dateStr) return "—";
     const d = new Date(dateStr);
     const date = d.toLocaleDateString("en-PH", {
         month: "short",
@@ -832,26 +1030,42 @@ function formatDateTime(dateStr) {
     return date + ", " + time;
 }
 
+function formatBytes(bytes, decimals = 1) {
+    if (!+bytes) return "0 Bytes";
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
+
 function parseLearnerName(raw) {
     if (!raw) return "—";
-    if (typeof raw === "string") return raw;
+    if (typeof raw === "string") {
+        try {
+            raw = JSON.parse(raw);
+        } catch (e) {
+            return raw;
+        }
+    }
     return (
         raw["Learner Name"] ||
         raw.learnerName ||
-        raw.firstName + " " + raw.lastName ||
+        (raw.firstName && raw.lastName ? `${raw.lastName}, ${raw.firstName}` : null) ||
+        raw.lrn ||
         "—"
     );
 }
 
-// ── Init ───────────────────────────────────────────────────────────────
+// ── Initialize on DOM Ready ──────────────────────────────────────────────
 export function init() {
+    initViewSwitcher();
     initUpload();
     initAckAll();
     initFilters();
     loadHistory();
 }
 
-// Auto-init if loaded directly
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {

@@ -29,6 +29,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdministrationFeature\Setup\SetupController;
+use App\Http\Controllers\AdministrationFeature\Audit\SecurityAuditLogController;
+use App\Http\Controllers\AdministrationFeature\Audit\RecentActivityController;
 
 
 
@@ -98,6 +100,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/sections', [SectionController::class, 'store'])->name('sections.store');
         Route::put('/sections/{id}', [SectionController::class, 'update'])->name('sections.update');
         Route::delete('/sections/{id}', [SectionController::class, 'destroy'])->name('sections.destroy');
+        Route::delete('/sections/{id}/force-delete', [SectionController::class, 'forceDelete'])->name('sections.force-delete');
         Route::patch('/sections/{section}/restore', [SectionController::class, 'restore'])->name('sections.restore');
 
         // subjects
@@ -157,6 +160,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Super Admin Routes ONLY
     Route::middleware(['role:super_admin'])->group(function () {
+        // Teacher account creation (Super Admin only — School Admin must not create teacher accounts)
+        Route::post('/teachers', [TeacherController::class, 'store'])->name('teachers.store');
+
         // 1. User Management Page
         Route::get('/users', function (\Illuminate\Http\Request $request) {
             $query = User::query();
@@ -185,25 +191,15 @@ Route::middleware(['auth'])->group(function () {
             return view('admin-modules.management.users', compact('users'));
         })->name('users.index');
 
-        // 2. Security Audit Log Page
-        Route::get('/security-audit-log', function (\Illuminate\Http\Request $request) {
-            $activityLogs = \App\Models\LoginLog::with('user')
-                ->latest('attempted_at')
-                ->paginate(20)
-                ->appends($request->query());
+        // 2. Security Audit Log Page & Downloads
+        Route::get('/security-audit-log', [SecurityAuditLogController::class, 'index'])->name('security-audit-log.index');
+        Route::get('/security-audit-log/download', [SecurityAuditLogController::class, 'downloadExcel'])->name('security-audit-log.download');
+        Route::get('/security-audit-log/download-pdf', [SecurityAuditLogController::class, 'downloadPdf'])->name('security-audit-log.download-pdf');
 
-            return view('admin-modules.management.security-audit-log', compact('activityLogs'));
-        })->name('security-audit-log.index');
-
-        // 3. Recent Activity Page
-        Route::get('/recent-activity', function (\Illuminate\Http\Request $request) {
-            $recentActivities = \App\Models\AdminActivityLog::with('actor')
-                ->latest('created_at')
-                ->paginate(20)
-                ->appends($request->query());
-
-            return view('admin-modules.management.recent-activity', compact('recentActivities'));
-        })->name('recent-activity.index');
+        // 3. Recent Activity Page & Downloads
+        Route::get('/recent-activity', [RecentActivityController::class, 'index'])->name('recent-activity.index');
+        Route::get('/recent-activity/download', [RecentActivityController::class, 'downloadExcel'])->name('recent-activity.download');
+        Route::get('/recent-activity/download-pdf', [RecentActivityController::class, 'downloadPdf'])->name('recent-activity.download-pdf');
     });
 
     // Monitoring logs & station (Accessible by Admin and Scanner Operator)
@@ -212,7 +208,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/qr-station/scan', [ScanController::class, 'scan'])->name('qr-station.scan');
         Route::get('/entry-exit', [AttendanceLogController::class, 'index'])->name('time-in-time-out.index');
         Route::get('/time-in-time-out-history', [AttendanceLogController::class, 'index'])->name('time-in-time-out-history.index');
+        Route::get('/time-in-time-out-history/analytics', [AttendanceLogController::class, 'analytics'])->name('time-in-time-out-history.analytics');
+        Route::get('/time-in-time-out-history/analytics/download-pdf', [AttendanceLogController::class, 'downloadAnalyticsPdf'])->name('time-in-time-out-history.analytics-pdf');
         Route::get('/time-in-time-out-history/download', [AttendanceLogController::class, 'download'])->name('time-in-time-out-history.download');
+        Route::get('/time-in-time-out-history/download-pdf', [AttendanceLogController::class, 'downloadPdf'])->name('time-in-time-out-history.download-pdf');
     });
 
     // School Admin Routes ONLY
@@ -225,6 +224,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/sections', [SectionController::class, 'store'])->name('sections.store');
         Route::put('/sections/{id}', [SectionController::class, 'update'])->name('sections.update');
         Route::delete('/sections/{id}', [SectionController::class, 'destroy'])->name('sections.destroy');
+        Route::delete('/sections/{id}/force-delete', [SectionController::class, 'forceDelete'])->name('sections.force-delete');
         Route::patch('/sections/{section}/restore', [SectionController::class, 'restore'])->name('sections.restore');
 
         // subjects
@@ -292,7 +292,7 @@ Route::middleware(['auth'])->group(function () {
         // teacher feature
         Route::prefix('teachers')->group(function () {
             Route::get('/', [TeacherController::class, 'index'])->name('teachers.index');
-            Route::post('/', [TeacherController::class, 'store'])->name('teachers.store');
+            Route::get('/{teacher}', [TeacherController::class, 'show'])->name('teachers.show');
             Route::put('/{id}', [TeacherController::class, 'update'])->name('teachers.update');
             Route::delete('/{id}', [TeacherController::class, 'destroy'])->name('teachers.destroy');
             Route::patch('/{id}/restore', [TeacherController::class, 'restore'])->name('teachers.restore');
@@ -301,7 +301,7 @@ Route::middleware(['auth'])->group(function () {
         // student feature
         Route::get('/student-management', [StudentController::class, 'index'])->name('student-management.index');
         Route::get('/student-management/grade/{grade}', [StudentController::class, 'byGrade'])->name('student-management.grade');
-        Route::post('/students', [StudentController::class, 'store'])->name('student.store');
+        Route::get('/student-management/grade/{grade}/section/{section}', [StudentController::class, 'bySection'])->name('student-management.section');
         Route::get('/students/search', [StudentController::class, 'search'])->name('students.search');
         Route::put('/students/{id}', [StudentController::class, 'update'])->name('students.update');
         Route::delete('/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy');
@@ -309,6 +309,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/student-profile/{student}', [StudentProfileController::class, 'show'])->name('student.profile');
         Route::put('/student-profile/{student}/info', [StudentProfileController::class, 'updateInfo'])->name('student.profile.update-info');
         Route::put('/student-profile/{student}/guardian', [StudentProfileController::class, 'updateGuardian'])->name('student.profile.update-guardian');
+    });
+
+    // Student creation (Accessible by Admin and Teacher)
+    Route::middleware(['role:admin,teacher'])->group(function () {
+        Route::post('/students', [StudentController::class, 'store'])->name('student.store');
+    });
+
+    Route::middleware(['role:admin'])->group(function () {
 
         // settings
         Route::get('/settings', fn() => view('admin-modules.utilities.settings', [

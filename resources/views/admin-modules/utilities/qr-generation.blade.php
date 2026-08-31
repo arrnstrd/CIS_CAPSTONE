@@ -5,12 +5,12 @@
     </x-slot>
 
     <x-slot name="subtitle">
-        Generate printable QR cards for each section
+        QR generation for each section
     </x-slot>
 
-    <div class="qr-generation-container row g-4 mb-5">
+    <div class="qr-generation-container w-100 mb-5">
         {{-- Section Management --}}
-        <div class="col-lg-12">
+        <div class="w-100">
             <div class="bg-white rounded p-4 border mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3 class="fw-semibold text-dark m-0 fs-5">Section List</h3>

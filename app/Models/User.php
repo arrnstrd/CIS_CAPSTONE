@@ -183,5 +183,29 @@ class User extends Authenticatable
                 // failures here to keep tests running in those environments.
             }
         });
+
+        static::saved(function (User $user) {
+            try {
+                if ($user->role === self::ROLE_TEACHER) {
+                    $teacherStatus = ($user->status === 'active') ? 'active' : 'inactive';
+                    Teacher::updateOrCreate(
+                        ['user_id' => $user->id],
+                        ['status' => $teacherStatus]
+                    );
+                }
+            } catch (\Exception $e) {
+                // Silently ignore if table does not exist in transient environments
+            }
+        });
+
+        static::deleted(function (User $user) {
+            try {
+                if ($user->role === self::ROLE_TEACHER) {
+                    $user->teacher?->update(['status' => 'inactive']);
+                }
+            } catch (\Exception $e) {
+                // Silently ignore if table does not exist in transient environments
+            }
+        });
     }
 }

@@ -5,36 +5,45 @@
 
     <link rel="stylesheet" href="{{ asset('css/gradeLevel.css') }}">
 
-    <a href="{{ route('attendance.grade-level') }}" class="back-link" style="display:inline-flex;align-items:center;gap:0.5rem;color:#5a5c69;text-decoration:none;font-size:0.9rem;margin-bottom:1rem;">
-        <i class="fas fa-arrow-left"></i> Back to Grade Levels
-    </a>
+    <div class="mb-3">
+        <a href="{{ route('attendance.grade-level') }}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Back to Grade Levels</span>
+        </a>
+    </div>
 
     <div class="grade-selection-wrapper">
         <div class="grade-section">
-            <p class="grade-section-title">Grade {{ $grade }}</p>
-            <div class="grade-grid">
-                @forelse ($sections as $section)
-                    <a href="#" class="grade-card" onclick="alert('Classroom Attendance page not implemented yet.')">
-                        <div class="grade-info">
-                            <span class="grade-name">{{ $section->name }}</span>
-                            <span class="grade-level">Adviser: {{ $section->advisor?->name ?? 'N/A' }}</span>
-                            <span class="student-count-badge">
-                                <i class="fas fa-user-graduate"></i>
-                                {{ $section->student_count }} students
-                            </span>
-                        </div>
-                        <i class="fas fa-chevron-right grade-chevron"></i>
-                    </a>
-                @empty
-                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 1rem;min-height:50vh;">
-                        <h3 style="font-weight:700;color:#2e2f38;margin-bottom:0.5rem;">No sections found for Grade {{ $grade }}</h3>
-                        <p style="color:#6e707e;margin-bottom:1.5rem;">Sections can be created from the Academic section.</p>
-                        <a href="{{ route('sections.index') }}" class="grade-card" style="display:inline-flex;padding:0.75rem 1.25rem;background:#4e73df;color:#fff;border-radius:0.5rem;text-decoration:none;font-weight:600;box-shadow:0 4px 12px rgba(78,115,223,0.2);">
-                            Go to Academic Sections
+            <p class="grade-section-title">Grade {{ $grade }} Sections</p>
+            @if ($sections->isNotEmpty())
+                <div class="grade-grid">
+                    @foreach ($sections as $section)
+                        <a href="#" class="grade-card" onclick="alert('Classroom Attendance page not implemented yet.')">
+                            <div class="grade-info">
+                                <span class="grade-name">{{ $section->name }}</span>
+                                <span class="grade-level">Adviser: {{ $section->advisor?->full_name ?? ($section->advisor?->name ?? 'Not Assigned') }}</span>
+                                <span class="student-count-badge">
+                                    <i class="fas fa-user-graduate"></i>
+                                    {{ $section->student_count }} students
+                                </span>
+                            </div>
+                            <i class="fas fa-chevron-right grade-chevron"></i>
+                        </a>
+                    @endforeach
+                </div>
+            @else
+                <div class=" rounded-3 p-5 text-center" style="background: transparent;">
+                    <div class="d-flex flex-column align-items-center justify-content-center py-4">
+                        <i class="fa-solid fa-folder-open text-muted opacity-50 mb-3" style="font-size: 3rem;"></i>
+                        <h4 class="fw-bold text-dark mb-1">No sections found for Grade {{ $grade }}</h4>
+                        <p class="text-muted mb-4">Sections can be created and managed from the Academic Setup module.</p>
+                        <a href="{{ route('academic.index') }}" class="btn btn-primary px-4 py-2 rounded-3 shadow-sm d-inline-flex align-items-center gap-2">
+                            <i class="fa-solid fa-arrow-right"></i>
+                            <span>Go to Academic Setup</span>
                         </a>
                     </div>
-                @endforelse
-            </div>
+                </div>
+            @endif
         </div>
     </div>
 </x-layouts.admin>

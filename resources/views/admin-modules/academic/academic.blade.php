@@ -3,7 +3,7 @@
         Academic Setup
     </x-slot>
 
-    <x-slot name="subtitle">Manage sections and subjects for the academic setup.</x-slot>
+    <x-slot name="subtitle">Manage sections, subjects, and teaching assignments for the academic setup.</x-slot>
 
     <ul class="modern-tabs mx-2" id="academicTabs" role="tablist">
         <li class="modern-tabs__item">
@@ -18,6 +18,12 @@
                 Subject
             </button>
         </li>
+
+        <li class="modern-tabs__item">
+            <button class="modern-tabs__link" data-bs-toggle="tab" data-bs-target="#assignment-table-pane" type="button">
+                Teaching Assignment
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content mt-2">
@@ -27,6 +33,10 @@
 
         <div class="tab-pane fade" id="subject-table-pane">
             @include('admin-modules.academic.subject')
+        </div>
+
+        <div class="tab-pane fade" id="assignment-table-pane">
+            @include('admin-modules.academic.partials.teaching-assignment-tab')
         </div>
     </div>
 </x-layouts.admin>

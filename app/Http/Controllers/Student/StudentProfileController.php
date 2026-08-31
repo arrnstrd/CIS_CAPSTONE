@@ -30,10 +30,18 @@ class StudentProfileController extends Controller
 
         abort_unless($teacher, 403, 'Only teachers can access this page.');
 
-        $teacherSectionIds = TeachingAssignment::query()
+        $teachingSectionIds = TeachingAssignment::query()
             ->where('teacher_id', $teacher->id)
             ->where('status', 'active')
-            ->pluck('section_id')
+            ->pluck('section_id');
+
+        $advisedSectionIds = \App\Models\Section::query()
+            ->where('advisor_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('id');
+
+        $teacherSectionIds = $teachingSectionIds
+            ->concat($advisedSectionIds)
             ->unique()
             ->values()
             ->all();
@@ -114,10 +122,18 @@ class StudentProfileController extends Controller
 
         abort_unless($teacher, 403, 'Only teachers can access this page.');
 
-        $teacherSectionIds = TeachingAssignment::query()
+        $teachingSectionIds = TeachingAssignment::query()
             ->where('teacher_id', $teacher->id)
             ->where('status', 'active')
-            ->pluck('section_id')
+            ->pluck('section_id');
+
+        $advisedSectionIds = \App\Models\Section::query()
+            ->where('advisor_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('id');
+
+        $teacherSectionIds = $teachingSectionIds
+            ->concat($advisedSectionIds)
             ->unique()
             ->values()
             ->all();
@@ -141,6 +157,8 @@ class StudentProfileController extends Controller
      */
     public function updateInfo(Request $request, Student $student)
     {
+        abort_if($request->user()?->isTeacher(), 403, 'Teachers are not authorized to edit student personal information.');
+
         $validated = $request->validate([
             'first_name'      => ['required', 'string', 'max:100'],
             'middle_name'     => ['nullable', 'string', 'max:100'],
@@ -169,6 +187,8 @@ class StudentProfileController extends Controller
      */
     public function updateGuardian(Request $request, Student $student)
     {
+        abort_if($request->user()?->isTeacher(), 403, 'Teachers are not authorized to edit student guardian information.');
+
         $validated = $request->validate([
             'name'           => ['required', 'string', 'max:255'],
             'relationship'   => ['required', 'string', 'max:50'],
