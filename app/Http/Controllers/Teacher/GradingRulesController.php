@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\Subject;
+use App\Models\SchoolYear;
 use App\Services\Grading\SubjectWeightResolver;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,8 @@ class GradingRulesController extends Controller
     public function index(Request $request)
     {
         $policyName = "DepEd Standard K-12";
-        $schoolYear = "2026-2027"; // Hardcoded for now
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+        $schoolYear = $activeSchoolYear?->school_year ?? 'No active school year';
         $lastUpdated = "August 24, 2026";
         $configuredBy = "Admin Office";
         
