@@ -999,6 +999,21 @@ Route::middleware(['auth'])->group(function () {
             '/teacher/room-attendance/{section}/{enrollment}/history',
             [TeacherRoomAttendanceController::class, 'history']
         )->name('room-attendance.history');
+
+
+        // ----------------------------------------------------
+        // SETTINGS
+        // ----------------------------------------------------
+
+        Route::get(
+            '/teacher/settings',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'index']
+        )->name('teacher.settings');
+
+        Route::put(
+            '/teacher/settings/password',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'updatePassword']
+        )->name('teacher.settings.password.update');
     });
 
 

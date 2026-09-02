@@ -85,8 +85,8 @@
                 <li class="sidebar-section-label">
                     <small>SYSTEM</small>
                 </li>
-                <li>
-                    <a href="#">
+                <li class="{{ request()->routeIs('teacher.settings*') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.settings') }}">
                         <i class="fas fa-sliders-h"></i>
                         <span>Settings</span>
                     </a>
