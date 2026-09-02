@@ -7,165 +7,253 @@
         Overview of your sections' grading performance.
     </x-slot>
 
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="gs-stat-card d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-neutral">
-                    <i class="fa-solid fa-chalkboard"></i>
-                </span>
-                <div>
-                    <p class="gs-stat-label">Total Classes</p>
-                    <p class="gs-stat-value">{{ $totalClasses }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="gs-stat-card d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-neutral">
-                    <i class="fa-solid fa-users"></i>
-                </span>
-                <div>
-                    <p class="gs-stat-label">Total Students</p>
-                    <p class="gs-stat-value">{{ $totalStudents }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="gs-stat-card d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-neutral">
-                    <i class="fa-solid fa-calendar-days"></i>
-                </span>
-                <div>
-                    <p class="gs-stat-label">Current Term</p>
-                    <p class="gs-stat-value">{{ $currentTermLabel }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="gs-stat-card gs-stat-card-danger d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-danger">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </span>
-                <div>
-                    <p class="gs-stat-label gs-stat-label-danger">Students At Risk</p>
-                    <p class="gs-stat-value">{{ $totalAtRisk ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="gd-dashboard-wrapper {{ ($dashboardPreferences?->dashboard_density ?? 'comfortable') === 'compact' ? 'dashboard-density-compact' : 'dashboard-density-comfortable' }}">
 
-    <div class="gd-layout">
-        <div class="gd-content">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="gs-panel-title mb-0">My Classes</p>
+        {{-- Quick Actions --}}
+        @if ($dashboardPreferences?->show_quick_actions ?? true)
+            <div class="gd-quick-actions mb-4">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('teacher.grading-system.grades') }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                        <i class="fa-solid fa-table-list"></i>
+                        <span>Grade Sheets</span>
+                    </a>
+                    <a href="{{ route('room-attendance.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                        <i class="fa-solid fa-clipboard-user"></i>
+                        <span>Class Attendance</span>
+                    </a>
+                    <a href="{{ route('teacher.grading-system.at-risk') }}" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>At-Risk Registry</span>
+                    </a>
+                    <a href="{{ route('teacher.grading-system.analytics') }}" class="btn btn-sm btn-outline-info d-inline-flex align-items-center gap-1">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </a>
+                    <a href="{{ route('teacher.settings') }}" class="btn btn-sm btn-outline-dark d-inline-flex align-items-center gap-1 ms-auto">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Dashboard Preferences</span>
+                    </a>
+                </div>
             </div>
+        @endif
 
-            <div class="row g-3">
-                @forelse ($classes as $class)
-                    <div class="col-12 col-md-6 col-xl-4">
-                        <a href="{{ route('teacher.grading-system.grade-sheet', $class->teaching_assignment_id) }}" class="text-decoration-none">
-                            <div class="gs-panel gs-card-accent gs-card-accent-{{ (($loop->iteration - 1) % 4) + 1 }}">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <p class="gs-panel-title mb-0">Grade {{ $class->grade_level }} - {{ $class->section_name }}</p>
-                                    <span class="gs-badge {{ $class->format_badge === 'SHS Format' ? 'gs-badge-warning' : 'gs-badge-success' }}">
-                                        {{ $class->format_badge }}
-                                    </span>
-                                </div>
-                                <p class="text-muted small mb-2">{{ $class->subject_name }}</p>
+        {{-- Summary Cards --}}
+        @if ($dashboardPreferences?->show_summary_cards ?? true)
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="gs-stat-card d-flex align-items-center gap-3">
+                        <span class="gs-stat-icon gs-stat-icon-neutral">
+                            <i class="fa-solid fa-chalkboard"></i>
+                        </span>
+                        <div>
+                            <p class="gs-stat-label">Total Classes</p>
+                            <p class="gs-stat-value">{{ $totalClasses }}</p>
+                        </div>
+                    </div>
+                </div>
 
-                                <div class="gd-progress-wrap">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="gd-progress-label">Completion</span>
-                                        <span class="gd-progress-label">
-                                            {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '—' }}
+                @if ($dashboardPreferences?->show_student_counts ?? true)
+                    <div class="col-6 col-md-3">
+                        <div class="gs-stat-card d-flex align-items-center gap-3">
+                            <span class="gs-stat-icon gs-stat-icon-neutral">
+                                <i class="fa-solid fa-users"></i>
+                            </span>
+                            <div>
+                                <p class="gs-stat-label">Total Students</p>
+                                <p class="gs-stat-value">{{ $totalStudents }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="col-6 col-md-3">
+                    <div class="gs-stat-card d-flex align-items-center gap-3">
+                        <span class="gs-stat-icon gs-stat-icon-neutral">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </span>
+                        <div>
+                            <p class="gs-stat-label">Current Term</p>
+                            <p class="gs-stat-value">{{ $currentTermLabel }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                @if ($dashboardPreferences?->show_at_risk ?? true)
+                    <div class="col-6 col-md-3">
+                        <div class="gs-stat-card gs-stat-card-danger d-flex align-items-center gap-3">
+                            <span class="gs-stat-icon gs-stat-icon-danger">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </span>
+                            <div>
+                                <p class="gs-stat-label gs-stat-label-danger">Students At Risk</p>
+                                <p class="gs-stat-value">{{ $totalAtRisk ?? 0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        {{-- My Classes Section --}}
+        <div class="gd-layout">
+            <div class="gd-content">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="gs-panel-title mb-0">My Classes</p>
+                </div>
+
+                <div class="row g-3">
+                    @forelse ($classes as $class)
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <a href="{{ route('teacher.grading-system.grade-sheet', $class->teaching_assignment_id) }}" class="text-decoration-none">
+                                <div class="gs-panel gs-card-accent gs-card-accent-{{ (($loop->iteration - 1) % 4) + 1 }}">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <p class="gs-panel-title mb-0">Grade {{ $class->grade_level }} - {{ $class->section_name }}</p>
+                                        <span class="gs-badge {{ $class->format_badge === 'SHS Format' ? 'gs-badge-warning' : 'gs-badge-success' }}">
+                                            {{ $class->format_badge }}
                                         </span>
                                     </div>
-                                    <div class="gd-progress-bar">
-                                        <div class="gd-progress-fill" style="width: {{ $class->completion_percent ?? 0 }}%"></div>
-                                    </div>
-                                </div>
+                                    <p class="text-muted small mb-2">{{ $class->subject_name }}</p>
 
-                                <div class="gs-row-subtext">
-                                    <span><i class="fa-solid fa-users me-1"></i>{{ $class->learner_count }} learners</span>
-                                </div>
+                                    @if ($dashboardPreferences?->show_progress_indicators ?? true)
+                                        <div class="gd-progress-wrap">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="gd-progress-label">Completion</span>
+                                                <span class="gd-progress-label">
+                                                    {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '—' }}
+                                                </span>
+                                            </div>
+                                            <div class="gd-progress-bar">
+                                                <div class="gd-progress-fill" style="width: {{ $class->completion_percent ?? 0 }}%"></div>
+                                            </div>
+                                        </div>
+                                    @endif
 
-                                <div class="gs-row-subtext mt-2">
-                                    <span class="me-3">Average Grade: {{ $class->avg_grade !== null ? $class->avg_grade : '—' }}</span>
-                                    <span class="me-3">Passing Rate: {{ $class->passing_rate !== null ? $class->passing_rate . '%' : '—' }}</span>
-                                    @php $atRiskCount = $classAtRiskCounts[$class->teaching_assignment_id] ?? 0; @endphp
-                                    <span class="me-3">
-                                        At-Risk: {{ $atRiskCount }}
-                                        @if($atRiskCount > 0)
-                                            <span class="text-muted small">({{ $classRiskReasons[$class->teaching_assignment_id] ?? 'various reasons' }})</span>
-                                        @endif
-                                    </span>
+                                    @if ($dashboardPreferences?->show_student_counts ?? true)
+                                        <div class="gs-row-subtext">
+                                            <span><i class="fa-solid fa-users me-1"></i>{{ $class->learner_count }} learners</span>
+                                        </div>
+                                    @endif
+
+                                    @if (($dashboardPreferences?->show_class_health ?? true) || ($dashboardPreferences?->show_at_risk ?? true))
+                                        <div class="gs-row-subtext mt-2">
+                                            @if ($dashboardPreferences?->show_class_health ?? true)
+                                                <span class="me-3">Avg: {{ $class->avg_grade !== null ? $class->avg_grade : '—' }}</span>
+                                                <span class="me-3">Pass: {{ $class->passing_rate !== null ? $class->passing_rate . '%' : '—' }}</span>
+                                            @endif
+
+                                            @if ($dashboardPreferences?->show_at_risk ?? true)
+                                                @php $atRiskCount = $classAtRiskCounts[$class->teaching_assignment_id] ?? 0; @endphp
+                                                <span class="me-3 text-danger">
+                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i>At-Risk: {{ $atRiskCount }}
+                                                    @if($atRiskCount > 0 && isset($classRiskReasons[$class->teaching_assignment_id]))
+                                                        <span class="text-muted small">({{ $classRiskReasons[$class->teaching_assignment_id] }})</span>
+                                                    @endif
+                                                </span>
+                                            @endif
+
+                                            <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
+                                                {{ $class->status }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </a>
+                        </div>
+                    @empty
+                        <div class="col-12">
+                            <div class="gs-chart-empty">
+                                <i class="fa-solid fa-chalkboard gs-chart-empty-icon"></i>
+                                <p class="mb-0">No active classes found yet.</p>
+                            </div>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        {{-- Grading Progress Section --}}
+        @if ($dashboardPreferences?->show_grading_progress ?? true)
+            <div class="gd-panel mt-4">
+                <p class="gs-panel-title mb-3">Grading Progress</p>
+                <x-ui.table>
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Subject</th>
+                            @if ($dashboardPreferences?->show_student_counts ?? true)
+                                <th>Students</th>
+                                <th>Encoded</th>
+                            @endif
+                            @if ($dashboardPreferences?->show_progress_indicators ?? true)
+                                <th>Completion</th>
+                            @endif
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($classes as $class)
+                            <tr>
+                                <td>Grade {{ $class->grade_level }} - {{ $class->section_name }}</td>
+                                <td>{{ $class->subject_name }}</td>
+                                @if ($dashboardPreferences?->show_student_counts ?? true)
+                                    <td>{{ $class->learner_count }}</td>
+                                    <td>{{ $class->encoded_count }} / {{ $class->learner_count }}</td>
+                                @endif
+                                @if ($dashboardPreferences?->show_progress_indicators ?? true)
+                                    <td>
+                                        <div class="gd-progress-wrap">
+                                            <div class="d-flex justify-content-between">
+                                                <span class="gd-progress-label">
+                                                    {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '—' }}
+                                                </span>
+                                            </div>
+                                            <div class="gd-progress-bar">
+                                                <div class="gd-progress-fill" style="width: {{ $class->completion_percent ?? 0 }}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                @endif
+                                <td>
                                     <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
                                         {{ $class->status }}
                                     </span>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                @empty
-                    <div class="col-12">
-                        <div class="gs-chart-empty">
-                            <i class="fa-solid fa-chalkboard gs-chart-empty-icon"></i>
-                            <p class="mb-0">No active classes found yet.</p>
-                        </div>
-                    </div>
-                @endforelse
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center">No active classes found yet.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </x-ui.table>
             </div>
-        </div>
-    </div>
+        @endif
 
-    <div class="gd-panel mt-4">
-        <p class="gs-panel-title mb-3">Grading Progress</p>
-        <x-ui.table>
-            <thead>
-                <tr>
-                    <th>Class</th>
-                    <th>Subject</th>
-                    <th>Students</th>
-                    <th>Encoded</th>
-                    <th>Completion</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($classes as $class)
-                    <tr>
-                        <td>Grade {{ $class->grade_level }} - {{ $class->section_name }}</td>
-                        <td>{{ $class->subject_name }}</td>
-                        <td>{{ $class->learner_count }}</td>
-                        <td>{{ $class->encoded_count }} / {{ $class->learner_count }}</td>
-                        <td>
-                            <div class="gd-progress-wrap">
-                                <div class="d-flex justify-content-between">
-                                    <span class="gd-progress-label">
-                                        {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '—' }}
-                                    </span>
-                                </div>
-                                <div class="gd-progress-bar">
-                                    <div class="gd-progress-fill" style="width: {{ $class->completion_percent ?? 0 }}%"></div>
+        {{-- Recent Activity Section --}}
+        @if (($dashboardPreferences?->show_recent_activity ?? true) && isset($recentActivities) && $recentActivities->isNotEmpty())
+            <div class="gd-panel mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="gs-panel-title mb-0">Recent Activity</p>
+                    <a href="{{ route('teacher.notifications.index') }}" class="btn btn-link btn-sm text-decoration-none p-0">View All</a>
+                </div>
+                <div class="list-group list-group-flush">
+                    @foreach ($recentActivities as $activity)
+                        <div class="list-group-item d-flex align-items-center justify-content-between px-0 py-2 border-bottom">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-light text-dark p-2 rounded-circle border">
+                                    <i class="fa-solid {{ ($activity->data['category'] ?? '') === 'at_risk' ? 'fa-triangle-exclamation text-danger' : (($activity->data['category'] ?? '') === 'grading' ? 'fa-graduation-cap text-success' : 'fa-bell text-primary') }}"></i>
+                                </span>
+                                <div>
+                                    <p class="mb-0 fw-semibold text-dark" style="font-size: 0.82rem;">{{ $activity->data['title'] ?? 'Activity' }}</p>
+                                    <small class="text-muted" style="font-size: 0.74rem;">{{ $activity->data['message'] ?? '' }}</small>
                                 </div>
                             </div>
-                        </td>
-                        <td>
-                            <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
-                                {{ $class->status }}
-                            </span>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center">No active classes found yet.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </x-ui.table>
+                            <small class="text-muted flex-shrink-0 ms-2" style="font-size: 0.72rem;">{{ $activity->created_at->diffForHumans() }}</small>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
     </div>
-
-
-
-
 </x-layouts.teacher>

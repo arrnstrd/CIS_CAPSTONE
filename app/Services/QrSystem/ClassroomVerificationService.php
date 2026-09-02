@@ -8,6 +8,7 @@ use App\Models\Enrollment;
 use App\Models\QrAttendance;
 use App\Models\Teacher;
 use App\Models\TeachingAssignment;
+use App\Services\Notification\NotificationService;
 use Illuminate\Validation\ValidationException;
 
 class ClassroomVerificationService
@@ -84,6 +85,27 @@ class ClassroomVerificationService
             'changed_by' => $userId,
             'remarks' => $verification->remarks,
         ]);
+
+        if ($teacher && $teacher->user) {
+            $student = $verification->enrollment?->student;
+            $studentName = $student ? trim($student->first_name . ' ' . $student->last_name) : 'Student';
+            $section = $verification->enrollment?->section;
+            $sectionName = $section ? "Section {$section->name}" : "assignment #{$data['teaching_assignment_id']}";
+            $statusLabel = AttendanceVerification::STATUSES[$data['status']] ?? ucfirst($data['status']);
+
+            NotificationService::send(
+                $teacher->user,
+                NotificationService::CATEGORY_ATTENDANCE,
+                'Attendance Record Updated',
+                "Attendance for {$studentName} in {$sectionName} was marked as {$statusLabel} for {$today}.",
+                [
+                    'enrollment_id' => $verification->enrollment_id,
+                    'teaching_assignment_id' => $verification->teaching_assignment_id,
+                    'status' => $verification->status,
+                    'attendance_date' => $today,
+                ]
+            );
+        }
 
         return $verification;
     }

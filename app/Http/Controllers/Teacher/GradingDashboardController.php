@@ -23,24 +23,71 @@ class GradingDashboardController extends Controller
 
     public function index(Request $request)
     {
-        $teacher = $request->user()->teacher;
+        $user = $request->user();
+        $teacher = $user?->teacher;
+        $dashboardPreferences = $user?->getOrCreateDashboardPreference();
 
+        // Handle Default View preference (overview, my_classes, analytics)
+        if (! $request->has('view') && ! $request->has('no_redirect') && ! $request->has('teaching_assignment_id') && ! $request->has('grading_period_id')) {
+            $defaultView = $dashboardPreferences?->default_view ?? 'overview';
+
+            if ($defaultView === 'my_classes') {
+                return redirect()->route('teacher.grading-system.grades');
+            }
+
+            if ($defaultView === 'analytics') {
+                return redirect()->route('teacher.grading-system.analytics');
+            }
+        }
 
         if (! $teacher) {
             return view('teacher-modules.grading.grading-dashboard', [
                 'classes' => collect(),
+                'dashboardPreferences' => $dashboardPreferences,
+                'recentActivities' => collect(),
             ]);
         }
 
         $validPeriodIds = GradingPeriod::where('sequence', '<=', 3)->pluck('id');
-        // TODO: Once "Finalize Term" is implemented, this should pick the lowest sequence <=3 
-        // whose status is NOT "Finalized" (so it naturally advances as terms get locked)
-        $currentPeriod = GradingPeriod::where('is_active', true)->where('sequence', '<=', 3)->orderBy('sequence')->first() ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
 
-        $teachingAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+        // Determine current period by request or teacher default term preference
+        $selectedPeriodId = $request->input('grading_period_id');
+        if ($selectedPeriodId) {
+            $currentPeriod = GradingPeriod::where('id', $selectedPeriodId)->where('sequence', '<=', 3)->first();
+        } elseif ($dashboardPreferences?->default_term && $dashboardPreferences->default_term !== 'current') {
+            $targetSequence = match ($dashboardPreferences->default_term) {
+                'term_1' => 1,
+                'term_2' => 2,
+                'term_3' => 3,
+                default => null,
+            };
+            $currentPeriod = $targetSequence
+                ? GradingPeriod::where('sequence', $targetSequence)->where('period_type', 'trimester')->first()
+                : null;
+        }
+
+        if (! isset($currentPeriod) || ! $currentPeriod) {
+            $currentPeriod = GradingPeriod::where('is_active', true)->where('sequence', '<=', 3)->orderBy('sequence')->first()
+                ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+        }
+
+        $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
-            ->with(['section', 'subject'])
-            ->get();
+            ->with(['section', 'subject']);
+
+        // Default class filtering if requested or configured in teacher dashboard preferences
+        $selectedClassId = $request->input('teaching_assignment_id', $dashboardPreferences?->default_class_id);
+        if ($selectedClassId) {
+            $hasAssignment = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('id', $selectedClassId)
+                ->where('status', 'active')
+                ->exists();
+            if ($hasAssignment) {
+                $teachingAssignmentsQuery->where('id', $selectedClassId);
+            }
+        }
+
+        $teachingAssignments = $teachingAssignmentsQuery->get();
 
         $classes = $teachingAssignments->map(function ($ta) use ($validPeriodIds, $currentPeriod) {
             if (! $ta->section || ! $ta->subject) {
@@ -148,6 +195,8 @@ class GradingDashboardController extends Controller
             }
         }
 
+        $recentActivities = $user->notifications()->latest()->take(5)->get();
+
         return view('teacher-modules.grading.grading-dashboard', compact(
             'classes', 
             'totalClasses', 
@@ -155,7 +204,9 @@ class GradingDashboardController extends Controller
             'currentTermLabel',
             'totalAtRisk',
             'classAtRiskCounts',
-            'classRiskReasons'
+            'classRiskReasons',
+            'dashboardPreferences',
+            'recentActivities'
         ));
     }
 

@@ -8,6 +8,7 @@ use App\Models\AttendanceVerification;
 use App\Models\Enrollment;
 use App\Models\Section;
 use App\Models\TeachingAssignment;
+use App\Services\Notification\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -227,6 +228,25 @@ class TeacherRoomAttendanceController extends Controller
             'teacher_id' => $teacher->id,
             'resolved_by' => AttendanceVerification::RESOLVED_BY_TEACHER,
         ]);
+
+        $studentName = $enrollment->student
+            ? trim($enrollment->student->first_name . ' ' . $enrollment->student->last_name)
+            : 'Student';
+        $statusLabel = AttendanceVerification::STATUSES[$validated['status']] ?? ucfirst($validated['status']);
+
+        NotificationService::send(
+            $request->user(),
+            NotificationService::CATEGORY_ATTENDANCE,
+            'Attendance Record Updated',
+            "Attendance for {$studentName} in Section {$section->name} was marked as {$statusLabel} for {$attendanceDate->format('M d, Y')}.",
+            [
+                'url' => route('room-attendance.show', ['section' => $section->id]),
+                'section_id' => $section->id,
+                'enrollment_id' => $enrollment->id,
+                'status' => $validated['status'],
+                'attendance_date' => $attendanceDate->toDateString(),
+            ]
+        );
 
         return redirect()
             ->route(

@@ -10,6 +10,7 @@ use App\Models\AttendanceLog;
 use App\Models\AttendanceVerification;
 use App\Models\StudentAssessmentScore;
 use App\Models\Assessment;
+use App\Services\Notification\NotificationService;
 
 class RiskScoreService
 {
@@ -61,6 +62,83 @@ class RiskScoreService
             'risk_level' => $riskLevel,
             'indicators' => $indicators,
         ];
+    }
+
+    /**
+     * Evaluate a student's risk level and notify the teacher if risk has entered Moderate or High,
+     * while strictly avoiding duplicate notifications for the same risk level.
+     */
+    public function evaluateAndNotifyRiskChange(
+        Enrollment $enrollment,
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $period
+    ): ?array {
+        $teacher = $teachingAssignment->teacher;
+        $user = $teacher?->user;
+
+        if (! $user) {
+            return null;
+        }
+
+        $riskData = $this->calculateRiskScore($enrollment, $teachingAssignment, $period);
+        $currentLevel = $riskData['risk_level'];
+
+        // Only notify for Moderate or High risk
+        if (! in_array($currentLevel, ['Moderate', 'High'], true)) {
+            return $riskData;
+        }
+
+        // Check latest at-risk notification for this student, teaching assignment, and term
+        $latestNotif = $user->notifications()
+            ->latest()
+            ->get()
+            ->first(function ($n) use ($enrollment, $teachingAssignment, $period) {
+                $data = $n->data;
+                return ($data['category'] ?? null) === 'at_risk'
+                    && (int) ($data['data']['enrollment_id'] ?? 0) === (int) $enrollment->id
+                    && (int) ($data['data']['teaching_assignment_id'] ?? 0) === (int) $teachingAssignment->id
+                    && (int) ($data['data']['grading_period_id'] ?? 0) === (int) $period->id;
+            });
+
+        $previousRiskLevel = $latestNotif
+            ? ($latestNotif->data['data']['risk_level'] ?? null)
+            : null;
+
+        // Prevent duplicate alerts:
+        // - If current level matches previous level, do not re-notify.
+        // - If current is Moderate but previous was High, do not re-notify.
+        if ($previousRiskLevel === $currentLevel) {
+            return $riskData;
+        }
+
+        if ($currentLevel === 'Moderate' && $previousRiskLevel === 'High') {
+            return $riskData;
+        }
+
+        $studentName = $enrollment->student
+            ? trim($enrollment->student->first_name . ' ' . $enrollment->student->last_name)
+            : 'Student';
+        $sectionName = $teachingAssignment->section?->name ?? 'Class';
+
+        NotificationService::send(
+            $user,
+            NotificationService::CATEGORY_AT_RISK,
+            'Student At Risk',
+            "{$studentName} is now classified as {$currentLevel} academic risk in Section {$sectionName}.",
+            [
+                'url' => route('teacher.grading-system.at-risk.show', ['enrollmentId' => $enrollment->id]),
+                'enrollment_id' => $enrollment->id,
+                'student_id' => $enrollment->student_id,
+                'teaching_assignment_id' => $teachingAssignment->id,
+                'section_id' => $teachingAssignment->section_id,
+                'grading_period_id' => $period->id,
+                'risk_score' => $riskData['risk_score'],
+                'risk_level' => $currentLevel,
+                'indicators' => $riskData['indicators'],
+            ]
+        );
+
+        return $riskData;
     }
 
     /**

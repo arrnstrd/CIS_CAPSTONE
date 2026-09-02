@@ -14,6 +14,8 @@ use App\Services\Grading\GradingService;
 use App\Services\Grading\SchoolLevelDetector;
 use App\Services\Grading\AssessmentTemplateService;
 use App\Services\Grading\PerformanceDescriptorResolver;
+use App\Services\Grading\RiskScoreService;
+use App\Services\Notification\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -583,6 +585,23 @@ class GradeSheetController extends Controller
                 $nextSlot,
         ]);
 
+        $sectionName = $ta->section ? $ta->section->name : 'Class';
+        $periodName = $gradingPeriod->name ?? "Term {$gradingPeriod->sequence}";
+
+        NotificationService::send(
+            $request->user(),
+            NotificationService::CATEGORY_GRADING,
+            'Assessment Created',
+            "Assessment \"{$assessment->title}\" was created for Section {$sectionName} under {$periodName}.",
+            [
+                'url' => route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $ta->id]),
+                'teaching_assignment_id' => $ta->id,
+                'assessment_id' => $assessment->id,
+                'grading_period_id' => $gradingPeriod->id,
+                'section_id' => $ta->section_id,
+            ]
+        );
+
         return response()->json([
             'id' =>
                 $assessment->id,
@@ -765,6 +784,33 @@ class GradeSheetController extends Controller
             $summaries['quarterly'] = $summaries['exam'];
         }
 
+        $enrollment = Enrollment::with('student')->find($data['enrollment_id']);
+        $studentName = $enrollment?->student
+            ? trim($enrollment->student->first_name . ' ' . $enrollment->student->last_name)
+            : 'Student';
+        $sectionName = $assessment->teachingAssignment?->section?->name ?? 'Class';
+
+        NotificationService::send(
+            $request->user(),
+            NotificationService::CATEGORY_GRADING,
+            'Student Score Updated',
+            "Score for {$studentName} in {$assessment->title} was updated for Section {$sectionName}.",
+            [
+                'url' => route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
+                'teaching_assignment_id' => $assessment->teaching_assignment_id,
+                'assessment_id' => $assessment->id,
+                'enrollment_id' => $data['enrollment_id'],
+            ]
+        );
+
+        if ($gradingPeriod && $enrollment && $assessment->teachingAssignment) {
+            app(RiskScoreService::class)->evaluateAndNotifyRiskChange(
+                $enrollment,
+                $assessment->teachingAssignment,
+                $gradingPeriod
+            );
+        }
+
         return response()->json([
             'written_work_grade' =>
                 $qg->written_work_grade,
@@ -854,6 +900,22 @@ class GradeSheetController extends Controller
             }
         }
 
+        $sectionName = $assessment->teachingAssignment?->section?->name ?? 'Class';
+        $periodName = $assessment->gradingPeriod?->name ?? "Term {$assessment->grading_period_id}";
+
+        NotificationService::send(
+            $request->user(),
+            NotificationService::CATEGORY_GRADING,
+            'Assessment Updated',
+            "Assessment \"{$assessment->title}\" was updated for Section {$sectionName} under {$periodName}.",
+            [
+                'url' => route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
+                'teaching_assignment_id' => $assessment->teaching_assignment_id,
+                'assessment_id' => $assessment->id,
+                'section_id' => $assessment->teachingAssignment?->section_id,
+            ]
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Assessment updated successfully.',
@@ -877,7 +939,7 @@ class GradeSheetController extends Controller
     ) {
         $teacher = $request->user()->teacher;
 
-        $assessment = Assessment::with('teachingAssignment')->findOrFail($assessmentId);
+        $assessment = Assessment::with('teachingAssignment.section')->findOrFail($assessmentId);
 
         if (
             ! $assessment->teachingAssignment ||
@@ -889,6 +951,8 @@ class GradeSheetController extends Controller
         $taId = $assessment->teaching_assignment_id;
         $gpId = $assessment->grading_period_id;
         $sectionId = $assessment->teachingAssignment->section_id;
+        $assessmentTitle = $assessment->title;
+        $sectionName = $assessment->teachingAssignment->section?->name ?? 'Class';
 
         DB::transaction(function () use ($assessment) {
             // Delete associated scores first to satisfy FK constraint
@@ -906,6 +970,18 @@ class GradeSheetController extends Controller
             );
         }
 
+        NotificationService::send(
+            $request->user(),
+            NotificationService::CATEGORY_GRADING,
+            'Assessment Deleted',
+            "Assessment \"{$assessmentTitle}\" was removed from Section {$sectionName}.",
+            [
+                'url' => route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $taId]),
+                'teaching_assignment_id' => $taId,
+                'section_id' => $sectionId,
+            ]
+        );
+
         return response()->json([
             'success' => true,
             'message' => 'Assessment deleted successfully.',
@@ -922,7 +998,7 @@ class GradeSheetController extends Controller
     ) {
         $teacher = $request->user()->teacher;
 
-        $assessment = Assessment::with('teachingAssignment')->findOrFail($assessmentId);
+        $assessment = Assessment::with('teachingAssignment.section')->findOrFail($assessmentId);
 
         if (
             ! $assessment->teachingAssignment ||
@@ -969,6 +1045,38 @@ class GradeSheetController extends Controller
                 $assessment->teaching_assignment_id,
                 $assessment->grading_period_id
             );
+        }
+
+        $sectionName = $assessment->teachingAssignment->section?->name ?? 'Class';
+
+        NotificationService::send(
+            $request->user(),
+            NotificationService::CATEGORY_GRADING,
+            'Scores Saved',
+            "Scores for {$assessment->title} were saved for Section {$sectionName}.",
+            [
+                'url' => route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
+                'teaching_assignment_id' => $assessment->teaching_assignment_id,
+                'assessment_id' => $assessment->id,
+            ]
+        );
+
+        $gradingPeriod = GradingPeriod::where('id', $assessment->grading_period_id)
+            ->where('sequence', '<=', 3)
+            ->where('period_type', 'trimester')
+            ->first();
+
+        if ($gradingPeriod && $assessment->teachingAssignment) {
+            $riskService = app(RiskScoreService::class);
+            $enrollmentIds = array_column($data['scores'], 'enrollment_id');
+            $enrollments = Enrollment::whereIn('id', $enrollmentIds)->get();
+            foreach ($enrollments as $enrollmentItem) {
+                $riskService->evaluateAndNotifyRiskChange(
+                    $enrollmentItem,
+                    $assessment->teachingAssignment,
+                    $gradingPeriod
+                );
+            }
         }
 
         return response()->json([

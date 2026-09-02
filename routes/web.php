@@ -1014,6 +1014,41 @@ Route::middleware(['auth'])->group(function () {
             '/teacher/settings/password',
             [App\Http\Controllers\Teacher\SettingsController::class, 'updatePassword']
         )->name('teacher.settings.password.update');
+
+        Route::put(
+            '/teacher/settings/notifications',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'updateNotificationPreferences']
+        )->name('teacher.settings.notifications.update');
+
+        Route::put(
+            '/teacher/settings/dashboard',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'updateDashboardPreferences']
+        )->name('teacher.settings.dashboard.update');
+
+        Route::put(
+            '/teacher/settings/appearance',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'updateAppearance']
+        )->name('teacher.settings.appearance.update');
+
+
+        // ----------------------------------------------------
+        // NOTIFICATIONS
+        // ----------------------------------------------------
+
+        Route::get(
+            '/teacher/notifications',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'index']
+        )->name('teacher.notifications.index');
+
+        Route::patch(
+            '/teacher/notifications/{id}/read',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'markAsRead']
+        )->name('teacher.notifications.mark-as-read');
+
+        Route::post(
+            '/teacher/notifications/mark-all-read',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'markAllAsRead']
+        )->name('teacher.notifications.mark-all-as-read');
     });
 
 
