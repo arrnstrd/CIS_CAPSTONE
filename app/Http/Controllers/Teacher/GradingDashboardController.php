@@ -48,6 +48,7 @@ class GradingDashboardController extends Controller
             }
 
             $activeEnrollmentIds = Enrollment::where('section_id', $ta->section_id)
+                ->where('school_year_id', $ta->school_year_id)
                 ->where('status', 'active')
                 ->pluck('id');
 
@@ -205,6 +206,7 @@ class GradingDashboardController extends Controller
             foreach ($teachingAssignments as $ta) {
                 if ($ta->section && $ta->subject) {
                     $enrollments = Enrollment::where('section_id', $ta->section_id)
+                        ->where('school_year_id', $ta->school_year_id)
                         ->where('status', 'active')
                         ->get();
 

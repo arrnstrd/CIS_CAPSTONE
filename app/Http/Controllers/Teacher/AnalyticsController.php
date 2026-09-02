@@ -443,11 +443,20 @@ class AnalyticsController extends Controller
 
     private function getCompletionRate($filtered, array $overview): ?float
     {
-        $sectionIds = $filtered->pluck('section_id')->unique();
+        $classPairs = $filtered
+            ->map(fn ($ta) => $ta->section_id . '-' . $ta->school_year_id)
+            ->unique();
 
-        $totalStudents = Enrollment::whereIn('section_id', $sectionIds)
-            ->where('status', 'active')
-            ->count();
+        $totalStudents = 0;
+
+        foreach ($classPairs as $pair) {
+            [$sectionId, $schoolYearId] = explode('-', $pair);
+
+            $totalStudents += Enrollment::where('section_id', $sectionId)
+                ->where('school_year_id', $schoolYearId)
+                ->where('status', 'active')
+                ->count();
+        }
 
         if ($totalStudents === 0) {
             return null;
