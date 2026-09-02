@@ -69,15 +69,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
     padding: 6px 0;
+    flex-wrap: wrap;
 }
 
 .gs-rules-label {
     font-size: 0.82rem;
     color: #666666;
     flex-shrink: 0;
-    min-width: 200px;
+    min-width: 130px;
 }
 
 .gs-rules-value {
@@ -85,10 +86,12 @@
     font-weight: 600;
     color: #222222;
     text-align: right;
+    word-break: break-word;
 }
 
 .gs-rules-input {
     max-width: 280px;
+    width: 100%;
 }
 
 
@@ -102,6 +105,8 @@
     border-radius: 8px;
     padding: 14px 16px;
     height: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .gs-stat-label {
@@ -157,6 +162,8 @@
     border-radius: 10px;
     padding: 18px;
     height: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     transition: border-color 0.15s ease;
 }
 

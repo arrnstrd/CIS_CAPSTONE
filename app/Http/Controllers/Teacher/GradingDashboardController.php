@@ -67,8 +67,7 @@ class GradingDashboardController extends Controller
         }
 
         if (! isset($currentPeriod) || ! $currentPeriod) {
-            $currentPeriod = GradingPeriod::where('is_active', true)->where('sequence', '<=', 3)->orderBy('sequence')->first()
-                ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+            $currentPeriod = $this->resolveTeacherCurrentTerm($teacher);
         }
 
         $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
@@ -358,5 +357,140 @@ class GradingDashboardController extends Controller
         ];
 
         return $labels[$indicator] ?? $indicator;
+    }
+
+    /**
+     * Dynamically resolve the active working term for the teacher based on
+     * the progression and actual start of grading for their active teaching assignments.
+     *
+     * Progression Rules:
+     * - If Term 1 is incomplete -> Term 1
+     * - If Term 1 is 100% complete:
+     *   - If Term 2 has NOT started yet -> remain on Term 1
+     *   - If Term 2 has started:
+     *     - If Term 2 is incomplete -> Term 2
+     *     - If Term 2 is 100% complete:
+     *       - If Term 3 has NOT started yet -> remain on Term 2
+     *       - If Term 3 has started -> Term 3 (capped at Term 3)
+     */
+    protected function resolveTeacherCurrentTerm($teacher): ?GradingPeriod
+    {
+        $activeAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->get();
+
+        $term1 = GradingPeriod::where('sequence', 1)->where('period_type', 'trimester')->first()
+            ?? GradingPeriod::where('sequence', 1)->first();
+        $term2 = GradingPeriod::where('sequence', 2)->where('period_type', 'trimester')->first()
+            ?? GradingPeriod::where('sequence', 2)->first();
+        $term3 = GradingPeriod::where('sequence', 3)->where('period_type', 'trimester')->first()
+            ?? GradingPeriod::where('sequence', 3)->first();
+
+        // If teacher has no active assignments or Term 1 not found, return safest fallback
+        if ($activeAssignments->isEmpty() || ! $term1) {
+            return $term1 ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+        }
+
+        // 1. Check if Term 1 is 100% complete across ALL active assignments
+        $isTerm1Complete = $this->isTermCompleteForTeacher($activeAssignments, $term1);
+        if (! $isTerm1Complete) {
+            return $term1;
+        }
+
+        // 2. If Term 1 is complete, check if Term 2 has started
+        if (! $term2 || ! $this->hasTermStartedForTeacher($activeAssignments, $term2)) {
+            return $term1;
+        }
+
+        // 3. Term 2 has started -> check if Term 2 is 100% complete
+        $isTerm2Complete = $this->isTermCompleteForTeacher($activeAssignments, $term2);
+        if (! $isTerm2Complete) {
+            return $term2;
+        }
+
+        // 4. Term 2 is 100% complete -> check if Term 3 has started
+        if (! $term3 || ! $this->hasTermStartedForTeacher($activeAssignments, $term3)) {
+            return $term2;
+        }
+
+        // 5. Term 3 has started -> Current Term is Term 3 (final term, stays on Term 3)
+        return $term3;
+    }
+
+    /**
+     * Check whether a grading period has started for the teacher's active assignments.
+     *
+     * A term counts as started if there is at least one assessment created OR
+     * at least one quarterly grade record with non-null component or transmuted scores
+     * for the teacher's active assignments.
+     *
+     * @param \Illuminate\Support\Collection $activeAssignments
+     * @param \App\Models\GradingPeriod $period
+     * @return bool
+     */
+    protected function hasTermStartedForTeacher($activeAssignments, GradingPeriod $period): bool
+    {
+        $taIds = $activeAssignments->pluck('id');
+        if ($taIds->isEmpty()) {
+            return false;
+        }
+
+        // 1. Check if any assessment exists for this period in the teacher's active assignments
+        $hasAssessments = \App\Models\Assessment::whereIn('teaching_assignment_id', $taIds)
+            ->where('grading_period_id', $period->id)
+            ->exists();
+
+        if ($hasAssessments) {
+            return true;
+        }
+
+        // 2. Check if any quarterly grade record exists for this period
+        $hasGrades = \App\Models\QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            ->where('grading_period_id', $period->id)
+            ->where(function ($query) {
+                $query->whereNotNull('transmuted_grade')
+                    ->orWhereNotNull('initial_grade')
+                    ->orWhereNotNull('written_work_grade')
+                    ->orWhereNotNull('performance_task_grade')
+                    ->orWhereNotNull('quarterly_assessment_grade');
+            })
+            ->exists();
+
+        return $hasGrades;
+    }
+
+    /**
+     * Check whether ALL active teaching assignments of the teacher have
+     * 100% finalized grades (transmuted_grade !== null) for every active enrolled student.
+     *
+     * @param \Illuminate\Support\Collection $activeAssignments
+     * @param \App\Models\GradingPeriod $period
+     * @return bool
+     */
+    protected function isTermCompleteForTeacher($activeAssignments, GradingPeriod $period): bool
+    {
+        foreach ($activeAssignments as $ta) {
+            $activeEnrollmentIds = Enrollment::where('section_id', $ta->section_id)
+                ->where('school_year_id', $ta->school_year_id)
+                ->where('status', 'active')
+                ->pluck('id');
+
+            $totalStudents = $activeEnrollmentIds->count();
+
+            // If the section has active enrolled students
+            if ($totalStudents > 0) {
+                $finalizedCount = \App\Models\QuarterlyGrade::where('teaching_assignment_id', $ta->id)
+                    ->where('grading_period_id', $period->id)
+                    ->whereIn('enrollment_id', $activeEnrollmentIds)
+                    ->whereNotNull('transmuted_grade')
+                    ->count();
+
+                if ($finalizedCount < $totalStudents) {
+                    return false; // Incomplete: at least one class has not finished this term
+                }
+            }
+        }
+
+        return true; // All active assignments with students are 100% finalized
     }
 }

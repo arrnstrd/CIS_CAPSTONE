@@ -9,34 +9,6 @@
 
     <div class="gd-dashboard-wrapper {{ ($dashboardPreferences?->dashboard_density ?? 'comfortable') === 'compact' ? 'dashboard-density-compact' : 'dashboard-density-comfortable' }}">
 
-        {{-- Quick Actions --}}
-        @if ($dashboardPreferences?->show_quick_actions ?? true)
-            <div class="gd-quick-actions mb-4">
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ route('teacher.grading-system.grades') }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
-                        <i class="fa-solid fa-table-list"></i>
-                        <span>Grade Sheets</span>
-                    </a>
-                    <a href="{{ route('room-attendance.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
-                        <i class="fa-solid fa-clipboard-user"></i>
-                        <span>Class Attendance</span>
-                    </a>
-                    <a href="{{ route('teacher.grading-system.at-risk') }}" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span>At-Risk Registry</span>
-                    </a>
-                    <a href="{{ route('teacher.grading-system.analytics') }}" class="btn btn-sm btn-outline-info d-inline-flex align-items-center gap-1">
-                        <i class="fa-solid fa-chart-line"></i>
-                        <span>Analytics</span>
-                    </a>
-                    <a href="{{ route('teacher.settings') }}" class="btn btn-sm btn-outline-dark d-inline-flex align-items-center gap-1 ms-auto">
-                        <i class="fa-solid fa-sliders"></i>
-                        <span>Dashboard Preferences</span>
-                    </a>
-                </div>
-            </div>
-        @endif
-
         {{-- Summary Cards --}}
         @if ($dashboardPreferences?->show_summary_cards ?? true)
             <div class="row g-3 mb-4">

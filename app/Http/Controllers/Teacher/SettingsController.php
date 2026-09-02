@@ -10,12 +10,44 @@ use Illuminate\Validation\Rules\Password;
 
 class SettingsController extends Controller
 {
-    public function index(Request $request)
+    public function profile(Request $request)
     {
         $user = $request->user();
         $teacher = $user?->teacher;
-        $preferences = $user?->getOrCreateNotificationPreference();
-        $dashboardPreferences = $user?->getOrCreateDashboardPreference();
+
+        return view('teacher-modules.settings.profile', [
+            'user' => $user,
+            'teacher' => $teacher,
+        ]);
+    }
+
+    public function notifications(Request $request)
+    {
+        $user = $request->user();
+        $preferences = $user->getOrCreateNotificationPreference();
+
+        return view('teacher-modules.settings.notifications', [
+            'user' => $user,
+            'preferences' => $preferences,
+        ]);
+    }
+
+    public function appearance(Request $request)
+    {
+        $user = $request->user();
+        $dashboardPreferences = $user->getOrCreateDashboardPreference();
+
+        return view('teacher-modules.settings.appearance', [
+            'user' => $user,
+            'dashboardPreferences' => $dashboardPreferences,
+        ]);
+    }
+
+    public function dashboard(Request $request)
+    {
+        $user = $request->user();
+        $teacher = $user?->teacher;
+        $dashboardPreferences = $user->getOrCreateDashboardPreference();
 
         $assignedClasses = $teacher
             ? TeachingAssignment::where('teacher_id', $teacher->id)
@@ -24,12 +56,20 @@ class SettingsController extends Controller
                 ->get()
             : collect();
 
-        return view('teacher-modules.settings.settings-index', [
+        return view('teacher-modules.settings.dashboard-preferences', [
             'user' => $user,
             'teacher' => $teacher,
-            'preferences' => $preferences,
             'dashboardPreferences' => $dashboardPreferences,
             'assignedClasses' => $assignedClasses,
+        ]);
+    }
+
+    public function security(Request $request)
+    {
+        $user = $request->user();
+
+        return view('teacher-modules.settings.security', [
+            'user' => $user,
         ]);
     }
 
@@ -54,7 +94,7 @@ class SettingsController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return redirect()->route('teacher.settings')
+        return redirect()->route('teacher.settings.security')
             ->with('success', 'Password updated successfully.');
     }
 
@@ -72,7 +112,7 @@ class SettingsController extends Controller
             'import_enabled' => $request->boolean('import_enabled'),
         ]);
 
-        return redirect()->route('teacher.settings')
+        return redirect()->route('teacher.settings.notifications')
             ->with('success', 'Notification preferences updated successfully.');
     }
 
@@ -117,7 +157,7 @@ class SettingsController extends Controller
             'default_term' => $request->input('default_term', 'current'),
         ]);
 
-        return redirect()->route('teacher.settings')
+        return redirect()->route('teacher.settings.dashboard')
             ->with('success', 'Dashboard preferences updated successfully.');
     }
 
@@ -134,7 +174,7 @@ class SettingsController extends Controller
             'theme' => $request->input('theme', 'system'),
         ]);
 
-        return redirect()->route('teacher.settings')
+        return redirect()->route('teacher.settings.appearance')
             ->with('success', 'Appearance preferences updated successfully.');
     }
 }

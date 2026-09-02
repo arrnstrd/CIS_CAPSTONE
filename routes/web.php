@@ -1005,10 +1005,32 @@ Route::middleware(['auth'])->group(function () {
         // SETTINGS
         // ----------------------------------------------------
 
+        Route::redirect('/teacher/settings', '/teacher/settings/profile');
+
         Route::get(
-            '/teacher/settings',
-            [App\Http\Controllers\Teacher\SettingsController::class, 'index']
-        )->name('teacher.settings');
+            '/teacher/settings/profile',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'profile']
+        )->name('teacher.settings.profile');
+
+        Route::get(
+            '/teacher/settings/notifications',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'notifications']
+        )->name('teacher.settings.notifications');
+
+        Route::get(
+            '/teacher/settings/appearance',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'appearance']
+        )->name('teacher.settings.appearance');
+
+        Route::get(
+            '/teacher/settings/dashboard',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'dashboard']
+        )->name('teacher.settings.dashboard');
+
+        Route::get(
+            '/teacher/settings/security',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'security']
+        )->name('teacher.settings.security');
 
         Route::put(
             '/teacher/settings/password',

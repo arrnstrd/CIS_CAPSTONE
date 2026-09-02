@@ -207,10 +207,10 @@
         </header>
 
         <main class="page-content teacher-page-bg">
-            <div class="container-fluid p-6">
-                <section class="admin-head-banner p-4 mx-3">
+            <div class="container-fluid p-0">
+                <section class="admin-head-banner mb-4">
                     <div class="admin-head-banner__copy">
-                        <h1 class="admin-head-banner__title mt-3">{{ $pageName ?? 'Header' }}</h1>
+                        <h1 class="admin-head-banner__title">{{ $pageName ?? 'Header' }}</h1>
                         @if ($subtitle ?? null)
                             <p class="admin-head-banner__sub">{{ $subtitle }}</p>
                         @endif
@@ -233,7 +233,7 @@
                     </div>
                 </section>
 
-                <div class="admin-page-slot mx-3">
+                <div class="admin-page-slot">
                     {{ $slot }}
                 </div>
             </div>

@@ -81,14 +81,33 @@
                     </a>
                 </li> --}}
 
-                <!-- SYSTEM SECTION -->
+                <!-- SETTINGS SECTION -->
                 <li class="sidebar-section-label">
-                    <small>SYSTEM</small>
+                    <small>SETTINGS</small>
                 </li>
-                <li class="{{ request()->routeIs('teacher.settings*') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings') }}">
-                        <i class="fas fa-sliders-h"></i>
-                        <span>Settings</span>
+                <li class="{{ request()->routeIs('teacher.settings.profile') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.settings.profile') }}">
+                        <span>Profile</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('teacher.settings.notifications') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.settings.notifications') }}">
+                        <span>Notifications</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('teacher.settings.appearance') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.settings.appearance') }}">
+                        <span>Appearance</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('teacher.settings.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.settings.dashboard') }}">
+                        <span>Dashboard Preferences</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('teacher.settings.security') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.settings.security') }}">
+                        <span>Account & Security</span>
                     </a>
                 </li>
 
