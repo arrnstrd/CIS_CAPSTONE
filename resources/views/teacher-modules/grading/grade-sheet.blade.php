@@ -82,28 +82,29 @@
                             <th rowspan="3" class="align-middle">Learner Name</th>
                             
                             <!-- Written Works Column -->
-                            <th colspan="{{ $fixedSlots['written'] }}" class="text-center gs-group-written">
+                            <th colspan="{{ $fixedSlots['written'] + 3 }}" class="text-center gs-group-written gs-divider-written">
                                 {{ $categoryLabels['written'] }} <button type="button" class="gs-add-col-btn gs-add-col" data-category="written">
                                 <i class="fa-solid fa-plus"></i> Add
                             </button>
                             </th>
                             
                             <!-- Performance Tasks Column -->
-                            <th colspan="{{ $fixedSlots['performance'] }}" class="text-center gs-group-performance">
+                            <th colspan="{{ $fixedSlots['performance'] + 3 }}" class="text-center gs-group-performance gs-divider-performance">
                                 {{ $categoryLabels['performance'] }} <button type="button" class="gs-add-col-btn gs-add-col" data-category="performance">
                                 <i class="fa-solid fa-plus"></i> Add
                             </button>
                             </th>
                             
                             <!-- Examinations/Quarterly Assessments Column -->
-                            <th colspan="{{ $schoolLevel === 'shs' ? $fixedSlots['quarterly'] : $fixedSlots['exam'] }}" class="text-center gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">
+                            <th colspan="{{ ($schoolLevel === 'shs' ? $fixedSlots['quarterly'] : $fixedSlots['exam']) + 3 }}" class="text-center gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }} gs-divider-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">
                                 {{ $schoolLevel === 'shs' ? $categoryLabels['quarterly'] : $categoryLabels['exam'] }} <button type="button" class="gs-add-col-btn gs-add-col" data-category="{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">
                                 <i class="fa-solid fa-plus"></i> Add
                             </button>
                             </th>
                             
-                            <th rowspan="3" class="align-middle text-center">Initial Grade</th>
+                            <th rowspan="3" class="align-middle text-center gs-divider-initial">Initial Grade</th>
                             <th rowspan="3" class="align-middle text-center">Transmuted</th>
+                            <th rowspan="3" class="align-middle text-center">Descriptor</th>
                         </tr>
                         
                         <!-- Assessment Names Row -->
@@ -112,52 +113,70 @@
                             @foreach ($slotLabels['written'] as $label)
                                 <th class="text-center small gs-group-written">{{ $label }}</th>
                             @endforeach
+                            <th class="text-center small gs-group-written">Total</th>
+                            <th class="text-center small gs-group-written">PS</th>
+                            <th class="text-center small gs-group-written gs-divider-written">WS</th>
                             
                             <!-- Performance Tasks -->
                             @foreach ($slotLabels['performance'] as $label)
                                 <th class="text-center small gs-group-performance">{{ $label }}</th>
                             @endforeach
+                            <th class="text-center small gs-group-performance">Total</th>
+                            <th class="text-center small gs-group-performance">PS</th>
+                            <th class="text-center small gs-group-performance gs-divider-performance">WS</th>
                             
                             <!-- Examinations/Quarterly Assessments -->
                             @foreach ($slotLabels[$schoolLevel === 'shs' ? 'quarterly' : 'exam'] as $label)
                                 <th class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">{{ $label }}</th>
                             @endforeach
+                            <th class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">Total</th>
+                            <th class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">PS</th>
+                            <th class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }} gs-divider-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">WS</th>
                         </tr>
                         
                         <!-- HPS Row -->
                         <tr class="gs-hps-row">
                             <!-- Written Works HPS -->
                             @foreach ($assessmentsBySlot['written'] as $assessment)
-                                <th class="text-center small gs-group-written">
-                                    @if ($assessment)
-                                        HPS: {{ $assessment->total_items }}
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
-                                </th>
-                            @endforeach
+                                    <td class="text-center small gs-group-written">
+                                        @if ($assessment)
+                                            HPS: {{ $assessment->total_items }}
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                @endforeach
+                                <td class="text-center small gs-group-written">HPS: {{ $assessmentsByCategory['written']->sum('total_items') }}</td>
+                                <td class="text-center small gs-group-written">—</td>
+                                <td class="text-center small gs-group-written gs-divider-written">—</td>
                             
                             <!-- Performance Tasks HPS -->
                             @foreach ($assessmentsBySlot['performance'] as $assessment)
-                                <th class="text-center small gs-group-performance">
-                                    @if ($assessment)
-                                        HPS: {{ $assessment->total_items }}
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
-                                </th>
-                            @endforeach
+                                    <td class="text-center small gs-group-performance">
+                                        @if ($assessment)
+                                            HPS: {{ $assessment->total_items }}
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                @endforeach
+                                <td class="text-center small gs-group-performance">HPS: {{ $assessmentsByCategory['performance']->sum('total_items') }}</td>
+                                <td class="text-center small gs-group-performance">—</td>
+                                <td class="text-center small gs-group-performance gs-divider-performance">—</td>
                             
                             <!-- Examinations/Quarterly Assessments HPS -->
                             @foreach ($assessmentsBySlot[$schoolLevel === 'shs' ? 'quarterly' : 'exam'] as $assessment)
-                                <th class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">
-                                    @if ($assessment)
-                                        HPS: {{ $assessment->total_items }}
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
-                                </th>
-                            @endforeach
+                                    <td class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">
+                                        @if ($assessment)
+                                            HPS: {{ $assessment->total_items }}
+                                        @else
+                                            <span class="text-muted">—</span>
+                                        @endif
+                                    </td>
+                                @endforeach
+                                <td class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">HPS: {{ $assessmentsByCategory[$assessmentComponentKey]->sum('total_items') }}</td>
+                                <td class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">—</td>
+                                <td class="text-center small gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }} gs-divider-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">—</td>
                         </tr>
                     </thead>
                     <tbody>
@@ -167,7 +186,7 @@
                                 
                                 <!-- Written Works Scores -->
                                 @foreach ($assessmentsBySlot['written'] as $assessment)
-                                    <td class="text-center p-1">
+                                    <td class="text-center p-1 gs-group-written">
                                         @if ($assessment)
                                             <input type="number" min="0" max="{{ $assessment->total_items }}" step="0.01"
                                                 class="form-control form-control-sm gs-score-input text-center"
@@ -181,10 +200,13 @@
                                         @endif
                                     </td>
                                 @endforeach
+                                <td class="text-center gs-group-written gs-summary-cell" data-component="written" data-field="total">{{ $row->component_summaries['written']['total'] }}</td>
+                                <td class="text-center gs-group-written gs-summary-cell" data-component="written" data-field="ps">{{ $row->component_summaries['written']['ps'] ?? '—' }}</td>
+                                <td class="text-center gs-group-written gs-divider-written gs-summary-cell" data-component="written" data-field="ws">{{ $row->component_summaries['written']['ws'] ?? '—' }}</td>
                                 
                                 <!-- Performance Tasks Scores -->
                                 @foreach ($assessmentsBySlot['performance'] as $assessment)
-                                    <td class="text-center p-1">
+                                    <td class="text-center p-1 gs-group-performance">
                                         @if ($assessment)
                                             <input type="number" min="0" max="{{ $assessment->total_items }}" step="0.01"
                                                 class="form-control form-control-sm gs-score-input text-center"
@@ -198,10 +220,13 @@
                                         @endif
                                     </td>
                                 @endforeach
+                                <td class="text-center gs-group-performance gs-summary-cell" data-component="performance" data-field="total">{{ $row->component_summaries['performance']['total'] }}</td>
+                                <td class="text-center gs-group-performance gs-summary-cell" data-component="performance" data-field="ps">{{ $row->component_summaries['performance']['ps'] ?? '—' }}</td>
+                                <td class="text-center gs-group-performance gs-divider-performance gs-summary-cell" data-component="performance" data-field="ws">{{ $row->component_summaries['performance']['ws'] ?? '—' }}</td>
                                 
                                 <!-- Examinations/Quarterly Assessments Scores -->
                                 @foreach ($assessmentsBySlot[$schoolLevel === 'shs' ? 'quarterly' : 'exam'] as $assessment)
-                                    <td class="text-center p-1">
+                                    <td class="text-center p-1 gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }}">
                                         @if ($assessment)
                                             <input type="number" min="0" max="{{ $assessment->total_items }}" step="0.01"
                                                 class="form-control form-control-sm gs-score-input text-center"
@@ -215,13 +240,17 @@
                                         @endif
                                     </td>
                                 @endforeach
+                                <td class="text-center gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }} gs-summary-cell" data-component="quarterly" data-field="total">{{ $row->component_summaries['quarterly']['total'] }}</td>
+                                <td class="text-center gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }} gs-summary-cell" data-component="quarterly" data-field="ps">{{ $row->component_summaries['quarterly']['ps'] ?? '—' }}</td>
+                                <td class="text-center gs-group-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }} gs-divider-{{ $schoolLevel === 'shs' ? 'quarterly' : 'exam' }} gs-summary-cell" data-component="quarterly" data-field="ws">{{ $row->component_summaries['quarterly']['ws'] ?? '—' }}</td>
                                 
-                                <td class="text-center gs-initial-cell">{{ $row->initial_grade ?? '—' }}</td>
+                                <td class="text-center gs-divider-initial gs-initial-cell">{{ $row->initial_grade ?? '—' }}</td>
                                 <td class="text-center gs-transmuted-cell fw-bold">{{ $row->transmuted_grade ?? '—' }}</td>
+                                <td class="text-center gs-descriptor-cell">{{ $row->descriptor ?? '—' }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ $fixedSlots['written'] + $fixedSlots['performance'] + ($schoolLevel === 'shs' ? $fixedSlots['quarterly'] : $fixedSlots['exam']) + 2 }}" class="text-center text-muted py-4">No active learners found for this section.</td>
+                                <td colspan="{{ $fixedSlots['written'] + $fixedSlots['performance'] + ($schoolLevel === 'shs' ? $fixedSlots['quarterly'] : $fixedSlots['exam']) + 12 }}" class="text-center text-muted py-4">No active learners found for this section.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -474,6 +503,13 @@
 
                     row.querySelector('.gs-initial-cell').textContent = data.initial_grade ?? '—';
                     row.querySelector('.gs-transmuted-cell').textContent = data.transmuted_grade ?? '—';
+                    row.querySelector('.gs-descriptor-cell').textContent = data.descriptor ?? '—';
+                    Object.entries(data.component_summaries).forEach(([component, summary]) => {
+                        ['total', 'ps', 'ws'].forEach((field) => {
+                            const cell = row.querySelector(`.gs-summary-cell[data-component="${component}"][data-field="${field}"]`);
+                            if (cell) cell.textContent = summary[field] ?? '—';
+                        });
+                    });
                     
                     // Update class-level statistics
                     document.getElementById('statGradeCompletion').textContent = data.grade_completion_percent !== null && data.grade_completion_percent !== undefined ? data.grade_completion_percent + '%' : '—';
@@ -483,20 +519,6 @@
                     input.style.backgroundColor = '#e1f5ee';
                     setTimeout(() => { input.style.backgroundColor = originalBg; }, 800);
 
-                    // Recompute PS for this row/category from visible inputs (client-side, matches server % logic)
-                    const category = input.dataset.category;
-                    const categoryInputs = row.querySelectorAll(`.gs-score-input[data-category="${category}"]`);
-                    let sumScore = 0, sumTotal = 0;
-                    categoryInputs.forEach(inp => {
-                        if (inp.value !== '') {
-                            sumScore += parseFloat(inp.value);
-                            sumTotal += parseFloat(inp.max);
-                        }
-                    });
-                    const psCell = row.querySelector(`.gs-ps-cell[data-cat="${category}"]`);
-                    if (psCell) {
-                        psCell.textContent = sumTotal > 0 ? ((sumScore / sumTotal) * 100).toFixed(2) : '—';
-                    };
                 } catch (e) {
                     input.style.backgroundColor = '#FCEBEB';
                 }

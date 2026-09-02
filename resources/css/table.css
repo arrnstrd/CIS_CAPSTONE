@@ -21,17 +21,19 @@
     background-color: #2438b9 !important;
 }
 
-#gradeSheetTable th:first-child,
-#gradeSheetTable td:first-child {
+#gradeSheetTable tbody td:first-child {
     position: sticky;
     left: 0;
     z-index: 5;
     background-color: #ffffff !important;
-    border-right: 2px solid #dee2e6 !important;
 }
 
-#gradeSheetTable th:first-child {
+#gradeSheetTable thead th:first-child {
+    position: sticky;
+    left: 0;
     z-index: 11;
+    background-color: #2438b9 !important;
+    color: #ffffff !important;
 }
 
 /* Ensure table scrolls smoothly */

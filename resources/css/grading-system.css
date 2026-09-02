@@ -428,36 +428,67 @@
 }
 /* Grade Sheet - Column Group Styling */
 .gs-hps-row {
-    background-color: #f8f9fa !important;
+    background-color: #2438b9 !important;
     font-weight: 600;
-    color: #495057;
+    color: #ffffff !important;
 }
 .gs-hps-row th {
-    background-color: #f8f9fa !important;
+    background-color: #2438b9 !important;
+    color: #ffffff !important;
     border-bottom: 2px solid #dee2e6 !important;
 }
-/* Written Works Group */
-.gs-group-written {
+/* Group fills apply only to header cells; body score cells retain their default background. */
+#gradeSheetTable thead .gs-group-written {
     background-color: rgba(36, 56, 185, 0.05) !important;
 }
-.gs-group-written th {
-    background-color: rgba(36, 56, 185, 0.1) !important;
-    border-right: 2px solid #2438b9 !important;
-}
 /* Performance Tasks Group */
-.gs-group-performance {
+#gradeSheetTable thead .gs-group-performance {
     background-color: rgba(36, 56, 185, 0.08) !important;
 }
-.gs-group-performance th {
-    background-color: rgba(36, 56, 185, 0.15) !important;
-    border-right: 2px solid #2438b9 !important;
-}
 /* Examinations Group */
-.gs-group-quarterly {
+#gradeSheetTable thead .gs-group-quarterly {
     background-color: rgba(36, 56, 185, 0.12) !important;
 }
-.gs-group-quarterly th {
-    background-color: rgba(36, 56, 185, 0.2) !important;
+
+/* Exam Group (for schools that use Exam instead of Quarterly) */
+#gradeSheetTable thead .gs-group-exam {
+    background-color: rgba(36, 56, 185, 0.12) !important;
+}
+
+/* ===== GRADE SHEET COLUMN GROUP DIVIDERS ===== */
+/* 5 vertical dividers extending full table height, each using consistent thead+tbody selectors */
+/* All dividers use medium gray #888888 for clear, consistent visibility */
+
+/* Divider 1: After Learner Name (before WW1) */
+#gradeSheetTable thead tr:first-child th:first-child,
+#gradeSheetTable tbody td:nth-child(1) {
+    border-right: 3px solid #888888 !important;
+}
+
+/* Divider 2: After Written Works group (WW5, before PT1) */
+#gradeSheetTable th.gs-divider-written,
+#gradeSheetTable td.gs-divider-written {
+    border-right: 3px solid #888888 !important;
+}
+
+/* Divider 3: After Performance Tasks group (PT5, before QA1) */
+#gradeSheetTable th.gs-divider-performance,
+#gradeSheetTable td.gs-divider-performance {
+    border-right: 3px solid #888888 !important;
+}
+
+/* Divider 4: After Quarterly Assessment group (QA3, before Initial Grade) */
+#gradeSheetTable th.gs-divider-quarterly,
+#gradeSheetTable td.gs-divider-quarterly,
+#gradeSheetTable th.gs-divider-exam,
+#gradeSheetTable td.gs-divider-exam {
+    border-right: 3px solid #888888 !important;
+}
+
+/* Divider 5: After Initial Grade (before Transmuted) */
+#gradeSheetTable th.gs-divider-initial,
+#gradeSheetTable td.gs-divider-initial {
+    border-right: 3px solid #888888 !important;
 }
 /* Grading Dashboard â€” nested sidebar + progress bar */
 .gd-layout {

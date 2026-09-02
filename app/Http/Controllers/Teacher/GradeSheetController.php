@@ -13,6 +13,7 @@ use App\Models\TeachingAssignment;
 use App\Services\Grading\GradingService;
 use App\Services\Grading\SchoolLevelDetector;
 use App\Services\Grading\AssessmentTemplateService;
+use App\Services\Grading\PerformanceDescriptorResolver;
 use Illuminate\Http\Request;
 
 class GradeSheetController extends Controller
@@ -26,7 +27,7 @@ class GradeSheetController extends Controller
         $this->templateService = $templateService;
     }
 
-    public function show(Request $request, int $teachingAssignmentId)
+    public function show(Request $request, int $teachingAssignmentId, GradingService $gradingService)
     {
         $teacher = $request->user()->teacher;
 
@@ -55,16 +56,17 @@ class GradeSheetController extends Controller
                 ?? $gradingPeriods->sortByDesc('sequence')->first()?->id
         );
 
-        $categories = AssessmentCategory::all()->keyBy(function ($c) {
+        $assessmentComponentKey = $schoolLevel === 'shs' ? 'quarterly' : 'exam';
+        $categories = AssessmentCategory::all()->keyBy(function ($c) use ($assessmentComponentKey) {
             $n = strtolower($c->name);
             if (str_contains($n, 'written')) return 'written';
             if (str_contains($n, 'performance')) return 'performance';
-            return 'quarterly';
+            return $assessmentComponentKey;
         });
 
         // Load assessments for fixed slots only
-        $assessmentsByCategory = ['written' => collect(), 'performance' => collect(), 'quarterly' => collect()];
-        $assessmentsBySlot = ['written' => [], 'performance' => [], 'quarterly' => []];
+        $assessmentsByCategory = ['written' => collect(), 'performance' => collect(), $assessmentComponentKey => collect()];
+        $assessmentsBySlot = ['written' => [], 'performance' => [], $assessmentComponentKey => []];
 
         foreach ($assessmentsByCategory as $key => $_) {
             if (! isset($categories[$key])) {
@@ -124,40 +126,41 @@ class GradeSheetController extends Controller
             ->get()
             ->keyBy('enrollment_id');
 
-        $rows = $enrollments->map(function ($enrollment) use ($scores, $quarterlyGrades, $assessmentsByCategory) {
+        $componentCategoryIds = [
+            'written' => $categories['written']?->id,
+            'performance' => $categories['performance']?->id,
+            'quarterly' => $categories[$assessmentComponentKey]?->id,
+        ];
+        $resolvedWeights = $gradingService->resolveWeights($ta->id, $ta->subject, $componentCategoryIds);
+
+        $rows = $enrollments->map(function ($enrollment) use ($scores, $quarterlyGrades, $assessmentsByCategory, $gradingService, $componentCategoryIds, $resolvedWeights) {
             $studentScores = $scores->get($enrollment->id, collect())->keyBy('assessment_id');
 
-            $categoryTotals = [];
-            foreach ($assessmentsByCategory as $key => $assessments) {
-                $sumScore = 0;
-                $sumTotal = 0;
-                foreach ($assessments as $a) {
-                    if ($studentScores->has($a->id)) {
-                        $sumScore += (float) $studentScores[$a->id]->score;
-                        $sumTotal += (int) $a->total_items;
-                    }
-                }
-                $categoryTotals[$key] = ['ps' => $sumTotal > 0 ? round(($sumScore / $sumTotal) * 100, 2) : null];
-            }
+            $componentSummaries = $gradingService->calculateComponentSummaries(
+                collect($assessmentsByCategory)->flatten(1),
+                $studentScores,
+                $resolvedWeights,
+                $componentCategoryIds
+            );
 
-            $qg = $quarterlyGrades->get($enrollment->id);
+            $hasAssessment = collect($componentSummaries)->contains(fn (array $summary) => $summary['hps'] > 0);
+            $initialGrade = $hasAssessment ? round(collect($componentSummaries)->sum('ws'), 2) : null;
+            $transmutedGrade = $initialGrade === null ? null : $gradingService->transmute($initialGrade);
             $mi = $enrollment->student->middle_name ? ' ' . mb_substr($enrollment->student->middle_name, 0, 1) . '.' : '';
 
             return (object) [
                 'enrollment_id' => $enrollment->id,
                 'student_name' => $enrollment->student->last_name . ', ' . $enrollment->student->first_name . $mi,
                 'scores' => $studentScores,
-                'category_totals' => $categoryTotals,
-                'written_ws' => $qg->written_work_grade ?? null,
-                'performance_ws' => $qg->performance_task_grade ?? null,
-                'quarterly_ws' => $qg->quarterly_assessment_grade ?? null,
-                'initial_grade' => $qg->initial_grade ?? null,
-                'transmuted_grade' => $qg->transmuted_grade ?? null,
+                'component_summaries' => $componentSummaries,
+                'initial_grade' => $initialGrade,
+                'transmuted_grade' => $transmutedGrade,
+                'descriptor' => $transmutedGrade === null ? null : PerformanceDescriptorResolver::resolve($transmutedGrade)['description'],
             ];
         });
 
         $totalStudents = $enrollments->count();
-        $gradesWithValue = $quarterlyGrades->whereNotNull('transmuted_grade');
+        $gradesWithValue = $rows->filter(fn ($row) => $row->transmuted_grade !== null);
         $completedCount = $gradesWithValue->count();
         $gradeCompletionPercent = $totalStudents > 0 ? round(($completedCount / $totalStudents) * 100, 1) : null;
         $classAverage = $completedCount > 0 ? round($gradesWithValue->avg('transmuted_grade'), 1) : null;
@@ -179,6 +182,7 @@ class GradeSheetController extends Controller
             'fixedSlots' => $fixedSlots,
             'slotLabels' => $slotLabels,
             'categoryLabels' => $categoryLabels,
+            'assessmentComponentKey' => $assessmentComponentKey,
         ]);
     }
 
@@ -189,7 +193,7 @@ class GradeSheetController extends Controller
         $data = $request->validate([
             'teaching_assignment_id' => 'required|integer',
             'grading_period_id' => 'required|integer',
-            'category' => 'required|in:written,performance,quarterly',
+            'category' => 'required|in:written,performance,quarterly,exam',
             'title' => 'required|string|max:100',
             'total_items' => 'required|integer|min:1',
             'assessment_date' => 'nullable|date',
@@ -208,6 +212,7 @@ class GradeSheetController extends Controller
             'written' => 'Written Work',
             'performance' => 'Performance Task',
             'quarterly' => 'Quarterly Assessment',
+            'exam' => 'Quarterly Assessment',
         ];
 
         $category = AssessmentCategory::where('name', $categoryNameMap[$data['category']])->firstOrFail();
@@ -293,8 +298,14 @@ class GradeSheetController extends Controller
             'written_work_grade' => $qg->written_work_grade,
             'performance_task_grade' => $qg->performance_task_grade,
             'quarterly_assessment_grade' => $qg->quarterly_assessment_grade,
+            'component_summaries' => $gradingService->getComponentSummaries(
+                $data['enrollment_id'],
+                $assessment->teaching_assignment_id,
+                $assessment->grading_period_id
+            ),
             'initial_grade' => $qg->initial_grade,
             'transmuted_grade' => $qg->transmuted_grade,
+            'descriptor' => $qg->transmuted_grade === null ? null : PerformanceDescriptorResolver::resolve((float) $qg->transmuted_grade)['description'],
             'grade_completion_percent' => $gradeCompletionPercent,
             'class_average' => $classAverage,
             'passing_rate' => $passingRate,

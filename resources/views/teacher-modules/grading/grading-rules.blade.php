@@ -77,15 +77,15 @@
                         <div class="gs-formula-example">
                                 <div class="gs-formula-step">
                                     <span class="gs-formula-label">Written Work:</span>
-                                    <span class="gs-formula-value">{{ $workedExample['ww_score'] }}% × 0.30 = {{ $workedExample['ww_contribution'] }}</span>
+                                    <span class="gs-formula-value">{{ $workedExample['ww_score'] }}% × {{ $gradingComponents['written_work']['weight'] / 100 }} = {{ $workedExample['ww_contribution'] }}</span>
                                 </div>
                                 <div class="gs-formula-step">
                                     <span class="gs-formula-label">Performance Task:</span>
-                                    <span class="gs-formula-value">{{ $workedExample['pt_score'] }}% × 0.50 = {{ $workedExample['pt_contribution'] }}</span>
+                                    <span class="gs-formula-value">{{ $workedExample['pt_score'] }}% × {{ $gradingComponents['performance_task']['weight'] / 100 }} = {{ $workedExample['pt_contribution'] }}</span>
                                 </div>
                                 <div class="gs-formula-step">
-                                    <span class="gs-formula-label">Teacher Assessment:</span>
-                                    <span class="gs-formula-value">{{ $workedExample['ta_score'] }}% × 0.20 = {{ $workedExample['ta_contribution'] }}</span>
+                                    <span class="gs-formula-label">Examination:</span>
+                                    <span class="gs-formula-value">{{ $workedExample['ta_score'] }}% × {{ $gradingComponents['quarterly_assessment']['weight'] / 100 }} = {{ $workedExample['ta_contribution'] }}</span>
                                 </div>
                                 <div class="gs-formula-step gs-formula-total">
                                     <span class="gs-formula-label">Final Grade:</span>

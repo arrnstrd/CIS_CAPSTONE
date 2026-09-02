@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Subject;
+use App\Services\Grading\SubjectWeightResolver;
 use Illuminate\Http\Request;
 
 class GradingRulesController extends Controller
@@ -14,11 +16,13 @@ class GradingRulesController extends Controller
         $lastUpdated = "August 24, 2026";
         $configuredBy = "Admin Office";
         
-        // Grading components with flat 30/50/20 distribution
+        // Same resolver fallback used by Grade Sheet calculations when no
+        // complete per-assignment grading_configs override exists.
+        $weights = app(SubjectWeightResolver::class)->resolve(new Subject());
         $gradingComponents = [
-            'written_work' => ['name' => 'Written Work (WW)', 'weight' => 30, 'color' => '#4CAF50'],
-            'performance_task' => ['name' => 'Performance Task (PT)', 'weight' => 50, 'color' => '#2196F3'],
-            'quarterly_assessment' => ['name' => 'Teacher Assessment (TA)', 'weight' => 20, 'color' => '#FF9800'],
+            'written_work' => ['name' => 'Written Work (WW)', 'weight' => $weights['written_work'] * 100, 'color' => '#4CAF50'],
+            'performance_task' => ['name' => 'Performance Task (PT)', 'weight' => $weights['performance_task'] * 100, 'color' => '#2196F3'],
+            'quarterly_assessment' => ['name' => 'Examination (EX)', 'weight' => $weights['quarterly_assessment'] * 100, 'color' => '#FF9800'],
         ];
         
         $formula = "Final Grade = (WW Average × 0.30) + (PT Average × 0.50) + (TA Average × 0.20)";
@@ -27,11 +31,13 @@ class GradingRulesController extends Controller
             'ww_score' => 85,
             'pt_score' => 90,
             'ta_score' => 85,
-            'ww_contribution' => 25.5,
-            'pt_contribution' => 45,
-            'ta_contribution' => 17,
-            'final_grade' => 87.5,
+            'ww_contribution' => 85 * $weights['written_work'],
+            'pt_contribution' => 90 * $weights['performance_task'],
+            'ta_contribution' => 85 * $weights['quarterly_assessment'],
+            'final_grade' => (85 * $weights['written_work']) + (90 * $weights['performance_task']) + (85 * $weights['quarterly_assessment']),
         ];
+
+        $formula = "Initial Grade = (WW PS × {$weights['written_work']}) + (PT PS × {$weights['performance_task']}) + (EX PS × {$weights['quarterly_assessment']})";
         
         $otherRules = [
             ['rule' => 'Passing Grade', 'value' => '75.00'],
