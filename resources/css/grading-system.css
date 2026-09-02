@@ -1,9 +1,20 @@
-﻿.gs-filter-bar {
+
+/* =========================================================
+   GRADING SYSTEM
+   ========================================================= */
+
+
+/* =========================
+   GENERAL
+   ========================= */
+
+.gs-filter-bar {
     background-color: #ffffff;
     border: 1px solid #e5e5e5;
     border-radius: 8px;
     padding: 1rem;
 }
+
 .gs-filter-label {
     font-size: 0.72rem;
     font-weight: 600;
@@ -13,6 +24,7 @@
     margin-bottom: 2px;
     display: block;
 }
+
 .gs-profile-avatar {
     display: inline-flex;
     align-items: center;
@@ -26,16 +38,24 @@
     font-weight: 700;
     flex-shrink: 0;
 }
+
+
+/* =========================
+   RULES
+   ========================= */
+
 .gs-rules-section {
     padding-bottom: 16px;
     margin-bottom: 16px;
     border-bottom: 1px solid #f0f0f0;
 }
+
 .gs-rules-section-last {
     border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
 }
+
 .gs-rules-heading {
     font-size: 0.75rem;
     font-weight: 700;
@@ -44,6 +64,7 @@
     color: #2438b9;
     margin-bottom: 10px;
 }
+
 .gs-rules-row {
     display: flex;
     align-items: center;
@@ -51,21 +72,30 @@
     gap: 16px;
     padding: 6px 0;
 }
+
 .gs-rules-label {
     font-size: 0.82rem;
     color: #666666;
     flex-shrink: 0;
     min-width: 200px;
 }
+
 .gs-rules-value {
     font-size: 0.85rem;
     font-weight: 600;
     color: #222222;
     text-align: right;
 }
+
 .gs-rules-input {
     max-width: 280px;
 }
+
+
+/* =========================
+   STAT CARDS
+   ========================= */
+
 .gs-stat-card {
     background-color: #ffffff;
     border: 1px solid #e5e5e5;
@@ -73,6 +103,7 @@
     padding: 14px 16px;
     height: 100%;
 }
+
 .gs-stat-label {
     font-size: 0.72rem;
     font-weight: 600;
@@ -81,43 +112,70 @@
     color: #8a8a8a;
     margin-bottom: 4px;
 }
+
 .gs-stat-value {
     font-size: 1.3rem;
     font-weight: 700;
     margin: 0;
     color: #222222;
 }
+
 .gs-stat-present {
     color: #085041;
 }
+
 .gs-stat-danger {
-    color: #791F1F;
+    color: #791f1f;
 }
+
+.gs-stat-card-success {
+    background-color: #e1f5ee;
+    border-color: #c5e8dc;
+}
+
+.gs-stat-label-success {
+    color: #0f6e56;
+}
+
+.gs-stat-card-danger {
+    background-color: #fcebeb;
+    border-color: #f0cfcf;
+}
+
+.gs-stat-label-danger {
+    color: #993c1d;
+}
+
+
+/* =========================
+   PANELS
+   ========================= */
+
 .gs-panel {
     background-color: #ffffff;
     border: 1px solid #e5e5e5;
     border-radius: 10px;
     padding: 18px;
     height: 100%;
+    transition: border-color 0.15s ease;
 }
-.gs-stat-card-success {
-    background-color: #e1f5ee;
-    border-color: #c5e8dc;
+
+.gs-panel:hover {
+    border-color: #c5c5c5;
 }
-.gs-stat-label-success {
-    color: #0f6e56;
+
+.gs-panel-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 12px;
 }
-.gs-stat-card-danger {
-    background-color: #FCEBEB;
-    border-color: #f0cfcf;
-}
-.gs-stat-label-danger {
-    color: #993c1d;
-}
-.gs-row-subtext {
-    font-size: 0.75rem;
-    color: #8a8a8a;
-}
+
+
+/* =========================
+   BADGES
+   ========================= */
+
 .gs-badge {
     display: inline-block;
     font-size: 0.72rem;
@@ -125,24 +183,27 @@
     padding: 3px 10px;
     border-radius: 999px;
 }
+
 .gs-badge-success {
     background-color: #e1f5ee;
     color: #085041;
 }
+
 .gs-badge-warning {
-    background-color: #FAEEDA;
-    color: #854F0B;
+    background-color: #faeeda;
+    color: #854f0b;
 }
+
 .gs-badge-danger {
-    background-color: #FCEBEB;
-    color: #791F1F;
+    background-color: #fcebeb;
+    color: #791f1f;
 }
-.gs-panel-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #222222;
-    margin-bottom: 12px;
-}
+
+
+/* =========================
+   STAT ICONS
+   ========================= */
+
 .gs-stat-icon {
     display: inline-flex;
     align-items: center;
@@ -153,18 +214,27 @@
     flex-shrink: 0;
     font-size: 0.95rem;
 }
+
 .gs-stat-icon-neutral {
     background-color: rgba(36, 56, 185, 0.1);
     color: #2438b9;
 }
+
 .gs-stat-icon-success {
     background-color: #c5e8dc;
     color: #085041;
 }
+
 .gs-stat-icon-danger {
     background-color: #f0cfcf;
-    color: #791F1F;
+    color: #791f1f;
 }
+
+
+/* =========================
+   CHART EMPTY STATE
+   ========================= */
+
 .gs-chart-empty {
     display: flex;
     flex-direction: column;
@@ -176,16 +246,17 @@
     text-align: center;
     gap: 8px;
 }
+
 .gs-chart-empty-icon {
     font-size: 1.8rem;
     color: #c5c5c5;
 }
-.gs-panel {
-    transition: border-color 0.15s ease;
-}
-.gs-panel:hover {
-    border-color: #c5c5c5;
-}
+
+
+/* =========================
+   TABS
+   ========================= */
+
 .gs-tab-bar {
     display: flex;
     flex-wrap: wrap;
@@ -193,6 +264,7 @@
     border-bottom: 1px solid #e5e5e5;
     padding-bottom: 0;
 }
+
 .gs-tab {
     display: inline-block;
     padding: 10px 14px;
@@ -203,24 +275,34 @@
     border-bottom: 2px solid transparent;
     transition: color 0.15s ease, border-color 0.15s ease;
 }
+
 .gs-tab:hover {
     color: #2438b9;
     text-decoration: none;
 }
+
 .gs-tab-active {
     color: #2438b9;
     border-bottom-color: #2438b9;
 }
+
 .gs-tab-disabled {
     color: #c5c5c5;
     cursor: not-allowed;
 }
+
 .gs-tab-disabled:hover {
     color: #c5c5c5;
 }
+
+
+/* =========================
+   NOTE BANNER
+   ========================= */
+
 .gs-note-banner {
-    background-color: #E4EEFB;
-    color: #0B3D91;
+    background-color: #e4eefb;
+    color: #0b3d91;
     border-radius: 8px;
     padding: 10px 16px;
     font-size: 0.8rem;
@@ -228,121 +310,104 @@
     align-items: center;
     gap: 8px;
 }
+
+
+/* =========================
+   CARDS
+   ========================= */
+
 .gs-grade-card-link {
     text-decoration: none;
     display: block;
 }
+
 .gs-grade-card {
     background-color: #ffffff;
     border: 1px solid #e5e5e5;
     border-radius: 10px;
     padding: 16px;
     transition: border-color 0.15s ease, transform 0.1s ease;
+    display: block;
 }
-.gs-grade-card:hover {
+
+.gs-grade-card-link:hover .gs-grade-card {
     border-color: #2438b9;
     transform: translateY(-2px);
 }
+
 .gs-grade-card-title {
     font-size: 0.95rem;
     font-weight: 700;
     color: #222222;
     margin: 0 0 4px;
 }
+
 .gs-grade-card-meta {
     font-size: 0.72rem;
     color: #8a8a8a;
     margin: 0 0 10px;
 }
+
 .gs-grade-card-avg {
     font-size: 1.4rem;
     font-weight: 700;
     color: #2438b9;
     margin: 0;
 }
+
 .gs-section-card {
     background-color: #ffffff;
     border: 1px solid #e5e5e5;
     border-radius: 10px;
     padding: 16px;
     height: 100%;
+    display: block;
+    transition: border-color 0.15s ease, transform 0.1s ease;
 }
+
+.gs-section-card:hover {
+    border-color: #c5c5c5;
+}
+
 .gs-section-card-title {
     font-size: 0.95rem;
     font-weight: 700;
     color: #222222;
     margin: 0 0 4px;
 }
+
 .gs-section-card-meta {
     font-size: 0.72rem;
     color: #8a8a8a;
     margin: 0 0 2px;
 }
+
 .gs-section-card-avg {
     font-size: 1.3rem;
     font-weight: 700;
     color: #2438b9;
     margin: 10px 0 0;
 }
-.gs-breadcrumb {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    background-color: #ffffff;
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin-bottom: 1rem;
-    font-size: 0.85rem;
-}
-.gs-breadcrumb-icon {
-    color: #2438b9;
-    font-size: 0.8rem;
-    margin-right: 2px;
-}
-.gs-breadcrumb-link {
-    color: #2438b9;
-    font-weight: 600;
-    text-decoration: none;
-}
-.gs-breadcrumb-link:hover {
-    text-decoration: underline;
-}
-.gs-breadcrumb-sep {
-    color: #c5c5c5;
-    font-size: 0.65rem;
-}
-.gs-breadcrumb-current {
-    color: #222222;
-    font-weight: 700;
-}
-.gs-grade-card,
-.gs-section-card {
-    display: block;
-}
+
 .gs-card-arrow {
     color: #c5c5c5;
     font-size: 0.75rem;
     margin-top: 8px;
     transition: transform 0.15s ease, color 0.15s ease;
 }
+
 .gs-grade-card-link:hover .gs-card-arrow {
     color: #2438b9;
     transform: translateX(3px);
 }
-.gs-section-card {
-    transition: border-color 0.15s ease, transform 0.1s ease;
-}
-.gs-section-card:hover {
-    border-color: #c5c5c5;
-}
+
 .gs-insight-card {
     background-color: #f7f7f5;
     border-radius: 8px;
     padding: 14px 16px;
     height: 100%;
 }
+
 .gs-insight-label {
     font-size: 0.72rem;
     font-weight: 700;
@@ -351,12 +416,19 @@
     color: #2438b9;
     margin-bottom: 6px;
 }
+
 .gs-insight-text {
     font-size: 0.82rem;
     color: #555555;
     margin: 0;
     line-height: 1.5;
 }
+
+
+/* =========================
+   PILLS / METRICS
+   ========================= */
+
 .gs-pill-group {
     display: inline-flex;
     gap: 4px;
@@ -364,6 +436,7 @@
     border-radius: 8px;
     padding: 4px;
 }
+
 .gs-pill-btn {
     border: none;
     background: transparent;
@@ -375,18 +448,22 @@
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
+
 .gs-pill-btn:hover {
     color: #2438b9;
 }
+
 .gs-pill-active {
     background-color: #ffffff;
     color: #2438b9;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 .gs-metric-list {
     display: flex;
     flex-direction: column;
 }
+
 .gs-metric-row {
     display: flex;
     align-items: center;
@@ -394,9 +471,11 @@
     padding: 8px 0;
     border-bottom: 1px solid #f0f0f0;
 }
+
 .gs-metric-row-last {
     border-bottom: none;
 }
+
 .gs-metric-label {
     display: flex;
     align-items: center;
@@ -404,16 +483,19 @@
     font-size: 0.78rem;
     color: #8a8a8a;
 }
+
 .gs-metric-label i {
     font-size: 0.72rem;
     color: #c5c5c5;
     width: 12px;
 }
+
 .gs-metric-value {
     font-size: 0.85rem;
     font-weight: 700;
     color: #222222;
 }
+
 .gs-subject-icon {
     display: inline-flex;
     align-items: center;
@@ -426,76 +508,205 @@
     font-size: 0.7rem;
     margin-right: 8px;
 }
-/* Grade Sheet - Column Group Styling */
-.gs-hps-row {
-    background-color: #2438b9 !important;
+
+
+/* =========================
+   GRADE SHEET TABLE
+   ========================= */
+
+#gradeSheetTable {
+    width: max-content;
+    min-width: 100%;
+}
+
+#gradeSheetTable th,
+#gradeSheetTable td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table-responsive::before,
+.table-responsive::after,
+.table-panel::before,
+.table-panel::after,
+#gradeSheetTable::before,
+#gradeSheetTable::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
+
+/* Main header */
+
+#gradeSheetTable thead tr:first-child th {
+    background-color: #3b56c4 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+#gradeSheetTable thead tr:nth-child(2) th {
+    background-color: #3b56c4 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+
+/* HPS row */
+
+#gradeSheetTable .gs-hps-row {
+    background-color: #3b56c4 !important;
     font-weight: 600;
     color: #ffffff !important;
 }
-.gs-hps-row th {
-    background-color: #2438b9 !important;
+
+#gradeSheetTable .gs-hps-row td,
+#gradeSheetTable .gs-hps-row th {
+    background-color: #3b56c4 !important;
     color: #ffffff !important;
     border-bottom: 2px solid #dee2e6 !important;
 }
-/* Group fills apply only to header cells; body score cells retain their default background. */
-#gradeSheetTable thead .gs-group-written {
-    background-color: rgba(36, 56, 185, 0.05) !important;
-}
-/* Performance Tasks Group */
-#gradeSheetTable thead .gs-group-performance {
-    background-color: rgba(36, 56, 185, 0.08) !important;
-}
-/* Examinations Group */
-#gradeSheetTable thead .gs-group-quarterly {
-    background-color: rgba(36, 56, 185, 0.12) !important;
-}
 
-/* Exam Group (for schools that use Exam instead of Quarterly) */
+
+/* Group colors */
+
+#gradeSheetTable thead .gs-group-written,
+#gradeSheetTable thead .gs-group-performance,
+#gradeSheetTable thead .gs-group-quarterly,
 #gradeSheetTable thead .gs-group-exam {
-    background-color: rgba(36, 56, 185, 0.12) !important;
+    background-color: #3b56c4 !important;
+    color: #ffffff !important;
 }
 
-/* ===== GRADE SHEET COLUMN GROUP DIVIDERS ===== */
-/* 5 vertical dividers extending full table height, each using consistent thead+tbody selectors */
-/* All dividers use medium gray #888888 for clear, consistent visibility */
 
-/* Divider 1: After Learner Name (before WW1) */
+/* Body group backgrounds */
+
+#gradeSheetTable tbody .gs-group-written {
+    background-color: rgba(36, 56, 185, 0.02);
+}
+
+#gradeSheetTable tbody .gs-group-performance {
+    background-color: rgba(36, 56, 185, 0.035);
+}
+
+#gradeSheetTable tbody .gs-group-quarterly,
+#gradeSheetTable tbody .gs-group-exam {
+    background-color: rgba(36, 56, 185, 0.05);
+}
+
+
+/* Column dividers */
+
 #gradeSheetTable thead tr:first-child th:first-child,
-#gradeSheetTable tbody td:nth-child(1) {
-    border-right: 3px solid #888888 !important;
+#gradeSheetTable tbody td:first-child {
+    box-shadow: inset -3px 0 0 #b5c2ea !important;
 }
 
-/* Divider 2: After Written Works group (WW5, before PT1) */
 #gradeSheetTable th.gs-divider-written,
 #gradeSheetTable td.gs-divider-written {
-    border-right: 3px solid #888888 !important;
+    box-shadow: inset -3px 0 0 #b5c2ea !important;
 }
 
-/* Divider 3: After Performance Tasks group (PT5, before QA1) */
 #gradeSheetTable th.gs-divider-performance,
 #gradeSheetTable td.gs-divider-performance {
-    border-right: 3px solid #888888 !important;
+    box-shadow: inset -3px 0 0 #b5c2ea !important;
 }
 
-/* Divider 4: After Quarterly Assessment group (QA3, before Initial Grade) */
 #gradeSheetTable th.gs-divider-quarterly,
 #gradeSheetTable td.gs-divider-quarterly,
 #gradeSheetTable th.gs-divider-exam,
 #gradeSheetTable td.gs-divider-exam {
-    border-right: 3px solid #888888 !important;
+    box-shadow: inset -3px 0 0 #b5c2ea !important;
 }
 
-/* Divider 5: After Initial Grade (before Transmuted) */
 #gradeSheetTable th.gs-divider-initial,
 #gradeSheetTable td.gs-divider-initial {
-    border-right: 3px solid #888888 !important;
+    box-shadow: inset -3px 0 0 #b5c2ea !important;
 }
-/* Grading Dashboard â€” nested sidebar + progress bar */
+
+#gradeSheetTable th.gs-divider-transmuted,
+#gradeSheetTable td.gs-divider-transmuted {
+    box-shadow: inset -3px 0 0 #b5c2ea !important;
+}
+
+
+/* Assessment headers */
+
+#gradeSheetTable thead tr:nth-child(2) th {
+    white-space: nowrap;
+    font-weight: 600;
+    min-width: 75px;
+}
+
+#gradeSheetTable thead tr:nth-child(2) th.gs-group-written,
+#gradeSheetTable thead tr:nth-child(2) th.gs-group-performance,
+#gradeSheetTable thead tr:nth-child(2) th.gs-group-exam,
+#gradeSheetTable thead tr:nth-child(2) th.gs-group-quarterly {
+    font-size: 0.78rem;
+    letter-spacing: 0.2px;
+}
+
+#gradeSheetTable .gs-hps-row th,
+#gradeSheetTable .gs-hps-row td {
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+
+/* Add Column button */
+
+.gs-add-col-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    margin-left: 0.4rem;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.gs-add-col-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.65);
+}
+
+.gs-add-col-btn i {
+    font-size: 0.65rem;
+}
+
+
+/* Score input */
+
+.gs-score-input {
+    min-width: 70px;
+    margin: 0 auto;
+}
+
+.gs-score-input:focus {
+    border-color: #2438b9 !important;
+    box-shadow: 0 0 0 2px rgba(36, 56, 185, 0.15) !important;
+}
+
+#gradeSheetTable th {
+    vertical-align: middle;
+}
+
+
+/* =========================
+   GRADING DASHBOARD
+   ========================= */
+
 .gd-layout {
     display: flex;
     gap: 1.25rem;
     align-items: flex-start;
 }
+
 .gd-sidebar {
     display: flex;
     flex-direction: column;
@@ -507,6 +718,7 @@
     border-radius: 0.75rem;
     padding: 0.75rem;
 }
+
 .gd-sidebar-link {
     display: flex;
     align-items: center;
@@ -519,18 +731,22 @@
     text-decoration: none;
     cursor: pointer;
 }
+
 .gd-sidebar-link:hover:not(.gd-sidebar-link-disabled) {
     background: #f7f7f5;
     color: #2438b9;
 }
+
 .gd-sidebar-link-active {
     background: #e8eaf9;
     color: #2438b9;
 }
+
 .gd-sidebar-link-disabled {
     color: #c5c5c5;
     cursor: not-allowed;
 }
+
 .gd-content {
     flex: 1;
     min-width: 0;
@@ -539,19 +755,23 @@
     border-radius: 0.75rem;
     padding: 1.25rem;
 }
+
 .gd-content-title {
     font-size: 1rem;
     font-weight: 700;
     color: #1a1a1a;
 }
+
 .gd-progress-wrap {
     margin-bottom: 0.75rem;
 }
+
 .gd-progress-label {
     font-size: 0.75rem;
     color: #666666;
     font-weight: 600;
 }
+
 .gd-progress-bar {
     width: 100%;
     height: 6px;
@@ -560,11 +780,13 @@
     overflow: hidden;
     margin-top: 0.25rem;
 }
+
 .gd-progress-fill {
     height: 100%;
     background: #2438b9;
     border-radius: 999px;
 }
+
 .gd-form-label {
     font-size: 0.8rem;
     font-weight: 600;
@@ -572,44 +794,225 @@
     margin-bottom: 0.25rem;
     display: block;
 }
-/* Grade Sheet â€” Add Column button */
-.gs-add-col-btn {
-    background: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.15rem 0.55rem;
-    border-radius: 999px;
-    margin-left: 0.4rem;
-    transition: background 0.15s ease;
-}
-.gs-add-col-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-}
-.gs-add-col-btn i {
-    font-size: 0.65rem;
-}
-.gs-score-input:focus {
-    border-color: #2438b9 !important;
-    box-shadow: 0 0 0 2px rgba(36, 56, 185, 0.15) !important;
-}
-/* Reports â€” report type selection cards */
+
+
+/* =========================
+   REPORTS
+   ========================= */
+
 .gs-report-type-card {
     cursor: pointer;
-    text-align: center;
-    transition: border-color 0.15s ease, background 0.15s ease;
-    border: 2px solid transparent;
+    text-align: left;
+
+    border: 1px solid #e5e5e5;
+    background-color: #ffffff;
+
+    min-height: 132px;
+    padding: 18px;
+
+    position: relative;
+
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.1s ease;
 }
+
 .gs-report-type-card:hover {
-    background: #f7f7f5;
+    border-color: #c5c5c5;
+    background-color: #fafafa;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transform: translateY(-1px);
 }
-.gs-report-type-active {
+
+.gs-report-type-card.gs-report-type-active {
     border-color: #2438b9;
-    background: #e8eaf9;
+    background-color: #f4f5ff;
+    box-shadow: 0 0 0 1px rgba(36, 56, 185, 0.08);
 }
-/* Grade level pill badge */
+
+
+/* Report type icons */
+
+.gs-report-type-card i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+
+    margin-bottom: 12px !important;
+
+    border-radius: 8px;
+
+    background-color: rgba(36, 56, 185, 0.1);
+    color: #2438b9 !important;
+
+    font-size: 0.95rem;
+}
+
+.gs-report-type-card p.fw-semibold {
+    font-size: 0.86rem;
+    color: #222222;
+}
+
+.gs-report-type-card .text-muted {
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+
+/* Report filters */
+
+#classSelect,
+#termSelect,
+#studentSelect {
+    min-height: 34px;
+    font-size: 0.78rem;
+    border-color: #dcdcdc;
+    border-radius: 6px;
+}
+
+#classSelect:focus,
+#termSelect:focus,
+#studentSelect:focus {
+    border-color: #2438b9;
+    box-shadow: 0 0 0 2px rgba(36, 56, 185, 0.12);
+}
+
+#studentSelect:disabled {
+    background-color: #f7f7f5;
+    color: #999999;
+    cursor: not-allowed;
+}
+
+
+/* Report preview */
+
+#reportPreview {
+    padding: 18px;
+}
+
+#reportPreview .gs-panel-title {
+    margin-bottom: 0;
+}
+
+#reportPreview .table-panel {
+    overflow-x: auto;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+#reportPreview table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+#reportPreview table thead th {
+    background-color: #f7f7f5;
+    color: #444444;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+
+    white-space: nowrap;
+    vertical-align: middle;
+
+    border-color: #e5e5e5;
+}
+
+#reportPreview table tbody td {
+    font-size: 0.78rem;
+    color: #444444;
+
+    padding: 8px 10px;
+
+    border-color: #e5e5e5;
+}
+
+#reportPreview table tbody tr:hover {
+    background-color: #fafafa;
+}
+
+
+/* Report preview information */
+
+.gs-report-preview-meta {
+    background-color: #f7f7f5;
+    border: 1px solid #eeeeec;
+    border-radius: 8px;
+
+    padding: 12px 14px;
+    margin-bottom: 14px;
+}
+
+.gs-report-preview-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #222222;
+    margin-bottom: 3px;
+}
+
+.gs-report-preview-subtitle {
+    font-size: 0.75rem;
+    color: #8a8a8a;
+    margin: 0;
+    line-height: 1.4;
+}
+
+
+/* Report buttons */
+
+#reportPreview #printReportBtn,
+#reportPreview #exportPdfBtn,
+#reportPreview #exportExcelBtn {
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    padding: 6px 10px;
+    border-radius: 6px;
+
+    white-space: nowrap;
+}
+
+#reportPreview #printReportBtn i,
+#reportPreview #exportPdfBtn i,
+#reportPreview #exportExcelBtn i {
+    font-size: 0.7rem;
+}
+
+
+/* Report empty state */
+
+#reportContent .gs-chart-empty {
+    min-height: 220px;
+    padding: 30px 20px;
+}
+
+#reportContent .gs-chart-empty-icon {
+    font-size: 1.6rem;
+}
+
+
+/* Report page header */
+
+.gd-content > .gs-panel-title {
+    font-size: 0.9rem;
+}
+
+.gd-content > .gs-panel-title + .text-muted {
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+
+/* =========================
+   GRADE LEVEL / BREADCRUMB
+   ========================= */
+
 .gs-grade-pill {
     display: inline-block;
     font-size: 0.75rem;
@@ -620,18 +1023,1648 @@
     color: #2438b9;
     border: 1px solid #c5c5f5;
 }
-/* Muted grade-level subtext, shown below section names in tables */
+
 .gs-grade-subtext {
     font-size: 0.75rem;
     color: #8a8a8a;
     line-height: 1.4;
 }
-/* ===== CLASS CARD ACCENTS (My Classes) ===== */
+
+.gs-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+
+    padding: 10px 16px;
+    margin-bottom: 1rem;
+
+    font-size: 0.85rem;
+}
+
+.gs-breadcrumb-icon {
+    color: #2438b9;
+    font-size: 0.8rem;
+    margin-right: 2px;
+}
+
+.gs-breadcrumb-link {
+    color: #2438b9;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.gs-breadcrumb-link:hover {
+    text-decoration: underline;
+}
+
+.gs-breadcrumb-sep {
+    color: #c5c5c5;
+    font-size: 0.65rem;
+}
+
+.gs-breadcrumb-current {
+    color: #222222;
+    font-weight: 700;
+}
+
+
+/* =========================
+   CLASS CARD ACCENTS
+   ========================= */
+
 .gs-card-accent {
     border-left-width: 4px;
     border-left-style: solid;
 }
-.gs-card-accent-1 { border-left-color: #2438b9; }
-.gs-card-accent-2 { border-left-color: #0f6e56; }
-.gs-card-accent-3 { border-left-color: #854F0B; }
-.gs-card-accent-4 { border-left-color: #791F1F; }
+
+.gs-card-accent-1 {
+    border-left-color: #2438b9;
+}
+
+.gs-card-accent-2 {
+    border-left-color: #0f6e56;
+}
+
+.gs-card-accent-3 {
+    border-left-color: #854f0b;
+}
+
+.gs-card-accent-4 {
+    border-left-color: #791f1f;
+}
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+
+    .gd-layout {
+        flex-direction: column;
+    }
+
+    .gd-sidebar {
+        width: 100%;
+    }
+
+    .gs-rules-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .gs-rules-label {
+        min-width: 0;
+    }
+
+    .gs-rules-value {
+        text-align: left;
+    }
+
+    .gs-rules-input {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .table-panel {
+        overflow-x: auto;
+    }
+
+
+    /* Reports */
+
+    .gs-report-type-card {
+        min-height: auto;
+        padding: 16px;
+    }
+
+    #reportPreview {
+        padding: 14px;
+    }
+
+    #reportPreview > .d-flex {
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+
+    #reportPreview > .d-flex > div:last-child {
+        flex-wrap: wrap;
+    }
+
+    #reportPreview #printReportBtn,
+    #reportPreview #exportPdfBtn,
+    #reportPreview #exportExcelBtn {
+        font-size: 0.72rem;
+        padding: 6px 8px;
+    }
+}
+
+
+@media (max-width: 576px) {
+
+    .gs-report-type-card {
+        min-height: 110px;
+    }
+
+    #reportPreview > .d-flex {
+        flex-direction: column;
+    }
+
+    #reportPreview > .d-flex > div:last-child {
+        width: 100%;
+    }
+
+    #reportPreview #printReportBtn,
+    #reportPreview #exportPdfBtn,
+    #reportPreview #exportExcelBtn {
+        flex: 1;
+    }
+}
+
+/* PLACEHOLDER — replaced by the real minimal-diff CSS below */
+/* ==========================================================================
+   REPORTS PAGE POLISH
+   Append this whole block to the end of grading-system.css.
+   Scoped to new classes only — does not touch .gs-panel, .table-panel,
+   .gs-chart-empty, or any existing selector used elsewhere.
+   ========================================================================== */
+
+/* --- Filter bar --- */
+.gs-filter-bar {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 18px 20px;
+}
+
+.gs-filter-bar-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2438b9;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.gs-filter-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 4px;
+}
+
+.gs-filter-label-hint {
+    font-weight: 400;
+    color: #9ca3af;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* --- Report type cards --- */
+.gs-report-type-card {
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.gs-report-type-card:hover {
+    border-color: #a8b3e8;
+    box-shadow: 0 2px 10px rgba(36, 56, 185, 0.08);
+    transform: translateY(-1px);
+}
+
+.gs-report-type-card.gs-report-type-active {
+    border-color: #2438b9;
+    box-shadow: 0 2px 12px rgba(36, 56, 185, 0.15);
+    background: #f5f6fd;
+}
+
+.gs-report-type-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #eef0fb;
+    color: #2438b9;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.gs-report-type-card.gs-report-type-active .gs-report-type-icon {
+    background: #2438b9;
+    color: #fff;
+}
+
+/* --- Preview panel --- */
+.gs-report-preview {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.gs-report-preview-toolbar {
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #eef0f4;
+}
+
+.gs-report-action-btn {
+    font-size: 0.78rem;
+}
+
+.gs-report-content {
+    font-size: 0.88rem;
+}
+
+.gs-report-preview-meta {
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eef0f4;
+}
+
+.gs-report-preview-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.gs-report-preview-subtitle {
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* --- Stat / highlight strips inside a report --- */
+.gs-report-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.gs-report-stats-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.gs-report-stat {
+    background: #f8fafc;
+    border: 1px solid #eef0f4;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.gs-report-highlight {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.gs-report-highlight-name {
+    flex: 2 1 260px;
+    background: #f8fafc;
+    border: 1px solid #eef0f4;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.gs-report-highlight-grade {
+    flex: 1 1 140px;
+    background: #f8fafc;
+    border: 1px solid #eef0f4;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+/* --- Report table readability --- */
+.gs-report-table th {
+    background: #f8fafc;
+    color: #374151;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.gs-report-table td {
+    vertical-align: middle;
+    font-size: 0.85rem;
+}
+
+/* --- Subtle badges (replace default Bootstrap solid colors) --- */
+.gs-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 4px 4px 0;
+}
+
+.gs-badge-indicator {
+    background: #f1f3f9;
+    color: #4b5563;
+    border: 1px solid #e2e5ee;
+}
+
+.gs-badge-risk-high {
+    background: #fdecec;
+    color: #b3261e;
+}
+
+.gs-badge-risk-moderate {
+    background: #fef6e0;
+    color: #92700a;
+}
+
+.gs-badge-risk-unknown {
+    background: #f1f3f5;
+    color: #6b7280;
+}
+
+/* --- Responsive --- */
+@media (max-width: 767.98px) {
+    .gs-report-stats,
+    .gs-report-stats-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .gs-report-preview-toolbar {
+        align-items: flex-start;
+    }
+}
+
+/* =========================================================
+   STUDENT PROFILE DETAIL
+   Moved from student-profile-detail.blade.php
+========================================================= */
+
+/* =====================================================
+   PAGE
+===================================================== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+.student-profile-page {
+    width: 100%;
+    max-width: 1420px;
+    margin: 0 auto;
+    padding: 0 2px 35px;
+}
+
+
+/* =====================================================
+   PROFILE NAVIGATION
+===================================================== */
+
+.student-profile-tabs {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 18px;
+    padding: 4px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.student-profile-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 17px;
+    color: #6b7280;
+    font-size: 0.73rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    border-radius: 7px;
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.student-profile-tab i {
+    font-size: 0.72rem;
+}
+
+.student-profile-tab:hover {
+    color: #374151;
+    background: #f9fafb;
+    text-decoration: none;
+}
+
+.student-profile-tab.active {
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+
+/* =====================================================
+   STUDENT PROFILE HERO
+===================================================== */
+
+.student-profile-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    padding: 22px 24px;
+    margin-bottom: 25px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.student-profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 0;
+}
+
+.student-avatar {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #e0e7ff;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.student-profile-name {
+    min-width: 0;
+}
+
+.student-profile-label {
+    margin-bottom: 4px;
+    color: #2563eb;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.student-profile-name h1 {
+    margin: 0 0 5px;
+    color: #1f2937;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.student-profile-name p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.73rem;
+}
+
+.student-profile-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.profile-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.meta-label {
+    color: #9ca3af;
+    font-size: 0.61rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.profile-meta-item strong {
+    color: #374151;
+    font-size: 0.73rem;
+    font-weight: 600;
+}
+
+.profile-meta-divider {
+    width: 1px;
+    height: 30px;
+    background: #e5e7eb;
+}
+
+.profile-risk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.risk-low {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.risk-moderate {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.risk-high {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+
+/* =====================================================
+   SECTION HEADINGS
+===================================================== */
+
+.profile-section {
+    margin-bottom: 25px;
+}
+
+.section-heading-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 11px;
+}
+
+.section-eyebrow {
+    display: block;
+    margin-bottom: 4px;
+    color: #2563eb;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.section-heading-row h2,
+.profile-card-header h2 {
+    margin: 0 0 3px;
+    color: #1f2937;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.section-heading-row p,
+.profile-card-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.71rem;
+}
+
+
+/* =====================================================
+   CURRENT TERM
+===================================================== */
+
+.current-term-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 9px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    color: #6b7280;
+    font-size: 0.66rem;
+    font-weight: 600;
+}
+
+
+/* =====================================================
+   SNAPSHOT
+===================================================== */
+
+.snapshot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.snapshot-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 88px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e9ebef;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.snapshot-card:hover {
+    box-shadow: 0 4px 10px rgba(16, 24, 40, 0.08);
+    transform: translateY(-1px);
+}
+
+.snapshot-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef1fb;
+    color: #2438b9;
+    font-size: 0.9rem;
+}
+
+.snapshot-icon.warning {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.snapshot-icon.danger {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.snapshot-content {
+    min-width: 0;
+}
+
+.snapshot-label {
+    display: block;
+    margin-bottom: 2px;
+    color: #6b7280;
+    font-size: 0.65rem;
+}
+
+.snapshot-content strong {
+    display: block;
+    color: #1f2937;
+    font-size: 1.12rem;
+    line-height: 1.1;
+}
+
+.snapshot-content small {
+    display: block;
+    margin-top: 3px;
+    color: #9ca3af;
+    font-size: 0.61rem;
+}
+
+
+/* =====================================================
+   GENERAL CARDS
+===================================================== */
+
+.profile-card {
+    margin-bottom: 20px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e9ebef;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+}
+
+.profile-card-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 18px 20px;
+    background: #fafbfc;
+    border-bottom: 1px solid #eef0f3;
+}
+.profile-card-header.simple {
+    align-items: flex-start;
+}
+
+
+/* =====================================================
+   ACADEMIC TABLE
+===================================================== */
+
+.academic-record-card {
+    margin-bottom: 20px;
+}
+
+.term-filter {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.term-filter label {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
+.term-filter .form-select {
+    width: 125px;
+    height: 31px;
+    padding: 4px 28px 4px 9px;
+    border-color: #d1d5db;
+    font-size: 0.7rem;
+}
+
+.academic-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.academic-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+.academic-table th {
+    padding: 11px 16px;
+    background: #fafbfc;
+    border-bottom: 1px solid #eef0f3;
+    color: #6b7280;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-align: left;
+    white-space: nowrap;
+}
+.academic-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #4b5563;
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+.academic-table tbody tr {
+    transition: background 0.12s ease;
+}
+.academic-table tbody tr:hover {
+    background: #f8f9fc;
+}
+.academic-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.subject-cell {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.subject-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.65rem;
+}
+
+.academic-table td strong {
+    color: #374151;
+    font-weight: 600;
+}
+
+.grade-number {
+    color: #1f2937 !important;
+    font-size: 0.78rem !important;
+}
+
+.term-label {
+    display: inline-flex;
+    padding: 4px 7px;
+    border-radius: 5px;
+    background: #f9fafb;
+    color: #6b7280;
+    font-size: 0.62rem;
+    font-weight: 600;
+}
+
+.grade-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.grade-status.passing {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.grade-status.failing {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.grade-status.missing {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.empty-table {
+    height: 130px;
+    text-align: center !important;
+}
+
+.empty-table-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.empty-table-content i {
+    margin-bottom: 3px;
+    color: #9ca3af;
+    font-size: 1.15rem;
+}
+
+.empty-table-content strong {
+    color: #6b7280 !important;
+    font-size: 0.73rem;
+}
+
+.empty-table-content span {
+    color: #9ca3af;
+    font-size: 0.65rem;
+}
+
+.academic-no-results {
+    padding: 30px 15px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.7rem;
+}
+
+.academic-no-results i {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 1.25rem;
+}
+
+.academic-no-results strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #6b7280;
+    font-size: 0.73rem;
+}
+
+.academic-no-results span {
+    font-size: 0.65rem;
+}
+
+
+/* =====================================================
+   PERFORMANCE
+===================================================== */
+
+.performance-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+    gap: 18px;
+    align-items: stretch;
+    margin-bottom: 20px;
+}
+
+.performance-layout .profile-card {
+    margin-bottom: 0;
+}
+
+.performance-card {
+    min-width: 0;
+}
+
+.grade-chart-wrapper {
+    position: relative;
+    height: 270px;
+    padding: 15px 18px 18px;
+}
+
+.chart-empty-state {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.chart-empty-state i {
+    margin-bottom: 8px;
+    font-size: 1.25rem;
+}
+
+.chart-empty-state strong {
+    margin-bottom: 3px;
+    color: #6b7280;
+    font-size: 0.73rem;
+}
+
+.chart-empty-state span {
+    max-width: 260px;
+    font-size: 0.64rem;
+    line-height: 1.4;
+}
+
+
+/* =====================================================
+   RISK INDICATORS
+===================================================== */
+
+.risk-list {
+    padding: 5px 18px 10px;
+}
+
+.risk-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 14px;
+    border-radius: 10px;
+    background: #fffaf5;
+    margin-bottom: 8px;
+    border: 1px solid #fde8d2;
+}
+.risk-item:last-child {
+    margin-bottom: 0;
+}
+
+.risk-item-icon {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    background: #fff7ed;
+    color: #c2410c;
+    font-size: 0.72rem;
+}
+
+.risk-item-content {
+    min-width: 0;
+}
+
+.risk-item-content strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #374151;
+    font-size: 0.72rem;
+}
+
+.risk-item-content p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.64rem;
+    line-height: 1.4;
+}
+
+.no-risk {
+    min-height: 180px;
+    padding: 25px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.no-risk-check {
+    width: 38px;
+    height: 38px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.no-risk strong {
+    display: block;
+    color: #374151;
+    font-size: 0.75rem;
+}
+
+.no-risk p {
+    max-width: 240px;
+    margin: 4px auto 0;
+    color: #6b7280;
+    font-size: 0.65rem;
+    line-height: 1.4;
+}
+
+
+/* =====================================================
+   ATTENDANCE
+===================================================== */
+
+.attendance-card {
+    margin-bottom: 20px;
+}
+
+.attendance-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.attendance-date i {
+    color: #9ca3af;
+    font-size: 0.7rem;
+}
+
+.attendance-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #047857;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+
+/* =====================================================
+   EMPTY STATES
+===================================================== */
+
+.simple-empty-state {
+    min-height: 115px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #9ca3af;
+}
+
+.simple-empty-state i {
+    margin-bottom: 7px;
+    font-size: 1.2rem;
+}
+
+.simple-empty-state strong {
+    margin-bottom: 2px;
+    color: #6b7280;
+    font-size: 0.73rem;
+}
+
+.simple-empty-state span {
+    font-size: 0.65rem;
+}
+
+
+/* =====================================================
+   TEACHER NOTES
+===================================================== */
+
+.teacher-notes-layout {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.teacher-notes-layout .profile-card {
+    margin-bottom: 0;
+}
+
+.notes-card .profile-card-header {
+    align-items: flex-start;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 1100px) {
+
+    .snapshot-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .performance-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .performance-layout .profile-card {
+        margin-bottom: 14px;
+    }
+
+    .teacher-notes-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-notes-layout .profile-card {
+        margin-bottom: 14px;
+    }
+
+    .student-profile-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .student-profile-meta {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .student-profile-page {
+        padding-bottom: 25px;
+    }
+
+    .student-profile-tabs {
+        padding: 3px;
+    }
+
+    .student-profile-tab {
+        padding: 0 12px;
+        font-size: 0.68rem;
+    }
+
+    .student-profile-hero {
+        padding: 18px;
+    }
+
+    .student-avatar {
+        width: 55px;
+        height: 55px;
+        min-width: 55px;
+        font-size: 0.9rem;
+    }
+
+    .student-profile-name h1 {
+        font-size: 1.05rem;
+    }
+
+    .student-profile-meta {
+        flex-wrap: wrap;
+        gap: 10px 14px;
+    }
+
+    .profile-meta-divider {
+        display: none;
+    }
+
+    .snapshot-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-heading-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .current-term-badge {
+        align-self: flex-start;
+    }
+
+    .profile-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .term-filter {
+        width: 100%;
+    }
+
+    .term-filter .form-select {
+        flex: 1;
+    }
+
+    .grade-chart-wrapper {
+        height: 230px;
+    }
+
+}
+
+
+
+/* =========================
+   ANALYTICS - GRADE DISTRIBUTION
+   ========================= */
+
+.gs-dist-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.gs-dist-label {
+    flex: 0 0 80px;
+    font-size: 0.8rem;
+    color: #666666;
+}
+
+.gs-dist-bar-track {
+    flex: 1;
+    background: #eef0fa;
+    border-radius: 4px;
+    height: 14px;
+    overflow: hidden;
+}
+
+.gs-dist-bar-fill {
+    height: 100%;
+    background: #2438b9;
+    border-radius: 4px;
+}
+
+.gs-dist-count {
+    flex: 0 0 24px;
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2438b9;
+}
+
+
+/* =========================
+   ANALYTICS - TOP PERFORMERS
+   ========================= */
+
+.gs-top-panel {
+    position: relative;
+}
+
+.gs-top-group-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.gs-top-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.gs-top-rank {
+    flex: 0 0 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.gs-top-rank.rank-1 {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.gs-top-rank.rank-2 {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.gs-top-rank.rank-3 {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.gs-top-name {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gs-top-section {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    color: #64748b;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.gs-top-avg {
+    flex: 0 0 auto;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #2563eb;
+    text-align: right;
+    min-width: 45px;
+}
+
+
+/* =========================
+   ANALYTICS - SECTION COMPARISON
+   ========================= */
+
+.gs-compare-panel {
+    position: relative;
+}
+
+.gs-compare-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.gs-compare-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+    min-width: 160px;
+}
+
+.gs-compare-level-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+    background: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.gs-compare-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 90px;
+}
+
+.gs-compare-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 2px;
+}
+
+.gs-compare-stat-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #2438b9;
+}
+
+
+/* =========================
+   ANALYTICS - PERFORMANCE INSIGHTS
+   ========================= */
+
+.gs-insights-panel {
+    position: relative;
+}
+
+.gs-insight-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.gs-insight-row:last-child {
+    margin-bottom: 0;
+}
+
+.gs-insight-row.insight-positive {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.gs-insight-row.insight-warning {
+    background: #fffbeb;
+    border-color: #fef3c7;
+}
+
+.gs-insight-row.insight-info {
+    background: #eff6ff;
+    border-color: #dbeafe;
+}
+
+.gs-insight-icon {
+    flex: 0 0 20px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.gs-insight-row.insight-positive .gs-insight-icon {
+    color: #16a34a;
+}
+
+.gs-insight-row.insight-warning .gs-insight-icon {
+    color: #d97706;
+}
+
+.gs-insight-row.insight-info .gs-insight-icon {
+    color: #2563eb;
+}
+
+.gs-insight-text {
+    flex: 1;
+    font-size: 0.84rem;
+    color: #334155;
+    line-height: 1.4;
+}
+
+
+/* =========================
+   ANALYTICS - PERFORMANCE STATUS
+   ========================= */
+
+.gs-status-badge {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+.gs-status-excellent { background: #d1fae5; color: #065f46; }
+.gs-status-good { background: #dbeafe; color: #1e40af; }
+.gs-status-satisfactory { background: #fef3c7; color: #92400e; }
+.gs-status-needs-improvement { background: #fee2e2; color: #991b1b; }
+.gs-status-unknown { background: #e5e7eb; color: #374151; }
+
+/* =========================
+   ANALYTICS - CLASS HEALTH INDICATORS
+   ========================= */
+
+.gs-health-panel {
+    position: relative;
+}
+
+.gs-health-period-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.gs-health-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gs-health-card:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.gs-health-card.gs-health-improving {
+    border-top: 3px solid #16a34a;
+    background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 32px);
+}
+
+.gs-health-card.gs-health-stable {
+    border-top: 3px solid #3b82f6;
+    background: linear-gradient(180deg, #eff6ff 0%, #ffffff 32px);
+}
+
+.gs-health-card.gs-health-declining {
+    border-top: 3px solid #dc2626;
+    background: linear-gradient(180deg, #fef2f2 0%, #ffffff 32px);
+}
+
+.gs-health-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.gs-health-badge {
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.gs-health-improving .gs-health-badge {
+    color: #15803d;
+}
+
+.gs-health-stable .gs-health-badge {
+    color: #1d4ed8;
+}
+
+.gs-health-declining .gs-health-badge {
+    color: #b91c1c;
+}
+
+.gs-health-threshold {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #f8fafc;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.gs-health-count {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #0f172a;
+    margin-bottom: 2px;
+}
+
+.gs-health-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: capitalize;
+}
+
+.gs-health-empty-notice {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.gs-health-footer {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+

@@ -44,27 +44,10 @@ class SchoolLevelDetector
      */
     public function getCategoryLabels(string $level): array
     {
-        return match($level) {
-            'elementary' => [
-                'written' => 'Written / Oral Works (WWs)',
-                'performance' => 'Product / Performance Tasks (PTs)',
-                'exam' => 'Examinations (EXs)',
-            ],
-            'jhs' => [
-                'written' => 'Written / Oral Works (WWs)',
-                'performance' => 'Product / Performance Tasks (PTs)',
-                'exam' => 'Examinations (EXs)',
-            ],
-            'shs' => [
-                'written' => 'Written / Oral Works (WWs)',
-                'performance' => 'Product / Performance Tasks (PTs)',
-                'quarterly' => 'Quarterly Assessments (QAs)',
-            ],
-            default => [
-                'written' => 'Written / Oral Works (WWs)',
-                'performance' => 'Product / Performance Tasks (PTs)',
-                'exam' => 'Examinations (EXs)',
-            ]
-        };
+        return [
+            'written' => 'Written / Oral Works (WWs)',
+            'performance' => 'Product / Performance Tasks (PTs)',
+            'exam' => 'Examinations (EXs)',
+        ];
     }
 }

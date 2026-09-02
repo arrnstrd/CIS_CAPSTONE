@@ -1,324 +1,1600 @@
-<x-layouts.teacher>
-    <x-slot name="pageName">
-        Grading System
-    </x-slot>
+﻿<x-layouts.teacher>
 
-    <x-slot name="subtitle">
-        Student profile overview.
-    </x-slot>
+<x-slot name="pageName">
+    Grading System
+</x-slot>
 
-    @include('teacher-modules.partials.grading-breadcrumb', ['crumbs' => [
-        ['label' => 'Student Profile', 'url' => route('teacher.grading-system.student-profile')],
-        ['label' => $enrollment->student->first_name . ' ' . $enrollment->student->last_name, 'url' => '#'],
-    ]])
+<x-slot name="subtitle">
+    Academic record, grades, and performance overview for this student.
+</x-slot>
 
-    <!-- Header Section -->
-    <div class="gs-panel mb-3">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-            <div class="d-flex align-items-center gap-3">
-                <span class="gs-profile-avatar">
-                    {{ strtoupper(substr($enrollment->student->first_name ?? '?', 0, 1)) }}{{ strtoupper(substr($enrollment->student->last_name ?? '?', 0, 1)) }}
+@include('teacher-modules.partials.grading-breadcrumb', [
+    'crumbs' => [
+        [
+            'label' => 'Student Profile',
+            'url'   => route('teacher.grading-system.student-profile'),
+        ],
+        [
+            'label' => $enrollment->student->full_name,
+            'url'   => '#',
+        ],
+    ]
+])
+
+{{-- ============================================================
+SECTION 1 — STUDENT HEADER
+============================================================ --}}
+
+<div class="gs-panel mb-3">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+
+        <div class="d-flex align-items-center gap-3">
+
+            <span class="gs-profile-avatar">
+                {{ strtoupper(substr($enrollment->student->first_name ?? '?', 0, 1)) }}{{ strtoupper(substr($enrollment->student->last_name ?? '?', 0, 1)) }}
+            </span>
+
+            <div>
+
+                <p
+                    class="text-muted mb-1"
+                    style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;"
+                >
+                    Student Academic Profile
+                </p>
+
+                <p class="gs-panel-title mb-1">
+                    {{ $enrollment->student->full_name }}
+                </p>
+
+                <div
+                    class="d-flex flex-wrap align-items-center gap-2"
+                    style="font-size: 0.78rem;"
+                >
+
+                    <span class="text-muted">
+                        Grade {{ $enrollment->section->grade_level }}
+                        &middot;
+                        {{ $enrollment->section->name }}
+                    </span>
+
+                    <span class="text-muted">
+                        &middot;
+                    </span>
+
+                    <span class="text-muted">
+                        No:
+                        <span class="fw-semibold text-dark">
+                            {{ $enrollment->student->student_number ?? 'N/A' }}
+                        </span>
+                    </span>
+
+                    <span class="text-muted">
+                        &middot;
+                    </span>
+
+                    <span class="text-muted">
+                        LRN:
+                        <span class="fw-semibold text-dark">
+                            {{ $enrollment->student->lrn ?? '—' }}
+                        </span>
+                    </span>
+
+                    <span class="text-muted">
+                        &middot;
+                    </span>
+
+                    <span class="text-muted">
+                        SY 2025-2026
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <x-ui.backButton />
+        </div>
+
+    </div>
+
+</div>
+
+
+{{-- ============================================================
+SECTION 2 — ACADEMIC SUMMARY
+============================================================ --}}
+
+<div class="row g-3 mb-3">
+
+    {{-- Overall Average --}}
+    <div class="col-6 col-md">
+
+        <div class="gs-stat-card h-100">
+
+            <p class="gs-stat-label mb-1">
+                Overall Average
+            </p>
+
+            <p class="gs-stat-value mb-0">
+                {{ $overallAvg !== null ? number_format($overallAvg, 1) : '—' }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {{-- Enrolled Subjects --}}
+    <div class="col-6 col-md">
+
+        <div class="gs-stat-card h-100">
+
+            <p class="gs-stat-label mb-1">
+                Subjects
+            </p>
+
+            <p class="gs-stat-value mb-0">
+                {{ $subjects->count() }}
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {{-- Passing Subjects --}}
+    <div class="col-6 col-md">
+
+        <div class="gs-stat-card gs-stat-card-success h-100">
+
+            <p class="gs-stat-label gs-stat-label-success mb-1">
+                Passing
+            </p>
+
+            <p class="gs-stat-value gs-stat-present mb-0">
+
+                {{ $subjects->filter(
+                    fn($s) =>
+                        $s->average !== null
+                        && $s->average >= 75
+                )->count() }}
+
+                <span
+                    class="text-muted fw-normal"
+                    style="font-size: 0.82rem;"
+                >
+                    / {{ $subjects->count() }}
                 </span>
-                <div>
-                    <p class="gs-section-card-title mb-1">{{ $enrollment->student->full_name }}</p>
-                    <p class="gs-section-card-meta mb-0">
-                        {{ $enrollment->student->lrn }} · Grade {{ $enrollment->section->grade_level }} - {{ $enrollment->section->name }} · SY 2025-2026
-                    </p>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                @if ($riskData)
-                    @php
-                        $riskClass = ['Low' => 'gs-badge-success', 'Moderate' => 'gs-badge-warning', 'High' => 'gs-badge-danger'][$riskData['risk_level']];
-                    @endphp
-                    <span class="gs-badge {{ $riskClass }}" style="font-size: 0.8rem; padding: 6px 14px;">{{ $riskData['risk_level'] }} Risk</span>
-                @endif
-                <a href="#" class="btn btn-sm btn-outline-secondary" disabled title="Change History feature coming soon">
-                    <i class="fa-solid fa-clock-rotate-left"></i> View Change History
-                </a>
-            </div>
+
+            </p>
+
         </div>
+
     </div>
 
-    <!-- 5 Stat Cards -->
-    <div class="row g-3 mb-3">
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="gs-stat-card d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-neutral"><i class="fa-solid fa-chart-line"></i></span>
-                <div>
-                    <p class="gs-stat-label">Current Average</p>
-                    <p class="gs-stat-value">{{ $overallAvg !== null ? $overallAvg : '—' }}</p>
-                    <p class="gs-stat-subtext">Term {{ $currentPeriod?->sequence ?? '—' }}</p>
-                </div>
-            </div>
+
+    {{-- Missing Grades --}}
+    <div class="col-6 col-md">
+
+        <div class="gs-stat-card h-100">
+
+            <p class="gs-stat-label mb-1">
+                Missing Grades
+            </p>
+
+            <p class="gs-stat-value mb-0 {{ $missingGradesCount > 0 ? 'text-warning' : '' }}">
+                {{ $missingGradesCount }}
+            </p>
+
         </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="gs-stat-card d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-neutral"><i class="fa-solid fa-calendar-check"></i></span>
-                <div>
-                    <p class="gs-stat-label">Overall Attendance</p>
-                    <p class="gs-stat-value">{{ $attendanceRate !== null ? $attendanceRate . '%' : '—' }}</p>
-                    <p class="gs-stat-subtext">{{ $presentCount }} scans</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="gs-stat-card d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-warning"><i class="fa-solid fa-exclamation-circle"></i></span>
-                <div>
-                    <p class="gs-stat-label">Missing Grades</p>
-                    <p class="gs-stat-value text-warning">{{ $missingGradesCount }}</p>
-                    <p class="gs-stat-subtext">across all subjects</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="gs-stat-card d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-danger"><i class="fa-solid fa-xmark-circle"></i></span>
-                <div>
-                    <p class="gs-stat-label">Below Passing</p>
-                    <p class="gs-stat-value text-danger">{{ $belowPassingCount }}</p>
-                    <p class="gs-stat-subtext">&lt; 75% scores</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="gs-stat-card d-flex align-items-center gap-3">
-                <span class="gs-stat-icon gs-stat-icon-neutral"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                <div>
-                    <p class="gs-stat-label">Risk Level</p>
-                    <p class="gs-stat-value">{{ $riskData['risk_level'] ?? '—' }}</p>
-                    <p class="gs-stat-subtext">Score: {{ $riskData['risk_score'] ?? '—' }}</p>
-                </div>
-            </div>
-        </div>
+
     </div>
 
-    <!-- Academic Grades Table -->
-    <div class="gs-panel mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <p class="gs-panel-title mb-0">Academic Grades</p>
-            <div class="gs-tab-bar">
-                <a href="#" class="gs-tab {{ !request('term') ? 'gs-tab-active' : '' }}" data-term="all">All Terms</a>
-                <a href="#" class="gs-tab {{ request('term') == '1' ? 'gs-tab-active' : '' }}" data-term="1">Term 1</a>
-                <a href="#" class="gs-tab {{ request('term') == '2' ? 'gs-tab-active' : '' }}" data-term="2">Term 2</a>
-                <a href="#" class="gs-tab {{ request('term') == '3' ? 'gs-tab-active' : '' }}" data-term="3">Term 3</a>
-            </div>
+
+    {{-- Attendance Rate --}}
+    <div class="col-12 col-md">
+
+        <div class="gs-stat-card h-100">
+
+            <p class="gs-stat-label mb-1">
+                Attendance Rate
+            </p>
+
+            <p class="gs-stat-value mb-0">
+                {{ $attendanceRate !== null
+                    ? number_format($attendanceRate, 1) . '%'
+                    : '—'
+                }}
+            </p>
+
         </div>
-        <div class="table-panel">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Grade Level</th>
-                        <th>Section</th>
-                        <th>School Year</th>
-                        <th>Term</th>
-                        <th>WW%</th>
-                        <th>PT%</th>
-                        <th>TA%</th>
-                        <th>Final Grade</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($subjects as $subject)
+
+    </div>
+
+</div>
+
+
+{{-- ============================================================
+SECTION 3 — GRADE SUMMARY
+============================================================ --}}
+
+<div class="gs-panel academic-record-card mb-3">
+
+    <div class="profile-card-header">
+
+        <div>
+
+            <p class="gs-panel-title mb-1">
+                Grade Summary
+            </p>
+
+            <p class="text-muted small mb-0">
+                Final grades recorded across the student's subjects and terms.
+            </p>
+
+        </div>
+
+        <div class="term-filter">
+
+            <label for="termFilter">
+                View:
+            </label>
+
+            <select
+                id="termFilter"
+                class="form-select form-select-sm"
+            >
+
+                <option value="all">
+                    All Terms
+                </option>
+
+                <option value="Term 1">
+                    Term 1
+                </option>
+
+                <option value="Term 2">
+                    Term 2
+                </option>
+
+                <option value="Term 3">
+                    Term 3
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <div class="academic-table-wrapper">
+
+        <table class="academic-table">
+
+            <thead>
+
+                <tr>
+
+                    <th style="padding-left: 18px;">
+                        Subject
+                    </th>
+
+                    <th>
+                        Grade Level
+                    </th>
+
+                    <th>
+                        Section
+                    </th>
+
+                    <th>
+                        Term
+                    </th>
+
+                    <th>
+                        Grade
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="academicTableBody">
+
+                @php
+                    $hasGradeRecords = false;
+                @endphp
+
+                @foreach ($subjects as $subject)
+
+                    @foreach ($subject->periods as $period)
+
                         @php
-                            $byTerm = $subject->periods->keyBy('term_label');
+                            $hasGradeRecords = true;
                         @endphp
-                        <tr>
-                            <td>{{ $subject->subject_name }}</td>
-                            <td>{{ $subject->grade_level }}</td>
-                            <td>{{ $subject->section_name }}</td>
-                            <td>2025-2026</td>
-                            <td>
-                                @foreach ($subject->periods as $period)
-                                    <div class="small">{{ $period->term_label }}</div>
-                                @endforeach
-                            </td>
-                            <td>
-                                @foreach ($subject->periods as $period)
-                                    <div class="small">—</div>
-                                @endforeach
-                            </td>
-                            <td>
-                                @foreach ($subject->periods as $period)
-                                    <div class="small">—</div>
-                                @endforeach
-                            </td>
-                            <td>
-                                @foreach ($subject->periods as $period)
-                                    <div class="small">—</div>
-                                @endforeach
-                            </td>
-                            <td>
-                                @foreach ($subject->periods as $period)
-                                    <div class="fw-small">{{ $period->grade !== null ? $period->grade : '—' }}</div>
-                                @endforeach
-                            </td>
-                            <td>
-                                @foreach ($subject->periods as $period)
-                                    <div class="small">
-                                        @if ($period->grade !== null)
-                                            @if ($period->grade >= 75)
-                                                <span class="gs-badge-success">Passing</span>
-                                            @else
-                                                <span class="gs-badge-danger">Failing</span>
-                                            @endif
-                                        @else
-                                            <span class="text-muted">—</span>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="10" class="text-center text-muted py-4">No subjects found.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
 
-    <div class="row g-3">
-        <!-- Grade Changes Over Time Chart -->
-        <div class="col-12 col-lg-8">
-            <div class="gs-panel">
-                <p class="gs-panel-title">Grade Changes Over Time</p>
-                <div class="chart-container" style="height: 300px;">
-                    <canvas id="gradeChart"></canvas>
-                </div>
-            </div>
-        </div>
+                        <tr
+                            class="academic-row"
+                            data-term="{{ $period->term_label }}"
+                        >
 
-        <!-- Risk Indicators Summary -->
-        <div class="col-12 col-lg-4">
-            <div class="gs-panel">
-                <p class="gs-panel-title">Why this student may need attention</p>
-                @if ($riskData && !empty($riskData['indicators']))
-                    <div class="risk-indicators">
-                        @foreach ($riskData['indicators'] as $indicator => $isTrue)
-                            @if ($isTrue)
-                                @php
-                                    $indicatorLabels = [
-                                        'low_grade' => 'Low grades in current term',
-                                        'missing_grades' => 'Missing assignments or assessments',
-                                        'low_attendance' => 'Poor attendance record',
-                                        'declining_performance' => 'Declining academic performance',
-                                    ];
-                                @endphp
-                                <div class="alert alert-warning d-flex align-items-center gap-2 mb-2">
-                                    <i class="fa-solid fa-exclamation-triangle"></i>
-                                    <span class="small">{{ $indicatorLabels[$indicator] }}</span>
+                            <td style="padding-left: 18px;">
+
+                                <div class="subject-cell">
+
+                                    <span class="subject-icon">
+                                        <i class="fa-solid fa-book-open"></i>
+                                    </span>
+
+                                    <strong>
+                                        {{ $subject->subject_name }}
+                                    </strong>
+
                                 </div>
-                            @endif
-                        @endforeach
-                    </div>
-                @else
-                    <div class="alert alert-success d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-check-circle"></i>
-                        <span class="small">No major risk indicators flagged</span>
-                    </div>
+
+                            </td>
+
+                            <td>
+                                Grade {{ $subject->grade_level }}
+                            </td>
+
+                            <td>
+                                {{ $subject->section_name }}
+                            </td>
+
+                            <td>
+
+                                <span class="term-label">
+                                    {{ $period->term_label }}
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <strong
+                                    class="grade-number {{ ($period->grade !== null && $period->grade < 75) ? 'text-danger' : '' }}"
+                                >
+                                    {{ $period->grade !== null
+                                        ? number_format($period->grade, 1)
+                                        : '—'
+                                    }}
+                                </strong>
+
+                            </td>
+
+                            <td>
+
+                                @if ($period->grade !== null)
+
+                                    @if ($period->grade >= 75)
+
+                                        <span class="grade-status passing">
+                                            Passing
+                                        </span>
+
+                                    @else
+
+                                        <span class="grade-status failing">
+                                            Below Passing
+                                        </span>
+
+                                    @endif
+
+                                @else
+
+                                    <span class="grade-status missing">
+                                        Unrecorded
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                @endforeach
+
+
+                @if (!$hasGradeRecords)
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="empty-table"
+                        >
+
+                            <div class="empty-table-content">
+
+                                <i class="fa-solid fa-folder-open"></i>
+
+                                <strong>
+                                    No grade records found
+                                </strong>
+
+                                <span>
+                                    No final grades have been recorded for this student yet.
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
                 @endif
-            </div>
+
+            </tbody>
+
+        </table>
+
+
+        <div
+            id="noAcademicResults"
+            class="academic-no-results d-none"
+        >
+
+            <i class="fa-solid fa-filter-circle-xmark"></i>
+
+            <strong>
+                No grades for this term
+            </strong>
+
+            <span>
+                Try selecting a different term filter.
+            </span>
+
         </div>
+
     </div>
 
-    <!-- Teacher Remarks and Interventions -->
-    <div class="row g-3">
-        <div class="col-6">
-            <div class="gs-panel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <p class="gs-panel-title mb-0">Teacher Remarks</p>
-                    <button class="btn btn-sm btn-outline-primary" disabled title="Add Remark feature coming soon">
-                        <i class="fa-solid fa-plus"></i> Add Remark
-                    </button>
-                </div>
-                <div class="text-center text-muted py-4">
-                    <i class="fa-solid fa-comment fa-2x mb-2"></i>
-                    <p class="small">No teacher remarks yet</p>
-                </div>
-            </div>
+</div>
+
+
+{{-- ============================================================
+SECTION 4 — GRADE SUMMARY DETAILS
+============================================================ --}}
+
+<div class="gs-panel mb-3">
+
+    <div class="profile-card-header simple">
+
+        <div>
+
+            <p class="gs-panel-title mb-1">
+                Grade Summary Details
+            </p>
+
+            <p class="text-muted small mb-0">
+                Overview of the student's recorded final grades.
+            </p>
+
         </div>
-        <div class="col-6">
-            <div class="gs-panel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <p class="gs-panel-title mb-0">Interventions</p>
-                    <button class="btn btn-sm btn-outline-primary" disabled title="Add Intervention feature coming soon">
-                        <i class="fa-solid fa-plus"></i> Add Intervention
-                    </button>
-                </div>
-                <div class="text-center text-muted py-4">
-                    <i class="fa-solid fa-hand-holding-heart fa-2x mb-2"></i>
-                    <p class="small">No interventions have been recorded yet</p>
-                </div>
-            </div>
-        </div>
+
     </div>
 
-    <!-- Chart.js and Grade Chart Script -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ asset('js/chart-defaults.js') }}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('gradeChart').getContext('2d');
-            
-            const gradeData = {
-                labels: @json(array_column($gradeHistory, 'term')),
-                datasets: [{
-                    label: 'Average Grade',
-                    data: @json(array_column($gradeHistory, 'average')),
-                    borderColor: '#3B82F6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            };
 
-            new Chart(ctx, {
-                type: 'line',
-                data: gradeData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return 'Average: ' + (context.parsed.y || '—');
-                                }
-                            }
-                        }
+    @php
+
+        $totalRecordedEntries = $subjects
+            ->flatMap->periods
+            ->filter(
+                fn($p) =>
+                    $p->grade !== null
+            )
+            ->count();
+
+        $subjectsWithRecordsCount = $subjects
+            ->filter(
+                fn($s) =>
+                    $s->periods
+                        ->contains(
+                            fn($p) =>
+                                $p->grade !== null
+                        )
+            )
+            ->count();
+
+        $totalExpectedGradeEntries =
+            $subjects->count() * 3;
+
+        $pendingGradeEntries = max(
+            0,
+            $totalExpectedGradeEntries
+            - $totalRecordedEntries
+        );
+
+    @endphp
+
+
+    <div style="padding: 4px 18px 14px;">
+
+        <div class="gs-rules-section">
+
+            <div class="gs-rules-row">
+
+                <span class="gs-rules-label">
+                    Recorded Grade Entries
+                </span>
+
+                <span class="gs-rules-value">
+                    {{ $totalRecordedEntries }}
+                    <span
+                        class="text-muted fw-normal"
+                        style="font-size: 0.76rem;"
+                    >
+                        / {{ $totalExpectedGradeEntries }}
+                    </span>
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="gs-rules-section">
+
+            <div class="gs-rules-row">
+
+                <span class="gs-rules-label">
+                    Subjects with Records
+                </span>
+
+                <span class="gs-rules-value">
+                    {{ $subjectsWithRecordsCount }}
+                    /
+                    {{ $subjects->count() }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="gs-rules-section gs-rules-section-last">
+
+            <div class="gs-rules-row">
+
+                <span class="gs-rules-label">
+                    Pending Grade Entries
+                </span>
+
+                <span class="gs-rules-value {{ $pendingGradeEntries > 0 ? 'text-warning' : '' }}">
+                    {{ $pendingGradeEntries }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{{-- ============================================================
+SECTION 5 — ASSESSMENT SUMMARY
+============================================================ --}}
+
+<div class="gs-panel mb-3">
+
+    <div class="profile-card-header simple">
+
+        <div>
+
+            <p class="gs-panel-title mb-1">
+                Assessment Summary
+            </p>
+
+            <p class="text-muted small mb-0">
+                Individual assessments and the student's recorded scores.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {{-- Assessment Overview --}}
+
+    <div class="row g-2 px-3 pt-2 pb-3">
+
+        <div class="col-6 col-md-3">
+
+            <div class="gs-stat-card h-100">
+
+                <p class="gs-stat-label mb-1">
+                    Total Assessments
+                </p>
+
+                <p class="gs-stat-value mb-0">
+                    {{ $assessmentCounts['total'] ?? 0 }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="gs-stat-card gs-stat-card-success h-100">
+
+                <p class="gs-stat-label gs-stat-label-success mb-1">
+                    Scores Recorded
+                </p>
+
+                <p class="gs-stat-value gs-stat-present mb-0">
+                    {{ $assessmentCounts['recorded'] ?? 0 }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="gs-stat-card h-100">
+
+                <p class="gs-stat-label mb-1">
+                    Pending Scores
+                </p>
+
+                <p class="gs-stat-value mb-0 {{ ($assessmentCounts['pending'] ?? 0) > 0 ? 'text-warning' : '' }}">
+                    {{ $assessmentCounts['pending'] ?? 0 }}
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="gs-stat-card h-100">
+
+                <p class="gs-stat-label mb-1">
+                    Assessment Types
+                </p>
+
+                <p class="gs-stat-value mb-0">
+                    {{ collect([
+                        $assessmentCounts['written'] ?? 0,
+                        $assessmentCounts['performance'] ?? 0,
+                        $assessmentCounts['quarterly'] ?? 0
+                    ])->filter(fn($count) => $count > 0)->count() }}
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    @if ($assessmentSummary->isNotEmpty())
+
+        <div class="academic-table-wrapper">
+
+            <table class="academic-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th style="padding-left: 18px;">
+                            Assessment
+                        </th>
+
+                        <th>
+                            Subject
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Term
+                        </th>
+
+                        <th>
+                            Score
+                        </th>
+
+                        <th>
+                            Result
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @foreach ($assessmentSummary as $assessment)
+
+                        <tr>
+
+                            {{-- Assessment --}}
+
+                            <td style="padding-left: 18px;">
+
+                                <div class="subject-cell">
+
+                                    <span class="subject-icon">
+                                        <i class="fa-solid fa-clipboard-check"></i>
+                                    </span>
+
+                                    <div>
+
+                                        <strong>
+                                            {{ $assessment->title }}
+                                        </strong>
+
+                                        @if ($assessment->assessment_date)
+
+                                            <div
+                                                class="text-muted"
+                                                style="font-size: 0.7rem;"
+                                            >
+                                                {{ \Carbon\Carbon::parse($assessment->assessment_date)->format('M d, Y') }}
+                                            </div>
+
+                                        @endif
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            {{-- Subject --}}
+
+                            <td>
+                                {{ $assessment->subject_name }}
+                            </td>
+
+
+                            {{-- Type --}}
+
+                            <td>
+
+                                @if ($assessment->category_key === 'written')
+
+                                    <span class="term-label">
+                                        Written Work
+                                    </span>
+
+                                @elseif ($assessment->category_key === 'performance')
+
+                                    <span class="term-label">
+                                        Performance Task
+                                    </span>
+
+                                @else
+
+                                    <span class="term-label">
+                                        Quarterly Assessment
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+
+                            {{-- Term --}}
+
+                            <td>
+
+                                <span class="term-label">
+                                    {{ $assessment->term_label }}
+                                </span>
+
+                            </td>
+
+
+                            {{-- Score --}}
+
+                            <td>
+
+                                @if ($assessment->has_score)
+
+                                    <strong>
+                                        {{ rtrim(rtrim(number_format($assessment->score, 2), '0'), '.') }}
+                                        /
+                                        {{ $assessment->total_items }}
+                                    </strong>
+
+                                    @if ($assessment->percentage !== null)
+
+                                        <div
+                                            class="text-muted"
+                                            style="font-size: 0.7rem;"
+                                        >
+                                            {{ number_format($assessment->percentage, 1) }}%
+                                        </div>
+
+                                    @endif
+
+                                @else
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+
+                            {{-- Result --}}
+
+                            <td>
+
+                                @if ($assessment->has_score)
+
+                                    @if ($assessment->percentage >= 75)
+
+                                        <span class="grade-status passing">
+                                            Recorded
+                                        </span>
+
+                                    @else
+
+                                        <span class="grade-status failing">
+                                            Recorded
+                                        </span>
+
+                                    @endif
+
+                                @else
+
+                                    <span class="grade-status missing">
+                                        No Score
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    @else
+
+        <div class="simple-empty-state">
+
+            <i class="fa-regular fa-clipboard"></i>
+
+            <strong>
+                No assessments recorded
+            </strong>
+
+            <span>
+                No active assessments have been created for this student's assigned subjects yet.
+            </span>
+
+        </div>
+
+    @endif
+
+</div>
+
+
+{{-- ============================================================
+SECTION 6 — PERFORMANCE PROGRESSION
+============================================================ --}}
+
+<div class="performance-layout mb-3">
+
+    {{-- Chart --}}
+
+    <div class="profile-card performance-card">
+
+        <div class="profile-card-header simple">
+
+            <div>
+
+                <p class="gs-panel-title mb-1">
+                    Performance Progression
+                </p>
+
+                <p class="text-muted small mb-0">
+                    Term-by-term grade trend based on recorded subjects.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="grade-chart-wrapper"
+            style="max-height: 240px;"
+        >
+
+            @if (
+                collect($gradeHistory)
+                    ->contains(
+                        fn($item) =>
+                            $item['average'] !== null
+                    )
+            )
+
+                <canvas id="gradeChart"></canvas>
+
+            @else
+
+                <div class="chart-empty-state">
+
+                    <i class="fa-solid fa-chart-line fa-lg"></i>
+
+                    <strong>
+                        No grade history available
+                    </strong>
+
+                    <span>
+                        A trend chart will appear once grades are recorded across multiple terms.
+                    </span>
+
+                </div>
+
+            @endif
+
+        </div>
+
+    </div>
+
+
+    {{-- Performance Summary --}}
+
+    <div class="profile-card">
+
+        <div class="profile-card-header simple">
+
+            <div>
+
+                <p class="gs-panel-title mb-1">
+                    Performance Summary
+                </p>
+
+            </div>
+
+        </div>
+
+
+        @php
+
+            $validAverages = $subjects
+                ->pluck('average')
+                ->filter(
+                    fn($value) =>
+                        $value !== null
+                );
+
+            $highestGrade = $validAverages->isNotEmpty()
+                ? $validAverages->max()
+                : null;
+
+            $lowestGrade = $validAverages->isNotEmpty()
+                ? $validAverages->min()
+                : null;
+
+            $subjectsWithAverage = $subjects
+                ->filter(
+                    fn($s) =>
+                        $s->average !== null
+                );
+
+            $passingRate = $subjects->count() > 0
+                ? (
+                    $subjects
+                        ->filter(
+                            fn($s) =>
+                                $s->average !== null
+                                && $s->average >= 75
+                        )
+                        ->count()
+                    / $subjects->count()
+                ) * 100
+                : 0;
+
+        @endphp
+
+
+        <div style="padding: 4px 18px 14px;">
+
+            <div class="gs-rules-section">
+
+                <div class="gs-rules-row">
+
+                    <span class="gs-rules-label">
+                        Highest Subject Grade
+                    </span>
+
+                    <span class="gs-rules-value text-success">
+
+                        {{ $highestGrade !== null
+                            ? number_format($highestGrade, 1)
+                            : '—'
+                        }}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="gs-rules-section">
+
+                <div class="gs-rules-row">
+
+                    <span class="gs-rules-label">
+                        Lowest Subject Grade
+                    </span>
+
+                    <span class="gs-rules-value {{ ($lowestGrade !== null && $lowestGrade < 75) ? 'text-danger' : '' }}">
+
+                        {{ $lowestGrade !== null
+                            ? number_format($lowestGrade, 1)
+                            : '—'
+                        }}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="gs-rules-section">
+
+                <div class="gs-rules-row">
+
+                    <span class="gs-rules-label">
+                        Passing Subject Rate
+                    </span>
+
+                    <span class="gs-rules-value">
+                        {{ number_format($passingRate, 0) }}%
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="gs-rules-section gs-rules-section-last">
+
+                <div class="gs-rules-row">
+
+                    <span class="gs-rules-label">
+                        Academic Standing
+                    </span>
+
+                    <span class="gs-badge {{ $belowPassingCount == 0 ? 'gs-badge-success' : 'gs-badge-warning' }}">
+
+                        {{ $belowPassingCount == 0
+                            ? 'Good Standing'
+                            : $belowPassingCount . ' Concern(s)'
+                        }}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{{-- ============================================================
+SECTION 7 — ATTENDANCE HISTORY
+============================================================ --}}
+
+<div class="profile-card attendance-card mb-3">
+
+    <div class="profile-card-header simple">
+
+        <div>
+
+            <p class="gs-panel-title mb-1">
+                Attendance History
+            </p>
+
+            <p class="text-muted small mb-0">
+                Recorded attendance based on QR scans and teacher verification.
+            </p>
+
+        </div>
+
+
+        <div style="font-size: 0.78rem; text-align: right;">
+
+            <span class="text-muted">
+                Attendance Rate:
+            </span>
+
+            <span class="fw-semibold text-dark ms-1">
+                {{ number_format($attendanceRate ?? 0, 1) }}%
+            </span>
+
+            <span class="mx-1 text-muted">
+                &middot;
+            </span>
+
+            <span class="text-muted">
+                Present:
+            </span>
+
+            <span class="fw-semibold text-dark ms-1">
+                {{ $presentCount }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    @if ($attendanceHistory->isNotEmpty())
+
+        <div class="academic-table-wrapper">
+
+            <table class="academic-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th style="padding-left: 18px;">
+                            Date
+                        </th>
+
+                        <th>
+                            Time
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Remarks
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @foreach ($attendanceHistory as $attendance)
+
+                        @php
+
+                            $attendanceDate = $attendance->date
+                                ? \Carbon\Carbon::parse($attendance->date)
+                                : null;
+
+                            $attendanceTime = $attendance->scan_time
+                                ? \Carbon\Carbon::parse($attendance->scan_time)
+                                : null;
+
+                            $status = strtolower(
+                                $attendance->status ?? ''
+                            );
+
+                            $statusClass = match ($status) {
+
+                                'present' => 'passing',
+
+                                'late' => 'warning',
+
+                                'absent',
+                                'not_in_classroom' => 'failing',
+
+                                'excused' => 'info',
+
+                                default => 'missing',
+
+                            };
+
+                        @endphp
+
+
+                        <tr>
+
+                            {{-- Date --}}
+
+                            <td style="padding-left: 18px;">
+
+                                <div class="attendance-date">
+
+                                    <i class="fa-regular fa-calendar"></i>
+
+                                    {{ $attendanceDate
+                                        ? $attendanceDate->format('M d, Y')
+                                        : '—'
+                                    }}
+
+                                </div>
+
+                            </td>
+
+
+                            {{-- Time --}}
+
+                            <td>
+
+                                @if ($attendanceTime)
+
+                                    {{ $attendanceTime->format('h:i A') }}
+
+                                @else
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+
+                            {{-- Status --}}
+
+                            <td>
+
+                                <span class="grade-status {{ $statusClass }}">
+
+                                    @if ($status === 'present')
+
+                                        <i class="fa-solid fa-circle-check me-1"></i>
+
+                                    @elseif ($status === 'late')
+
+                                        <i class="fa-solid fa-clock me-1"></i>
+
+                                    @elseif ($status === 'absent')
+
+                                        <i class="fa-solid fa-circle-xmark me-1"></i>
+
+                                    @elseif ($status === 'excused')
+
+                                        <i class="fa-solid fa-circle-info me-1"></i>
+
+                                    @elseif ($status === 'not_in_classroom')
+
+                                        <i class="fa-solid fa-location-dot me-1"></i>
+
+                                    @else
+
+                                        <i class="fa-solid fa-circle-question me-1"></i>
+
+                                    @endif
+
+                                    {{ $attendance->status }}
+
+                                </span>
+
+                            </td>
+
+
+                            {{-- Remarks --}}
+
+                            <td>
+
+                                @if (!empty($attendance->remarks))
+
+                                    <span
+                                        class="attendance-remarks"
+                                        title="{{ $attendance->remarks }}"
+                                    >
+                                        {{ $attendance->remarks }}
+                                    </span>
+
+                                @else
+
+                                    <span class="text-muted">
+                                        —
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    @else
+
+        <div class="simple-empty-state">
+
+            <i class="fa-regular fa-calendar-xmark"></i>
+
+            <strong>
+                No attendance records
+            </strong>
+
+            <span>
+                No QR attendance scans or teacher verification records were found for this student.
+            </span>
+
+        </div>
+
+    @endif
+
+</div>
+
+
+{{-- ============================================================
+SECTION 8 — ACADEMIC NOTES
+============================================================ --}}
+
+<div class="gs-panel">
+
+    <p class="gs-panel-title mb-3">
+        Academic Notes
+    </p>
+
+    <div class="simple-empty-state">
+
+        <i class="fa-regular fa-comment-dots"></i>
+
+        <strong>
+            No academic notes recorded
+        </strong>
+
+        <span>
+            General academic observation notes will appear here once added.
+        </span>
+
+    </div>
+
+</div>
+
+
+{{-- ============================================================
+SCRIPTS
+============================================================ --}}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grade Chart
+    |--------------------------------------------------------------------------
+    */
+
+    const chartEl =
+        document.getElementById('gradeChart');
+
+    if (
+        chartEl &&
+        typeof Chart !== 'undefined'
+    ) {
+
+        const labels = @json(
+            array_column($gradeHistory, 'term')
+        );
+
+        const values = @json(
+            array_column($gradeHistory, 'average')
+        );
+
+        if (
+            labels.length &&
+            values.length
+        ) {
+
+            new Chart(
+                chartEl.getContext('2d'),
+                {
+                    type: 'line',
+
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+
+                            label: 'Average Grade',
+
+                            data: values,
+
+                            borderColor: '#2438b9',
+
+                            backgroundColor: 'rgba(36, 56, 185, 0.07)',
+
+                            tension: 0.35,
+
+                            fill: true,
+
+                            pointRadius: 4,
+
+                            pointHoverRadius: 6,
+
+                            pointBackgroundColor: '#2438b9'
+
+                        }]
+
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
 
-            // Tab functionality
-            document.querySelectorAll('.gs-tab').forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const term = this.dataset.term;
-                    // Update active state
-                    document.querySelectorAll('.gs-tab').forEach(t => t.classList.remove('gs-tab-active'));
-                    this.classList.add('gs-tab-active');
-                    // Here you would typically filter the table data based on term
-                    console.log('Filtering by term:', term);
-                });
-            });
-        });
-    </script>
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                display: false
+                            }
+
+                        },
+
+                        scales: {
+
+                            y: {
+
+                                min: 60,
+
+                                max: 100,
+
+                                ticks: {
+
+                                    stepSize: 10,
+
+                                    font: {
+                                        size: 11
+                                    }
+
+                                },
+
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)'
+                                }
+
+                            },
+
+                            x: {
+
+                                grid: {
+                                    display: false
+                                },
+
+                                ticks: {
+
+                                    font: {
+                                        size: 11
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Term Filter — Grade Summary
+    |--------------------------------------------------------------------------
+    */
+
+    const termFilter =
+        document.getElementById('termFilter');
+
+    const rows =
+        document.querySelectorAll('.academic-row');
+
+    const noResults =
+        document.getElementById('noAcademicResults');
+
+
+    if (termFilter) {
+
+        termFilter.addEventListener(
+            'change',
+            function () {
+
+                const selectedTerm =
+                    this.value;
+
+                let visibleCount = 0;
+
+
+                rows.forEach(
+                    function (row) {
+
+                        const matches =
+                            selectedTerm === 'all'
+                            || row.dataset.term === selectedTerm;
+
+
+                        row.style.display =
+                            matches
+                                ? ''
+                                : 'none';
+
+
+                        if (matches) {
+                            visibleCount++;
+                        }
+
+                    }
+                );
+
+
+                if (noResults) {
+
+                    noResults.classList.toggle(
+                        'd-none',
+                        !(
+                            rows.length > 0
+                            && visibleCount === 0
+                        )
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+});
+
+</script>
+
 </x-layouts.teacher>

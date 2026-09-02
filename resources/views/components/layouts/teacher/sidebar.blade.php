@@ -34,39 +34,38 @@
                         <span>Student Management</span>
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('teacher.grading-system.*') ? 'active' : '' }}">
-                    <a href="#gradingSystemSubmenu" data-bs-toggle="collapse" role="button"
-                        aria-expanded="{{ request()->routeIs('teacher.grading-system.*') ? 'true' : 'false' }}"
-                        aria-controls="gradingSystemSubmenu"
-                        class="sidebar-submenu-toggle d-flex justify-content-between align-items-center">
-                        <span class="d-flex align-items-center">
-                            <i class="fas fa-user-graduate"></i>
-                            <span>Grading System</span>
-                        </span>
-                        <i class="fas fa-chevron-down sidebar-submenu-caret me-3"></i>
+                <li class="sidebar-section-label">
+                    <small>Grading System</small>
+                </li>
+                <li class="{{ request()->routeIs('teacher.grading-system.dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.grading-system.dashboard') }}">
+                        <span>My Classes</span>
                     </a>
-                    <div class="collapse {{ request()->routeIs('teacher.grading-system.*') ? 'show' : '' }}" id="gradingSystemSubmenu">
-                        <ul class="sidebar-submenu">
-                            <li class="{{ request()->routeIs('teacher.grading-system.dashboard') ? 'active' : '' }}">
-                                <a href="{{ route('teacher.grading-system.dashboard') }}">My Classes</a>
-                            </li>
-                            <li class="{{ request()->routeIs('teacher.grading-system.analytics') || request()->routeIs('teacher.grading-system.analytics.*') || request()->routeIs('teacher.grading-system.by-level') || request()->routeIs('teacher.grading-system.sections') || request()->routeIs('teacher.grading-system.subjects') ? 'active' : '' }}">
-                                <a href="{{ route('teacher.grading-system.analytics') }}">Analytics</a>
-                            </li>
-                            <li class="{{ request()->routeIs('teacher.grading-system.at-risk') ? 'active' : '' }}">
-                                <a href="{{ route('teacher.grading-system.at-risk') }}">At-Risk</a>
-                            </li>
-                            <li class="{{ request()->routeIs('teacher.grading-system.student-profile') || request()->routeIs('teacher.grading-system.students') ? 'active' : '' }}">
-                                <a href="{{ route('teacher.grading-system.student-profile') }}">Students</a>
-                            </li>
-                            <li class="{{ request()->routeIs('teacher.grading-system.reports') || request()->routeIs('teacher.grading-system.reports.*') ? 'active' : '' }}">
-                                <a href="{{ route('teacher.grading-system.reports') }}">Reports</a>
-                            </li>
-                            <li class="{{ request()->routeIs('teacher.grading-system.grading-rules') ? 'active' : '' }}">
-                                <a href="{{ route('teacher.grading-system.grading-rules') }}">Grading Rules</a>
-                            </li>
-                        </ul>
-                    </div>
+                </li>
+                <li class="{{ request()->routeIs('teacher.grading-system.analytics') || request()->routeIs('teacher.grading-system.analytics.*') || request()->routeIs('teacher.grading-system.by-level') || request()->routeIs('teacher.grading-system.sections') || request()->routeIs('teacher.grading-system.subjects') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.grading-system.analytics') }}">
+                        <span>Analytics</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('teacher.grading-system.at-risk') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.grading-system.at-risk') }}">
+                        <span>At-Risk</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('teacher.grading-system.student-profile') || request()->routeIs('teacher.grading-system.students') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.grading-system.student-profile') }}">
+                        <span>Students</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('teacher.grading-system.reports') || request()->routeIs('teacher.grading-system.reports.*') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.grading-system.reports') }}">
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li class="{{ request()->routeIs('teacher.grading-system.grading-rules') ? 'active' : '' }}">
+                    <a href="{{ route('teacher.grading-system.grading-rules') }}">
+                        <span>Grading Rules</span>
+                    </a>
                 </li>
 
                 {{-- <li>

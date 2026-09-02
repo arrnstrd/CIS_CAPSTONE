@@ -21,14 +21,18 @@ class TeacherRoomAttendanceController extends Controller
         $teacher = $request->user()->teacher;
 
         if (! $teacher) {
-            return view('teacher-modules.attendance.room-attendance-index', ['sections' => collect()]);
+            return view('teacher-modules.attendance.room-attendance-index', [
+                'sections' => collect(),
+            ]);
         }
 
         $sectionIds = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
             ->pluck('section_id');
 
-        $sections = Section::whereIn('id', $sectionIds)->orderBy('name')->get();
+        $sections = Section::whereIn('id', $sectionIds)
+            ->orderBy('name')
+            ->get();
 
         foreach ($sections as $section) {
             $enrollmentIds = Enrollment::where('section_id', $section->id)
@@ -41,29 +45,43 @@ class TeacherRoomAttendanceController extends Controller
 
             $presentCount = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
                 ->whereDate('scan_time', now()->toDateString())
+                ->where('scan_type', 'IN')
                 ->distinct('enrollment_id')
                 ->count('enrollment_id');
 
             $section->total_students = $totalStudents;
             $section->present_count = $presentCount;
 
-            if ($trackingStart === null || now()->startOfDay()->lt($trackingStart)) {
-                // No scans have ever happened yet for this section, or tracking hasn't started as of today: nothing to mark absent yet.
+            if (
+                $trackingStart === null
+                || now()->startOfDay()->lt($trackingStart)
+            ) {
+                // No actual QR scan has happened for this section yet.
                 $section->absent_count = 0;
                 $section->no_data_yet = true;
             } else {
-                $section->absent_count = $totalStudents - $presentCount;
+                $section->absent_count = max(
+                    0,
+                    $totalStudents - $presentCount
+                );
                 $section->no_data_yet = false;
             }
         }
 
-        return view('teacher-modules.attendance.room-attendance-index', compact('sections'));
+        return view(
+            'teacher-modules.attendance.room-attendance-index',
+            compact('sections')
+        );
     }
 
     /**
      * Section detail page — full class roster.
-     * Single-day view (Today/Yesterday/single-date Custom): editable, one row per student.
-     * Multi-day view (This Week/multi-date Custom): view-only, one row per student per day.
+     *
+     * Single-day view:
+     * editable, one row per student.
+     *
+     * Multi-day view:
+     * view-only, one row per student per day.
      */
     public function show(Request $request, Section $section)
     {
@@ -76,13 +94,22 @@ class TeacherRoomAttendanceController extends Controller
                 ->first()
             : null;
 
-        abort_unless($teachingAssignment, 403, 'You do not have an active teaching assignment for this section.');
+        abort_unless(
+            $teachingAssignment,
+            403,
+            'You do not have an active teaching assignment for this section.'
+        );
 
         $dateFilter = $request->input('date_filter', 'today');
         $customStartDate = $request->input('custom_start_date');
         $customEndDate = $request->input('custom_end_date');
 
-        [$rangeStart, $rangeEnd] = $this->resolveDateRange($dateFilter, $customStartDate, $customEndDate);
+        [$rangeStart, $rangeEnd] = $this->resolveDateRange(
+            $dateFilter,
+            $customStartDate,
+            $customEndDate
+        );
+
         $isSingleDay = $rangeStart->isSameDay($rangeEnd);
 
         $enrollments = Enrollment::where('section_id', $section->id)
@@ -91,27 +118,54 @@ class TeacherRoomAttendanceController extends Controller
             ->get();
 
         $enrollmentIds = $enrollments->pluck('id');
+
         $trackingStart = $this->getTrackingStartDate($enrollmentIds);
 
         if ($isSingleDay) {
-            $roster = $this->buildSingleDayRoster($enrollments, $enrollmentIds, $rangeStart, $teachingAssignment, $trackingStart);
+            $roster = $this->buildSingleDayRoster(
+                $enrollments,
+                $enrollmentIds,
+                $rangeStart,
+                $teachingAssignment,
+                $trackingStart
+            );
         } else {
-            $roster = $this->buildMultiDayRoster($enrollments, $enrollmentIds, $rangeStart, $rangeEnd, $teachingAssignment, $trackingStart);
+            $roster = $this->buildMultiDayRoster(
+                $enrollments,
+                $enrollmentIds,
+                $rangeStart,
+                $rangeEnd,
+                $teachingAssignment,
+                $trackingStart
+            );
         }
 
         $totalStudents = $enrollments->count();
 
-        return view('teacher-modules.attendance.room-attendance-show', compact(
-            'section', 'roster', 'totalStudents', 'isSingleDay',
-            'dateFilter', 'customStartDate', 'customEndDate', 'rangeStart', 'rangeEnd'
-        ));
+        return view(
+            'teacher-modules.attendance.room-attendance-show',
+            compact(
+                'section',
+                'roster',
+                'totalStudents',
+                'isSingleDay',
+                'dateFilter',
+                'customStartDate',
+                'customEndDate',
+                'rangeStart',
+                'rangeEnd'
+            )
+        );
     }
 
     /**
      * Save a teacher's status resolution for one student on one date.
      */
-    public function verify(Request $request, Section $section, Enrollment $enrollment)
-    {
+    public function verify(
+        Request $request,
+        Section $section,
+        Enrollment $enrollment
+    ) {
         $teacher = $request->user()->teacher;
 
         $teachingAssignment = $teacher
@@ -122,19 +176,42 @@ class TeacherRoomAttendanceController extends Controller
             : null;
 
         abort_unless($teachingAssignment, 403);
-        abort_unless($enrollment->section_id === $section->id, 403, 'Student does not belong to this section.');
+
+        abort_unless(
+            $enrollment->section_id === $section->id,
+            403,
+            'Student does not belong to this section.'
+        );
 
         $validated = $request->validate([
-            'status' => 'required|in:' . implode(',', array_keys(AttendanceVerification::STATUSES)),
+            'status' => 'required|in:' .
+                implode(',', array_keys(AttendanceVerification::STATUSES)),
             'remarks' => 'nullable|string|max:1000',
             'attendance_date' => 'required|date',
         ]);
 
-        $attendanceDate = Carbon::parse($validated['attendance_date']);
+        $attendanceDate = Carbon::parse(
+            $validated['attendance_date']
+        );
 
-        // Latest scan for that student on that date, if any (for reference only — not modified)
-        $log = AttendanceLog::where('enrollment_id', $enrollment->id)
-            ->whereDate('scan_time', $attendanceDate->toDateString())
+        /*
+        |----------------------------------------------------------------------
+        | Actual QR scan for reference
+        |----------------------------------------------------------------------
+        |
+        | Teacher verification does not create a QR attendance log.
+        | It only records a teacher resolution.
+        |
+        */
+
+        $log = AttendanceLog::where(
+            'enrollment_id',
+            $enrollment->id
+        )
+            ->whereDate(
+                'scan_time',
+                $attendanceDate->toDateString()
+            )
             ->where('scan_type', 'IN')
             ->orderBy('scan_time', 'asc')
             ->first();
@@ -152,20 +229,38 @@ class TeacherRoomAttendanceController extends Controller
         ]);
 
         return redirect()
-            ->route('room-attendance.show', array_filter([
-                'section' => $section->id,
-                'date_filter' => $request->input('date_filter', 'today'),
-                'custom_start_date' => $request->input('custom_start_date'),
-                'custom_end_date' => $request->input('custom_end_date'),
-            ]))
-            ->with('success', 'Attendance status updated for ' . $attendanceDate->format('M d, Y') . '.');
+            ->route(
+                'room-attendance.show',
+                array_filter([
+                    'section' => $section->id,
+                    'date_filter' => $request->input(
+                        'date_filter',
+                        'today'
+                    ),
+                    'custom_start_date' => $request->input(
+                        'custom_start_date'
+                    ),
+                    'custom_end_date' => $request->input(
+                        'custom_end_date'
+                    ),
+                ])
+            )
+            ->with(
+                'success',
+                'Attendance status updated for ' .
+                    $attendanceDate->format('M d, Y') .
+                    '.'
+            );
     }
 
     /**
-     * Full chronological history for one student (all dates, all changes).
+     * Full chronological history for one student.
      */
-    public function history(Request $request, Section $section, Enrollment $enrollment)
-    {
+    public function history(
+        Request $request,
+        Section $section,
+        Enrollment $enrollment
+    ) {
         $teacher = $request->user()->teacher;
 
         $teachingAssignment = $teacher
@@ -176,133 +271,309 @@ class TeacherRoomAttendanceController extends Controller
             : null;
 
         abort_unless($teachingAssignment, 403);
-        abort_unless($enrollment->section_id === $section->id, 403);
+        abort_unless(
+            $enrollment->section_id === $section->id,
+            403
+        );
 
-        $scans = AttendanceLog::where('enrollment_id', $enrollment->id)
+        $scans = AttendanceLog::where(
+            'enrollment_id',
+            $enrollment->id
+        )
             ->orderBy('scan_time', 'desc')
             ->limit(50)
             ->get();
 
-        $verifications = AttendanceVerification::where('enrollment_id', $enrollment->id)
+        $verifications = AttendanceVerification::where(
+            'enrollment_id',
+            $enrollment->id
+        )
             ->orderBy('created_at', 'desc')
             ->limit(50)
             ->get();
 
         return response()->json([
-            'student' => $enrollment->student->only(['first_name', 'last_name', 'student_number']),
+            'student' => $enrollment->student->only([
+                'first_name',
+                'last_name',
+                'student_number',
+            ]),
             'scans' => $scans,
             'verifications' => $verifications,
         ]);
     }
 
     /**
-     * Build one row per student for a SINGLE-DAY view (editable).
+     * Build one row per student for a SINGLE-DAY view.
+     *
+     * IMPORTANT ATTENDANCE RULE:
+     *
+     * A teacher verification alone does NOT establish attendance.
+     *
+     * The student must have an actual QR IN scan for the selected date
+     * before the teacher verification can affect the displayed status.
      */
-    private function buildSingleDayRoster($enrollments, $enrollmentIds, Carbon $date, $teachingAssignment, ?Carbon $trackingStart = null)
-    {
-        
-
-        $logsByEnrollment = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
-            ->whereDate('scan_time', $date->toDateString())
+    private function buildSingleDayRoster(
+        $enrollments,
+        $enrollmentIds,
+        Carbon $date,
+        $teachingAssignment,
+        ?Carbon $trackingStart = null
+    ) {
+        $logsByEnrollment = AttendanceLog::whereIn(
+            'enrollment_id',
+            $enrollmentIds
+        )
+            ->whereDate(
+                'scan_time',
+                $date->toDateString()
+            )
             ->where('scan_type', 'IN')
             ->orderBy('scan_time', 'asc')
             ->get()
             ->unique('enrollment_id')
             ->keyBy('enrollment_id');
 
-        // Latest verification per enrollment for this specific date
-        $verificationsByEnrollment = AttendanceVerification::whereIn('enrollment_id', $enrollmentIds)
-            ->whereDate('attendance_date', $date->toDateString())
+        $verificationsByEnrollment = AttendanceVerification::whereIn(
+            'enrollment_id',
+            $enrollmentIds
+        )
+            ->whereDate(
+                'attendance_date',
+                $date->toDateString()
+            )
             ->orderBy('created_at', 'desc')
             ->get()
             ->unique('enrollment_id')
             ->keyBy('enrollment_id');
 
-        return $enrollments->map(function ($enrollment) use ($logsByEnrollment, $verificationsByEnrollment, $date, $trackingStart) {
-            $log = $logsByEnrollment->get($enrollment->id);
-            $verification = $verificationsByEnrollment->get($enrollment->id);
+        return $enrollments
+            ->map(function ($enrollment) use (
+                $logsByEnrollment,
+                $verificationsByEnrollment,
+                $date,
+                $trackingStart
+            ) {
+                $log = $logsByEnrollment->get($enrollment->id);
 
-            // Refined logic for single day roster
-            if ($trackingStart === null || $date->lt($trackingStart) || $date->gt(now())) {
-                // No scans have ever happened for this section yet, OR date is before tracking start, OR date is in the future: No Data Yet
-                $status = AttendanceVerification::STATUS_NO_DATA;
-                $statusLabel = AttendanceVerification::STATUS_LABELS_EXTENDED[$status];
-            } elseif ($verification) {
-                // Student has a verification record
-                $status = $verification->status;
-                $statusLabel = $verification->statusLabel();
-            } elseif ($log) {
-                // Student has a scan record
-                $status = AttendanceVerification::STATUS_PRESENT;
-                $statusLabel = AttendanceVerification::STATUSES[$status];
-            } else {
-                // Date is during tracking period but no records: Absent
-                $status = AttendanceVerification::STATUS_ABSENT;
-                $statusLabel = AttendanceVerification::STATUSES[$status];
-            }
+                $verification = $verificationsByEnrollment->get(
+                    $enrollment->id
+                );
 
-            return (object) [
-                'enrollment' => $enrollment,
-                'student' => $enrollment->student,
-                'log' => $log,
-                'verification' => $verification,
-                'status' => $status,
-                'status_label' => $statusLabel,
-                'is_teacher_edited' => (bool) $verification,
-                'date' => $date->toDateString(),
-            ];
-        })->sortBy(fn ($row) => $row->status === AttendanceVerification::STATUS_ABSENT ? 1 : 0)->values();
+                /*
+                |--------------------------------------------------------------
+                | Rule 1: Tracking has not started
+                |--------------------------------------------------------------
+                */
+
+                if (
+                    $trackingStart === null
+                    || $date->lt($trackingStart)
+                    || $date->gt(now())
+                ) {
+                    $status = AttendanceVerification::STATUS_NO_DATA;
+
+                    $statusLabel =
+                        AttendanceVerification::STATUS_LABELS_EXTENDED[
+                            $status
+                        ];
+                }
+
+                /*
+                |--------------------------------------------------------------
+                | Rule 2: No QR scan for this student
+                |--------------------------------------------------------------
+                |
+                | Even if a teacher verification exists, do NOT show
+                | Present/Late/Excused/etc.
+                |
+                */
+
+                elseif (! $log) {
+                    $status = AttendanceVerification::STATUS_NO_DATA;
+
+                    $statusLabel =
+                        AttendanceVerification::STATUS_LABELS_EXTENDED[
+                            $status
+                        ];
+                }
+
+                /*
+                |--------------------------------------------------------------
+                | Rule 3: QR scan exists + teacher verification exists
+                |--------------------------------------------------------------
+                |
+                | Teacher verification may override the QR-derived Present
+                | status.
+                |
+                */
+
+                elseif ($verification) {
+                    $status = $verification->status;
+                    $statusLabel = $verification->statusLabel();
+                }
+
+                /*
+                |--------------------------------------------------------------
+                | Rule 4: QR scan exists and no verification
+                |--------------------------------------------------------------
+                */
+
+                else {
+                    $status = AttendanceVerification::STATUS_PRESENT;
+
+                    $statusLabel =
+                        AttendanceVerification::STATUSES[$status];
+                }
+
+                return (object) [
+                    'enrollment' => $enrollment,
+                    'student' => $enrollment->student,
+                    'log' => $log,
+                    'verification' => $verification,
+                    'status' => $status,
+                    'status_label' => $statusLabel,
+                    'is_teacher_edited' => (bool) $verification,
+                    'date' => $date->toDateString(),
+                ];
+            })
+            ->sortBy(
+                fn ($row) =>
+                    $row->status === AttendanceVerification::STATUS_ABSENT
+                        ? 1
+                        : 0
+            )
+            ->values();
     }
 
     /**
-     * Build one row per (student, day) for a MULTI-DAY view (read-only).
+     * Build one row per (student, day) for a MULTI-DAY view.
      */
-    private function buildMultiDayRoster($enrollments, $enrollmentIds, Carbon $start, Carbon $end, $teachingAssignment, ?Carbon $trackingStart = null)
-    {
-
-        $logs = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
-            ->whereBetween('scan_time', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
+    private function buildMultiDayRoster(
+        $enrollments,
+        $enrollmentIds,
+        Carbon $start,
+        Carbon $end,
+        $teachingAssignment,
+        ?Carbon $trackingStart = null
+    ) {
+        $logs = AttendanceLog::whereIn(
+            'enrollment_id',
+            $enrollmentIds
+        )
+            ->whereBetween(
+                'scan_time',
+                [
+                    $start->copy()->startOfDay(),
+                    $end->copy()->endOfDay(),
+                ]
+            )
             ->where('scan_type', 'IN')
             ->orderBy('scan_time', 'asc')
             ->get()
-            ->groupBy(fn ($log) => $log->enrollment_id . '_' . $log->scan_time->toDateString())
-            ->map(fn ($group) => $group->first());
+            ->groupBy(
+                fn ($log) =>
+                    $log->enrollment_id .
+                    '_' .
+                    $log->scan_time->toDateString()
+            )
+            ->map(
+                fn ($group) => $group->first()
+            );
 
-        $verifications = AttendanceVerification::whereIn('enrollment_id', $enrollmentIds)
-            ->whereBetween('attendance_date', [$start->toDateString(), $end->toDateString()])
+        $verifications = AttendanceVerification::whereIn(
+            'enrollment_id',
+            $enrollmentIds
+        )
+            ->whereBetween(
+                'attendance_date',
+                [
+                    $start->toDateString(),
+                    $end->toDateString(),
+                ]
+            )
             ->orderBy('created_at', 'desc')
             ->get()
-            ->groupBy(fn ($v) => $v->enrollment_id . '_' . $v->attendance_date->toDateString())
-            ->map(fn ($group) => $group->first());
+            ->groupBy(
+                fn ($v) =>
+                    $v->enrollment_id .
+                    '_' .
+                    $v->attendance_date->toDateString()
+            )
+            ->map(
+                fn ($group) => $group->first()
+            );
 
         $rows = collect();
 
         foreach ($enrollments as $enrollment) {
             $cursor = $start->copy();
+
             while ($cursor->lte($end)) {
-                $key = $enrollment->id . '_' . $cursor->toDateString();
+                $key =
+                    $enrollment->id .
+                    '_' .
+                    $cursor->toDateString();
+
                 $log = $logs->get($key);
                 $verification = $verifications->get($key);
 
+                /*
+                |--------------------------------------------------------------
+                | Rule 1: Tracking has not started / future date
+                |--------------------------------------------------------------
+                */
 
-
-                // Refined logic for multi-day roster
-                if ($trackingStart === null || $cursor->lt($trackingStart) || $cursor->gt(now())) {
-                    // No scans have ever happened for this section yet, OR this specific day is before tracking start, OR this specific day is in the future: No Data Yet
+                if (
+                    $trackingStart === null
+                    || $cursor->lt($trackingStart)
+                    || $cursor->gt(now())
+                ) {
                     $status = AttendanceVerification::STATUS_NO_DATA;
-                    $statusLabel = AttendanceVerification::STATUS_LABELS_EXTENDED[$status];
-                } elseif ($verification) {
-                    // Student has a verification record for this specific day
+
+                    $statusLabel =
+                        AttendanceVerification::STATUS_LABELS_EXTENDED[
+                            $status
+                        ];
+                }
+
+                /*
+                |--------------------------------------------------------------
+                | Rule 2: No QR scan for this student on this date
+                |--------------------------------------------------------------
+                */
+
+                elseif (! $log) {
+                    $status = AttendanceVerification::STATUS_NO_DATA;
+
+                    $statusLabel =
+                        AttendanceVerification::STATUS_LABELS_EXTENDED[
+                            $status
+                        ];
+                }
+
+                /*
+                |--------------------------------------------------------------
+                | Rule 3: QR scan + teacher verification
+                |--------------------------------------------------------------
+                */
+
+                elseif ($verification) {
                     $status = $verification->status;
                     $statusLabel = $verification->statusLabel();
-                } elseif ($log) {
-                    // Student has a scan record for this specific day
+                }
+
+                /*
+                |--------------------------------------------------------------
+                | Rule 4: QR scan without verification
+                |--------------------------------------------------------------
+                */
+
+                else {
                     $status = AttendanceVerification::STATUS_PRESENT;
-                    $statusLabel = AttendanceVerification::STATUSES[$status];
-                } else {
-                    // This specific day is within the tracking period but has no scan or verification: Absent
-                    $status = AttendanceVerification::STATUS_ABSENT;
-                    $statusLabel = AttendanceVerification::STATUSES[$status];
+
+                    $statusLabel =
+                        AttendanceVerification::STATUSES[$status];
                 }
 
                 $rows->push((object) [
@@ -326,37 +597,68 @@ class TeacherRoomAttendanceController extends Controller
     /**
      * Resolve a date_filter value into a [start, end] Carbon range.
      */
-    private function resolveDateRange($dateFilter, $customStartDate = null, $customEndDate = null)
-    {
+    private function resolveDateRange(
+        $dateFilter,
+        $customStartDate = null,
+        $customEndDate = null
+    ) {
         switch ($dateFilter) {
             case 'yesterday':
                 $d = Carbon::yesterday();
-                return [$d->copy()->startOfDay(), $d->copy()->endOfDay()];
+
+                return [
+                    $d->copy()->startOfDay(),
+                    $d->copy()->endOfDay(),
+                ];
 
             case 'week':
-                return [now()->startOfWeek(), now()->endOfWeek()];
+                return [
+                    now()->startOfWeek(),
+                    now()->endOfWeek(),
+                ];
 
             case 'custom':
                 if ($customStartDate && $customEndDate) {
-                    return [Carbon::parse($customStartDate), Carbon::parse($customEndDate)];
+                    return [
+                        Carbon::parse($customStartDate)->startOfDay(),
+                        Carbon::parse($customEndDate)->endOfDay(),
+                    ];
                 }
-                return [now()->startOfDay(), now()->startOfDay()];
+
+                return [
+                    now()->startOfDay(),
+                    now()->startOfDay(),
+                ];
 
             case 'today':
             default:
-                return [now()->startOfDay(), now()->startOfDay()];
+                return [
+                    now()->startOfDay(),
+                    now()->startOfDay(),
+                ];
         }
     }
 
     /**
      * Get the tracking start date for a section.
-     * Uses the section's created_at date as the tracking start date.
+     *
+     * Attendance tracking begins based on the earliest actual QR IN scan
+     * among students in the section.
+     *
+     * Teacher verification records do NOT start attendance tracking.
      */
-    private function getTrackingStartDate($enrollmentIds): ?Carbon
-    {
-        $earliest = \App\Models\AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
+    private function getTrackingStartDate(
+        $enrollmentIds
+    ): ?Carbon {
+        $earliest = AttendanceLog::whereIn(
+            'enrollment_id',
+            $enrollmentIds
+        )
+            ->where('scan_type', 'IN')
             ->min('scan_time');
 
-        return $earliest ? Carbon::parse($earliest)->startOfDay() : null;
+        return $earliest
+            ? Carbon::parse($earliest)->startOfDay()
+            : null;
     }
 }

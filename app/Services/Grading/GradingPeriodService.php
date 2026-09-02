@@ -4,21 +4,37 @@ namespace App\Services\Grading;
 
 use App\Models\GradingPeriod;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class GradingPeriodService
 {
     /**
      * Create a new grading period.
      *
-     * @param array{name: string, sequence: int, is_active?: bool} $data
-     * @return GradingPeriod
+     * The grading system uses three terms only:
+     * Term 1, Term 2, and Term 3.
      */
     public function create(array $data): GradingPeriod
     {
         return DB::transaction(function () use ($data) {
+            $sequence = (int) $data['sequence'];
+
+            if ($sequence < 1 || $sequence > 3) {
+                throw ValidationException::withMessages([
+                    'sequence' => 'The grading system only supports Term 1, Term 2, and Term 3.',
+                ]);
+            }
+
+            if (GradingPeriod::where('sequence', $sequence)->exists()) {
+                throw ValidationException::withMessages([
+                    'sequence' => "Term {$sequence} already exists.",
+                ]);
+            }
+
             return GradingPeriod::create([
-                'name' => $data['name'],
-                'sequence' => $data['sequence'],
+                'name' => 'Term ' . $sequence,
+                'sequence' => $sequence,
+                'period_type' => 'trimester',
                 'is_active' => $data['is_active'] ?? true,
             ]);
         });
@@ -27,14 +43,39 @@ class GradingPeriodService
     /**
      * Update an existing grading period.
      *
-     * @param GradingPeriod $gradingPeriod
-     * @param array{name?: string, sequence?: int, is_active?: bool} $data
-     * @return GradingPeriod
+     * The grading system uses three terms only:
+     * Term 1, Term 2, and Term 3.
      */
     public function update(GradingPeriod $gradingPeriod, array $data): GradingPeriod
     {
         return DB::transaction(function () use ($gradingPeriod, $data) {
-            $gradingPeriod->update(array_filter($data, fn($value) => $value !== null));
+            $sequence = isset($data['sequence'])
+                ? (int) $data['sequence']
+                : (int) $gradingPeriod->sequence;
+
+            if ($sequence < 1 || $sequence > 3) {
+                throw ValidationException::withMessages([
+                    'sequence' => 'The grading system only supports Term 1, Term 2, and Term 3.',
+                ]);
+            }
+
+            $duplicateExists = GradingPeriod::where('sequence', $sequence)
+                ->where('id', '!=', $gradingPeriod->id)
+                ->exists();
+
+            if ($duplicateExists) {
+                throw ValidationException::withMessages([
+                    'sequence' => "Term {$sequence} already exists.",
+                ]);
+            }
+
+            $gradingPeriod->update([
+                'name' => 'Term ' . $sequence,
+                'sequence' => $sequence,
+                'period_type' => 'trimester',
+                'is_active' => $data['is_active'] ?? $gradingPeriod->is_active,
+            ]);
+
             return $gradingPeriod->fresh();
         });
     }
@@ -55,21 +96,25 @@ class GradingPeriodService
     /**
      * Get all grading periods ordered by sequence.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Only the three active trimester terms are returned.
      */
     public function getAll()
     {
-        return GradingPeriod::orderBy('sequence')->get();
+        return GradingPeriod::where('sequence', '<=', 3)
+            ->orderBy('sequence')
+            ->get();
     }
 
     /**
      * Get active grading periods.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Only active trimester terms are returned.
      */
     public function getActive()
     {
         return GradingPeriod::where('is_active', true)
+            ->where('sequence', '<=', 3)
+            ->where('period_type', 'trimester')
             ->orderBy('sequence')
             ->get();
     }
