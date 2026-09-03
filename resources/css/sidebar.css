@@ -57,6 +57,7 @@
 }
 
 .sidebar-menu ul li a i {
+    display: inline-block;
     margin-right: 15px;
     width: 20px;
     text-align: center;

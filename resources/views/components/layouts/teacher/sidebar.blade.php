@@ -1,4 +1,4 @@
-﻿@vite(['resources/css/app.css', 'resources/js/app.js'])
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <nav id="sidebar" class="sidebar-wrapper">
 
