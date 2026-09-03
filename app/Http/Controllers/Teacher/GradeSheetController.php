@@ -803,6 +803,20 @@ class GradeSheetController extends Controller
             ]
         );
 
+        NotificationService::send(
+            $request->user(),
+            NotificationService::CATEGORY_ANALYTICS,
+            'Class Analytics Updated',
+            "Class performance analytics for Section {$sectionName} have been updated after a grade change. Current class average is " . number_format($classAverage, 2) . ", with a " . number_format($passingRate, 2) . "% passing rate.",
+            [
+                'url' => route('teacher.grading-system.analytics', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
+                'teaching_assignment_id' => $assessment->teaching_assignment_id,
+                'grading_period_id' => $gradingPeriod?->id,
+                'class_average' => $classAverage,
+                'passing_rate' => $passingRate,
+            ]
+        );
+
         if ($gradingPeriod && $enrollment && $assessment->teachingAssignment) {
             app(RiskScoreService::class)->evaluateAndNotifyRiskChange(
                 $enrollment,
