@@ -9,16 +9,21 @@ use App\Models\GradingPeriod;
 
 use App\Models\StudentAssessmentScore;
 use App\Models\TeachingAssignment;
+use App\Services\Grading\GradingPeriodService;
 use App\Services\Grading\RiskScoreService;
 use Illuminate\Http\Request;
 
 class GradingDashboardController extends Controller
 {
     protected RiskScoreService $riskScoreService;
+    protected GradingPeriodService $gradingPeriodService;
 
-    public function __construct(RiskScoreService $riskScoreService)
-    {
+    public function __construct(
+        RiskScoreService $riskScoreService,
+        GradingPeriodService $gradingPeriodService
+    ) {
         $this->riskScoreService = $riskScoreService;
+        $this->gradingPeriodService = $gradingPeriodService;
     }
 
     public function index(Request $request)
@@ -50,25 +55,12 @@ class GradingDashboardController extends Controller
 
         $validPeriodIds = GradingPeriod::where('sequence', '<=', 3)->pluck('id');
 
-        // Determine current period by request or teacher default term preference
-        $selectedPeriodId = $request->input('grading_period_id');
-        if ($selectedPeriodId) {
-            $currentPeriod = GradingPeriod::where('id', $selectedPeriodId)->where('sequence', '<=', 3)->first();
-        } elseif ($dashboardPreferences?->default_term && $dashboardPreferences->default_term !== 'current') {
-            $targetSequence = match ($dashboardPreferences->default_term) {
-                'term_1' => 1,
-                'term_2' => 2,
-                'term_3' => 3,
-                default => null,
-            };
-            $currentPeriod = $targetSequence
-                ? GradingPeriod::where('sequence', $targetSequence)->where('period_type', 'trimester')->first()
-                : null;
-        }
-
-        if (! isset($currentPeriod) || ! $currentPeriod) {
-            $currentPeriod = $this->resolveTeacherCurrentTerm($teacher);
-        }
+        // Determine current period by request, teacher preference, or dynamic progression
+        $currentPeriod = $this->gradingPeriodService->resolveSelectedPeriod(
+            $request,
+            $teacher,
+            $dashboardPreferences
+        );
 
         $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
@@ -200,6 +192,7 @@ class GradingDashboardController extends Controller
             'classes', 
             'totalClasses', 
             'totalStudents', 
+            'currentPeriod',
             'currentTermLabel',
             'totalAtRisk',
             'classAtRiskCounts',

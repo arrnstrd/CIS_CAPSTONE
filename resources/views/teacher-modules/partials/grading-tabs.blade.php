@@ -1,5 +1,13 @@
 @php
-    $activeTab = $activeTab ?? 'myclasses';
+    $activeTab = $activeTab ?? (
+        request()->routeIs('teacher.grading-system.dashboard') || request()->routeIs('teacher.grading-system') || request()->routeIs('teacher.grading-system.grades*') || request()->routeIs('teacher.grading-system.grade-sheet*') || request()->routeIs('teacher.grading-system.assessments.*') ? 'myclasses' :
+        (request()->routeIs('teacher.grading-system.import-data*') ? 'import-data' :
+        (request()->routeIs('teacher.grading-system.analytics*') || request()->routeIs('teacher.grading-system.by-level*') || request()->routeIs('teacher.grading-system.sections*') || request()->routeIs('teacher.grading-system.subjects*') || request()->routeIs('teacher.grading-system.attendance') ? 'analytics' :
+        (request()->routeIs('teacher.grading-system.at-risk*') ? 'atrisk' :
+        (request()->routeIs('teacher.grading-system.reports*') ? 'reports' :
+        (request()->routeIs('teacher.grading-system.student-profile*') || request()->routeIs('teacher.grading-system.students*') ? 'students' :
+        (request()->routeIs('teacher.grading-system.grading-rules*') || request()->routeIs('teacher.grading-system.comp-rules*') ? 'gradingrules' : 'myclasses'))))))
+    );
 @endphp
 <div class="gs-tab-bar mb-3">
     <a href="{{ route('teacher.grading-system.dashboard') }}" class="gs-tab {{ $activeTab === 'myclasses' ? 'gs-tab-active' : '' }}">My Classes</a>

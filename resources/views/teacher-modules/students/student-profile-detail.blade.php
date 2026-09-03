@@ -1,4 +1,4 @@
-﻿<x-layouts.teacher>
+<x-layouts.teacher>
 
 <x-slot name="pageName">
     Grading System
@@ -393,7 +393,7 @@ SECTION 3 — GRADE SUMMARY
                                 @else
 
                                     <span class="grade-status missing">
-                                        Unrecorded
+                                        Not Yet Graded
                                     </span>
 
                                 @endif
@@ -1369,24 +1369,152 @@ SECTION 8 — ACADEMIC NOTES
 
 <div class="gs-panel">
 
-    <p class="gs-panel-title mb-3">
-        Academic Notes
-    </p>
-
-    <div class="simple-empty-state">
-
-        <i class="fa-regular fa-comment-dots"></i>
-
-        <strong>
-            No academic notes recorded
-        </strong>
-
-        <span>
-            General academic observation notes will appear here once added.
-        </span>
-
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <p class="gs-panel-title mb-1">
+                Academic Notes
+            </p>
+            <p class="text-muted small mb-0">
+                General academic observation notes recorded by teachers.
+            </p>
+        </div>
+        <button type="button"
+                class="btn btn-sm btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#addAcademicNoteModal">
+            <i class="fa-solid fa-plus me-1"></i> Add Note
+        </button>
     </div>
 
+    @if (isset($academicNotes) && $academicNotes->isNotEmpty())
+        <div class="risk-list">
+            @foreach ($academicNotes as $note)
+                <div class="risk-item d-flex justify-content-between align-items-start">
+                    <div class="d-flex align-items-start gap-2 flex-grow-1">
+                        <div class="risk-item-icon">
+                            <i class="fa-solid fa-note-sticky"></i>
+                        </div>
+                        <div class="risk-item-content">
+                            <strong>
+                                {{ $note->teacher->full_name ?? ($note->teacher->user ? $note->teacher->user->first_name . ' ' . $note->teacher->user->last_name : 'Teacher') }}
+                                <span class="text-muted fw-normal" style="font-size: 0.7rem;">
+                                    &middot; {{ $note->created_at->format('M d, Y h:i A') }}
+                                    @if ($note->updated_at && $note->updated_at->gt($note->created_at))
+                                        <em>(edited)</em>
+                                    @endif
+                                </span>
+                            </strong>
+                            <p class="mb-0 mt-1" style="white-space: pre-line;">{{ $note->note }}</p>
+                        </div>
+                    </div>
+
+                    @if ($note->teacher_id === auth()->user()?->teacher?->id)
+                        <div class="d-flex align-items-center gap-1 ms-2 flex-shrink-0">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary py-1 px-2 btn-edit-academic-note"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editAcademicNoteModal"
+                                    data-note-id="{{ $note->id }}"
+                                    data-note-text="{{ $note->note }}"
+                                    data-update-url="{{ route('teacher.student-profile.academic-notes.update', ['enrollmentId' => $enrollment->id, 'noteId' => $note->id]) }}"
+                                    title="Edit Note">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger py-1 px-2 btn-delete-academic-note"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteAcademicNoteModal"
+                                    data-delete-url="{{ route('teacher.student-profile.academic-notes.destroy', ['enrollmentId' => $enrollment->id, 'noteId' => $note->id]) }}"
+                                    title="Delete Note">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div class="simple-empty-state">
+            <i class="fa-regular fa-comment-dots"></i>
+            <strong>
+                No academic notes recorded
+            </strong>
+            <span>
+                General academic observation notes will appear here once added.
+            </span>
+        </div>
+    @endif
+
+</div>
+
+{{-- Add Academic Note Modal --}}
+<div class="modal fade" id="addAcademicNoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('teacher.student-profile.academic-notes.store', $enrollment->id) }}">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" style="font-size: 0.95rem;">Add Academic Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="addAcademicNoteText" class="form-label small text-muted">Observation / Note</label>
+                    <textarea name="note" id="addAcademicNoteText" class="form-control" rows="4" maxlength="2000" required placeholder="e.g. Student shows great enthusiasm in class participation; recommended for peer mentoring."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary">Save Note</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Edit Academic Note Modal --}}
+<div class="modal fade" id="editAcademicNoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" id="editAcademicNoteForm" action="">
+            @csrf
+            @method('PUT')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" style="font-size: 0.95rem;">Edit Academic Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="editAcademicNoteText" class="form-label small text-muted">Observation / Note</label>
+                    <textarea name="note" id="editAcademicNoteText" class="form-control" rows="4" maxlength="2000" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary">Update Note</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Delete Academic Note Confirmation Modal --}}
+<div class="modal fade" id="deleteAcademicNoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <form method="POST" id="deleteAcademicNoteForm" action="">
+            @csrf
+            @method('DELETE')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" style="font-size: 0.95rem;">Delete Academic Note</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-0">Are you sure you want to delete this academic note? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 
@@ -1592,6 +1720,32 @@ document.addEventListener('DOMContentLoaded', function () {
         );
 
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Academic Note Modal Handlers
+    |--------------------------------------------------------------------------
+    */
+
+    document.querySelectorAll('.btn-edit-academic-note').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const form = document.getElementById('editAcademicNoteForm');
+            const textarea = document.getElementById('editAcademicNoteText');
+            if (form && textarea) {
+                form.action = this.dataset.updateUrl;
+                textarea.value = this.dataset.noteText;
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-delete-academic-note').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const form = document.getElementById('deleteAcademicNoteForm');
+            if (form) {
+                form.action = this.dataset.deleteUrl;
+            }
+        });
+    });
 
 });
 

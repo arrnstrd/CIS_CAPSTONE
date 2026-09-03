@@ -51,6 +51,11 @@ class Enrollment extends Model
         return $this->hasMany(QuarterlyGrade::class);
     }
 
+    public function academicNotes()
+    {
+        return $this->hasMany(AcademicNote::class);
+    }
+
     protected static function booted(): void
     {
         // Use saving so attributes are set for both create and update flows.

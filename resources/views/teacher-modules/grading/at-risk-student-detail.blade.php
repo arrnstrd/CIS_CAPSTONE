@@ -383,19 +383,44 @@
     @if ($riskRemarks->count())
         <div class="risk-list">
             @foreach ($riskRemarks as $remark)
-                <div class="risk-item">
-                    <div class="risk-item-icon">
-                        <i class="fa-solid fa-comment-dots"></i>
+                <div class="risk-item d-flex justify-content-between align-items-start">
+                    <div class="d-flex align-items-start gap-2 flex-grow-1">
+                        <div class="risk-item-icon">
+                            <i class="fa-solid fa-comment-dots"></i>
+                        </div>
+                        <div class="risk-item-content">
+                            <strong>
+                                {{ $remark->teacher->full_name ?? 'Teacher' }}
+                                <span class="text-muted fw-normal" style="font-size: 0.7rem;">
+                                    &middot; {{ $remark->created_at->format('M d, Y h:i A') }}
+                                </span>
+                            </strong>
+                            <p class="mb-0">{{ $remark->remark }}</p>
+                        </div>
                     </div>
-                    <div class="risk-item-content">
-                        <strong>
-                            {{ $remark->teacher->full_name ?? 'Teacher' }}
-                            <span class="text-muted fw-normal" style="font-size: 0.7rem;">
-                                &middot; {{ $remark->created_at->format('M d, Y h:i A') }}
-                            </span>
-                        </strong>
-                        <p>{{ $remark->remark }}</p>
-                    </div>
+
+                    @if ($remark->teacher_id === auth()->user()?->teacher?->id)
+                        <div class="d-flex align-items-center gap-1 ms-2 flex-shrink-0">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary py-1 px-2 btn-edit-remark"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editRemarkModal"
+                                    data-remark-id="{{ $remark->id }}"
+                                    data-remark-text="{{ $remark->remark }}"
+                                    data-update-url="{{ route('teacher.grading-system.at-risk.remarks.update', ['enrollmentId' => $enrollment->id, 'remarkId' => $remark->id]) }}"
+                                    title="Edit Remark">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger py-1 px-2 btn-delete-remark"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteRemarkModal"
+                                    data-delete-url="{{ route('teacher.grading-system.at-risk.remarks.destroy', ['enrollmentId' => $enrollment->id, 'remarkId' => $remark->id]) }}"
+                                    title="Delete Remark">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    @endif
                 </div>
             @endforeach
         </div>
@@ -426,6 +451,55 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-sm btn-primary">Save Remark</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Edit Remark Modal --}}
+<div class="modal fade" id="editRemarkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="POST" id="editRemarkForm" action="">
+            @csrf
+            @method('PUT')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" style="font-size: 0.95rem;">Edit Teacher Risk Remark</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="editRemarkText" class="form-label small text-muted">Observation / Remark</label>
+                    <textarea name="remark" id="editRemarkText" class="form-control" rows="4" maxlength="2000" required></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary">Update Remark</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Delete Remark Modal --}}
+<div class="modal fade" id="deleteRemarkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <form method="POST" id="deleteRemarkForm" action="">
+            @csrf
+            @method('DELETE')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" style="font-size: 0.95rem;">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i> Delete Remark
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-0">Are you sure you want to delete this risk remark? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </div>
             </div>
         </form>
@@ -539,6 +613,36 @@
                 }
             }
         });
+
+        // Edit Remark Modal handler
+        const editModal = document.getElementById('editRemarkModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                if (!button) return;
+                const remarkText = button.getAttribute('data-remark-text');
+                const updateUrl = button.getAttribute('data-update-url');
+
+                const form = document.getElementById('editRemarkForm');
+                const textarea = document.getElementById('editRemarkText');
+
+                if (form && updateUrl) form.action = updateUrl;
+                if (textarea && remarkText !== null) textarea.value = remarkText;
+            });
+        }
+
+        // Delete Remark Modal handler
+        const deleteModal = document.getElementById('deleteRemarkModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                if (!button) return;
+                const deleteUrl = button.getAttribute('data-delete-url');
+
+                const form = document.getElementById('deleteRemarkForm');
+                if (form && deleteUrl) form.action = deleteUrl;
+            });
+        }
     });
 </script>
 

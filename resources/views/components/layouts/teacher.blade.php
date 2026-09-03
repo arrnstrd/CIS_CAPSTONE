@@ -56,38 +56,39 @@
         {{-- sidebar --}}
         <x-layouts.teacher.sidebar />
 
-        <header class="top-nav">
-            @php
-                $teacherUser = auth()->user();
-                $teacherProfile = $teacherUser?->teacher;
-                $teacherName = $teacherProfile?->full_name ?? ($teacherUser?->first_name . ' ' . $teacherUser?->last_name);
-                $teacherFirstName = $teacherUser?->first_name ?? trim(explode(' ', $teacherName)[0] ?? '');
-                $teacherEmail = $teacherUser?->email ?? '';
+        @php
+            $teacherUser = auth()->user();
+            $teacherProfile = $teacherUser?->teacher;
+            $teacherName = $teacherProfile?->full_name ?? ($teacherUser?->first_name . ' ' . $teacherUser?->last_name);
+            $teacherFirstName = $teacherUser?->first_name ?? trim(explode(' ', $teacherName)[0] ?? '');
+            $teacherEmail = $teacherUser?->email ?? '';
 
-                $unreadNotificationsCount = $teacherUser ? $teacherUser->unreadNotifications()->count() : 0;
-                $recentNotifications = $teacherUser ? $teacherUser->notifications()->latest()->take(8)->get() : collect();
+            $unreadNotificationsCount = $teacherUser ? $teacherUser->unreadNotifications()->count() : 0;
+            $recentNotifications = $teacherUser ? $teacherUser->notifications()->latest()->take(8)->get() : collect();
 
-                $hour = now()->hour;
-                if ($hour < 12) {
-                    $greeting = 'Good morning';
-                } elseif ($hour < 18) {
-                    $greeting = 'Good afternoon';
-                } else {
-                    $greeting = 'Good evening';
-                }
+            $hour = now()->hour;
+            if ($hour < 12) {
+                $greeting = 'Good morning';
+            } elseif ($hour < 18) {
+                $greeting = 'Good afternoon';
+            } else {
+                $greeting = 'Good evening';
+            }
 
-                $getCategoryMeta = function ($category) {
-                    return match ($category) {
-                        'attendance' => ['icon' => 'fa-solid fa-clipboard-user', 'bg' => 'bg-primary-subtle', 'color' => 'text-primary', 'label' => 'Attendance'],
-                        'grading' => ['icon' => 'fa-solid fa-graduation-cap', 'bg' => 'bg-success-subtle', 'color' => 'text-success', 'label' => 'Grading'],
-                        'at_risk' => ['icon' => 'fa-solid fa-triangle-exclamation', 'bg' => 'bg-danger-subtle', 'color' => 'text-danger', 'label' => 'At-Risk'],
-                        'analytics' => ['icon' => 'fa-solid fa-chart-line', 'bg' => 'bg-info-subtle', 'color' => 'text-info', 'label' => 'Analytics'],
-                        'announcement' => ['icon' => 'fa-solid fa-bullhorn', 'bg' => 'bg-warning-subtle', 'color' => 'text-warning', 'label' => 'Announcement'],
-                        'import' => ['icon' => 'fa-solid fa-file-import', 'bg' => 'bg-secondary-subtle', 'color' => 'text-secondary', 'label' => 'Import'],
-                        default => ['icon' => 'fa-solid fa-bell', 'bg' => 'bg-light', 'color' => 'text-primary', 'label' => 'Notice'],
-                    };
+            $getCategoryMeta = function ($category) {
+                return match ($category) {
+                    'attendance' => ['icon' => 'fa-solid fa-clipboard-user', 'bg' => 'bg-primary-subtle', 'color' => 'text-primary', 'label' => 'Attendance'],
+                    'grading' => ['icon' => 'fa-solid fa-graduation-cap', 'bg' => 'bg-success-subtle', 'color' => 'text-success', 'label' => 'Grading'],
+                    'at_risk' => ['icon' => 'fa-solid fa-triangle-exclamation', 'bg' => 'bg-danger-subtle', 'color' => 'text-danger', 'label' => 'At-Risk'],
+                    'analytics' => ['icon' => 'fa-solid fa-chart-line', 'bg' => 'bg-info-subtle', 'color' => 'text-info', 'label' => 'Analytics'],
+                    'announcement' => ['icon' => 'fa-solid fa-bullhorn', 'bg' => 'bg-warning-subtle', 'color' => 'text-warning', 'label' => 'Announcement'],
+                    'import' => ['icon' => 'fa-solid fa-file-import', 'bg' => 'bg-secondary-subtle', 'color' => 'text-secondary', 'label' => 'Import'],
+                    default => ['icon' => 'fa-solid fa-bell', 'bg' => 'bg-light', 'color' => 'text-primary', 'label' => 'Notice'],
                 };
-            @endphp
+            };
+        @endphp
+
+        <header class="top-nav">
             <div class="top-nav-greeting">
                 <div class="top-nav-greeting-text">{{ $greeting }}, {{ $teacherFirstName }}!</div>
                 <div class="top-nav-greeting-subtext">Here's what's happening in your classes today.</div>

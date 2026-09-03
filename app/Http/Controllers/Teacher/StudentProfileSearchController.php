@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicNote;
 use App\Models\AttendanceLog;
 use App\Models\AttendanceVerification;
 use App\Models\Enrollment;
@@ -11,6 +12,7 @@ use App\Models\TeachingAssignment;
 use App\Models\GradingPeriod;
 use App\Models\Assessment;
 use App\Models\AssessmentCategory;
+use App\Services\Grading\GradingPeriodService;
 use App\Services\Grading\RiskScoreService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -18,10 +20,14 @@ use Carbon\Carbon;
 class StudentProfileSearchController extends Controller
 {
     protected RiskScoreService $riskScoreService;
+    protected GradingPeriodService $gradingPeriodService;
 
-    public function __construct(RiskScoreService $riskScoreService)
-    {
+    public function __construct(
+        RiskScoreService $riskScoreService,
+        GradingPeriodService $gradingPeriodService
+    ) {
         $this->riskScoreService = $riskScoreService;
+        $this->gradingPeriodService = $gradingPeriodService;
     }
 
     public function index(Request $request)
@@ -91,15 +97,7 @@ class StudentProfileSearchController extends Controller
             ->with(['student', 'section'])
             ->get();
 
-        $currentPeriod = GradingPeriod::where('is_active', true)
-            ->where('sequence', '<=', 3)
-            ->where('period_type', 'trimester')
-            ->orderBy('sequence')
-            ->first()
-            ?? GradingPeriod::where('sequence', '<=', 3)
-                ->where('period_type', 'trimester')
-                ->orderBy('sequence')
-                ->first();
+        $currentPeriod = $this->gradingPeriodService->resolveSelectedPeriod($request, $teacher);
 
         $results = collect();
 
@@ -227,30 +225,13 @@ class StudentProfileSearchController extends Controller
             $trend = 'N/A';
 
             if ($currentPeriod) {
+                $gradeComparison = $this->riskScoreService->getGradeComparison(
+                    $enrollment,
+                    $assignment,
+                    $currentPeriod
+                );
 
-                $gradeComparison =
-                    $this->riskScoreService->getGradeComparison(
-                        $enrollment,
-                        $assignment,
-                        $currentPeriod
-                    );
-
-                if ($gradeComparison['has_previous_data']) {
-
-                    $current =
-                        $gradeComparison['current_grade'];
-
-                    $previous =
-                        $gradeComparison['previous_grade'];
-
-                    if ($current > $previous) {
-                        $trend = 'Improving';
-                    } elseif ($current < $previous) {
-                        $trend = 'Declining';
-                    } else {
-                        $trend = 'Stable';
-                    }
-                }
+                $trend = $gradeComparison['trend'];
             }
 
             /*
@@ -356,7 +337,8 @@ class StudentProfileSearchController extends Controller
                 'sections',
                 'availableSections',
                 'gradeLevel',
-                'sectionId'
+                'sectionId',
+                'currentPeriod'
             )
         );
     }
@@ -494,42 +476,29 @@ class StudentProfileSearchController extends Controller
         */
 
         $allSubjects = $allTeachingAssignments
-            ->map(function ($ta) use ($allGrades) {
+            ->map(function ($ta) use ($allGrades, $terms) {
 
-                $subjectGrades = $allGrades
+                $subjectGradesMap = $allGrades
                     ->get(
                         $ta->id,
                         collect()
                     )
-                    ->sortBy(
+                    ->keyBy(
                         fn ($g) =>
                             $g->gradingPeriod->sequence ?? 0
-                    )
-                    ->filter(
-                        fn ($g) =>
-                            ($g->gradingPeriod->sequence ?? 99) <= 3
-                    )
-                    ->map(
-                        fn ($g) => (object) [
+                    );
 
-                            'term_label' =>
-                                'Term ' .
-                                (
-                                    $g->gradingPeriod->sequence
-                                    ?? '—'
-                                ),
+                $subjectGrades = $terms
+                    ->map(function ($term) use ($subjectGradesMap) {
+                        $gradeRecord = $subjectGradesMap->get($term->sequence);
 
-                            'grade' =>
-                                $g->transmuted_grade,
-
-                            'grading_period_id' =>
-                                $g->grading_period_id,
-
-                            'sequence' =>
-                                $g->gradingPeriod->sequence
-                                ?? null,
-                        ]
-                    )
+                        return (object) [
+                            'term_label' => 'Term ' . $term->sequence,
+                            'grade' => $gradeRecord?->transmuted_grade,
+                            'grading_period_id' => $term->id,
+                            'sequence' => $term->sequence,
+                        ];
+                    })
                     ->values();
 
                 return (object) [
@@ -1262,6 +1231,19 @@ class StudentProfileSearchController extends Controller
                     $terms,
 
                 /*
+                | Academic Notes
+                */
+
+                'academicNotes' =>
+                    AcademicNote::where(
+                        'enrollment_id',
+                        $enrollment->id
+                    )
+                        ->with(['teacher.user'])
+                        ->latest('created_at')
+                        ->get(),
+
+                /*
                 | Assessment Summary data
                 */
 
@@ -1272,5 +1254,106 @@ class StudentProfileSearchController extends Controller
                     $assessmentCounts,
             ]
         );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACADEMIC NOTES ACTIONS
+    |--------------------------------------------------------------------------
+    */
+
+    public function storeAcademicNote(Request $request, int $enrollmentId)
+    {
+        $teacher = $request->user()->teacher;
+        abort_unless($teacher, 403);
+
+        $enrollment = Enrollment::findOrFail($enrollmentId);
+
+        $teacherSectionIds = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('section_id')
+            ->unique();
+
+        abort_unless($teacherSectionIds->contains($enrollment->section_id), 403, 'Unauthorized access to student.');
+
+        $validated = $request->validate([
+            'note' => 'required|string|max:2000',
+        ]);
+
+        AcademicNote::create([
+            'enrollment_id' => $enrollment->id,
+            'teacher_id' => $teacher->id,
+            'note' => trim($validated['note']),
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Academic note added successfully.']);
+        }
+
+        return redirect()->back()->with('success', 'Academic note added successfully.');
+    }
+
+    public function updateAcademicNote(Request $request, int $enrollmentId, int $noteId)
+    {
+        $teacher = $request->user()->teacher;
+        abort_unless($teacher, 403);
+
+        $enrollment = Enrollment::findOrFail($enrollmentId);
+
+        $teacherSectionIds = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('section_id')
+            ->unique();
+
+        abort_unless($teacherSectionIds->contains($enrollment->section_id), 403, 'Unauthorized access to student.');
+
+        $note = AcademicNote::where('id', $noteId)
+            ->where('enrollment_id', $enrollment->id)
+            ->firstOrFail();
+
+        abort_unless($note->teacher_id === $teacher->id, 403, 'You can only edit your own academic notes.');
+
+        $validated = $request->validate([
+            'note' => 'required|string|max:2000',
+        ]);
+
+        $note->update([
+            'note' => trim($validated['note']),
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Academic note updated successfully.']);
+        }
+
+        return redirect()->back()->with('success', 'Academic note updated successfully.');
+    }
+
+    public function destroyAcademicNote(Request $request, int $enrollmentId, int $noteId)
+    {
+        $teacher = $request->user()->teacher;
+        abort_unless($teacher, 403);
+
+        $enrollment = Enrollment::findOrFail($enrollmentId);
+
+        $teacherSectionIds = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('section_id')
+            ->unique();
+
+        abort_unless($teacherSectionIds->contains($enrollment->section_id), 403, 'Unauthorized access to student.');
+
+        $note = AcademicNote::where('id', $noteId)
+            ->where('enrollment_id', $enrollment->id)
+            ->firstOrFail();
+
+        abort_unless($note->teacher_id === $teacher->id, 403, 'You can only delete your own academic notes.');
+
+        $note->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Academic note deleted successfully.']);
+        }
+
+        return redirect()->back()->with('success', 'Academic note deleted successfully.');
     }
 }

@@ -807,6 +807,137 @@ class AtRiskController extends Controller
     }
 
     /**
+     * Update Teacher Risk Remark
+     */
+    public function updateRemark(
+        Request $request,
+        int $enrollmentId,
+        int $remarkId
+    ) {
+        $teacher = $request->user()->teacher;
+
+        abort_unless($teacher, 403);
+
+        $enrollment = Enrollment::findOrFail($enrollmentId);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Teacher Access
+        |--------------------------------------------------------------------------
+        */
+        $teacherSectionIds = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('section_id')
+            ->unique();
+
+        abort_unless(
+            $teacherSectionIds->contains($enrollment->section_id),
+            403
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Remark Ownership
+        |--------------------------------------------------------------------------
+        */
+        $remark = RiskRemark::where('id', $remarkId)
+            ->where('enrollment_id', $enrollment->id)
+            ->firstOrFail();
+
+        abort_unless($remark->teacher_id === $teacher->id, 403);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Remark
+        |--------------------------------------------------------------------------
+        */
+        $validated = $request->validate([
+            'remark' => [
+                'required',
+                'string',
+                'max:2000',
+            ],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Existing Remark Record (No Duplicates)
+        |--------------------------------------------------------------------------
+        */
+        $remark->update([
+            'remark' => $validated['remark'],
+        ]);
+
+        return redirect()
+            ->route(
+                'teacher.grading-system.at-risk.show',
+                $enrollment->id
+            )
+            ->with(
+                'success',
+                'Remark updated successfully.'
+            );
+    }
+
+    /**
+     * Delete Teacher Risk Remark
+     */
+    public function destroyRemark(
+        Request $request,
+        int $enrollmentId,
+        int $remarkId
+    ) {
+        $teacher = $request->user()->teacher;
+
+        abort_unless($teacher, 403);
+
+        $enrollment = Enrollment::findOrFail($enrollmentId);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Teacher Access
+        |--------------------------------------------------------------------------
+        */
+        $teacherSectionIds = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('section_id')
+            ->unique();
+
+        abort_unless(
+            $teacherSectionIds->contains($enrollment->section_id),
+            403
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Remark Ownership
+        |--------------------------------------------------------------------------
+        */
+        $remark = RiskRemark::where('id', $remarkId)
+            ->where('enrollment_id', $enrollment->id)
+            ->firstOrFail();
+
+        abort_unless($remark->teacher_id === $teacher->id, 403);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete Remark
+        |--------------------------------------------------------------------------
+        */
+        $remark->delete();
+
+        return redirect()
+            ->route(
+                'teacher.grading-system.at-risk.show',
+                $enrollment->id
+            )
+            ->with(
+                'success',
+                'Remark deleted successfully.'
+            );
+    }
+
+    /**
      * Get student's average grade for a specific
      * teaching assignment and grading period.
      */

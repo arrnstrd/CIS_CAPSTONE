@@ -67,14 +67,32 @@ class GradeSheetController extends Controller
             ->orderBy('sequence')
             ->get();
 
-        $selectedPeriodId = (int) $request->input(
-            'grading_period_id',
-            $gradingPeriods
-                ->where('is_active', true)
-                ->sortByDesc('sequence')
-                ->first()?->id
-                ?? $gradingPeriods->sortByDesc('sequence')->first()?->id
-        );
+        $selectedPeriodId = null;
+
+        if ($request->filled('grading_period_id')) {
+            $selectedPeriodId = (int) $request->input('grading_period_id');
+        } else {
+            $dashboardPreferences = $request->user()->dashboardPreference;
+            if ($dashboardPreferences?->default_term && $dashboardPreferences->default_term !== 'current') {
+                $targetSequence = match ($dashboardPreferences->default_term) {
+                    'term_1' => 1,
+                    'term_2' => 2,
+                    'term_3' => 3,
+                    default => null,
+                };
+                if ($targetSequence) {
+                    $selectedPeriodId = $gradingPeriods->firstWhere('sequence', $targetSequence)?->id;
+                }
+            }
+
+            if (! $selectedPeriodId) {
+                $selectedPeriodId = $gradingPeriods
+                    ->where('is_active', true)
+                    ->sortBy('sequence')
+                    ->first()?->id
+                    ?? $gradingPeriods->sortBy('sequence')->first()?->id;
+            }
+        }
 
         /*
          * Make sure the requested grading period belongs to

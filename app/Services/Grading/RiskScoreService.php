@@ -827,16 +827,61 @@ class RiskScoreService
                 ->first();
         }
 
+        // Fallback for Term 3 if Term 2 has no grade but Term 1 exists
+        if ((!$previousGrade || $previousGrade->transmuted_grade === null) && $currentPeriod->sequence > 2) {
+            $earlierPeriod = GradingPeriod::where('period_type', 'trimester')
+                ->where('sequence', '<', $previousPeriod?->sequence ?? $currentPeriod->sequence)
+                ->where('sequence', '>=', 1)
+                ->orderBy('sequence', 'desc')
+                ->first();
+
+            if ($earlierPeriod) {
+                $earlierGrade = QuarterlyGrade::where(
+                    'enrollment_id',
+                    $enrollment->id
+                )
+                    ->where(
+                        'teaching_assignment_id',
+                        $teachingAssignment->id
+                    )
+                    ->where(
+                        'grading_period_id',
+                        $earlierPeriod->id
+                    )
+                    ->first();
+
+                if ($earlierGrade && $earlierGrade->transmuted_grade !== null) {
+                    $previousGrade = $earlierGrade;
+                }
+            }
+        }
+
+        $currVal = $currentGrade?->transmuted_grade !== null
+            ? (float) $currentGrade->transmuted_grade
+            : null;
+
+        $prevVal = $previousGrade?->transmuted_grade !== null
+            ? (float) $previousGrade->transmuted_grade
+            : null;
+
+        $hasPreviousData = ($currVal !== null && $prevVal !== null);
+
+        $trend = 'N/A';
+        if ($hasPreviousData) {
+            if ($currVal > $prevVal) {
+                $trend = 'Improving';
+            } elseif ($currVal < $prevVal) {
+                $trend = 'Declining';
+            } else {
+                $trend = 'Stable';
+            }
+        }
+
         return [
-            'current_grade' => $currentGrade?->transmuted_grade,
-
-            'previous_grade' => $previousGrade?->transmuted_grade,
-
-            'has_previous_data' =>
-                $previousGrade !== null &&
-                $previousGrade->transmuted_grade !== null,
-
-            'trend' => 'N/A',
+            'current_grade' => $currVal,
+            'previous_grade' => $prevVal,
+            'has_previous_data' => $hasPreviousData,
+            'trend' => $trend,
         ];
     }
 }

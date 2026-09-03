@@ -76,22 +76,27 @@
                 <div class="row g-3">
                     @forelse ($classes as $class)
                         <div class="col-12 col-md-6 col-xl-4">
-                            <a href="{{ route('teacher.grading-system.grade-sheet', $class->teaching_assignment_id) }}" class="text-decoration-none">
-                                <div class="gs-panel gs-card-accent gs-card-accent-{{ (($loop->iteration - 1) % 4) + 1 }}">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <p class="gs-panel-title mb-0">Grade {{ $class->grade_level }} - {{ $class->section_name }}</p>
-                                        <span class="gs-badge {{ $class->format_badge === 'SHS Format' ? 'gs-badge-warning' : 'gs-badge-success' }}">
-                                            {{ $class->format_badge }}
+                            <a href="{{ route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $class->teaching_assignment_id, 'grading_period_id' => $currentPeriod->id]) }}" class="text-decoration-none">
+                                <div class="gs-panel gs-class-card">
+                                    <div class="gs-class-card-header">
+                                        <div class="gs-class-card-id">
+                                            <div class="gs-grade-avatar">{{ $class->grade_level }}</div>
+                                            <div>
+                                                <p class="gs-panel-title mb-0">{{ $class->section_name }}</p>
+                                                <p class="gs-class-card-subtitle mb-0">{{ $class->format_badge }} - {{ $class->subject_name }}</p>
+                                            </div>
+                                        </div>
+                                        <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
+                                            {{ $class->status }}
                                         </span>
                                     </div>
-                                    <p class="text-muted small mb-2">{{ $class->subject_name }}</p>
 
                                     @if ($dashboardPreferences?->show_progress_indicators ?? true)
                                         <div class="gd-progress-wrap">
                                             <div class="d-flex justify-content-between">
                                                 <span class="gd-progress-label">Completion</span>
                                                 <span class="gd-progress-label">
-                                                    {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '—' }}
+                                                    {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '-' }}
                                                 </span>
                                             </div>
                                             <div class="gd-progress-bar">
@@ -107,25 +112,21 @@
                                     @endif
 
                                     @if (($dashboardPreferences?->show_class_health ?? true) || ($dashboardPreferences?->show_at_risk ?? true))
-                                        <div class="gs-row-subtext mt-2">
+                                        <div class="gs-stat-group">
                                             @if ($dashboardPreferences?->show_class_health ?? true)
-                                                <span class="me-3">Avg: {{ $class->avg_grade !== null ? $class->avg_grade : '—' }}</span>
-                                                <span class="me-3">Pass: {{ $class->passing_rate !== null ? $class->passing_rate . '%' : '—' }}</span>
+                                                <span class="gs-stat-chip"><i class="fa-solid fa-chart-line me-1"></i>Avg: {{ $class->avg_grade !== null ? $class->avg_grade : '-' }}</span>
+                                                <span class="gs-stat-chip"><i class="fa-solid fa-square-check me-1"></i>Pass: {{ $class->passing_rate !== null ? $class->passing_rate . '%' : '-' }}</span>
                                             @endif
 
                                             @if ($dashboardPreferences?->show_at_risk ?? true)
                                                 @php $atRiskCount = $classAtRiskCounts[$class->teaching_assignment_id] ?? 0; @endphp
-                                                <span class="me-3 text-danger">
-                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i>At-Risk: {{ $atRiskCount }}
+                                                <span class="gs-stat-chip gs-stat-chip-risk">
+                                                    <span class="gs-stat-chip-risk-main"><i class="fa-solid fa-triangle-exclamation me-1"></i>At-Risk: {{ $atRiskCount }}</span>
                                                     @if($atRiskCount > 0 && isset($classRiskReasons[$class->teaching_assignment_id]))
-                                                        <span class="text-muted small">({{ $classRiskReasons[$class->teaching_assignment_id] }})</span>
+                                                        <span class="gs-stat-chip-risk-reason">{{ $classRiskReasons[$class->teaching_assignment_id] }}</span>
                                                     @endif
                                                 </span>
                                             @endif
-
-                                            <span class="gs-badge {{ $class->status === 'Complete' ? 'gs-badge-success' : ($class->status === 'In Progress' ? 'gs-badge-warning' : 'gs-badge') }}">
-                                                {{ $class->status }}
-                                            </span>
                                         </div>
                                     @endif
                                 </div>
@@ -176,7 +177,7 @@
                                         <div class="gd-progress-wrap">
                                             <div class="d-flex justify-content-between">
                                                 <span class="gd-progress-label">
-                                                    {{ $class->completion_percent !== null ? $class->completion_percent . '%' : '—' }}
+                                                    {{ $class->completion_percent !== null ? $class->completion_percent . '%' : 'â€”' }}
                                                 </span>
                                             </div>
                                             <div class="gd-progress-bar">

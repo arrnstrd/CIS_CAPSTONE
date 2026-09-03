@@ -866,6 +866,16 @@ Route::middleware(['auth'])->group(function () {
             '/teacher/grading-system/at-risk/{enrollmentId}/remarks',
             [App\Http\Controllers\Teacher\AtRiskController::class, 'storeRemark']
         )->name('teacher.grading-system.at-risk.remarks.store');
+
+        Route::put(
+            '/teacher/grading-system/at-risk/{enrollmentId}/remarks/{remarkId}',
+            [App\Http\Controllers\Teacher\AtRiskController::class, 'updateRemark']
+        )->name('teacher.grading-system.at-risk.remarks.update');
+
+        Route::delete(
+            '/teacher/grading-system/at-risk/{enrollmentId}/remarks/{remarkId}',
+            [App\Http\Controllers\Teacher\AtRiskController::class, 'destroyRemark']
+        )->name('teacher.grading-system.at-risk.remarks.destroy');
         
         // Attendance Analytics
         Route::get(
@@ -918,6 +928,21 @@ Route::middleware(['auth'])->group(function () {
             '/teacher/grading-system/student-profile/{enrollmentId}',
             [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'show']
         )->name('teacher.grading-system.student-profile.show');
+
+        Route::post(
+            '/teacher/grading-system/student-profile/{enrollmentId}/notes',
+            [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'storeAcademicNote']
+        )->name('teacher.student-profile.academic-notes.store');
+
+        Route::put(
+            '/teacher/grading-system/student-profile/{enrollmentId}/notes/{noteId}',
+            [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'updateAcademicNote']
+        )->name('teacher.student-profile.academic-notes.update');
+
+        Route::delete(
+            '/teacher/grading-system/student-profile/{enrollmentId}/notes/{noteId}',
+            [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'destroyAcademicNote']
+        )->name('teacher.student-profile.academic-notes.destroy');
 
 
         // Comp Rules

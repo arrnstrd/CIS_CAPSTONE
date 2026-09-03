@@ -282,6 +282,18 @@ html.dark .border {
     border-color: #334155 !important;
 }
 
+html.dark .gs-back-btn {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #f8fafc;
+}
+
+html.dark .gs-back-btn:hover {
+    background-color: #334155;
+    color: #ffffff;
+    border-color: #475569;
+}
+
 /* =========================================================
    DASHBOARD DENSITY STYLES
    ========================================================= */

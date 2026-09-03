@@ -39,6 +39,36 @@
     flex-shrink: 0;
 }
 
+.gs-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #1e293b;
+    border: 1px solid #d6dfe6;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.gs-back-btn:hover {
+    background-color: #f1f5f9;
+    color: #1F3690;
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.gs-back-btn:active {
+    transform: scale(0.97);
+}
+
 
 /* =========================
    RULES
@@ -2675,3 +2705,187 @@ html {
     color: #64748b;
 }
 
+
+/* =========================
+   MY CLASSES CARD POLISH
+   ========================= */
+.gs-card-accent {
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.15s ease;
+}
+.gs-card-accent:hover {
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
+    transform: translateY(-2px);
+}
+.gs-card-accent .gs-panel-title {
+    font-size: 0.98rem;
+    margin-bottom: 4px;
+}
+.gs-card-accent .text-muted.small {
+    margin-bottom: 14px !important;
+}
+.gs-row-subtext {
+    font-size: 0.8rem;
+    color: #555555;
+}
+.gs-card-accent .gs-row-subtext {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+}
+
+/* --- Avg/Pass/At-Risk stat chips (My Classes cards) --- */
+.gs-card-accent .gs-row-subtext > span:not(.gs-badge) {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f4f5f7;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 400;
+    margin-right: 0;
+}
+.gs-card-accent .gs-row-subtext > span.text-danger:not(.gs-badge) {
+    background-color: #fcebeb;
+    color: #791f1f !important;
+}
+
+/* --- Fix: prevent nested reason text from becoming a flex item --- */
+.gs-card-accent .gs-row-subtext > span:not(.gs-badge) span {
+    display: inline;
+    margin-left: 4px;
+}
+
+/* ===== My Classes - card polish ===== */
+.gs-class-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+}
+
+.gs-class-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.gs-class-card-id {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.gs-grade-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background: #1e3a8a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gs-class-card .gs-panel-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.gs-class-card-subtitle {
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.gs-class-card .gs-badge {
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.gs-class-card .gs-badge-warning {
+    background: #fef3c7;
+    color: #b45309;
+}
+.gs-class-card .gs-badge-success {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.gs-class-card .gd-progress-wrap {
+    margin-bottom: 14px;
+}
+.gs-class-card .gd-progress-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #374151;
+}
+.gs-class-card .gd-progress-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+.gs-class-card .gd-progress-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 999px;
+}
+
+.gs-class-card .gs-row-subtext {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 14px;
+}
+
+.gs-class-card .gs-stat-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.gs-stat-chip {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+}
+
+.gs-stat-chip-risk {
+    flex-direction: column;
+    align-items: flex-start;
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #b91c1c;
+    padding: 6px 14px;
+}
+.gs-stat-chip-risk-main {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.gs-stat-chip-risk-main i {
+    color: #dc2626;
+}
+.gs-stat-chip-risk-reason {
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin-top: 2px;
+    padding-left: 20px;
+}

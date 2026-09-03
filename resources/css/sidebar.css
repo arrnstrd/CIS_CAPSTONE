@@ -1,7 +1,7 @@
 /* ===== SIDEBAR WRAPPER ===== */
 .sidebar-wrapper {
     width: 260px;
-    height: 100%;
+    height: 100vh;
     position: fixed;
     top: 0;
     left: 0;
@@ -10,12 +10,21 @@
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     transition: transform 0.3s ease;
+}
+
+/* ===== BRAND (FIXED AT TOP OF SIDEBAR) ===== */
+.sidebar-brand {
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ===== SCROLLABLE NAV AREA ===== */
 .sidebar-content {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
@@ -26,12 +35,6 @@
 .sidebar-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
-}
-
-/* ===== BRAND ===== */
-.sidebar-brand {
-    background: rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ===== NAV MENU ===== */
