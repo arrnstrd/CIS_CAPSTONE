@@ -101,7 +101,6 @@ class User extends Authenticatable
         $preference = $this->dashboardPreference()->firstOrCreate([], [
             'default_view' => 'overview',
             'dashboard_density' => 'comfortable',
-            'show_quick_actions' => true,
             'show_grading_progress' => true,
             'show_class_health' => true,
             'show_at_risk' => true,

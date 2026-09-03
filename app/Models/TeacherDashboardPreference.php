@@ -16,7 +16,6 @@ class TeacherDashboardPreference extends Model
         'user_id',
         'default_view',
         'dashboard_density',
-        'show_quick_actions',
         'show_grading_progress',
         'show_class_health',
         'show_at_risk',
@@ -30,7 +29,6 @@ class TeacherDashboardPreference extends Model
     ];
 
     protected $casts = [
-        'show_quick_actions' => 'boolean',
         'show_grading_progress' => 'boolean',
         'show_class_health' => 'boolean',
         'show_at_risk' => 'boolean',
@@ -51,4 +49,3 @@ class TeacherDashboardPreference extends Model
         return $this->belongsTo(TeachingAssignment::class, 'default_class_id');
     }
 }
-

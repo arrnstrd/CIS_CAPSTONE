@@ -96,21 +96,6 @@
 
                             <div class="d-flex flex-column gap-3">
                                 <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-                                    <label class="form-check-label fw-semibold" for="show_quick_actions" style="font-size: 0.82rem;">
-                                        Quick Actions
-                                    </label>
-                                    <input
-                                        class="form-check-input ms-3"
-                                        type="checkbox"
-                                        role="switch"
-                                        id="show_quick_actions"
-                                        name="show_quick_actions"
-                                        value="1"
-                                        @checked($dashboardPreferences?->show_quick_actions ?? true)
-                                    >
-                                </div>
-
-                                <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
                                     <label class="form-check-label fw-semibold" for="show_grading_progress" style="font-size: 0.82rem;">
                                         Grading Progress
                                     </label>
@@ -237,3 +222,4 @@
         </div>
     </div>
 </x-layouts.teacher>
+

@@ -145,7 +145,6 @@ class SettingsController extends Controller
         $dashboardPreferences->update([
             'default_view' => $request->input('default_view', 'overview'),
             'dashboard_density' => $request->input('dashboard_density', 'comfortable'),
-            'show_quick_actions' => $request->boolean('show_quick_actions'),
             'show_grading_progress' => $request->boolean('show_grading_progress'),
             'show_class_health' => $request->boolean('show_class_health'),
             'show_at_risk' => $request->boolean('show_at_risk'),
