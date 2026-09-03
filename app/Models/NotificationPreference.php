@@ -15,7 +15,6 @@ class NotificationPreference extends Model
         'grading_enabled',
         'at_risk_enabled',
         'analytics_enabled',
-        'announcement_enabled',
         'import_enabled',
     ];
 
@@ -24,7 +23,6 @@ class NotificationPreference extends Model
         'grading_enabled' => 'boolean',
         'at_risk_enabled' => 'boolean',
         'analytics_enabled' => 'boolean',
-        'announcement_enabled' => 'boolean',
         'import_enabled' => 'boolean',
     ];
 
@@ -43,7 +41,6 @@ class NotificationPreference extends Model
             'grading' => $this->grading_enabled,
             'at_risk' => $this->at_risk_enabled,
             'analytics' => $this->analytics_enabled,
-            'announcement' => $this->announcement_enabled,
             'import' => $this->import_enabled,
             default => true,
         };

@@ -107,25 +107,6 @@
                             >
                         </div>
 
-                        <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-                            <div>
-                                <label class="form-check-label fw-semibold" for="announcement_enabled" style="font-size: 0.82rem;">
-                                    <i class="fa-solid fa-bullhorn text-warning me-2"></i> System Announcements
-                                </label>
-                                <small class="text-muted d-block" style="font-size: 0.74rem;">
-                                    Official notices and announcements from school administrators.
-                                </small>
-                            </div>
-                            <input
-                                class="form-check-input ms-3"
-                                type="checkbox"
-                                role="switch"
-                                id="announcement_enabled"
-                                name="announcement_enabled"
-                                value="1"
-                                @checked($preferences?->announcement_enabled ?? true)
-                            >
-                        </div>
 
                         <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
                             <div>
@@ -158,3 +139,4 @@
         </div>
     </div>
 </x-layouts.teacher>
+

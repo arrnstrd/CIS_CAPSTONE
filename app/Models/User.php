@@ -82,7 +82,6 @@ class User extends Authenticatable
             'grading_enabled' => true,
             'at_risk_enabled' => true,
             'analytics_enabled' => true,
-            'announcement_enabled' => true,
             'import_enabled' => true,
         ]);
 

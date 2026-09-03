@@ -11,7 +11,6 @@ class NotificationService
     public const CATEGORY_GRADING = 'grading';
     public const CATEGORY_AT_RISK = 'at_risk';
     public const CATEGORY_ANALYTICS = 'analytics';
-    public const CATEGORY_ANNOUNCEMENT = 'announcement';
     public const CATEGORY_IMPORT = 'import';
 
     public const CATEGORIES = [
@@ -19,7 +18,6 @@ class NotificationService
         self::CATEGORY_GRADING => 'Grading',
         self::CATEGORY_AT_RISK => 'At-Risk Students',
         self::CATEGORY_ANALYTICS => 'Analytics & Class Performance',
-        self::CATEGORY_ANNOUNCEMENT => 'System Announcements',
         self::CATEGORY_IMPORT => 'Data Import',
     ];
 

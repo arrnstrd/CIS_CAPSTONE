@@ -108,7 +108,6 @@ class SettingsController extends Controller
             'grading_enabled' => $request->boolean('grading_enabled'),
             'at_risk_enabled' => $request->boolean('at_risk_enabled'),
             'analytics_enabled' => $request->boolean('analytics_enabled'),
-            'announcement_enabled' => $request->boolean('announcement_enabled'),
             'import_enabled' => $request->boolean('import_enabled'),
         ]);
 
