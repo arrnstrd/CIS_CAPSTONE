@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Settings
+        <span class="page-title-icon">
+            <i class="fa-solid fa-user"></i>
+            Settings
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        View your teacher profile and academic account information.
+        <span class="page-title-subtitle">View your teacher profile and academic account information.</span>
     </x-slot>
 
     @if (session('success'))

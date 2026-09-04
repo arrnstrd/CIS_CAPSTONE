@@ -1,6 +1,13 @@
 <x-layouts.teacher>
-    <x-slot name="pageName">Grading System</x-slot>
-    <x-slot name="subtitle">Generate formal reports from your grading and academic records.</x-slot>
+    <x-slot name="pageName">
+        <span class="page-title-icon">
+            <i class="fa-solid fa-file-lines"></i>
+            Reports
+        </span>
+    </x-slot>
+    <x-slot name="subtitle">
+        <span class="page-title-subtitle">Generate formal reports from your grading and academic records.</span>
+    </x-slot>
 
     <div class="gd-layout">
         <div class="gd-content">

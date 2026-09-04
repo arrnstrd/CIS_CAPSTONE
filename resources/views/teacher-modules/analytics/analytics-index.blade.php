@@ -1,10 +1,23 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Analytics
+        <span class="page-title-icon">
+            <i class="fa-solid fa-chart-line"></i>
+            Analytics
+        </span>
     </x-slot>
     <x-slot name="subtitle">
         Class performance overview and insights for your assigned classes.
     </x-slot>
+
+    {{-- Analytics Sub-Navigation --}}
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <a href="{{ route('teacher.grading-system.analytics') }}" class="btn btn-sm {{ request()->routeIs('teacher.grading-system.analytics*') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" style="border-radius: 20px; font-weight: 600; font-size: 0.82rem; padding: 5px 14px;">
+            <i class="fa-solid fa-graduation-cap me-1"></i> Academic Analytics
+        </a>
+        <a href="{{ route('teacher.grading-system.attendance') }}" class="btn btn-sm {{ request()->routeIs('teacher.grading-system.attendance*') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" style="border-radius: 20px; font-weight: 600; font-size: 0.82rem; padding: 5px 14px;">
+            <i class="fa-solid fa-clipboard-user me-1"></i> Attendance Analytics
+        </a>
+    </div>
 
     <form method="GET" action="{{ route('teacher.grading-system.analytics') }}" class="gs-filter-bar mb-3">
         <div class="row g-2 align-items-end">

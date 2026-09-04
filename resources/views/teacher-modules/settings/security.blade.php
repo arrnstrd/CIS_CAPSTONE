@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Settings
+        <span class="page-title-icon">
+            <i class="fa-solid fa-shield-halved"></i>
+            Settings
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        Manage your account password and security credentials.
+        <span class="page-title-subtitle">Manage your account password and security credentials.</span>
     </x-slot>
 
     @if (session('success'))

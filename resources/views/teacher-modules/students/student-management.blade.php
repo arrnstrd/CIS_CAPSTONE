@@ -1,49 +1,60 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Student Management
+        <span class="page-title-icon">
+            <i class="fa-solid fa-user-graduate"></i>
+            Student Management
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        <span class="ra-page-subtitle">View and manage students in your classes.</span>
+        <span class="page-title-subtitle">View and manage students in your classes.</span>
     </x-slot>
 
 
                     @if (!$sectionId)
-                        <div class="card border mx-3 mb-3">
-                            <div class="card-body p-4">
-                                <h2 class="h5 mb-4">Select a class to view students</h2>
-                                <label class="form-label text-muted text-uppercase small fw-bold">My Classes</label>
-                                <div class="row g-3">
-                                    @forelse ($classCards as $classCard)
-                                        @php
-                                            $classQuery = request()->except('section_id');
-                                            $classQuery['section_id'] = $classCard->id;
-                                        @endphp
-                                        <div class="col-12 col-md-6 col-xl-4">
-                                            <a href="{{ route('teacher.student-management') . '?' . http_build_query($classQuery) }}"
-                                                class="text-decoration-none">
-                                                <div class="gs-panel">
-                                                    <p class="gs-panel-title mb-2">
+                        <div class="sm-classes-card">
+                            <div class="sm-classes-header">
+                                <div class="sm-classes-icon-box">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                                <div class="sm-classes-header-text">
+                                    <h2 class="sm-classes-title">Select a class to view students</h2>
+                                    <span class="sm-classes-subtitle">Choose a section from your assigned classes</span>
+                                </div>
+                            </div>
+                            <div class="sm-classes-grid">
+                                @forelse ($classCards as $classCard)
+                                    @php
+                                        $classQuery = request()->except('section_id');
+                                        $classQuery['section_id'] = $classCard->id;
+                                    @endphp
+                                    <a href="{{ route('teacher.student-management') . '?' . http_build_query($classQuery) }}"
+                                        class="sm-class-card-link">
+                                        <div class="sm-class-card">
+                                            <div class="sm-class-card-main">
+                                                <div class="sm-class-avatar">
+                                                    {{ $classCard->grade_level }}
+                                                </div>
+                                                <div class="sm-class-info">
+                                                    <p class="sm-class-name">
                                                         Grade {{ $classCard->grade_level }} - {{ $classCard->name }}
                                                     </p>
-                                                    <div class="gs-row-subtext">
-                                                        <span>
-                                                            <i class="fa-solid fa-users me-1"></i>
-                                                            {{ $classCard->student_count }} students
-                                                        </span>
-                                                    </div>
+                                                    <span class="sm-class-count">
+                                                        {{ $classCard->student_count }} {{ $classCard->student_count == 1 ? 'student' : 'students' }}
+                                                    </span>
                                                 </div>
-                                            </a>
-                                        </div>
-                                    @empty
-                                        <div class="col-12">
-                                            <div class="gs-chart-empty">
-                                                <i class="fa-solid fa-chalkboard gs-chart-empty-icon"></i>
-                                                <p class="mb-0">No active classes found yet.</p>
                                             </div>
+                                            <i class="fa-solid fa-chevron-right sm-class-chevron"></i>
                                         </div>
-                                    @endforelse
-                                </div>
+                                    </a>
+                                @empty
+                                    <div class="w-100">
+                                        <div class="gs-chart-empty">
+                                            <i class="fa-solid fa-chalkboard gs-chart-empty-icon"></i>
+                                            <p class="mb-0">No active classes found yet.</p>
+                                        </div>
+                                    </div>
+                                @endforelse
                             </div>
                         </div>
                     @else
@@ -117,7 +128,7 @@
                         <td>
                             <button type="button" class="btn btn-sm btn-outline-primary"
                                 data-bs-toggle="modal" data-bs-target="#studentSummaryModal"
-                                data-profile-url="{{ route('teacher.student-profile', $student->id) . '?embedded=1' }}">
+                                data-profile-url="{{ route('teacher.student-profile', $student->id) . '?fragment=1' }}">
                                 <i class="fas fa-eye"></i> View
                             </button>
                         </td>
@@ -170,19 +181,29 @@
                 const profileUrl = button.getAttribute('data-profile-url');
 
                 body.innerHTML = '<p class="text-muted text-center py-4">Loading...</p>';
-                const iframe = document.createElement('iframe');
-                iframe.src = profileUrl;
-                iframe.title = 'Student Profile';
-                iframe.className = 'w-100 border-0';
-                iframe.style.minHeight = '70vh';
-                iframe.addEventListener('load', function () {
-                    body.innerHTML = '';
-                    body.appendChild(iframe);
-                }, { once: true });
-                iframe.addEventListener('error', function () {
-                    body.innerHTML = '<p class="text-danger text-center py-4">Unable to load student profile.</p>';
-                }, { once: true });
-                body.appendChild(iframe);
+
+                fetch(profileUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (res) {
+                        if (!res.ok) throw new Error('Failed to load');
+                        return res.text();
+                    })
+                    .then(function (html) {
+                        body.innerHTML = html;
+                        // Re-execute any inline scripts, since innerHTML doesn't run them
+                        body.querySelectorAll('script').forEach(function (oldScript) {
+                            const newScript = document.createElement('script');
+                            if (oldScript.src) {
+                                newScript.src = oldScript.src;
+                            } else {
+                                newScript.textContent = oldScript.textContent;
+                            }
+                            document.body.appendChild(newScript);
+                            oldScript.remove();
+                        });
+                    })
+                    .catch(function () {
+                        body.innerHTML = '<p class="text-danger text-center py-4">Unable to load student profile.</p>';
+                    });
             });
 
             summaryModal.addEventListener('hidden.bs.modal', function () {

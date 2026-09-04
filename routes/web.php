@@ -906,7 +906,7 @@ Route::middleware(['auth'])->group(function () {
 
 
         // ----------------------------------------------------
-        // STUDENT PROFILE — GRADING SYSTEM
+        // STUDENT PROFILE â€” GRADING SYSTEM
         // ----------------------------------------------------
         //
         // Normal Student Profile:
@@ -1096,6 +1096,14 @@ Route::middleware(['auth'])->group(function () {
             '/teacher/notifications/mark-all-read',
             [App\Http\Controllers\Teacher\NotificationController::class, 'markAllAsRead']
         )->name('teacher.notifications.mark-all-as-read');
+        Route::delete(
+            '/teacher/notifications/{id}',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'destroy']
+        )->name('teacher.notifications.destroy');
+        Route::post(
+            '/teacher/notifications/bulk-delete',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'bulkDestroy']
+        )->name('teacher.notifications.bulk-delete');
     });
 
 

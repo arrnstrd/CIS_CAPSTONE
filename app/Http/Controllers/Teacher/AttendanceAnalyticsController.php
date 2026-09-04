@@ -24,8 +24,10 @@ class AttendanceAnalyticsController extends Controller
                 'sectionPoints' => collect(),
                 'gradeLevels' => collect(),
                 'sections' => collect(),
+                'subjects' => collect(),
                 'selectedGradeLevel' => null,
                 'selectedSectionId' => null,
+                'selectedSubjectId' => null,
                 'selectedTerm' => null,
                 'attendanceSummary' => null,
                 'sectionSummaries' => collect(),
@@ -40,9 +42,10 @@ class AttendanceAnalyticsController extends Controller
 
         $selectedGradeLevel = $request->input('grade_level') ?: null;
         $selectedSectionId = $request->input('section_id') ?: null;
+        $selectedSubjectId = $request->input('subject_id') ?: null;
         $selectedTerm = $request->input('term') ?: null;
 
-        // Base query for teacher's active assignments
+        // Base query for teacher's active assignments (matches AnalyticsController)
         $baseAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
             ->with(['section', 'subject']);
@@ -61,6 +64,12 @@ class AttendanceAnalyticsController extends Controller
             ->sortBy('name')
             ->values();
 
+        $subjects = $allTeacherAssignments->pluck('subject')
+            ->filter()
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+
         // Apply filters to active assignments
         $filteredAssignments = $allTeacherAssignments;
 
@@ -73,6 +82,12 @@ class AttendanceAnalyticsController extends Controller
         if ($selectedSectionId) {
             $filteredAssignments = $filteredAssignments->filter(
                 fn ($ta) => $ta->section_id == $selectedSectionId
+            );
+        }
+
+        if ($selectedSubjectId) {
+            $filteredAssignments = $filteredAssignments->filter(
+                fn ($ta) => $ta->subject_id == $selectedSubjectId
             );
         }
 
@@ -294,15 +309,17 @@ class AttendanceAnalyticsController extends Controller
         ];
 
         $insights = $this->computeInsights($studentPoints, $sectionPoints);
-        $termTrend = $this->computeTermTrend($allTeacherAssignments, $selectedGradeLevel, $selectedSectionId);
+        $termTrend = $this->computeTermTrend($filteredAssignments);
 
         return view('teacher-modules.analytics.attendance-analytics-index', compact(
             'studentPoints',
             'sectionPoints',
             'gradeLevels',
             'sections',
+            'subjects',
             'selectedGradeLevel',
             'selectedSectionId',
+            'selectedSubjectId',
             'selectedTerm',
             'attendanceSummary',
             'sectionSummaries',
@@ -428,22 +445,8 @@ class AttendanceAnalyticsController extends Controller
         ];
     }
 
-    private function computeTermTrend($allTeacherAssignments, $selectedGradeLevel = null, $selectedSectionId = null): array
+    private function computeTermTrend($filteredAssignments): array
     {
-        $filteredAssignments = $allTeacherAssignments;
-
-        if ($selectedGradeLevel) {
-            $filteredAssignments = $filteredAssignments->filter(
-                fn ($ta) => $ta->section && $ta->section->grade_level == $selectedGradeLevel
-            );
-        }
-
-        if ($selectedSectionId) {
-            $filteredAssignments = $filteredAssignments->filter(
-                fn ($ta) => $ta->section_id == $selectedSectionId
-            );
-        }
-
         $taIds = $filteredAssignments->pluck('id');
         $sectionIds = $filteredAssignments->pluck('section_id')->unique();
         $enrollmentIds = Enrollment::whereIn('section_id', $sectionIds)
@@ -498,7 +501,7 @@ class AttendanceAnalyticsController extends Controller
                     ->get()
                     ->map(fn ($r) => $r->enrollment_id . '_' . Carbon::parse($r->attendance_date)->toDateString());
 
-                $totalAttended = $qrDates->merge($verifiedDates)->unique()->count();
+                $totalAttended = $qrDates->toBase()->merge($verifiedDates->toBase())->unique()->count();
                 $totalPossible = $enrollmentIds->count() * $schoolDays;
                 $attendanceSeries[] = $totalPossible > 0 ? round(($totalAttended / $totalPossible) * 100, 1) : null;
             } else {

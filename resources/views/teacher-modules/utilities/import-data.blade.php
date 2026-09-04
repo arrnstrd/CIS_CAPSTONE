@@ -1,6 +1,13 @@
 <x-layouts.teacher>
-    <x-slot name="pageName">Grading System</x-slot>
-    <x-slot name="subtitle">Overview of your sections' grading performance.</x-slot>
+    <x-slot name="pageName">
+        <span class="page-title-icon">
+            <i class="fa-solid fa-file-import"></i>
+            Grading System
+        </span>
+    </x-slot>
+    <x-slot name="subtitle">
+        <span class="page-title-subtitle">Overview of your sections' grading performance.</span>
+    </x-slot>
 
 
 

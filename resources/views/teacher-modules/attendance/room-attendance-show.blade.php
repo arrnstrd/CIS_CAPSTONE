@@ -1,13 +1,18 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Grade {{ $section->grade_level }} - {{ $section->name }}
+        <span class="page-title-icon">
+            <i class="fa-solid fa-clipboard-check"></i>
+            Grade {{ $section->grade_level }} - {{ $section->name }}
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        <a href="{{ route('room-attendance.index') }}" class="ra-back-link">
-            <i class="fa-solid fa-arrow-left"></i>
-            Back to Room Attendance
-        </a>
+        <span class="page-title-subtitle">
+            <a href="{{ route('room-attendance.index') }}" class="ra-back-link">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Room Attendance
+            </a>
+        </span>
     </x-slot>
 
     @php

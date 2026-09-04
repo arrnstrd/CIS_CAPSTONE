@@ -1,7 +1,7 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
         <span class="page-title-icon">
-            <i class="fa-solid fa-clipboard-user"></i>
+            <i class="fa-solid fa-chart-line"></i>
             Attendance Analytics
         </span>
     </x-slot>
@@ -10,16 +10,24 @@
         <span class="page-title-subtitle">Observed patterns between attendance records and student academic performance.</span>
     </x-slot>
 
-    @include('teacher-modules.partials.grading-tabs', ['activeTab' => 'analytics'])
+    {{-- Analytics Sub-Navigation --}}
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <a href="{{ route('teacher.grading-system.analytics') }}" class="btn btn-sm {{ request()->routeIs('teacher.grading-system.analytics*') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" style="border-radius: 20px; font-weight: 600; font-size: 0.82rem; padding: 5px 14px;">
+            <i class="fa-solid fa-graduation-cap me-1"></i> Academic Analytics
+        </a>
+        <a href="{{ route('teacher.grading-system.attendance') }}" class="btn btn-sm {{ request()->routeIs('teacher.grading-system.attendance*') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" style="border-radius: 20px; font-weight: 600; font-size: 0.82rem; padding: 5px 14px;">
+            <i class="fa-solid fa-clipboard-user me-1"></i> Attendance Analytics
+        </a>
+    </div>
 
     <form method="GET" action="{{ route('teacher.grading-system.attendance') }}" class="gs-filter-bar mb-3">
         <div class="row g-2 align-items-end">
             <div class="col-6 col-md-3">
                 <label class="gs-filter-label">Grade Level</label>
                 <select name="grade_level" class="form-select form-select-sm" onchange="this.form.submit()">
-                    <option value="">All Grades</option>
+                    <option value="">All Levels</option>
                     @foreach ($gradeLevels as $gl)
-                        <option value="{{ $gl }}" @selected($selectedGradeLevel == $gl)>Grade {{ $gl }}</option>
+                        <option value="{{ $gl }}" @selected(request('grade_level') == $gl)>Grade {{ $gl }}</option>
                     @endforeach
                 </select>
             </div>
@@ -28,16 +36,25 @@
                 <select name="section_id" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">All Sections</option>
                     @foreach ($sections as $s)
-                        <option value="{{ $s->id }}" @selected($selectedSectionId == $s->id)>{{ $s->name }}</option>
+                        <option value="{{ $s->id }}" @selected(request('section_id') == $s->id)>{{ $s->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="gs-filter-label">Subject</label>
+                <select name="subject_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Subjects</option>
+                    @foreach ($subjects as $subj)
+                        <option value="{{ $subj->id }}" @selected(request('subject_id') == $subj->id)>{{ $subj->name }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-6 col-md-3">
                 <label class="gs-filter-label">Term</label>
                 <select name="term" class="form-select form-select-sm" onchange="this.form.submit()">
-                    <option value="">All Terms / Current</option>
+                    <option value="">All Terms</option>
                     @for ($t = 1; $t <= 3; $t++)
-                        <option value="{{ $t }}" @selected($selectedTerm == $t)>Term {{ $t }}</option>
+                        <option value="{{ $t }}" @selected(request('term') == $t)>Term {{ $t }}</option>
                     @endfor
                 </select>
             </div>
@@ -133,54 +150,65 @@
         This page correlates physical QR check-ins and teacher classroom verifications against academic performance. These are correlational trends, not causal claims.
     </div>
 
-    <div class="row g-3">
+    {{-- Attendance Visualizations --}}
+    <div class="row g-3 mb-3">
+        {{-- 1. Attendance Trend (Single-series Line Chart) --}}
         <div class="col-12 col-lg-6">
-            <div class="gs-panel">
-                <p class="gs-panel-title">Absences vs Average Grade (per student)</p>
-                <p class="gs-row-subtext mb-2">Based on weekdays within the tracking window.</p>
-                @if ($studentPoints->isNotEmpty())
-                    <canvas id="studentScatter" height="220"></canvas>
-                @else
-                    <div class="gs-chart-empty" style="height: 220px;">
-                        <i class="fa-solid fa-chart-scatter gs-chart-empty-icon"></i>
-                        <p class="mb-0">No grades or attendance records found.</p>
+            <div class="gs-panel h-100">
+                <p class="gs-panel-title mb-1">Attendance Trend</p>
+                <p class="text-muted small mb-3">Attendance rate over the selected period</p>
+                @if (collect($termTrend['attendanceSeries'])->filter(fn ($v) => $v !== null)->isNotEmpty())
+                    <div style="position: relative; height: 260px; width: 100%;">
+                        <canvas id="attendanceTrendChart"></canvas>
                     </div>
-                @endif
-            </div>
-        </div>
-        <div class="col-12 col-lg-6">
-            <div class="gs-panel">
-                <p class="gs-panel-title">Section Attendance Rate vs Average Grade</p>
-                @if ($sectionPoints->isNotEmpty())
-                    <canvas id="sectionScatter" height="220"></canvas>
                 @else
-                    <div class="gs-chart-empty" style="height: 220px;">
-                        <i class="fa-solid fa-chart-scatter gs-chart-empty-icon"></i>
-                        <p class="mb-0">No section attendance data available.</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-3 mt-1">
-        <div class="col-12">
-            <div class="gs-panel">
-                <p class="gs-panel-title">Attendance & Grade Trend Across Terms</p>
-                @if (collect($termTrend['gradeSeries'])->filter()->isNotEmpty() || collect($termTrend['attendanceSeries'])->filter()->isNotEmpty())
-                    <canvas id="termTrendChart" height="180"></canvas>
-                @else
-                    <div class="gs-chart-empty" style="height: 180px;">
+                    <div class="gs-chart-empty" style="height: 260px;">
                         <i class="fa-solid fa-chart-line gs-chart-empty-icon"></i>
-                        <p class="mb-0">No multi-term trends recorded yet.</p>
+                        <p class="fw-medium mb-1">No attendance trend data</p>
+                        <p class="text-muted small mb-0">No attendance records are available for the selected period.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- 2. Attendance Status (Bar Chart) --}}
+        <div class="col-12 col-lg-6">
+            <div class="gs-panel h-100">
+                <p class="gs-panel-title mb-1">Attendance Status</p>
+                <p class="text-muted small mb-3">Total student-days recorded by attendance category</p>
+                @if ($attendanceSummary && ($attendanceSummary['present'] + $attendanceSummary['late'] + $attendanceSummary['excused'] + $attendanceSummary['absent'] + $attendanceSummary['not_in_classroom']) > 0)
+                    <div style="position: relative; height: 260px; width: 100%;">
+                        <canvas id="attendanceStatusChart"></canvas>
+                    </div>
+                @else
+                    <div class="gs-chart-empty" style="height: 260px;">
+                        <i class="fa-solid fa-chart-simple gs-chart-empty-icon"></i>
+                        <p class="fw-medium mb-1">No status data available</p>
+                        <p class="text-muted small mb-0">No attendance statuses recorded for the current filter.</p>
                     </div>
                 @endif
             </div>
         </div>
     </div>
 
-    <div class="gs-panel mt-3">
-        <p class="gs-panel-title">Performance Pattern Summary</p>
+    {{-- 3. Section Attendance Comparison (Horizontal Bar Chart) --}}
+    @if ($sectionSummaries->isNotEmpty())
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="gs-panel">
+                    <p class="gs-panel-title mb-1">Attendance by Section</p>
+                    <p class="text-muted small mb-3">Overall attendance rate comparison across assigned sections</p>
+                    <div style="position: relative; height: {{ max(180, min(380, $sectionSummaries->count() * 45 + 50)) }}px; width: 100%;">
+                        <canvas id="sectionAttendanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- 4. Performance Pattern Summary --}}
+    <div class="gs-panel mb-3">
+        <p class="gs-panel-title mb-3">Performance Pattern Summary</p>
         <div class="row g-3">
             <div class="col-12 col-md-4">
                 <div class="gs-insight-card">
@@ -206,107 +234,179 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     @include('teacher-modules.partials.chart-defaults')
     <script>
-        @if ($studentPoints->isNotEmpty())
-            new Chart(document.getElementById('studentScatter'), {
-                type: 'scatter',
+        // 1. Attendance Trend (Single Line Chart)
+        @if (collect($termTrend['attendanceSeries'])->filter(fn ($v) => $v !== null)->isNotEmpty())
+            new Chart(document.getElementById('attendanceTrendChart'), {
+                type: 'line',
                 data: {
+                    labels: @json($termTrend['labels']),
                     datasets: [{
-                        label: 'Students',
-                        data: @json($studentPoints),
-                        backgroundColor: '#2438b9',
+                        label: 'Attendance Rate (%)',
+                        data: @json($termTrend['attendanceSeries']),
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.08)',
+                        pointBackgroundColor: '#059669',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        borderWidth: 2.5,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.25,
                     }]
                 },
                 options: {
-                    plugins: { 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const raw = context.raw;
-                                    return (raw.name ? raw.name + ': ' : '') + raw.x + ' absences, ' + raw.y + ' avg grade';
+                                    return 'Attendance Rate: ' + (context.raw !== null ? context.raw + '%' : '—');
                                 }
                             }
                         }
                     },
                     scales: {
-                        x: { 
-                            title: { display: true, text: 'Absences (school days missed)' }, 
-                            min: 0,
+                        x: {
                             grid: { display: false }
                         },
-                        y: { 
-                            title: { display: true, text: 'Average Grade' }, 
-                            min: 60, 
+                        y: {
+                            min: 0,
+                            suggestedMin: 50,
                             max: 100,
-                            grid: { color: 'rgba(243, 244, 246, 1)' }
+                            title: {
+                                display: true,
+                                text: 'Attendance Rate (%)',
+                                font: { weight: '600', size: 11 }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: { color: 'rgba(243, 244, 246, 0.8)' }
                         }
                     }
                 }
             });
         @endif
 
-        @if ($sectionPoints->isNotEmpty())
-            new Chart(document.getElementById('sectionScatter'), {
-                type: 'scatter',
+        // 2. Attendance Status (Bar Chart)
+        @if ($attendanceSummary && ($attendanceSummary['present'] + $attendanceSummary['late'] + $attendanceSummary['excused'] + $attendanceSummary['absent'] + $attendanceSummary['not_in_classroom']) > 0)
+            new Chart(document.getElementById('attendanceStatusChart'), {
+                type: 'bar',
                 data: {
+                    labels: ['Present', 'Late', 'Excused', 'Absent', 'Not in Class'],
                     datasets: [{
-                        label: 'Sections',
-                        data: @json($sectionPoints),
-                        backgroundColor: '#f5a623',
-                        pointRadius: 6,
+                        label: 'Student-Days',
+                        data: [
+                            {{ $attendanceSummary['present'] }},
+                            {{ $attendanceSummary['late'] }},
+                            {{ $attendanceSummary['excused'] }},
+                            {{ $attendanceSummary['absent'] }},
+                            {{ $attendanceSummary['not_in_classroom'] }}
+                        ],
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#06b6d4',
+                            '#ef4444',
+                            '#6b7280'
+                        ],
+                        borderRadius: 4,
+                        maxBarThickness: 45
                     }]
                 },
                 options: {
-                    plugins: { legend: { display: false } },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw.toLocaleString() + ' student-days';
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        x: { title: { display: true, text: 'Section Attendance Rate (%)' }, min: 0, max: 100 },
-                        y: { title: { display: true, text: 'Section Average Grade' }, min: 60, max: 100 }
+                        x: {
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            title: {
+                                display: true,
+                                text: 'Total Student-Days',
+                                font: { weight: '600', size: 11 }
+                            },
+                            grid: { color: 'rgba(243, 244, 246, 0.8)' }
+                        }
                     }
                 }
             });
         @endif
 
-        @if (collect($termTrend['gradeSeries'])->filter()->isNotEmpty())
-            new Chart(document.getElementById('termTrendChart'), {
+        // 3. Section Attendance Comparison (Horizontal Bar Chart)
+        @if ($sectionSummaries->isNotEmpty())
+            @php
+                $sortedSections = $sectionSummaries->sortByDesc('attendance_rate')->values();
+            @endphp
+            new Chart(document.getElementById('sectionAttendanceChart'), {
+                type: 'bar',
                 data: {
-                    labels: @json($termTrend['labels']),
-                    datasets: [
-                        {
-                            type: 'line',
-                            label: 'Avg Attendance (%)',
-                            data: @json($termTrend['attendanceSeries']),
-                            borderColor: '#6c63ff',
-                            backgroundColor: 'rgba(108, 99, 255, 0.08)',
-                            borderWidth: 2,
-                            pointRadius: 3,
-                            pointHoverRadius: 5,
-                            yAxisID: 'yAttendance',
-                            borderDash: [4, 4],
-                            tension: 0.35,
-                        },
-                        {
-                            type: 'line',
-                            label: 'Avg Grade',
-                            data: @json($termTrend['gradeSeries']),
-                            borderColor: '#2438b9',
-                            backgroundColor: 'rgba(36, 56, 185, 0.08)',
-                            borderWidth: 2,
-                            pointRadius: 3,
-                            pointHoverRadius: 5,
-                            yAxisID: 'yGrade',
-                            tension: 0.35,
-                        }
-                    ]
+                    labels: @json($sortedSections->pluck('name')),
+                    datasets: [{
+                        label: 'Attendance Rate (%)',
+                        data: @json($sortedSections->pluck('attendance_rate')),
+                        backgroundColor: '#2438b9',
+                        borderRadius: 4,
+                        maxBarThickness: 28
+                    }]
                 },
                 options: {
-                    plugins: { legend: { position: 'bottom' } },
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Attendance Rate: ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        yAttendance: { type: 'linear', position: 'left', min: 70, max: 100, title: { display: true, text: 'Attendance (%)' } },
-                        yGrade: { type: 'linear', position: 'right', min: 70, max: 100, grid: { drawOnChartArea: false }, title: { display: true, text: 'Grade' } }
+                        x: {
+                            min: 0,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Attendance Rate (%)',
+                                font: { weight: '600', size: 11 }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: { color: 'rgba(243, 244, 246, 0.8)' }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
                     }
                 }
             });
         @endif
     </script>
-
 </x-layouts.teacher>

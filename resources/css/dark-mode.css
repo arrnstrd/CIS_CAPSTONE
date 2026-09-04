@@ -346,3 +346,75 @@ html.dark .gs-back-btn:hover {
     --bs-gutter-y: 0.65rem !important;
 }
 
+/* Grading Rules Dark Mode */
+html.dark .gr-summary-card {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+html.dark .gr-summary-value {
+    color: #f1f5f9;
+}
+html.dark .gr-component-name {
+    color: #e2e8f0;
+}
+html.dark .gr-component-percent {
+    color: #f1f5f9;
+}
+html.dark .gr-progress-bar {
+    background-color: #334155;
+}
+html.dark .gr-formula-highlight {
+    background-color: rgba(36, 56, 185, 0.15);
+    border-left-color: #60a5fa;
+}
+html.dark .gr-formula-step {
+    color: #cbd5e1;
+}
+html.dark .gr-formula-step.gr-formula-total {
+    border-top-color: rgba(96, 165, 250, 0.3);
+    color: #f1f5f9;
+}
+html.dark .gr-formula-label {
+    color: #e2e8f0;
+}
+html.dark .gr-formula-value {
+    color: #f1f5f9;
+}
+html.dark .gr-rule-card {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+html.dark .gr-rule-card:hover {
+    background-color: #273548;
+}
+html.dark .gr-rule-value {
+    color: #f1f5f9;
+}
+html.dark .gr-back-btn {
+    background-color: #1e293b;
+    border-color: #334155;
+    color: #93c5fd;
+}
+html.dark .gr-back-btn:hover {
+    background-color: rgba(147, 197, 253, 0.12);
+    border-color: #60a5fa;
+    color: #bfdbfe;
+}
+
+html.dark .gs-class-card-footer {
+    border-top-color: #334155 !important;
+}
+
+html.dark .gs-class-open-btn {
+    border-color: #93c5fd;
+    color: #93c5fd;
+    background-color: rgba(147, 197, 253, 0.08);
+}
+
+html.dark .gs-class-card:hover .gs-class-open-btn {
+    background-color: #93c5fd;
+    color: #0f172a;
+}
+
+
+

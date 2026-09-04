@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Settings
+        <span class="page-title-icon">
+            <i class="fa-solid fa-palette"></i>
+            Settings
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        Customize the appearance and visual theme of your Teacher Portal.
+        <span class="page-title-subtitle">Customize the appearance and visual theme of your Teacher Portal.</span>
     </x-slot>
 
     @if (session('success'))

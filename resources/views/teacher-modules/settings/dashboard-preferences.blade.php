@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Settings
+        <span class="page-title-icon">
+            <i class="fa-solid fa-sliders"></i>
+            Settings
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        Customize your dashboard layout, visible panels, display elements, and default filters.
+        <span class="page-title-subtitle">Customize your dashboard layout, visible panels, display elements, and default filters.</span>
     </x-slot>
 
     @if (session('success'))

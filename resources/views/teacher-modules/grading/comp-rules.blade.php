@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Grading System
+        <span class="page-title-icon">
+            <i class="fa-solid fa-scale-balanced"></i>
+            Grading System
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        School-wide computation rules and academic criteria.
+        <span class="page-title-subtitle">School-wide computation rules and academic criteria.</span>
     </x-slot>
 
     @include('teacher-modules.partials.grading-tabs', ['activeTab' => 'comprules'])

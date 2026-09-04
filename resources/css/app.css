@@ -11,6 +11,7 @@
 /* 3. Feature Modules */
 @import './room-attendance.css';
 @import './grading-system.css';
+@import './students.css';
 @import './academic.css';
 @import './bulk-import.css';
 @import './flagged-modal.css';

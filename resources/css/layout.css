@@ -257,3 +257,27 @@ body {
         justify-content: flex-start;
     }
 }
+
+/* Page Title Icon & Subtitle */
+.page-title-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-title-icon i {
+    color: #2438b9;
+    font-size: 0.85em;
+    background-color: rgba(36, 56, 185, 0.1);
+    width: 1.7em;
+    height: 1.7em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.page-title-subtitle {
+    color: #6b7280;
+    font-size: 0.92rem;
+}

@@ -68,4 +68,37 @@ class NotificationController extends Controller
 
         return redirect()->back()->with('success', 'All notifications marked as read.');
     }
+
+    /**
+     * Delete a specific notification.
+     */
+    public function destroy(Request $request, string $id)
+    {
+        $user = $request->user();
+        $notification = $user->notifications()->where('id', $id)->firstOrFail();
+        $notification->delete();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return redirect()->back()->with('success', 'Notification deleted.');
+    }
+
+    /**
+     * Delete multiple selected notifications.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $user = $request->user();
+        $ids = $request->input('ids', []);
+
+        $deletedCount = $user->notifications()->whereIn('id', $ids)->delete();
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'deleted_count' => $deletedCount]);
+        }
+
+        return redirect()->back()->with('success', $deletedCount . ' notification(s) deleted.');
+    }
 }

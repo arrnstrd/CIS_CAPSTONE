@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Settings
+        <span class="page-title-icon">
+            <i class="fa-solid fa-bell"></i>
+            Settings
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        Manage your in-app notification preferences and system alerts.
+        <span class="page-title-subtitle">Manage your in-app notification preferences and system alerts.</span>
     </x-slot>
 
     @if (session('success'))

@@ -1,7 +1,10 @@
 <x-layouts.teacher>
 
 <x-slot name="pageName">
-    Grading System
+    <span class="page-title-icon">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        At-Risk Detail
+    </span>
 </x-slot>
 
 <x-slot name="subtitle">

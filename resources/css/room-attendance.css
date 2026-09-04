@@ -488,28 +488,3 @@
 .ra-back-link i {
     font-size: 0.75rem;
 }
-
-/* ===== ROOM ATTENDANCE — PAGE TITLE & SUBTITLE STYLES ===== */
-
-.ra-page-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.ra-page-title i {
-    color: #2438b9;
-    font-size: 0.85em;
-    background-color: rgba(36, 56, 185, 0.1);
-    width: 1.7em;
-    height: 1.7em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-}
-
-.ra-page-subtitle {
-    color: #6b7280;
-    font-size: 0.92rem;
-}

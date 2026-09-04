@@ -120,9 +120,9 @@
 }
 
 .btn-logout-action {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.85);
+    background-color: #e8eaf1;
+    border: 1px solid #e8eaf1;
+    color: #1F3690;
     font-weight: 500;
     font-size: 0.85rem;
     padding: 10px;
@@ -231,4 +231,3 @@ teacher */
     border-radius: 8px;
     font-weight: 600;
 }
-

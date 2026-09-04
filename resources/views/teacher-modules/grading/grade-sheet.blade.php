@@ -1,4 +1,13 @@
-<x-layouts.teacher> <x-slot name="pageName">Grading System</x-slot> <x-slot name="subtitle">{{ $ta->section->name }} · {{ $ta->subject->name }}</x-slot>
+<x-layouts.teacher>
+    <x-slot name="pageName">
+        <span class="page-title-icon">
+            <i class="fa-solid fa-table"></i>
+            Grading System
+        </span>
+    </x-slot>
+    <x-slot name="subtitle">
+        <span class="page-title-subtitle">{{ $ta->section->name }} · {{ $ta->subject->name }}</span>
+    </x-slot>
 
 <div class="mb-3 d-flex align-items-center gap-2">
     <a href="{{ route('teacher.grading-system.dashboard') }}" class="gs-back-btn" title="Back to My Classes">

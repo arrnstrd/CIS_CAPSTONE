@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Grading System
+        <span class="page-title-icon">
+            <i class="fa-solid fa-briefcase"></i>
+            My Classes
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        Overview of your sections' grading performance.
+        <span class="page-title-subtitle">Overview of your sections' grading performance.</span>
     </x-slot>
 
     <div class="gd-dashboard-wrapper {{ ($dashboardPreferences?->dashboard_density ?? 'comfortable') === 'compact' ? 'dashboard-density-compact' : 'dashboard-density-comfortable' }}">
@@ -129,6 +132,12 @@
                                             @endif
                                         </div>
                                     @endif
+
+                                    <div class="gs-class-card-footer">
+                                        <span class="gs-class-open-btn">
+                                            Open Grade Sheet <i class="fa-solid fa-arrow-right ms-1"></i>
+                                        </span>
+                                    </div>
                                 </div>
                             </a>
                         </div>
