@@ -54,9 +54,9 @@ document.addEventListener("click", function (event) {
 
         form.action = deleteUrlTemplate.replace("__ID__", recordId);
         document.getElementById("delete_schedule_level").textContent =
-            deleteButton.dataset.level || "-";
+            deleteButton.dataset.levelLabel || deleteButton.dataset.level || "-";
         document.getElementById("delete_schedule_session_type").textContent =
-            deleteButton.dataset.sessionType || "-";
+            deleteButton.dataset.sessionTypeLabel || deleteButton.dataset.sessionType || "-";
     }
 });
 

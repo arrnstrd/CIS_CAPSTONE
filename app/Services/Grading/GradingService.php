@@ -8,6 +8,7 @@ use App\Models\StudentAssessmentScore;
 use App\Models\QuarterlyGrade;
 use App\Models\Enrollment;
 use App\Models\TeachingAssignment;
+use App\Models\GradingConfig;
 use App\Services\Grading\SubjectWeightResolver;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -81,15 +82,22 @@ class GradingService
             return null;
         }
 
-        // Get standard weights from resolver
-        $weights = $this->weightResolver->resolve($subject);
-
         // Fetch all categories to match assessments
         $categories = AssessmentCategory::all();
 
         $writtenCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'written'));
         $performanceCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'performance'));
         $quarterlyCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'quarterly') || str_contains(strtolower($c->name), 'exam') || str_contains(strtolower($c->name), 'assessment'));
+
+        $weights = $this->resolveWeights(
+            $teachingAssignmentId,
+            $subject,
+            [
+                'written' => $writtenCategory?->id,
+                'performance' => $performanceCategory?->id,
+                'quarterly' => $quarterlyCategory?->id,
+            ]
+        );
 
         // Load all assessments for this assignment and grading period
         $assessments = Assessment::where('teaching_assignment_id', $teachingAssignmentId)
@@ -103,39 +111,19 @@ class GradingService
             ->get()
             ->keyBy('assessment_id');
 
-        // Group assessments and compute scores for each category
-        $categoryScores = [
-            'written' => ['score' => 0.0, 'total' => 0, 'weight' => $weights['written_work']],
-            'performance' => ['score' => 0.0, 'total' => 0, 'weight' => $weights['performance_task']],
-            'quarterly' => ['score' => 0.0, 'total' => 0, 'weight' => $weights['quarterly_assessment']],
-        ];
-
-        foreach ($assessments as $assessment) {
-            $scoreVal = $scores->has($assessment->id) ? (float)$scores[$assessment->id]->score : 0.0;
-            $totalVal = (int)$assessment->total_items;
-
-            if ($writtenCategory && $assessment->assessment_category_id === $writtenCategory->id) {
-                $categoryScores['written']['score'] += $scoreVal;
-                $categoryScores['written']['total'] += $totalVal;
-            } elseif ($performanceCategory && $assessment->assessment_category_id === $performanceCategory->id) {
-                $categoryScores['performance']['score'] += $scoreVal;
-                $categoryScores['performance']['total'] += $totalVal;
-            } elseif ($quarterlyCategory && $assessment->assessment_category_id === $quarterlyCategory->id) {
-                $categoryScores['quarterly']['score'] += $scoreVal;
-                $categoryScores['quarterly']['total'] += $totalVal;
-            }
-        }
-
-        // Active weights normalization (mid-quarter grades scaling)
-        $totalActiveWeight = 0.0;
-        foreach ($categoryScores as $key => $data) {
-            if ($data['total'] > 0) {
-                $totalActiveWeight += $data['weight'];
-            }
-        }
+        $componentSummaries = $this->calculateComponentSummaries(
+            $assessments,
+            $scores,
+            $weights,
+            [
+                'written' => $writtenCategory?->id,
+                'performance' => $performanceCategory?->id,
+                'quarterly' => $quarterlyCategory?->id,
+            ]
+        );
 
         // If no assessments exist at all, we cannot compute any grade yet
-        if ($totalActiveWeight <= 0.0) {
+        if (collect($componentSummaries)->every(fn (array $summary) => $summary['hps'] === 0.0)) {
             return DB::transaction(function () use ($teachingAssignmentId, $enrollmentId, $gradingPeriodId) {
                 return QuarterlyGrade::updateOrCreate(
                     [
@@ -154,24 +142,10 @@ class GradingService
             });
         }
 
-        // Calculate Weighted Scores (WS) using normalized weights
-        $computedGrades = [];
-        $initialGrade = 0.0;
-
-        foreach ($categoryScores as $key => $data) {
-            if ($data['total'] > 0) {
-                $percentageScore = ($data['score'] / $data['total']) * 100.0;
-                $normalizedWeight = $data['weight'] / $totalActiveWeight;
-                $weightedScore = $percentageScore * $normalizedWeight;
-                
-                $computedGrades[$key] = round($weightedScore, 2);
-                $initialGrade += $weightedScore;
-            } else {
-                $computedGrades[$key] = null;
-            }
-        }
-
-        $initialGrade = round($initialGrade, 2);
+        $computedGrades = collect($componentSummaries)->mapWithKeys(
+            fn (array $summary, string $key) => [$key => $summary['ws']]
+        )->all();
+        $initialGrade = round(collect($componentSummaries)->sum('ws'), 2);
         $transmutedGrade = $this->transmute($initialGrade);
 
         return DB::transaction(function () use ($teachingAssignmentId, $enrollmentId, $gradingPeriodId, $computedGrades, $initialGrade, $transmutedGrade) {
@@ -190,6 +164,89 @@ class GradingService
                 ]
             );
         });
+    }
+
+    /**
+     * Calculate School Class Record component totals and scores.
+     * Missing learner scores remain zero while each active assessment HPS is included.
+     *
+     * @return array<string, array{total: float, hps: float, ps: ?float, ws: ?float, weight: float}>
+     */
+    public function calculateComponentSummaries($assessments, $scores, array $weights, array $categoryIds): array
+    {
+        $summaries = [
+            'written' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['written_work']],
+            'performance' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['performance_task']],
+            'quarterly' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['quarterly_assessment']],
+        ];
+
+        foreach ($assessments as $assessment) {
+            $component = array_search($assessment->assessment_category_id, $categoryIds, true);
+            if ($component === false) {
+                continue;
+            }
+
+            $summaries[$component]['total'] += $scores->has($assessment->id) ? (float) $scores[$assessment->id]->score : 0.0;
+            $summaries[$component]['hps'] += (float) $assessment->total_items;
+        }
+
+        foreach ($summaries as $component => $summary) {
+            $ps = $summary['hps'] > 0 ? ($summary['total'] / $summary['hps']) * 100 : null;
+            $summaries[$component]['ps'] = $ps === null ? null : round($ps, 2);
+            $summaries[$component]['ws'] = $ps === null ? null : round($ps * $summary['weight'], 2);
+            $summaries[$component]['total'] = round($summary['total'], 2);
+            $summaries[$component]['hps'] = round($summary['hps'], 2);
+        }
+
+        return $summaries;
+    }
+
+    /** Return the authoritative Class Record summaries for a saved Grade Sheet row. */
+    public function getComponentSummaries(int $enrollmentId, int $teachingAssignmentId, int $gradingPeriodId): array
+    {
+        $subject = TeachingAssignment::with('subject')->findOrFail($teachingAssignmentId)->subject;
+        $categories = AssessmentCategory::all();
+        $categoryIds = [
+            'written' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'written'))?->id,
+            'performance' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'performance'))?->id,
+            'quarterly' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'quarterly') || str_contains(strtolower($category->name), 'exam') || str_contains(strtolower($category->name), 'assessment'))?->id,
+        ];
+        $assessments = Assessment::where('teaching_assignment_id', $teachingAssignmentId)
+            ->where('grading_period_id', $gradingPeriodId)
+            ->where('status', 'active')
+            ->get();
+        $scores = StudentAssessmentScore::where('enrollment_id', $enrollmentId)
+            ->whereIn('assessment_id', $assessments->pluck('id'))
+            ->get()
+            ->keyBy('assessment_id');
+
+        return $this->calculateComponentSummaries(
+            $assessments,
+            $scores,
+            $this->resolveWeights($teachingAssignmentId, $subject, $categoryIds),
+            $categoryIds
+        );
+    }
+
+    /**
+     * Prefer a complete per-assignment configuration; otherwise preserve the
+     * established subject-based resolver as the fallback.
+     */
+    public function resolveWeights(int $teachingAssignmentId, $subject, array $categoryIds): array
+    {
+        $configuredWeights = GradingConfig::where('teaching_assignment_id', $teachingAssignmentId)
+            ->whereIn('assessment_category_id', array_filter($categoryIds))
+            ->pluck('weight', 'assessment_category_id');
+
+        if (collect($categoryIds)->every(fn ($id) => $id && $configuredWeights->has($id))) {
+            return [
+                'written_work' => (float) $configuredWeights[$categoryIds['written']] / 100,
+                'performance_task' => (float) $configuredWeights[$categoryIds['performance']] / 100,
+                'quarterly_assessment' => (float) $configuredWeights[$categoryIds['quarterly']] / 100,
+            ];
+        }
+
+        return $this->weightResolver->resolve($subject);
     }
 
     /**

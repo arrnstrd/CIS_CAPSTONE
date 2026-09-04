@@ -11,6 +11,7 @@ class Section extends Model
         'name',
         'level',
         'grade_level',
+        'session_type',
         'advisor_id',
         'capacity',
         'status'
@@ -38,7 +39,7 @@ class Section extends Model
     }
 
 
-        public function students()
+    public function students()
     {
         return $this->hasManyThrough(
             Student::class,
@@ -60,7 +61,7 @@ class Section extends Model
     {
         return $query->when(
             filled($gradeLevel),
-            fn (Builder $query) => $query->where('grade_level', $gradeLevel)
+            fn(Builder $query) => $query->where('grade_level', $gradeLevel)
         );
     }
 
@@ -68,7 +69,7 @@ class Section extends Model
     {
         return $query->when(
             filled($status),
-            fn (Builder $query) => $query->where('status', $status)
+            fn(Builder $query) => $query->where('status', $status)
         );
     }
 
@@ -84,8 +85,4 @@ class Section extends Model
             }
         );
     }
-
-
-
-
 }

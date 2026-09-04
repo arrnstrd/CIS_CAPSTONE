@@ -1,7 +1,7 @@
 /* ===== SIDEBAR WRAPPER ===== */
 .sidebar-wrapper {
     width: 260px;
-    height: 100%;
+    height: 100vh;
     position: fixed;
     top: 0;
     left: 0;
@@ -10,12 +10,21 @@
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     transition: transform 0.3s ease;
+}
+
+/* ===== BRAND (FIXED AT TOP OF SIDEBAR) ===== */
+.sidebar-brand {
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ===== SCROLLABLE NAV AREA ===== */
 .sidebar-content {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
@@ -26,12 +35,6 @@
 .sidebar-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
-}
-
-/* ===== BRAND ===== */
-.sidebar-brand {
-    background: rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ===== NAV MENU ===== */
@@ -57,6 +60,7 @@
 }
 
 .sidebar-menu ul li a i {
+    display: inline-block;
     margin-right: 15px;
     width: 20px;
     text-align: center;
@@ -89,6 +93,12 @@
     font-weight: 600;
 }
 
+.sidebar-brand-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
 /* ===== SECTION LABEL ===== */
 .sidebar-section-label {
     padding: 20px 25px 8px; /* Tumaas ng onti para clear ang division per section */
@@ -103,16 +113,92 @@
     text-transform: uppercase;
 }
 
-/* ===== LOGOUT FOOTER ===== */
+/* ===== LOGOUT FOOTER & USER PROFILE ===== */
 .sidebar-footer {
     flex-shrink: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.sidebar-user-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    width: 100%;
+}
+
+.sidebar-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    text-align: left;
+}
+
+.sidebar-user-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-user-role {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.2;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.75);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.sidebar-logout-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .btn-logout-action {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.85);
+    background-color: #e8eaf1;
+    border: 1px solid #e8eaf1;
+    color: #1F3690;
     font-weight: 500;
     font-size: 0.85rem;
     padding: 10px;
@@ -185,3 +271,39 @@ teacher */
     color: rgba(255,255,255,0.65);
 }
 
+/* ===== GRADING SYSTEM SUBMENU ===== */
+.sidebar-submenu-toggle {
+    cursor: pointer;
+}
+
+.sidebar-submenu-caret {
+    font-size: 11px;
+    transition: transform 0.2s ease;
+}
+
+.sidebar-submenu-toggle[aria-expanded="true"] .sidebar-submenu-caret {
+    transform: rotate(180deg);
+}
+
+.sidebar-submenu {
+    list-style: none;
+    padding: 4px 0 4px 20px;
+    margin: 0;
+}
+
+.sidebar-submenu li a {
+    padding: 10px 25px 10px 20px !important;
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.sidebar-submenu li a:hover {
+    color: #ffffff !important;
+}
+
+.sidebar-submenu li.active > a {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    font-weight: 600;
+}

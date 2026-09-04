@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ScheduleConfig;
+use Illuminate\Support\Facades\Cache;
 
 class ScheduleResolver
 {
@@ -17,10 +18,8 @@ class ScheduleResolver
         // Normalize current time
         $time = date('H:i', strtotime($time));
 
-        // Resolve schedule by level and session
-        $schedule = ScheduleConfig::where('level', $level)
-            ->where('session_type', $sessionType)
-            ->first();
+        // Resolve schedule by level and session (cached in Redis; falls back to PG)
+        $schedule = $this->remember($level, $sessionType);
 
         if (!$schedule) {
             return null;
@@ -36,6 +35,23 @@ class ScheduleResolver
         }
 
         return $schedule;
+    }
+
+    private function remember(string $level, string $sessionType): ?ScheduleConfig
+    {
+        $key = "qr:schedule:{$level}:{$sessionType}";
+
+        try {
+            return Cache::store('redis')->remember($key, 3600, function () use ($level, $sessionType) {
+                return ScheduleConfig::where('level', $level)
+                    ->where('session_type', $sessionType)
+                    ->first();
+            });
+        } catch (\Throwable $e) {
+            return ScheduleConfig::where('level', $level)
+                ->where('session_type', $sessionType)
+                ->first();
+        }
     }
 
     private function normalizeLevel(string $level): string

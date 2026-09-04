@@ -4,18 +4,21 @@ import * as bootstrap from "bootstrap";
 window.bootstrap = bootstrap;
 
 import "./ajax-crud.js";
-import "./enrollment.js";
 import "./sidebar.js";
 import "./layout.js";
 import "./student.js";
 import "./section.js";
 import "./schedule-config.js";
+import "./settings.js";
 import "./teacher.js";
 import "./import.js";
+import "./qr-station.js";
+import "./download-excel.js";
+import "./teaching-assignments.js";
 
 // teacher modules
 import "./teacher-modules/t-sidebar.js";
-import "./teacher-modules/t-sidebar.js";
+import "./teacher-modules/t-top-header.js";
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

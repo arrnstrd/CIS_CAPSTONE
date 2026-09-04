@@ -39,7 +39,7 @@ class SectionResolver
     {
         $sections = Section::query()
             ->where('status', 'active')
-            ->get(['id', 'name', 'level', 'grade_level', 'capacity', 'status']);
+            ->get(['id', 'name', 'level', 'grade_level', 'session_type', 'capacity', 'status']);
 
         $this->indexSections($sections);
     }
@@ -76,6 +76,32 @@ class SectionResolver
         $key = $this->buildKey($sectionName, $departmentLevel, $gradeLevel);
 
         return $this->sectionMap[$key] ?? null;
+    }
+
+    /**
+     * Resolve a section, auto-creating it when it does not exist for the
+     * given department/grade level so imports are never blocked on a
+     * missing section.
+     */
+    public function resolveOrCreateSection(string $sectionName, string $departmentLevel, string $gradeLevel): Section
+    {
+        $section = $this->resolveSection($sectionName, $departmentLevel, $gradeLevel);
+
+        if ($section !== null) {
+            return $section;
+        }
+
+        $section = Section::create([
+            'name'        => trim($sectionName),
+            'level'       => $departmentLevel,
+            'grade_level' => (int) $gradeLevel,
+            'status'      => 'active',
+        ]);
+
+        // Index the new section so later lookups within this import find it.
+        $this->sectionMap[$this->buildKey($sectionName, $departmentLevel, $gradeLevel)] = $section;
+
+        return $section;
     }
 
     // -----------------------------------------------------------------

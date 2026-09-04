@@ -10,10 +10,7 @@ class Teacher extends Model
     protected $fillable = [
         'user_id',
         'status',
-        'email',
     ];
-
-    protected $guarded = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -34,6 +31,11 @@ class Teacher extends Model
     public function teachingAssignments()
     {
         return $this->hasMany(TeachingAssignment::class);
+    }
+
+    public function academicNotes()
+    {
+        return $this->hasMany(AcademicNote::class);
     }
 
     /*
@@ -75,28 +77,12 @@ class Teacher extends Model
     {
         return trim(
             ($this->user?->first_name ?? '') . ' ' .
-                ($this->user?->last_name ?? '')
+            ($this->user?->last_name ?? '')
         );
     }
 
-    protected static function booted(): void
-    {
-        static::creating(function (self $teacher) {
-            try {
-                if (empty($teacher->getAttribute('first_name')) || empty($teacher->getAttribute('last_name'))) {
-                    $user = \App\Models\User::find($teacher->user_id);
-                    if ($user !== null) {
-                        if (empty($teacher->getAttribute('first_name'))) {
-                            $teacher->setAttribute('first_name', $user->first_name);
-                        }
-                        if (empty($teacher->getAttribute('last_name'))) {
-                            $teacher->setAttribute('last_name', $user->last_name);
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                // ignore in test DBs where teachers table schema may differ
-            }
-        });
-    }
+    // NOTE: The `first_name`/`last_name` columns were removed from the
+    // `teachers` table (see remove_name_fields_from_teachers_table migration).
+    // Teacher names are stored on the related `users` record and exposed via
+    // the `full_name` accessor, so no creating-hook is needed here.
 }

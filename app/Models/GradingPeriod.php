@@ -9,11 +9,15 @@ class GradingPeriod extends Model
     protected $fillable = [
         'name',
         'sequence',
+        'period_type',
         'is_active',
+        'start_date',
+        'end_date',
     ];
 
     protected $casts = [
         'sequence' => 'integer',
+        'period_type' => 'string',
         'is_active' => 'boolean',
     ];
 

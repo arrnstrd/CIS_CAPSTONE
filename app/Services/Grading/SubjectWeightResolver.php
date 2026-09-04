@@ -19,62 +19,68 @@ class SubjectWeightResolver
      */
     public function resolve(Subject $subject): array
     {
-        $name = strtolower($subject->name ?? '');
-        $code = strtolower($subject->code ?? '');
-
-        // 1. MAPEH / TLE / EPP / PE / Music / Arts / Health / Practical / Vocational / Home Economics
-        if (
-            str_contains($name, 'mapeh') ||
-            str_contains($name, 'pe') ||
-            str_contains($name, 'music') ||
-            str_contains($name, 'art') ||
-            str_contains($name, 'health') ||
-            str_contains($name, 'physical education') ||
-            str_contains($name, 'tle') ||
-            str_contains($name, 'epp') ||
-            str_contains($name, 'livelihood') ||
-            str_contains($name, 'vocational') ||
-            str_contains($code, 'mapeh') ||
-            str_contains($code, 'pe') ||
-            str_contains($code, 'music') ||
-            str_contains($code, 'art') ||
-            str_contains($code, 'health') ||
-            str_contains($code, 'tle') ||
-            str_contains($code, 'epp')
-        ) {
+        // Elementary and Junior High School: DepEd DO 8, s. 2015 standard weights
+        // Written Work 20%, Performance Task 50%, Quarterly Assessment 30%
+        if (in_array($subject->level, ['elementary', 'hs'])) {
             return [
                 'written_work' => 0.20,
-                'performance_task' => 0.60,
-                'quarterly_assessment' => 0.20,
+                'performance_task' => 0.50,
+                'quarterly_assessment' => 0.30,
             ];
         }
 
-        // 2. Science / Mathematics / Math / Science
-        if (
-            str_contains($name, 'science') ||
-            str_contains($name, 'math') ||
-            str_contains($name, 'algebra') ||
-            str_contains($name, 'geometry') ||
-            str_contains($name, 'calculus') ||
-            str_contains($name, 'statistics') ||
-            str_contains($name, 'biology') ||
-            str_contains($name, 'chemistry') ||
-            str_contains($name, 'physics') ||
-            str_contains($code, 'sci') ||
-            str_contains($code, 'math') ||
-            str_contains($code, 'alg') ||
-            str_contains($code, 'geom') ||
-            str_contains($code, 'stat')
-        ) {
-            return [
-                'written_work' => 0.40,
-                'performance_task' => 0.40,
-                'quarterly_assessment' => 0.20,
-            ];
+        // Senior High School: DepEd DO 8, s. 2016 weights based on subject type
+        if ($subject->level === 'shs') {
+            // SHS subjects without subject_type set fall back to placeholder weights
+            if ($subject->subject_type === null) {
+                // TODO: Flag SHS subjects without subject_type - they need to be categorized
+                // This fallback should be temporary until all SHS subjects are properly categorized
+                return [
+                    'written_work' => 0.30,
+                    'performance_task' => 0.50,
+                    'quarterly_assessment' => 0.20,
+                ];
+            }
+
+            // Core and General Academic Elective: Written Work 20%, Performance Task 50%, Quarterly Assessment 30%
+            if (in_array($subject->subject_type, ['core', 'academic_elective_general'])) {
+                return [
+                    'written_work' => 0.20,
+                    'performance_task' => 0.50,
+                    'quarterly_assessment' => 0.30,
+                ];
+            }
+
+            // Special Academic Elective (Field Experience/Exposure, Sports and Arts): 
+            // Written Work 15%, Performance Task 70%, Quarterly Assessment 15%
+            if ($subject->subject_type === 'academic_elective_special') {
+                return [
+                    'written_work' => 0.15,
+                    'performance_task' => 0.70,
+                    'quarterly_assessment' => 0.15,
+                ];
+            }
+
+            // TechPro Elective: Written Work 15%, Performance Task 65%, Quarterly Assessment 20%
+            if ($subject->subject_type === 'techpro_elective') {
+                return [
+                    'written_work' => 0.15,
+                    'performance_task' => 0.65,
+                    'quarterly_assessment' => 0.20,
+                ];
+            }
+
+            // TechPro Work Immersion: Written Work 20%, Performance Task 80%, no Quarterly Assessment
+            if ($subject->subject_type === 'techpro_work_immersion') {
+                return [
+                    'written_work' => 0.20,
+                    'performance_task' => 0.80,
+                    'quarterly_assessment' => 0.00,
+                ];
+            }
         }
 
-        // 3. Default: Languages (English, Filipino, Mother Tongue), AP (Araling Panlipunan), EsP (Edukasyon sa Pagpapakatao)
-        // Written Work = 30%, Performance Tasks = 50%, Quarterly Assessment = 20%
+        // Fallback for any unexpected cases
         return [
             'written_work' => 0.30,
             'performance_task' => 0.50,

@@ -4,8 +4,8 @@ namespace App\Models;
 
 use App\Models\Section;
 use App\Models\Student;
-use App\Models\Teacher;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 
 class Enrollment extends Model
@@ -16,8 +16,6 @@ class Enrollment extends Model
         'section_id',
         'school_year_id',
         'grade_level',
-        'level',
-        'session_type',
         'status'
     ];
 
@@ -41,10 +39,7 @@ class Enrollment extends Model
         return $this->belongsTo(Section::class, 'section_id');
     }
 
-    public function roomAttendances()
-    {
-        return $this->hasMany(RoomAttendance::class);
-    }
+
 
     public function studentAssessmentScores()
     {
@@ -54,6 +49,11 @@ class Enrollment extends Model
     public function quarterlyGrades()
     {
         return $this->hasMany(QuarterlyGrade::class);
+    }
+
+    public function academicNotes()
+    {
+        return $this->hasMany(AcademicNote::class);
     }
 
     protected static function booted(): void
@@ -70,48 +70,19 @@ class Enrollment extends Model
                 }
             }
 
-            // Ensure backwards-compatible `school_year` string is populated
-            // for sqlite/in-memory tests where migrations that drop the
-            // `school_year` column may be skipped.
-            if (empty($enrollment->getAttribute('school_year')) && $enrollment->school_year_id) {
+            // The `school_year` column was dropped on non-sqlite drivers
+            // (see drop_school_year_from_enrollments_table migration), so only
+            // populate it where the column still exists (e.g. sqlite tests).
+            if (
+                Schema::hasColumn('enrollments', 'school_year')
+                && empty($enrollment->getAttribute('school_year'))
+                && $enrollment->school_year_id
+            ) {
                 $schoolYear = SchoolYear::find($enrollment->school_year_id);
                 if ($schoolYear !== null) {
                     $enrollment->attributes['school_year'] = (string) $schoolYear->school_year;
                 }
             }
         });
-    }
-
-    public static function getEnrollmentStatistics(int $schoolYearId): array
-    {
-        $baseQuery = static::query()->where('school_year_id', $schoolYearId);
-
-        return [
-            'total' => (clone $baseQuery)->count(),
-
-            'elementary' => (clone $baseQuery)
-                ->where(function ($query) {
-                    $query->whereHas('section', function ($sectionQuery) {
-                        $sectionQuery->where('level', 'elementary');
-                    });
-                })
-                ->count(),
-
-            'hs' => (clone $baseQuery)
-                ->where(function ($query) {
-                    $query->whereHas('section', function ($sectionQuery) {
-                        $sectionQuery->where('level', 'highschool');
-                    });
-                })
-                ->count(),
-
-            'shs' => (clone $baseQuery)
-                ->where(function ($query) {
-                    $query->whereHas('section', function ($sectionQuery) {
-                        $sectionQuery->where('level', 'senior_high_school');
-                    });
-                })
-                ->count(),
-        ];
     }
 }

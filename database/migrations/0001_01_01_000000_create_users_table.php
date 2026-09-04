@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('first_name', 100);
             $table->string('last_name', 100);
             $table->enum('role' , ['admin' , 'teacher' , 'scanner_operator']);
-            $table->enum('status' , ['active' , 'inactive' , 'suspended'])->default('active');
+            $table->enum('status' , ['active' , 'inactive' , 'suspended' , 'pending'])->default('pending');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();

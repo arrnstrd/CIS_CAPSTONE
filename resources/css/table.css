@@ -1,28 +1,187 @@
 
-.table-panel {
-    border-radius: 5px;
-    overflow: hidden;
+.table-panel,
+.table-responsive {
+    border-radius: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    background-image: none !important;
+    box-shadow: none !important;
 }
-/* Force column widths and clip overflow */
+
+.table-panel::before,
+.table-panel::after,
+.table-responsive::before,
+.table-responsive::after,
+#gradeSheetTable::before,
+#gradeSheetTable::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
 .table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+#gradeSheetTable {
     table-layout: fixed;
-    border-collapse: collapse; /* collapse so row dividers show cleanly */
+}
+
+/* Sticky header and first column for Grade Sheet */
+#gradeSheetTable {
+    position: relative;
+}
+
+#gradeSheetTable thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #3b56c4 !important;
+    box-shadow: none !important;
+}
+
+#gradeSheetTable thead th {
+    box-shadow: none !important;
+}
+
+#gradeSheetTable tbody .learner-name-cell,
+#gradeSheetTable tbody td:first-child:not(.learner-group-label) {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background-color: #ffffff !important;
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    box-shadow: none !important;
+}
+
+#gradeSheetTable tbody .learner-group-row td {
+    position: static !important;
+}
+
+#gradeSheetTable tbody .learner-group-label-inner {
+    position: sticky;
+    left: 14px;
+    display: inline-flex;
+    align-items: center;
+    z-index: 3;
+}
+
+#gradeSheetTable thead .learner-name-header {
+    position: sticky;
+    left: 0;
+    z-index: 12;
+    background-color: #3b56c4 !important;
+    color: #ffffff !important;
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    box-shadow: none !important;
+}
+
+/* Subtle individual column dividers for all cells in #gradeSheetTable (except last column / Descriptor) */
+#gradeSheetTable th:not(:last-child),
+#gradeSheetTable td:not(:last-child) {
+    box-shadow: inset -1px 0 0 #d5dbf0 !important;
+}
+
+#gradeSheetTable th:last-child,
+#gradeSheetTable td:last-child {
+    box-shadow: none !important;
+}
+
+/* Column boundary dividers for Grade Sheet Table (3px #b5c2ea) */
+#gradeSheetTable thead th:first-child,
+#gradeSheetTable tbody td:first-child,
+#gradeSheetTable th.gs-divider-written,
+#gradeSheetTable td.gs-divider-written,
+#gradeSheetTable th.gs-divider-performance,
+#gradeSheetTable td.gs-divider-performance,
+#gradeSheetTable th.gs-divider-exam,
+#gradeSheetTable td.gs-divider-exam,
+#gradeSheetTable th.gs-divider-quarterly,
+#gradeSheetTable td.gs-divider-quarterly,
+#gradeSheetTable th.gs-divider-initial,
+#gradeSheetTable td.gs-divider-initial,
+#gradeSheetTable th.gs-divider-transmuted,
+#gradeSheetTable td.gs-divider-transmuted {
+    box-shadow: inset -3px 0 0 #b5c2ea !important;
+}
+
+/* Specific boundary selectors for nth-child column orders */
+#gradeSheetTable tr > td:first-child,
+#gradeSheetTable tr > th:first-child,
+#gradeSheetTable tbody tr > td:nth-child(1),
+#gradeSheetTable tbody tr > td:nth-child(9),
+#gradeSheetTable tbody tr > td:nth-child(17),
+#gradeSheetTable tbody tr > td:nth-child(23),
+#gradeSheetTable tbody tr > td:nth-child(24),
+#gradeSheetTable tbody tr > td:nth-child(25),
+#gradeSheetTable thead tr:first-child > th:nth-child(1),
+#gradeSheetTable thead tr:first-child > th:nth-child(2),
+#gradeSheetTable thead tr:first-child > th:nth-child(3),
+#gradeSheetTable thead tr:first-child > th:nth-child(4),
+#gradeSheetTable thead tr:first-child > th:nth-child(5),
+#gradeSheetTable thead tr:first-child > th:nth-child(6),
+#gradeSheetTable thead tr:nth-child(2) > th:nth-child(8),
+#gradeSheetTable thead tr:nth-child(2) > th:nth-child(16),
+#gradeSheetTable thead tr:nth-child(2) > th:nth-child(22),
+#gradeSheetTable thead .gs-hps-row > td:nth-child(8),
+#gradeSheetTable thead .gs-hps-row > td:nth-child(16),
+#gradeSheetTable thead .gs-hps-row > td:nth-child(22) {
+    box-shadow: inset -3px 0 0 #b5c2ea !important;
+}
+
+/* Ensure table scrolls smoothly */
+.table-panel {
+    overflow-x: auto;
+    position: relative;
+}
+
+.table-panel::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-panel::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-panel::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 /* Compact row cells */
 .table td {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     padding: 7px 8px;           /* Reduced from 16px — tighter rows */
     font-size: 0.80rem;
     vertical-align: middle;
     border-bottom: 1px solid #dddddd; /* Subtle row divider */
 }
 
+/* Student column - allow text wrap (At-Risk Students table only) */
+.gs-atrisk-table td:first-child {
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
+}
+
 /* Table header */
 .table-panel .table thead tr {
-    background-color: #2438b9;
+    background-color: #3b56c4;
     color: #ffffff;
 
 }
@@ -45,4 +204,57 @@
 /* Hover row highlight */
 .table-hover tbody tr:hover {
     background-color: #f8f8f8;
+}
+
+.table-name-cell {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+.table-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.table-name-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #3b56c4;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.table-name-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.table-name-main {
+    font-weight: 700;
+    line-height: 1.2;
+    color: #212529;
+}
+
+.table-name-sub {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    color: #6c757d;
+}
+
+/* Students table - allow text wrap for student column */
+.gs-students-table td:first-child {
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.4;
 }

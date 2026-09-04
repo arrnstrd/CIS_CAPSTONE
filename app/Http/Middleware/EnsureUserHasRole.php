@@ -23,8 +23,13 @@ class EnsureUserHasRole
 
         $user = Auth::user();
 
-        if (!$user->hasRole(...$roles)) {
-            abort(403, 'You do not have permission to access this resource.');
+        $normalizedRoles = array_map(
+            fn (string $role) => $role === 'protected_admin' ? 'super_admin' : $role,
+            $roles
+        );
+
+        if (! $user->hasRole(...$normalizedRoles)) {
+            abort(403, 'Unauthorized. You do not have permission to access this resource.');
         }
 
         return $next($request);

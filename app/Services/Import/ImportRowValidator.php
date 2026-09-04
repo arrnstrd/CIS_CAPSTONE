@@ -25,14 +25,6 @@ class ImportRowValidator
         'senior_high_school'  => [11, 12],
     ];
 
-    /** @var list<string> */
-    private const ACCEPTED_RELATIONSHIPS = [
-        'mother',
-        'father',
-        'guardian',
-        'sibling',
-    ];
-
     /**
      * Validate a single row of normalized import data.
      *
@@ -46,8 +38,11 @@ class ImportRowValidator
         // ── LRN ──────────────────────────────────────────────────────────
         if ($this->isEmpty($row->lrn)) {
             $issues[] = $this->error('lrn', 'LRN is required.');
-        } elseif (!preg_match('/^\d{12}$/', $row->lrn)) {
-            $issues[] = $this->error('lrn', 'LRN must be exactly 12 digits.');
+        } elseif (!preg_match('/^\d{12,13}$/', $row->lrn)) {
+            $issues[] = $this->error(
+                'lrn',
+                'LRN must be 12 or 13 digits. If Excel removed leading zeros, format the LRN column as Text.'
+            );
         }
 
         // ── Learner Name ─────────────────────────────────────────────────
@@ -56,7 +51,7 @@ class ImportRowValidator
         } elseif ($this->isEmpty($row->lastName) || $this->isEmpty($row->firstName)) {
             $issues[] = $this->error(
                 'learnerName',
-                'Learner Name must be in the format "LAST NAME, FIRST NAME MIDDLE NAME".'
+                'Learner Name must be in the format "LAST NAME, FIRST NAME MIDDLE NAME". Example: "Santos, Juan Dela Cruz".'
             );
         }
 
@@ -64,41 +59,33 @@ class ImportRowValidator
         if ($this->isEmpty($row->sex)) {
             $issues[] = $this->error('sex', 'Sex is required. Accepted values: male, female.');
         } elseif (!in_array($row->sex, ['male', 'female'], true)) {
-            $issues[] = $this->error('sex', 'Sex must be "male" or "female".');
+            $issues[] = $this->error('sex', 'Sex must be "male" or "female" (use M or F in the Sex column).');
         }
 
-        // ── Birth Date ───────────────────────────────────────────────────
-        if ($this->isEmpty($row->birthdate)) {
-            $issues[] = $this->error('birthdate', 'Birth Date is required.');
-        } elseif (!$this->isValidDate($row->birthdate)) {
-            $issues[] = $this->error('birthdate', 'Birth Date must be a valid date (YYYY-MM-DD).');
+        // ── Age (optional; must be a whole number 1–100 if present) ─────
+        if (!$this->isEmpty($row->age)) {
+            if (!preg_match('/^\d+$/', $row->age)) {
+                $issues[] = $this->error('age', 'Age must be a whole number.');
+            } else {
+                $age = (int) $row->age;
+
+                if ($age < 1 || $age > 100) {
+                    $issues[] = $this->error('age', 'Age must be between 1 and 100.');
+                }
+            }
         }
 
-        // ── Address ──────────────────────────────────────────────────────
-        if ($this->isEmpty($row->address)) {
-            $issues[] = $this->error('address', 'Complete Address is required.');
-        }
-
-        // ── Guardian Name ────────────────────────────────────────────────
-        if ($this->isEmpty($row->guardianName)) {
-            $issues[] = $this->error('guardianName', 'Guardian Name is required.');
-        }
-
-        // ── Guardian Relationship ────────────────────────────────────────
-        if ($this->isEmpty($row->guardianRelationship)) {
-            $issues[] = $this->error('guardianRelationship', 'Guardian Relationship is required.');
-        } elseif (!in_array($row->guardianRelationship, self::ACCEPTED_RELATIONSHIPS, true)) {
-            $issues[] = $this->error(
-                'guardianRelationship',
-                'Guardian Relationship must be one of: mother, father, guardian, sibling.'
+        // ── Parents / Guardian (soft warning, not a hard error) ─────────
+        if (
+            $this->isEmpty($row->fatherName)
+            && $this->isEmpty($row->motherMaidenName)
+            && $this->isEmpty($row->guardianName)
+        ) {
+            $issues[] = $this->warning(
+                'guardian',
+                'No father, mother, or guardian name provided. At least one parent/guardian is recommended.',
+                'no_guardian',
             );
-        }
-
-        // ── Guardian Email ───────────────────────────────────────────────
-        if ($this->isEmpty($row->guardianEmail)) {
-            $issues[] = $this->error('guardianEmail', 'Guardian Email is required.');
-        } elseif (!filter_var($row->guardianEmail, FILTER_VALIDATE_EMAIL)) {
-            $issues[] = $this->error('guardianEmail', 'Guardian Email must be a valid email address.');
         }
 
         // ── Department Level ─────────────────────────────────────────────
@@ -118,16 +105,6 @@ class ImportRowValidator
         // ── Section ──────────────────────────────────────────────────────
         if ($this->isEmpty($row->sectionName)) {
             $issues[] = $this->error('sectionName', 'Section is required.');
-        }
-
-        // ── Session Type ─────────────────────────────────────────────────
-        if ($this->isEmpty($row->sessionType)) {
-            $issues[] = $this->error('sessionType', 'Session Type is required.');
-        } elseif (!in_array($row->sessionType, ['morning', 'afternoon', 'whole_day'], true)) {
-            $issues[] = $this->error(
-                'sessionType',
-                'Session Type must be one of: morning, afternoon, whole_day.'
-            );
         }
 
         return $issues;
@@ -193,12 +170,6 @@ class ImportRowValidator
         return $value === null || trim($value) === '';
     }
 
-    private function isValidDate(string $value): bool
-    {
-        $dt = \DateTime::createFromFormat('Y-m-d', $value);
-        return $dt !== false && $dt->format('Y-m-d') === $value;
-    }
-
     /**
      * @return array{issue_type: string, severity: string, field: string, message: string}
      */
@@ -207,6 +178,21 @@ class ImportRowValidator
         return [
             'issue_type' => 'validation_error',
             'severity'   => 'error',
+            'field'      => $field,
+            'message'    => $message,
+        ];
+    }
+
+    /**
+     * Soft (non-blocking) warning — the row can still be imported.
+     *
+     * @return array{issue_type: string, severity: string, field: string, message: string}
+     */
+    private function warning(string $field, string $message, string $issueType): array
+    {
+        return [
+            'issue_type' => $issueType,
+            'severity'   => 'warning',
             'field'      => $field,
             'message'    => $message,
         ];
