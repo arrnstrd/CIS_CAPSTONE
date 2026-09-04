@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Grading\Assessment;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAssessmentRequest extends FormRequest
 {
@@ -22,13 +23,45 @@ class StoreAssessmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'teaching_assignment_id' => ['required', 'exists:teaching_assignments,id'],
-            'assessment_category_id' => ['required', 'exists:assessment_categories,id'],
-            'grading_period_id' => ['required', 'exists:grading_periods,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'total_items' => ['required', 'integer', 'min:1'],
-            'assessment_date' => ['required', 'date'],
-            'status' => ['required', 'in:active,inactive'],
+            'teaching_assignment_id' => [
+                'required',
+                'exists:teaching_assignments,id',
+            ],
+
+            'assessment_category_id' => [
+                'required',
+                'exists:assessment_categories,id',
+            ],
+
+            'grading_period_id' => [
+                'required',
+                Rule::exists('grading_periods', 'id')->where(function ($query) {
+                    $query->where('period_type', 'trimester')
+                        ->where('sequence', '<=', 3);
+                }),
+            ],
+
+            'title' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'total_items' => [
+                'required',
+                'integer',
+                'min:1',
+            ],
+
+            'assessment_date' => [
+                'required',
+                'date',
+            ],
+
+            'status' => [
+                'required',
+                'in:active,inactive',
+            ],
         ];
     }
 }

@@ -18,18 +18,55 @@ class UpdateGradingPeriodRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * The grading system uses exactly three active terms:
+     * Term 1, Term 2, and Term 3.
      */
     public function rules(): array
     {
         $gradingPeriod = $this->route('grading_period');
-        $gradingPeriodId = is_object($gradingPeriod) ? $gradingPeriod->id : $gradingPeriod;
+
+        $gradingPeriodId = is_object($gradingPeriod)
+            ? $gradingPeriod->id
+            : $gradingPeriod;
+
         $gradingPeriodId = $gradingPeriodId ?? $this->id;
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'sequence' => ['required', 'integer', 'min:1', Rule::unique('grading_periods', 'sequence')->ignore($gradingPeriodId)],
-            'is_active' => ['sometimes', 'boolean'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'sequence' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:3',
+                Rule::unique('grading_periods', 'sequence')
+                    ->ignore($gradingPeriodId),
+            ],
+
+            'is_active' => [
+                'sometimes',
+                'boolean',
+            ],
         ];
+    }
+
+    /**
+     * Prepare the data before validation.
+     *
+     * Grading periods are always named based on their term sequence.
+     */
+    protected function prepareForValidation(): void
+    {
+        $sequence = $this->input('sequence');
+
+        if ($sequence !== null) {
+            $this->merge([
+                'name' => 'Term ' . $sequence,
+            ]);
+        }
     }
 }

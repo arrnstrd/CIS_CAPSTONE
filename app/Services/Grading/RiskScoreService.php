@@ -7,34 +7,50 @@ use App\Models\QuarterlyGrade;
 use App\Models\GradingPeriod;
 use App\Models\TeachingAssignment;
 use App\Models\AttendanceLog;
+use App\Models\AttendanceVerification;
 use App\Models\StudentAssessmentScore;
 use App\Models\Assessment;
-use Illuminate\Support\Facades\DB;
 
 class RiskScoreService
 {
     /**
      * Calculate risk score for a single student based on 4 weighted indicators.
      *
-     * @param Enrollment $enrollment
-     * @param TeachingAssignment $teachingAssignment
-     * @param GradingPeriod $currentPeriod
-     * @return array
+     * Indicators:
+     * - Low Grade: +30
+     * - Missing Grades: +25
+     * - Low Attendance: +25
+     * - Declining Performance: +20
      */
-    public function calculateRiskScore(Enrollment $enrollment, TeachingAssignment $teachingAssignment, GradingPeriod $currentPeriod): array
-    {
+    public function calculateRiskScore(
+        Enrollment $enrollment,
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $currentPeriod
+    ): array {
         $indicators = [
-            'low_grade' => $this->checkLowGrade($enrollment, $teachingAssignment, $currentPeriod),
-            'missing_grades' => $this->checkMissingGrades($enrollment, $teachingAssignment, $currentPeriod),
-            'low_attendance' => $this->checkLowAttendance($enrollment, $teachingAssignment, $currentPeriod),
-            'declining_performance' => $this->checkDecliningPerformance($enrollment, $teachingAssignment, $currentPeriod),
-        ];
+            'low_grade' => $this->checkLowGrade(
+                $enrollment,
+                $teachingAssignment,
+                $currentPeriod
+            ),
 
-        $indicators = [
-            'low_grade' => $this->checkLowGrade($enrollment, $teachingAssignment, $currentPeriod),
-            'missing_grades' => $this->checkMissingGrades($enrollment, $teachingAssignment, $currentPeriod),
-            'low_attendance' => $this->checkLowAttendance($enrollment, $teachingAssignment, $currentPeriod),
-            'declining_performance' => $this->checkDecliningPerformance($enrollment, $teachingAssignment, $currentPeriod),
+            'missing_grades' => $this->checkMissingGrades(
+                $enrollment,
+                $teachingAssignment,
+                $currentPeriod
+            ),
+
+            'low_attendance' => $this->checkLowAttendance(
+                $enrollment,
+                $teachingAssignment,
+                $currentPeriod
+            ),
+
+            'declining_performance' => $this->checkDecliningPerformance(
+                $enrollment,
+                $teachingAssignment,
+                $currentPeriod
+            ),
         ];
 
         $riskScore = $this->calculateScoreFromIndicators($indicators);
@@ -48,23 +64,38 @@ class RiskScoreService
     }
 
     /**
-     * Calculate risk scores for all students in a teaching assignment.
-     *
-     * @param TeachingAssignment $teachingAssignment
-     * @param GradingPeriod $period
-     * @return array
+     * Calculate risk scores for all active students in a teaching assignment.
      */
-    public function calculateRiskScoresForClass(TeachingAssignment $teachingAssignment, GradingPeriod $period): array
-    {
-        $enrollments = Enrollment::where('section_id', $teachingAssignment->section_id)
+    public function calculateRiskScoresForClass(
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $period
+    ): array {
+        $enrollments = Enrollment::where(
+            'section_id',
+            $teachingAssignment->section_id
+        )
             ->where('status', 'active')
+            ->with('student')
             ->get();
 
         $riskScores = [];
-        $stats = ['total' => 0, 'high' => 0, 'moderate' => 0, 'low' => 0];
+
+        $stats = [
+            'total' => 0,
+            'high' => 0,
+            'moderate' => 0,
+            'low' => 0,
+        ];
 
         foreach ($enrollments as $enrollment) {
-            $riskData = $this->calculateRiskScore($enrollment, $teachingAssignment, $period);
+            $riskData = $this->calculateRiskScore(
+                $enrollment,
+                $teachingAssignment,
+                $period
+            );
+
+            $riskLevelKey = strtolower($riskData['risk_level']);
+
             $riskScores[] = [
                 'enrollment_id' => $enrollment->id,
                 'student_name' => $enrollment->student->full_name ?? 'Unknown Student',
@@ -74,7 +105,10 @@ class RiskScoreService
             ];
 
             $stats['total']++;
-            $stats[strtolower($riskData['risk_level'])]++;
+
+            if (isset($stats[$riskLevelKey])) {
+                $stats[$riskLevelKey]++;
+            }
         }
 
         return [
@@ -84,47 +118,54 @@ class RiskScoreService
     }
 
     /**
-     * Check if student has low grade for current period.
-     *
-     * @param Enrollment $enrollment
-     * @param TeachingAssignment $teachingAssignment
-     * @param GradingPeriod $currentPeriod
-     * @return bool
+     * Check if student has a low grade for the current term.
      */
-    private function checkLowGrade(Enrollment $enrollment, TeachingAssignment $teachingAssignment, GradingPeriod $currentPeriod): bool
-    {
-        $quarterlyGrade = QuarterlyGrade::where('enrollment_id', $enrollment->id)
-            ->where('teaching_assignment_id', $teachingAssignment->id)
-            ->where('grading_period_id', $currentPeriod->id)
+    private function checkLowGrade(
+        Enrollment $enrollment,
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $currentPeriod
+    ): bool {
+        $grade = QuarterlyGrade::where(
+            'enrollment_id',
+            $enrollment->id
+        )
+            ->where(
+                'teaching_assignment_id',
+                $teachingAssignment->id
+            )
+            ->where(
+                'grading_period_id',
+                $currentPeriod->id
+            )
             ->first();
 
-        if (!$quarterlyGrade) {
+        if (!$grade || $grade->transmuted_grade === null) {
             return false;
         }
 
-        // Check if transmuted grade is < 75 OR status is "Failing"
-        if ($quarterlyGrade->transmuted_grade < 75) {
-            return true;
-        }
-
-        // Check if there's any failing status (if applicable)
-        // This might need to be adjusted based on your failing status implementation
-        return false;
+        return (float) $grade->transmuted_grade < 75;
     }
 
     /**
-     * Check if student has missing assessment scores.
-     *
-     * @param Enrollment $enrollment
-     * @param TeachingAssignment $teachingAssignment
-     * @param GradingPeriod $currentPeriod
-     * @return bool
+     * Check if student has missing assessment scores for the current term.
      */
-    private function checkMissingGrades(Enrollment $enrollment, TeachingAssignment $teachingAssignment, GradingPeriod $currentPeriod): bool
-    {
-        $assessments = Assessment::where('teaching_assignment_id', $teachingAssignment->id)
-            ->where('grading_period_id', $currentPeriod->id)
-            ->where('status', 'active')
+    private function checkMissingGrades(
+        Enrollment $enrollment,
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $currentPeriod
+    ): bool {
+        $assessments = Assessment::where(
+            'teaching_assignment_id',
+            $teachingAssignment->id
+        )
+            ->where(
+                'grading_period_id',
+                $currentPeriod->id
+            )
+            ->where(
+                'status',
+                'active'
+            )
             ->get();
 
         if ($assessments->isEmpty()) {
@@ -132,11 +173,16 @@ class RiskScoreService
         }
 
         foreach ($assessments as $assessment) {
-            $score = StudentAssessmentScore::where('enrollment_id', $enrollment->id)
-                ->where('assessment_id', $assessment->id)
+            $score = StudentAssessmentScore::where(
+                'enrollment_id',
+                $enrollment->id
+            )
+                ->where(
+                    'assessment_id',
+                    $assessment->id
+                )
                 ->first();
 
-            // If any assessment score is missing/absent, return true
             if (!$score || $score->score === null) {
                 return true;
             }
@@ -146,111 +192,176 @@ class RiskScoreService
     }
 
     /**
-     * Check if student has low attendance rate.
-     *
-     * @param Enrollment $enrollment
-     * @param TeachingAssignment $teachingAssignment
-     * @param GradingPeriod $currentPeriod
-     * @return bool
+     * Check if student's attendance rate is below 85%.
      */
-    private function checkLowAttendance(Enrollment $enrollment, TeachingAssignment $teachingAssignment, GradingPeriod $currentPeriod): bool
-    {
-        $attendanceRate = $this->calculateAttendanceRate($enrollment->id, $currentPeriod->id);
-        
-        // Low attendance if rate < 85%
+    private function checkLowAttendance(
+        Enrollment $enrollment,
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $currentPeriod
+    ): bool {
+        $attendanceRate = $this->calculateAttendanceRate(
+            $enrollment->id,
+            $currentPeriod->id
+        );
+
         return $attendanceRate < 85.0;
     }
 
     /**
-     * Check if student has declining performance.
-     *
-     * @param Enrollment $enrollment
-     * @param TeachingAssignment $teachingAssignment
-     * @param GradingPeriod $currentPeriod
-     * @return bool
+     * Check if the student's grade declined compared with the previous term.
      */
-    private function checkDecliningPerformance(Enrollment $enrollment, TeachingAssignment $teachingAssignment, GradingPeriod $currentPeriod): bool
-    {
-        // Get current period grade
-        $currentGrade = QuarterlyGrade::where('enrollment_id', $enrollment->id)
-            ->where('teaching_assignment_id', $teachingAssignment->id)
-            ->where('grading_period_id', $currentPeriod->id)
+    private function checkDecliningPerformance(
+        Enrollment $enrollment,
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $currentPeriod
+    ): bool {
+        $currentGrade = QuarterlyGrade::where(
+            'enrollment_id',
+            $enrollment->id
+        )
+            ->where(
+                'teaching_assignment_id',
+                $teachingAssignment->id
+            )
+            ->where(
+                'grading_period_id',
+                $currentPeriod->id
+            )
             ->first();
 
-        if (!$currentGrade || !$currentGrade->transmuted_grade) {
+        if (
+            !$currentGrade ||
+            $currentGrade->transmuted_grade === null
+        ) {
             return false;
         }
 
-        // Get previous grading period
-        $previousPeriod = GradingPeriod::where('sequence', '<', $currentPeriod->sequence)
-            ->where('period_type', $currentPeriod->period_type)
-            ->orderBy('sequence', 'desc')
-            ->first();
+        $previousPeriod = $this->getPreviousPeriod($currentPeriod);
 
         if (!$previousPeriod) {
-            return false; // No previous period to compare with
+            return false;
         }
 
-        $previousGrade = QuarterlyGrade::where('enrollment_id', $enrollment->id)
-            ->where('teaching_assignment_id', $teachingAssignment->id)
-            ->where('grading_period_id', $previousPeriod->id)
+        $previousGrade = QuarterlyGrade::where(
+            'enrollment_id',
+            $enrollment->id
+        )
+            ->where(
+                'teaching_assignment_id',
+                $teachingAssignment->id
+            )
+            ->where(
+                'grading_period_id',
+                $previousPeriod->id
+            )
             ->first();
 
-        if (!$previousGrade || !$previousGrade->transmuted_grade) {
-            return false; // No previous grade data
+        if (
+            !$previousGrade ||
+            $previousGrade->transmuted_grade === null
+        ) {
+            return false;
         }
 
-        // Check if current grade is lower than previous grade
-        return $currentGrade->transmuted_grade < $previousGrade->transmuted_grade;
+        return (float) $currentGrade->transmuted_grade
+            < (float) $previousGrade->transmuted_grade;
     }
 
     /**
-     * Calculate attendance rate for a student.
-     *
-     * @param int $enrollmentId
-     * @param int $gradingPeriodId
-     * @return float
+     * Get the previous active term.
      */
-    private function calculateAttendanceRate(int $enrollmentId, int $gradingPeriodId): float
-    {
+    private function getPreviousPeriod(
+        GradingPeriod $currentPeriod
+    ): ?GradingPeriod {
+        return GradingPeriod::where(
+            'is_active',
+            true
+        )
+            ->where(
+                'period_type',
+                'trimester'
+            )
+            ->where(
+                'sequence',
+                '<',
+                $currentPeriod->sequence
+            )
+            ->where(
+                'sequence',
+                '<=',
+                3
+            )
+            ->orderBy(
+                'sequence',
+                'desc'
+            )
+            ->first();
+    }
+
+    /**
+     * Calculate attendance rate for a student and term.
+     *
+     * Attendance is based on BOTH:
+     * - QR IN scans from attendance_logs
+     * - Teacher verification records from attendance_verifications
+     *
+     * Multiple records on the same date count as ONE attendance day.
+     */
+    private function calculateAttendanceRate(
+        int $enrollmentId,
+        int $gradingPeriodId
+    ): float {
         $gradingPeriod = GradingPeriod::find($gradingPeriodId);
+
         if (!$gradingPeriod) {
             return 0.0;
         }
 
-        // Check if grading period has specific date range set
-        if ($gradingPeriod->start_date && $gradingPeriod->end_date) {
-            // Use term-specific date range
-            return $this->calculateTermAttendanceRate($enrollmentId, $gradingPeriod);
-        } else {
-            // Fallback to lifetime-to-date attendance (known limitation)
-            // TODO: Once real term dates are established with team/Ariana,
-            // populate start_date/end_date in grading_periods and remove this fallback
-            return $this->calculateLifetimeAttendanceRate($enrollmentId);
+        if (
+            $gradingPeriod->start_date &&
+            $gradingPeriod->end_date
+        ) {
+            return $this->calculateTermAttendanceRate(
+                $enrollmentId,
+                $gradingPeriod
+            );
         }
+
+        return $this->calculateLifetimeAttendanceRate(
+            $enrollmentId
+        );
     }
 
     /**
-     * Calculate attendance rate for a specific term date range.
+     * Calculate attendance rate using the specific term date range.
      *
-     * @param int $enrollmentId
-     * @param GradingPeriod $gradingPeriod
-     * @return float
+     * Weekdays are treated as school days.
+     *
+     * A day is considered present when either:
+     * - there is a QR IN scan, OR
+     * - there is a teacher verification with Present/Late/Excused status.
      */
-    private function calculateTermAttendanceRate(int $enrollmentId, GradingPeriod $gradingPeriod): float
-    {
-        $startDate = $gradingPeriod->start_date;
-        $endDate = $gradingPeriod->end_date;
+    private function calculateTermAttendanceRate(
+        int $enrollmentId,
+        GradingPeriod $gradingPeriod
+    ): float {
+        $startDate = \Carbon\Carbon::parse(
+            $gradingPeriod->start_date
+        )->startOfDay();
 
-        // Count school days within this specific term period
+        $endDate = \Carbon\Carbon::parse(
+            $gradingPeriod->end_date
+        )->startOfDay();
+
         $schoolDaysCount = 0;
-        $cursor = \Carbon\Carbon::parse($startDate)->startOfDay();
-        $end = \Carbon\Carbon::parse($endDate)->startOfDay();
-        
-        while ($cursor->lt($end)) {
+
+        $cursor = $startDate->copy();
+
+        while ($cursor->lt($endDate)) {
             if (!$cursor->isWeekend()) {
                 $schoolDaysCount++;
             }
+
             $cursor->addDay();
         }
 
@@ -258,47 +369,154 @@ class RiskScoreService
             return 0.0;
         }
 
-        // Count present days within this term period
-        $presentDaysByDate = AttendanceLog::where('enrollment_id', $enrollmentId)
-            ->where('scan_type', 'IN')
-            ->where('scan_time', '>=', $startDate)
-            ->where('scan_time', '<', $endDate)
-            ->selectRaw('DATE(scan_time) as date')
+        /*
+         * QR attendance dates.
+         */
+        $qrDates = AttendanceLog::where(
+            'enrollment_id',
+            $enrollmentId
+        )
+            ->where(
+                'scan_type',
+                'IN'
+            )
+            ->where(
+                'scan_time',
+                '>=',
+                $startDate
+            )
+            ->where(
+                'scan_time',
+                '<',
+                $endDate
+            )
+            ->selectRaw(
+                'DATE(scan_time) as attendance_date'
+            )
             ->distinct()
-            ->pluck('date');
+            ->pluck('attendance_date');
 
-        $presentDaysCount = $presentDaysByDate->count();
+        /*
+         * Teacher-verified attendance dates.
+         *
+         * Present, Late, and Excused are considered attended days.
+         */
+        $verifiedDates = AttendanceVerification::where(
+            'enrollment_id',
+            $enrollmentId
+        )
+            ->whereBetween(
+                'attendance_date',
+                [
+                    $startDate->toDateString(),
+                    $endDate->copy()->subDay()->toDateString(),
+                ]
+            )
+            ->whereIn(
+                'status',
+                [
+                    AttendanceVerification::STATUS_PRESENT,
+                    AttendanceVerification::STATUS_LATE,
+                    AttendanceVerification::STATUS_EXCUSED,
+                ]
+            )
+            ->select('attendance_date')
+            ->distinct()
+            ->pluck('attendance_date');
 
-        return round(($presentDaysCount / $schoolDaysCount) * 100, 1);
+        /*
+         * Merge both sources and count each date only once.
+         */
+        $presentDaysCount = $qrDates
+            ->merge($verifiedDates)
+            ->map(
+                fn ($date) => \Carbon\Carbon::parse($date)->toDateString()
+            )
+            ->unique()
+            ->count();
+
+        return round(
+            ($presentDaysCount / $schoolDaysCount) * 100,
+            1
+        );
     }
 
     /**
-     * Calculate lifetime-to-date attendance rate (fallback when term dates not set).
+     * Calculate lifetime-to-date attendance rate.
      *
-     * @param int $enrollmentId
-     * @return float
+     * Used when the active term does not have official
+     * start/end dates configured.
+     *
+     * If there are no QR scans, teacher verification dates
+     * are used as the attendance starting point.
      */
-    private function calculateLifetimeAttendanceRate(int $enrollmentId): float
-    {
-        // Use earliest attendance log for this enrollment as the start date
-        // and current date as the end date, similar to AttendanceAnalyticsController approach
-        $earliestScan = AttendanceLog::where('enrollment_id', $enrollmentId)
-            ->where('scan_type', 'IN')
+    private function calculateLifetimeAttendanceRate(
+        int $enrollmentId
+    ): float {
+        /*
+         * Find the earliest QR IN scan.
+         */
+        $earliestScan = AttendanceLog::where(
+            'enrollment_id',
+            $enrollmentId
+        )
+            ->where(
+                'scan_type',
+                'IN'
+            )
             ->min('scan_time');
 
-        if (!$earliestScan) {
+        /*
+         * Find the earliest teacher verification that represents
+         * an attended day.
+         */
+        $earliestVerification = AttendanceVerification::where(
+            'enrollment_id',
+            $enrollmentId
+        )
+            ->whereIn(
+                'status',
+                [
+                    AttendanceVerification::STATUS_PRESENT,
+                    AttendanceVerification::STATUS_LATE,
+                    AttendanceVerification::STATUS_EXCUSED,
+                ]
+            )
+            ->min('attendance_date');
+
+        /*
+         * Use whichever valid attendance source started earlier.
+         */
+        $startDates = collect([
+            $earliestScan,
+            $earliestVerification,
+        ])
+            ->filter()
+            ->map(
+                fn ($date) => \Carbon\Carbon::parse($date)->startOfDay()
+            );
+
+        if ($startDates->isEmpty()) {
             return 0.0;
         }
 
-        // Calculate school days count (weekdays only) from earliest scan to today
-        $schoolDaysCount = 0;
-        $cursor = \Carbon\Carbon::parse($earliestScan)->startOfDay();
+        $startDate = $startDates
+            ->sortBy(
+                fn ($date) => $date->timestamp
+            )
+            ->first();
+
         $end = now()->startOfDay();
-        
+
+        $schoolDaysCount = 0;
+
+        $cursor = $startDate->copy();
+
         while ($cursor->lte($end)) {
             if (!$cursor->isWeekend()) {
                 $schoolDaysCount++;
             }
+
             $cursor->addDay();
         }
 
@@ -306,75 +524,127 @@ class RiskScoreService
             return 0.0;
         }
 
-        // Count present days within this lifetime date range
-        $presentDaysByDate = AttendanceLog::where('enrollment_id', $enrollmentId)
-            ->where('scan_type', 'IN')
-            ->where('scan_time', '>=', $earliestScan)
-            ->selectRaw('DATE(scan_time) as date')
+        /*
+         * QR attendance dates.
+         */
+        $qrDates = AttendanceLog::where(
+            'enrollment_id',
+            $enrollmentId
+        )
+            ->where(
+                'scan_type',
+                'IN'
+            )
+            ->where(
+                'scan_time',
+                '>=',
+                $startDate
+            )
+            ->selectRaw(
+                'DATE(scan_time) as attendance_date'
+            )
             ->distinct()
-            ->pluck('date');
+            ->pluck('attendance_date');
 
-        $presentDaysCount = $presentDaysByDate->count();
+        /*
+         * Teacher-verified attended dates.
+         */
+        $verifiedDates = AttendanceVerification::where(
+            'enrollment_id',
+            $enrollmentId
+        )
+            ->where(
+                'attendance_date',
+                '>=',
+                $startDate->toDateString()
+            )
+            ->where(
+                'attendance_date',
+                '<=',
+                $end->toDateString()
+            )
+            ->whereIn(
+                'status',
+                [
+                    AttendanceVerification::STATUS_PRESENT,
+                    AttendanceVerification::STATUS_LATE,
+                    AttendanceVerification::STATUS_EXCUSED,
+                ]
+            )
+            ->select('attendance_date')
+            ->distinct()
+            ->pluck('attendance_date');
 
-        return round(($presentDaysCount / $schoolDaysCount) * 100, 1);
+        /*
+         * Merge QR and teacher verification dates.
+         *
+         * Duplicate records for the same date count as ONE day.
+         */
+        $presentDaysCount = $qrDates
+            ->merge($verifiedDates)
+            ->map(
+                fn ($date) => \Carbon\Carbon::parse($date)->toDateString()
+            )
+            ->unique()
+            ->count();
+
+        return round(
+            ($presentDaysCount / $schoolDaysCount) * 100,
+            1
+        );
     }
 
     /**
-     * Calculate total risk score from indicators.
-     *
-     * @param array $indicators
-     * @return int
+     * Calculate total risk score from all indicators.
      */
-    private function calculateScoreFromIndicators(array $indicators): int
-    {
+    private function calculateScoreFromIndicators(
+        array $indicators
+    ): int {
         $score = 0;
 
-        // Low Grade: +30 if true
-        if ($indicators['low_grade']) {
+        if ($indicators['low_grade'] ?? false) {
             $score += 30;
         }
 
-        // Missing Grades: +25 if true
-        if ($indicators['missing_grades']) {
+        if ($indicators['missing_grades'] ?? false) {
             $score += 25;
         }
 
-        // Low Attendance: +25 if true
-        if ($indicators['low_attendance']) {
+        if ($indicators['low_attendance'] ?? false) {
             $score += 25;
         }
 
-        // Declining Performance: +20 if true
-        if ($indicators['declining_performance']) {
+        if ($indicators['declining_performance'] ?? false) {
             $score += 20;
         }
 
-        return min($score, 100); // Ensure score doesn't exceed 100
+        return min($score, 100);
     }
 
     /**
-     * Determine risk level based on score.
+     * Determine risk level based on total score.
      *
-     * @param int $score
-     * @return string
+     * 0-24   = Low
+     * 25-59  = Moderate
+     * 60-100 = High
      */
     private function determineRiskLevel(int $score): string
     {
         if ($score <= 24) {
             return 'Low';
-        } elseif ($score <= 59) {
-            return 'Moderate';
-        } else {
-            return 'High';
         }
+
+        if ($score <= 59) {
+            return 'Moderate';
+        }
+
+        return 'High';
     }
 
     /**
      * Get default risk score when no data is available.
-     *
-     * @return array
      */
-    private function getDefaultRiskScore(): array
+    public function getDefaultRiskScore(): array
     {
         return [
             'risk_score' => 0,
@@ -389,80 +659,106 @@ class RiskScoreService
     }
 
     /**
-     * Get attendance rate for a student (public wrapper for private method).
-     *
-     * @param int $enrollmentId
-     * @param int $gradingPeriodId
-     * @return float
+     * Public wrapper for getting a student's attendance rate.
      */
-    public function getAttendanceRate(int $enrollmentId, int $gradingPeriodId): float
-    {
-        return $this->calculateAttendanceRate($enrollmentId, $gradingPeriodId);
+    public function getAttendanceRate(
+        int $enrollmentId,
+        int $gradingPeriodId
+    ): float {
+        return $this->calculateAttendanceRate(
+            $enrollmentId,
+            $gradingPeriodId
+        );
     }
 
     /**
-     * Check if student has previous grading period data available.
-     *
-     * @param Enrollment $enrollment
-     * @param TeachingAssignment $teachingAssignment
-     * @param GradingPeriod $currentPeriod
-     * @return bool
+     * Check if previous term grade data is available.
      */
-    public function hasPreviousPeriodData(Enrollment $enrollment, TeachingAssignment $teachingAssignment, GradingPeriod $currentPeriod): bool
-    {
-        // Get previous grading period
-        $previousPeriod = GradingPeriod::where('sequence', '<', $currentPeriod->sequence)
-            ->where('period_type', $currentPeriod->period_type)
-            ->orderBy('sequence', 'desc')
-            ->first();
+    public function hasPreviousPeriodData(
+        Enrollment $enrollment,
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $currentPeriod
+    ): bool {
+        $previousPeriod = $this->getPreviousPeriod(
+            $currentPeriod
+        );
 
         if (!$previousPeriod) {
-            return false; // No previous period to compare with
+            return false;
         }
 
-        $previousGrade = QuarterlyGrade::where('enrollment_id', $enrollment->id)
-            ->where('teaching_assignment_id', $teachingAssignment->id)
-            ->where('grading_period_id', $previousPeriod->id)
+        $previousGrade = QuarterlyGrade::where(
+            'enrollment_id',
+            $enrollment->id
+        )
+            ->where(
+                'teaching_assignment_id',
+                $teachingAssignment->id
+            )
+            ->where(
+                'grading_period_id',
+                $previousPeriod->id
+            )
             ->first();
 
-        return $previousGrade && $previousGrade->transmuted_grade !== null;
+        return $previousGrade !== null
+            && $previousGrade->transmuted_grade !== null;
     }
 
     /**
-     * Get grade comparison data between current and previous periods.
-     *
-     * @param Enrollment $enrollment
-     * @param TeachingAssignment $teachingAssignment
-     * @param GradingPeriod $currentPeriod
-     * @return array
+     * Get grade comparison between current and previous terms.
      */
-    public function getGradeComparison(Enrollment $enrollment, TeachingAssignment $teachingAssignment, GradingPeriod $currentPeriod): array
-    {
-        // Get current period grade
-        $currentGrade = QuarterlyGrade::where('enrollment_id', $enrollment->id)
-            ->where('teaching_assignment_id', $teachingAssignment->id)
-            ->where('grading_period_id', $currentPeriod->id)
+    public function getGradeComparison(
+        Enrollment $enrollment,
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $currentPeriod
+    ): array {
+        $currentGrade = QuarterlyGrade::where(
+            'enrollment_id',
+            $enrollment->id
+        )
+            ->where(
+                'teaching_assignment_id',
+                $teachingAssignment->id
+            )
+            ->where(
+                'grading_period_id',
+                $currentPeriod->id
+            )
             ->first();
 
-        // Get previous grading period
-        $previousPeriod = GradingPeriod::where('sequence', '<', $currentPeriod->sequence)
-            ->where('period_type', $currentPeriod->period_type)
-            ->orderBy('sequence', 'desc')
-            ->first();
+        $previousPeriod = $this->getPreviousPeriod(
+            $currentPeriod
+        );
 
         $previousGrade = null;
+
         if ($previousPeriod) {
-            $previousGrade = QuarterlyGrade::where('enrollment_id', $enrollment->id)
-                ->where('teaching_assignment_id', $teachingAssignment->id)
-                ->where('grading_period_id', $previousPeriod->id)
+            $previousGrade = QuarterlyGrade::where(
+                'enrollment_id',
+                $enrollment->id
+            )
+                ->where(
+                    'teaching_assignment_id',
+                    $teachingAssignment->id
+                )
+                ->where(
+                    'grading_period_id',
+                    $previousPeriod->id
+                )
                 ->first();
         }
 
         return [
             'current_grade' => $currentGrade?->transmuted_grade,
+
             'previous_grade' => $previousGrade?->transmuted_grade,
-            'has_previous_data' => $previousGrade && $previousGrade->transmuted_grade !== null,
-            'trend' => 'N/A', // Will be calculated by the controller
+
+            'has_previous_data' =>
+                $previousGrade !== null &&
+                $previousGrade->transmuted_grade !== null,
+
+            'trend' => 'N/A',
         ];
     }
 }

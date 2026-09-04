@@ -12,28 +12,11 @@ class AssessmentTemplateService
      */
     public function getFixedSlots(string $level): array
     {
-        return match($level) {
-            'elementary' => [
-                'written' => 5,    // WW1, WW2, WW3, WW4, WW5
-                'performance' => 5, // PT1, PT2, PT3, PT4, PT5
-                'exam' => 3        // EX1, EX2, EX3
-            ],
-            'jhs' => [
-                'written' => 5,    // WW1, WW2, WW3, WW4, WW5
-                'performance' => 5, // PT1, PT2, PT3, PT4, PT5
-                'exam' => 3        // EX1, EX2, EX3
-            ],
-            'shs' => [
-                'written' => 5,    // WW1, WW2, WW3, WW4, WW5
-                'performance' => 5, // PT1, PT2, PT3, PT4, PT5
-                'quarterly' => 3   // QA1, QA2, QA3
-            ],
-            default => [
-                'written' => 5,
-                'performance' => 5,
-                'exam' => 3
-            ]
-        };
+        return [
+            'written' => 5,    // WW1, WW2, WW3, WW4, WW5
+            'performance' => 5, // PT1, PT2, PT3, PT4, PT5
+            'exam' => 3        // EX1, EX2, EX3
+        ];
     }
 
     /**
@@ -50,16 +33,12 @@ class AssessmentTemplateService
         foreach ($slots as $category => $count) {
             $labels[$category] = [];
             for ($i = 1; $i <= $count; $i++) {
-                if ($level === 'shs' && $category === 'quarterly') {
-                    $labels[$category][] = "QA{$i}";
-                } else {
-                    $labels[$category][] = match($category) {
-                        'written' => "WW{$i}",
-                        'performance' => "PT{$i}",
-                        'exam' => "EX{$i}",
-                        default => "Item{$i}"
-                    };
-                }
+                $labels[$category][] = match($category) {
+                    'written' => "WW{$i}",
+                    'performance' => "PT{$i}",
+                    'exam' => "EX{$i}",
+                    default => "Item{$i}"
+                };
             }
         }
 
@@ -94,9 +73,6 @@ class AssessmentTemplateService
      */
     public function getCategoryKey(string $level): string
     {
-        return match($level) {
-            'shs' => 'quarterly',
-            default => 'exam'
-        };
+        return 'exam';
     }
 }

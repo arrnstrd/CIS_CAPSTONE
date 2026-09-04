@@ -10,7 +10,6 @@ use App\Models\TeachingAssignment;
 use App\Models\AssessmentCategory;
 use App\Models\GradingPeriod;
 use App\Services\Grading\AssessmentService;
-use Illuminate\Http\Request;
 
 class AssessmentController extends Controller
 {
@@ -26,9 +25,18 @@ class AssessmentController extends Controller
      */
     public function index()
     {
-        $assessments = Assessment::with(['teachingAssignment', 'assessmentCategory', 'gradingPeriod'])
+        $assessments = Assessment::with([
+                'teachingAssignment',
+                'assessmentCategory',
+                'gradingPeriod'
+            ])
+            ->whereHas('gradingPeriod', function ($query) {
+                $query->where('period_type', 'trimester')
+                    ->where('sequence', '<=', 3);
+            })
             ->orderBy('assessment_date', 'desc')
             ->get();
+
         return view('grading.assessments.index', compact('assessments'));
     }
 
@@ -37,14 +45,28 @@ class AssessmentController extends Controller
      */
     public function create()
     {
-        $teachingAssignments = TeachingAssignment::with(['subject', 'section', 'schoolYear'])
+        $teachingAssignments = TeachingAssignment::with([
+                'subject',
+                'section',
+                'schoolYear'
+            ])
             ->where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->get();
+
         $assessmentCategories = AssessmentCategory::orderBy('name')->get();
-        $gradingPeriods = GradingPeriod::where('is_active', true)->orderBy('sequence')->get();
-        
-        return view('grading.assessments.create', compact('teachingAssignments', 'assessmentCategories', 'gradingPeriods'));
+
+        // Only the three official trimester terms are available.
+        $gradingPeriods = GradingPeriod::where('period_type', 'trimester')
+            ->where('sequence', '<=', 3)
+            ->orderBy('sequence')
+            ->get();
+
+        return view('grading.assessments.create', compact(
+            'teachingAssignments',
+            'assessmentCategories',
+            'gradingPeriods'
+        ));
     }
 
     /**
@@ -53,6 +75,7 @@ class AssessmentController extends Controller
     public function store(StoreAssessmentRequest $request)
     {
         $assessment = $this->assessmentService->create($request->validated());
+
         return redirect()->route('assessments.index')
             ->with('success', 'Assessment created successfully.');
     }
@@ -62,7 +85,13 @@ class AssessmentController extends Controller
      */
     public function show(Assessment $assessment)
     {
-        $assessment->load(['teachingAssignment', 'assessmentCategory', 'gradingPeriod', 'studentScores.enrollment.student']);
+        $assessment->load([
+            'teachingAssignment',
+            'assessmentCategory',
+            'gradingPeriod',
+            'studentScores.enrollment.student'
+        ]);
+
         return view('grading.assessments.show', compact('assessment'));
     }
 
@@ -71,23 +100,49 @@ class AssessmentController extends Controller
      */
     public function edit(Assessment $assessment)
     {
-        $assessment->load(['teachingAssignment', 'assessmentCategory', 'gradingPeriod']);
-        $teachingAssignments = TeachingAssignment::with(['subject', 'section', 'schoolYear'])
+        $assessment->load([
+            'teachingAssignment',
+            'assessmentCategory',
+            'gradingPeriod'
+        ]);
+
+        $teachingAssignments = TeachingAssignment::with([
+                'subject',
+                'section',
+                'schoolYear'
+            ])
             ->where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->get();
+
         $assessmentCategories = AssessmentCategory::orderBy('name')->get();
-        $gradingPeriods = GradingPeriod::where('is_active', true)->orderBy('sequence')->get();
-        
-        return view('grading.assessments.edit', compact('assessment', 'teachingAssignments', 'assessmentCategories', 'gradingPeriods'));
+
+        // Only the three official trimester terms are available.
+        $gradingPeriods = GradingPeriod::where('period_type', 'trimester')
+            ->where('sequence', '<=', 3)
+            ->orderBy('sequence')
+            ->get();
+
+        return view('grading.assessments.edit', compact(
+            'assessment',
+            'teachingAssignments',
+            'assessmentCategories',
+            'gradingPeriods'
+        ));
     }
 
     /**
      * Update the specified assessment.
      */
-    public function update(UpdateAssessmentRequest $request, Assessment $assessment)
-    {
-        $assessment = $this->assessmentService->update($assessment, $request->validated());
+    public function update(
+        UpdateAssessmentRequest $request,
+        Assessment $assessment
+    ) {
+        $assessment = $this->assessmentService->update(
+            $assessment,
+            $request->validated()
+        );
+
         return redirect()->route('assessments.index')
             ->with('success', 'Assessment updated successfully.');
     }
@@ -98,6 +153,7 @@ class AssessmentController extends Controller
     public function destroy(Assessment $assessment)
     {
         $this->assessmentService->delete($assessment);
+
         return redirect()->route('assessments.index')
             ->with('success', 'Assessment deleted successfully.');
     }
@@ -105,18 +161,39 @@ class AssessmentController extends Controller
     /**
      * Display assessments for a specific teaching assignment.
      */
-    public function byTeachingAssignment(TeachingAssignment $teachingAssignment)
-    {
-        $assessments = $this->assessmentService->getByTeachingAssignment($teachingAssignment->id);
-        return view('grading.assessments.by-assignment', compact('teachingAssignment', 'assessments'));
+    public function byTeachingAssignment(
+        TeachingAssignment $teachingAssignment
+    ) {
+        $assessments = $this->assessmentService
+            ->getByTeachingAssignment($teachingAssignment->id);
+
+        return view(
+            'grading.assessments.by-assignment',
+            compact('teachingAssignment', 'assessments')
+        );
     }
 
     /**
-     * Display assessments for a specific teaching assignment and grading period.
+     * Display assessments for a specific teaching assignment
+     * and grading period.
      */
-    public function byTeachingAssignmentAndGradingPeriod(TeachingAssignment $teachingAssignment, GradingPeriod $gradingPeriod)
-    {
-        $assessments = $this->assessmentService->getByTeachingAssignmentAndGradingPeriod($teachingAssignment->id, $gradingPeriod->id);
-        return view('grading.assessments.by-assignment-period', compact('teachingAssignment', 'gradingPeriod', 'assessments'));
+    public function byTeachingAssignmentAndGradingPeriod(
+        TeachingAssignment $teachingAssignment,
+        GradingPeriod $gradingPeriod
+    ) {
+        $assessments = $this->assessmentService
+            ->getByTeachingAssignmentAndGradingPeriod(
+                $teachingAssignment->id,
+                $gradingPeriod->id
+            );
+
+        return view(
+            'grading.assessments.by-assignment-period',
+            compact(
+                'teachingAssignment',
+                'gradingPeriod',
+                'assessments'
+            )
+        );
     }
 }
