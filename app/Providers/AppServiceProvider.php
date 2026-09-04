@@ -37,8 +37,8 @@ class AppServiceProvider extends ServiceProvider
             Blade::component('shared.components.' . $componentName, 'shared.' . $componentName);
         }
 
-        // Eto ang mag-force ng HTTPS kapag nasa production (Render)
-        if (env('APP_ENV') === 'production') {
+        // Force HTTPS in production (Render)
+        if (app()->environment('production') || config('app.env') === 'production') {
             URL::forceScheme('https');
         }
 

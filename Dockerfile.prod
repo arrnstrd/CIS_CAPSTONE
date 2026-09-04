@@ -1,61 +1,75 @@
-# 1. Gumamit ng official PHP image na may Apache built-in
+# 1. Official PHP image with Apache built-in
 FROM php:8.3-apache
 
-# 2. I-set ang working directory
+# 2. Set working directory
 WORKDIR /var/www/html
 
-# 3. I-install ang mga system dependencies, PHP extensions, at NODE.JS
+# 3. Install system dependencies, PHP extensions, and Node.js
 RUN apt-get update && apt-get install -y \
     git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip libpq-dev libmagickwand-dev \
     && pecl install imagick || true \
     && docker-php-ext-enable imagick || true \
     && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 4. I-clear ang default Apache folder
+# Production PHP configuration tuning (upload sizes, execution limits, memory)
+RUN { \
+    echo 'memory_limit = 256M'; \
+    echo 'upload_max_filesize = 64M'; \
+    echo 'post_max_size = 64M'; \
+    echo 'max_execution_time = 300'; \
+    echo 'expose_php = Off'; \
+} > /usr/local/etc/php/conf.d/production-tuning.ini
+
+# 4. Clear default Apache webroot
 RUN rm -rf /var/www/html/*
 
-# 5. Kunin at i-install si Composer
+# 5. Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 6. COPY MUNO ang composer.json at composer.lock
+# 6. Copy composer definition files first for layer caching
 COPY composer.json composer.lock ./
 
-# 7. I-install ang Laravel dependencies (walang dev dependencies at walang scripts)
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# 7. Install PHP dependencies without autoloader generation (app codebase copied next)
+RUN composer install --no-dev --no-interaction --no-scripts --no-autoloader
 
-# 8. COPY ang package.json at package-lock.json para sa Node
+# 8. Copy npm dependencies definition
 COPY package.json package-lock.json ./
 
-# 9. I-install ang Node dependencies
+# 9. Install Node dependencies
 RUN npm install
 
-# 10. I-copy ang buong Laravel project papunta sa container
+# 10. Copy complete project into container
 COPY . .
 
-# 11. I-BUILD ang Vite assets (Dito nagagawa ang manifest.json!)
+# 11. Generate optimized autoloader with the full app codebase mapped
+RUN composer dump-autoload --optimize --no-dev
+
+# 12. Build frontend assets with Vite
 RUN npm run build
 
-# 12. I-set ang tamang permissions para sa Laravel storage at bootstrap
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+# 13. Enable Apache mod_rewrite and allow .htaccess overrides
+RUN a2enmod rewrite \
+    && sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
-# 13. I-enable ang Apache mod_rewrite
-RUN a2enmod rewrite
-
-# 14. Sabihin sa Apache na ang /public folder ang DocumentRoot
+# 14. Configure Apache DocumentRoot to /var/www/html/public
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# 15. Start-up script
+# 15. Set directory permissions for storage and bootstrap cache
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
+
+# 16. Install startup script
 COPY start-prod.sh /usr/local/bin/start-prod
 RUN chmod +x /usr/local/bin/start-prod
 
-# 16. Expose port 80
+# 17. Expose default port 80 (Render automatically configures via $PORT at runtime)
 EXPOSE 80
 
-# 17. I-run ang Apache at Migration script
+# 18. Launch start-up script
 CMD ["/usr/local/bin/start-prod"]
