@@ -1,7 +1,12 @@
 
-.table-panel {
-    border-radius: 5px;
-    overflow: hidden;
+.table-panel,
+.table-responsive {
+    border-radius: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
     background-image: none !important;
     box-shadow: none !important;
 }
@@ -19,10 +24,14 @@
     box-shadow: none !important;
 }
 
-/* Force column widths and clip overflow */
 .table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+#gradeSheetTable {
     table-layout: fixed;
-    border-collapse: collapse; /* collapse so row dividers show cleanly */
 }
 
 /* Sticky header and first column for Grade Sheet */
@@ -42,20 +51,39 @@
     box-shadow: none !important;
 }
 
-#gradeSheetTable tbody td:first-child {
+#gradeSheetTable tbody .learner-name-cell,
+#gradeSheetTable tbody td:first-child:not(.learner-group-label) {
     position: sticky;
     left: 0;
     z-index: 5;
     background-color: #ffffff !important;
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
     box-shadow: none !important;
 }
 
-#gradeSheetTable thead th:first-child {
+#gradeSheetTable tbody .learner-group-row td {
+    position: static !important;
+}
+
+#gradeSheetTable tbody .learner-group-label-inner {
+    position: sticky;
+    left: 14px;
+    display: inline-flex;
+    align-items: center;
+    z-index: 3;
+}
+
+#gradeSheetTable thead .learner-name-header {
     position: sticky;
     left: 0;
-    z-index: 11;
+    z-index: 12;
     background-color: #3b56c4 !important;
     color: #ffffff !important;
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
     box-shadow: none !important;
 }
 

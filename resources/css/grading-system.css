@@ -39,6 +39,36 @@
     flex-shrink: 0;
 }
 
+.gs-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #1e293b;
+    border: 1px solid #d6dfe6;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.gs-back-btn:hover {
+    background-color: #f1f5f9;
+    color: #1F3690;
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.gs-back-btn:active {
+    transform: scale(0.97);
+}
+
 
 /* =========================
    RULES
@@ -69,15 +99,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
     padding: 6px 0;
+    flex-wrap: wrap;
 }
 
 .gs-rules-label {
     font-size: 0.82rem;
     color: #666666;
     flex-shrink: 0;
-    min-width: 200px;
+    min-width: 130px;
 }
 
 .gs-rules-value {
@@ -85,10 +116,12 @@
     font-weight: 600;
     color: #222222;
     text-align: right;
+    word-break: break-word;
 }
 
 .gs-rules-input {
     max-width: 280px;
+    width: 100%;
 }
 
 
@@ -102,6 +135,8 @@
     border-radius: 8px;
     padding: 14px 16px;
     height: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .gs-stat-label {
@@ -157,6 +192,8 @@
     border-radius: 10px;
     padding: 18px;
     height: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     transition: border-color 0.15s ease;
 }
 
@@ -2667,4 +2704,437 @@ html {
     font-size: 0.78rem;
     color: #64748b;
 }
+
+
+/* =========================
+   MY CLASSES CARD POLISH
+   ========================= */
+.gs-card-accent {
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.15s ease;
+}
+.gs-card-accent:hover {
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
+    transform: translateY(-2px);
+}
+.gs-card-accent .gs-panel-title {
+    font-size: 0.98rem;
+    margin-bottom: 4px;
+}
+.gs-card-accent .text-muted.small {
+    margin-bottom: 14px !important;
+}
+.gs-row-subtext {
+    font-size: 0.8rem;
+    color: #555555;
+}
+.gs-card-accent .gs-row-subtext {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+}
+
+/* --- Avg/Pass/At-Risk stat chips (My Classes cards) --- */
+.gs-card-accent .gs-row-subtext > span:not(.gs-badge) {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f4f5f7;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 400;
+    margin-right: 0;
+}
+.gs-card-accent .gs-row-subtext > span.text-danger:not(.gs-badge) {
+    background-color: #fcebeb;
+    color: #791f1f !important;
+}
+
+/* --- Fix: prevent nested reason text from becoming a flex item --- */
+.gs-card-accent .gs-row-subtext > span:not(.gs-badge) span {
+    display: inline;
+    margin-left: 4px;
+}
+
+/* ===== My Classes - card polish ===== */
+.gs-class-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+}
+
+.gs-class-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.gs-class-card-id {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.gs-grade-avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    background: #1e3a8a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gs-class-card .gs-panel-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.gs-class-card-subtitle {
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.gs-class-card .gs-badge {
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.gs-class-card .gs-badge-warning {
+    background: #fef3c7;
+    color: #b45309;
+}
+.gs-class-card .gs-badge-success {
+    background: #d1fae5;
+    color: #047857;
+}
+
+.gs-class-card .gd-progress-wrap {
+    margin-bottom: 14px;
+}
+.gs-class-card .gd-progress-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #374151;
+}
+.gs-class-card .gd-progress-bar {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+.gs-class-card .gd-progress-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 999px;
+}
+
+.gs-class-card .gs-row-subtext {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 14px;
+}
+
+.gs-class-card .gs-stat-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.gs-stat-chip {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    display: flex;
+    align-items: center;
+}
+
+.gs-stat-chip-risk {
+    flex-direction: column;
+    align-items: flex-start;
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #b91c1c;
+    padding: 6px 14px;
+}
+.gs-stat-chip-risk-main {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.gs-stat-chip-risk-main i {
+    color: #dc2626;
+}
+.gs-stat-chip-risk-reason {
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin-top: 2px;
+    padding-left: 20px;
+}
+
+/* =========================================================
+   GRADING RULES PAGE STYLES
+   ========================================================= */
+
+.gr-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #2438b9;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.gr-back-btn:hover {
+    background-color: rgba(36, 56, 185, 0.06);
+    border-color: #2438b9;
+    color: #2438b9;
+}
+
+.gr-summary-strip {
+    margin-bottom: 1.25rem;
+}
+
+.gr-summary-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 14px 16px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.gr-summary-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #222222;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Grading Components */
+.gr-component-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.gr-component-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.gr-component-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #333333;
+    margin: 0;
+}
+
+.gr-component-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.gr-component-weight-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 0 0 50%;
+    max-width: 340px;
+}
+
+.gr-component-percent {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #111827;
+    min-width: 44px;
+    text-align: right;
+}
+
+.gr-progress-bar {
+    height: 12px;
+    border-radius: 6px;
+    background-color: #eef1f6;
+    overflow: hidden;
+    flex: 1;
+}
+
+.gr-weight-bar {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+/* Formula & Worked Example Highlight Box */
+.gr-formula-highlight {
+    background-color: rgba(36, 56, 185, 0.04);
+    border-left: 4px solid #2438b9;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 12px;
+}
+
+.gr-formula-step {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    color: #4b5563;
+}
+
+.gr-formula-step.gr-formula-total {
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(36, 56, 185, 0.2);
+    font-weight: 700;
+    color: #1f2937;
+    font-size: 0.9rem;
+}
+
+.gr-formula-label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.gr-formula-value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Other Rules Grid */
+.gr-rules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.gr-rule-card {
+    background-color: #f9fafb;
+    border: 1px solid #eef0f2;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background-color 0.15s ease;
+}
+
+.gr-rule-card:hover {
+    background-color: #f3f4f6;
+}
+
+.gr-rule-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gr-rule-header i {
+    font-size: 0.72rem;
+    color: #2438b9;
+}
+
+.gr-rule-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6b7280;
+}
+
+.gr-rule-value {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .gr-rules-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gr-component-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .gr-component-weight-wrap {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .gr-formula-step {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+}
+
+.gs-class-card-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.gs-class-open-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 8px 14px;
+    border: 1px solid #2438b9;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #2438b9;
+    background-color: rgba(36, 56, 185, 0.04);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.gs-class-card:hover .gs-class-open-btn {
+    background-color: #2438b9;
+    color: #ffffff;
+    text-decoration: none;
+}
+
 

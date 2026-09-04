@@ -16,11 +16,7 @@
     "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
   },
   "resources/css/app.css": {
-<<<<<<< HEAD
-    "file": "assets/app-D42lRbcb.css",
-=======
-    "file": "assets/app-Clx-rJC2.css",
->>>>>>> origin/feature/teacher-dashboard
+    "file": "assets/app-DeZSd8AR.css",
     "name": "app",
     "names": [
       "app.css"
@@ -35,7 +31,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DhmS729s.js",
+    "file": "assets/app-BMBGx9gj.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

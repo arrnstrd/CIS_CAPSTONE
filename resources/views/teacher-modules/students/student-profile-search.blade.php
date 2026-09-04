@@ -1,10 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        Grading System
+        <span class="page-title-icon">
+            <i class="fa-solid fa-users"></i>
+            Students
+        </span>
     </x-slot>
 
     <x-slot name="subtitle">
-        Search and view academic performance records of students from your assigned classes.
+        <span class="page-title-subtitle">Search and view academic performance records of students from your assigned classes.</span>
     </x-slot>
 
     <!-- Filters -->

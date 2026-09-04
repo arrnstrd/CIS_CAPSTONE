@@ -1,10 +1,19 @@
-<x-layouts.teacher> <x-slot name="pageName">Grading System</x-slot> <x-slot name="subtitle">{{ $ta->section->name }} · {{ $ta->subject->name }}</x-slot>
+<x-layouts.teacher>
+    <x-slot name="pageName">
+        <span class="page-title-icon">
+            <i class="fa-solid fa-table"></i>
+            Grading System
+        </span>
+    </x-slot>
+    <x-slot name="subtitle">
+        <span class="page-title-subtitle">{{ $ta->section->name }} · {{ $ta->subject->name }}</span>
+    </x-slot>
 
-<div class="mb-3">
-    <a href="{{ route('teacher.grading-system.dashboard') }}" class="text-decoration-none">
-        &larr; Back
+<div class="mb-3 d-flex align-items-center gap-2">
+    <a href="{{ route('teacher.grading-system.dashboard') }}" class="gs-back-btn" title="Back to My Classes">
+        <i class="fa-solid fa-arrow-left"></i>
     </a>
-    <span class="gs-panel-title ms-2">Grade Sheet</span>
+    <span class="gs-panel-title">Grade Sheet</span>
 </div>
 
 {{-- =========================================================
@@ -317,8 +326,8 @@
                         <tr>
 
                             <th rowspan="3"
-                                class="align-middle fw-semibold text-dark"
-                                style="min-width: 220px;">
+                                class="align-middle fw-semibold text-dark learner-name-header"
+                                style="width: 220px;">
 
                                 Learner's Name
 
@@ -750,37 +759,39 @@
                                         + 12 }}"
                                         class="learner-group-label">
 
-                                        @if ($currentGroup === 'MALE')
+                                        <span class="learner-group-label-inner">
+                                            @if ($currentGroup === 'MALE')
 
-                                            <i class="fa-solid fa-person me-2"></i>
-                                            MALE
+                                                <i class="fa-solid fa-person me-2"></i>
+                                                MALE
 
-                                            <span class="learner-group-count">
-                                                {{ $maleRows->count() }}
-                                                learner{{ $maleRows->count() === 1 ? '' : 's' }}
-                                            </span>
+                                                <span class="learner-group-count">
+                                                    {{ $maleRows->count() }}
+                                                    learner{{ $maleRows->count() === 1 ? '' : 's' }}
+                                                </span>
 
-                                        @elseif ($currentGroup === 'FEMALE')
+                                            @elseif ($currentGroup === 'FEMALE')
 
-                                            <i class="fa-solid fa-person-dress me-2"></i>
-                                            FEMALE
+                                                <i class="fa-solid fa-person-dress me-2"></i>
+                                                FEMALE
 
-                                            <span class="learner-group-count">
-                                                {{ $femaleRows->count() }}
-                                                learner{{ $femaleRows->count() === 1 ? '' : 's' }}
-                                            </span>
+                                                <span class="learner-group-count">
+                                                    {{ $femaleRows->count() }}
+                                                    learner{{ $femaleRows->count() === 1 ? '' : 's' }}
+                                                </span>
 
-                                        @else
+                                            @else
 
-                                            <i class="fa-solid fa-users me-2"></i>
-                                            OTHER / UNSPECIFIED
+                                                <i class="fa-solid fa-users me-2"></i>
+                                                OTHER / UNSPECIFIED
 
-                                            <span class="learner-group-count">
-                                                {{ $otherRows->count() }}
-                                                learner{{ $otherRows->count() === 1 ? '' : 's' }}
-                                            </span>
+                                                <span class="learner-group-count">
+                                                    {{ $otherRows->count() }}
+                                                    learner{{ $otherRows->count() === 1 ? '' : 's' }}
+                                                </span>
 
-                                        @endif
+                                            @endif
+                                        </span>
 
                                     </td>
 
@@ -1076,6 +1087,15 @@
     }
 
 
+    .learner-group-label-inner {
+        position: sticky;
+        left: 14px;
+        display: inline-flex;
+        align-items: center;
+        z-index: 3;
+    }
+
+
     .learner-group-count {
         margin-left: 8px;
         font-size: 0.72rem;
@@ -1086,9 +1106,14 @@
 
 
     .learner-name-cell {
-        position: relative;
+        position: sticky;
+        left: 0;
+        z-index: 5;
+        width: 220px;
+        min-width: 220px;
+        max-width: 220px;
         padding: 8px 14px !important;
-        background: #ffffff;
+        background: #ffffff !important;
         white-space: nowrap;
         font-weight: 400 !important;
         font-size: 0.85rem;
@@ -1110,26 +1135,21 @@
     }
 
 
-    #gradeSheetTable th:first-child,
-    #gradeSheetTable td:first-child {
+    #gradeSheetTable thead .learner-name-header {
         position: sticky;
         left: 0;
-        z-index: 2;
-    }
-
-
-    #gradeSheetTable thead th:first-child {
-        z-index: 5;
+        z-index: 12;
+        width: 220px;
+        min-width: 220px;
+        max-width: 220px;
         font-weight: 600;
-        color: #1a202c;
-        font-size: 0.85rem;
-        padding-left: 14px;
-        background: #f8f9fa;
+        color: #ffffff !important;
+        background-color: #3b56c4 !important;
     }
 
 
     #gradeSheetTable tbody .learner-group-row td {
-        position: static;
+        position: static !important;
     }
 
 
@@ -2893,14 +2913,3 @@
 </script>
 
 </x-layouts.teacher>
-
-
-
-
-
-
-
-
-
-
-

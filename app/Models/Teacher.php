@@ -33,6 +33,11 @@ class Teacher extends Model
         return $this->hasMany(TeachingAssignment::class);
     }
 
+    public function academicNotes()
+    {
+        return $this->hasMany(AcademicNote::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Query Scopes

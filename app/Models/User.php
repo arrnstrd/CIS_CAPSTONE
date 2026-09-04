@@ -66,6 +66,57 @@ class User extends Authenticatable
         return $this->hasOne(Teacher::class);
     }
 
+    public function notificationPreference()
+    {
+        return $this->hasOne(NotificationPreference::class);
+    }
+
+    public function getOrCreateNotificationPreference(): NotificationPreference
+    {
+        if ($this->relationLoaded('notificationPreference') && $this->notificationPreference !== null) {
+            return $this->notificationPreference;
+        }
+
+        $preference = $this->notificationPreference()->firstOrCreate([], [
+            'attendance_enabled' => true,
+            'grading_enabled' => true,
+            'at_risk_enabled' => true,
+            'analytics_enabled' => true,
+            'import_enabled' => true,
+        ]);
+
+        $this->setRelation('notificationPreference', $preference);
+
+        return $preference;
+    }
+
+    public function dashboardPreference()
+    {
+        return $this->hasOne(TeacherDashboardPreference::class);
+    }
+
+    public function getOrCreateDashboardPreference(): TeacherDashboardPreference
+    {
+        $preference = $this->dashboardPreference()->firstOrCreate([], [
+            'default_view' => 'overview',
+            'dashboard_density' => 'comfortable',
+            'show_grading_progress' => true,
+            'show_class_health' => true,
+            'show_at_risk' => true,
+            'show_recent_activity' => true,
+            'show_summary_cards' => true,
+            'show_student_counts' => true,
+            'show_progress_indicators' => true,
+            'default_class_id' => null,
+            'default_term' => 'current',
+            'theme' => 'system',
+        ]);
+
+        $this->setRelation('dashboardPreference', $preference);
+
+        return $preference;
+    }
+
     /**
      * Get the invitation tokens for this user.
      */

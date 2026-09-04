@@ -848,6 +848,16 @@ Route::middleware(['auth'])->group(function () {
             '/teacher/grading-system/at-risk/{enrollmentId}/remarks',
             [App\Http\Controllers\Teacher\AtRiskController::class, 'storeRemark']
         )->name('teacher.grading-system.at-risk.remarks.store');
+
+        Route::put(
+            '/teacher/grading-system/at-risk/{enrollmentId}/remarks/{remarkId}',
+            [App\Http\Controllers\Teacher\AtRiskController::class, 'updateRemark']
+        )->name('teacher.grading-system.at-risk.remarks.update');
+
+        Route::delete(
+            '/teacher/grading-system/at-risk/{enrollmentId}/remarks/{remarkId}',
+            [App\Http\Controllers\Teacher\AtRiskController::class, 'destroyRemark']
+        )->name('teacher.grading-system.at-risk.remarks.destroy');
         
         // Attendance Analytics
         Route::get(
@@ -878,7 +888,7 @@ Route::middleware(['auth'])->group(function () {
 
 
         // ----------------------------------------------------
-        // STUDENT PROFILE — GRADING SYSTEM
+        // STUDENT PROFILE â€” GRADING SYSTEM
         // ----------------------------------------------------
         //
         // Normal Student Profile:
@@ -900,6 +910,21 @@ Route::middleware(['auth'])->group(function () {
             '/teacher/grading-system/student-profile/{enrollmentId}',
             [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'show']
         )->name('teacher.grading-system.student-profile.show');
+
+        Route::post(
+            '/teacher/grading-system/student-profile/{enrollmentId}/notes',
+            [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'storeAcademicNote']
+        )->name('teacher.student-profile.academic-notes.store');
+
+        Route::put(
+            '/teacher/grading-system/student-profile/{enrollmentId}/notes/{noteId}',
+            [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'updateAcademicNote']
+        )->name('teacher.student-profile.academic-notes.update');
+
+        Route::delete(
+            '/teacher/grading-system/student-profile/{enrollmentId}/notes/{noteId}',
+            [App\Http\Controllers\Teacher\StudentProfileSearchController::class, 'destroyAcademicNote']
+        )->name('teacher.student-profile.academic-notes.destroy');
 
 
         // Comp Rules
@@ -981,6 +1006,86 @@ Route::middleware(['auth'])->group(function () {
             '/teacher/room-attendance/{section}/{enrollment}/history',
             [TeacherRoomAttendanceController::class, 'history']
         )->name('room-attendance.history');
+
+
+        // ----------------------------------------------------
+        // SETTINGS
+        // ----------------------------------------------------
+
+        Route::redirect('/teacher/settings', '/teacher/settings/profile');
+
+        Route::get(
+            '/teacher/settings/profile',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'profile']
+        )->name('teacher.settings.profile');
+
+        Route::get(
+            '/teacher/settings/notifications',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'notifications']
+        )->name('teacher.settings.notifications');
+
+        Route::get(
+            '/teacher/settings/appearance',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'appearance']
+        )->name('teacher.settings.appearance');
+
+        Route::get(
+            '/teacher/settings/dashboard',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'dashboard']
+        )->name('teacher.settings.dashboard');
+
+        Route::get(
+            '/teacher/settings/security',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'security']
+        )->name('teacher.settings.security');
+
+        Route::put(
+            '/teacher/settings/password',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'updatePassword']
+        )->name('teacher.settings.password.update');
+
+        Route::put(
+            '/teacher/settings/notifications',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'updateNotificationPreferences']
+        )->name('teacher.settings.notifications.update');
+
+        Route::put(
+            '/teacher/settings/dashboard',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'updateDashboardPreferences']
+        )->name('teacher.settings.dashboard.update');
+
+        Route::put(
+            '/teacher/settings/appearance',
+            [App\Http\Controllers\Teacher\SettingsController::class, 'updateAppearance']
+        )->name('teacher.settings.appearance.update');
+
+
+        // ----------------------------------------------------
+        // NOTIFICATIONS
+        // ----------------------------------------------------
+
+        Route::get(
+            '/teacher/notifications',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'index']
+        )->name('teacher.notifications.index');
+
+        Route::patch(
+            '/teacher/notifications/{id}/read',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'markAsRead']
+        )->name('teacher.notifications.mark-as-read');
+
+        Route::post(
+            '/teacher/notifications/mark-all-read',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'markAllAsRead']
+        )->name('teacher.notifications.mark-all-as-read');
+        Route::delete(
+            '/teacher/notifications/{id}',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'destroy']
+        )->name('teacher.notifications.destroy');
+        Route::post(
+            '/teacher/notifications/bulk-delete',
+            [App\Http\Controllers\Teacher\NotificationController::class, 'bulkDestroy']
+        )->name('teacher.notifications.bulk-delete');
     });
 
 

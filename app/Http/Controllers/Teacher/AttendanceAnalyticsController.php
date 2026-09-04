@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
+use App\Models\AttendanceVerification;
 use App\Models\Enrollment;
-use App\Models\QuarterlyGrade;
 use App\Models\GradingPeriod;
+use App\Models\QuarterlyGrade;
 use App\Models\TeachingAssignment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AttendanceAnalyticsController extends Controller
@@ -21,127 +23,366 @@ class AttendanceAnalyticsController extends Controller
                 'studentPoints' => collect(),
                 'sectionPoints' => collect(),
                 'gradeLevels' => collect(),
+                'sections' => collect(),
+                'subjects' => collect(),
                 'selectedGradeLevel' => null,
+                'selectedSectionId' => null,
+                'selectedSubjectId' => null,
+                'selectedTerm' => null,
+                'attendanceSummary' => null,
+                'sectionSummaries' => collect(),
+                'insights' => [
+                    'relationship' => 'No active teaching assignments found.',
+                    'absence_trend' => 'No active teaching assignments found.',
+                    'term_pattern' => 'No active teaching assignments found.',
+                ],
+                'termTrend' => ['labels' => [], 'gradeSeries' => [], 'attendanceSeries' => []],
             ]);
         }
 
         $selectedGradeLevel = $request->input('grade_level') ?: null;
+        $selectedSectionId = $request->input('section_id') ?: null;
+        $selectedSubjectId = $request->input('subject_id') ?: null;
+        $selectedTerm = $request->input('term') ?: null;
 
-        $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
+        // Base query for teacher's active assignments (matches AnalyticsController)
+        $baseAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
-            ->with('section');
+            ->with(['section', 'subject']);
 
-        if ($selectedGradeLevel) {
-            $teachingAssignmentsQuery->whereHas('section', fn ($q) => $q->where('grade_level', $selectedGradeLevel));
-        }
+        $allTeacherAssignments = $baseAssignmentsQuery->get();
 
-        $teachingAssignments = $teachingAssignmentsQuery->get();
-
-        $gradeLevels = TeachingAssignment::where('teacher_id', $teacher->id)
-            ->where('status', 'active')
-            ->with('section')
-            ->get()
-            ->pluck('section.grade_level')
+        $gradeLevels = $allTeacherAssignments->pluck('section.grade_level')
+            ->filter()
             ->unique()
             ->sort()
             ->values();
 
+        $sections = $allTeacherAssignments->pluck('section')
+            ->filter()
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+
+        $subjects = $allTeacherAssignments->pluck('subject')
+            ->filter()
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+
+        // Apply filters to active assignments
+        $filteredAssignments = $allTeacherAssignments;
+
+        if ($selectedGradeLevel) {
+            $filteredAssignments = $filteredAssignments->filter(
+                fn ($ta) => $ta->section && $ta->section->grade_level == $selectedGradeLevel
+            );
+        }
+
+        if ($selectedSectionId) {
+            $filteredAssignments = $filteredAssignments->filter(
+                fn ($ta) => $ta->section_id == $selectedSectionId
+            );
+        }
+
+        if ($selectedSubjectId) {
+            $filteredAssignments = $filteredAssignments->filter(
+                fn ($ta) => $ta->subject_id == $selectedSubjectId
+            );
+        }
+
+        // Active grading period for term calculation
+        $gradingPeriod = null;
+        if ($selectedTerm) {
+            $gradingPeriod = GradingPeriod::where('sequence', $selectedTerm)->first();
+        } else {
+            $gradingPeriod = GradingPeriod::where('is_active', true)
+                ->where('sequence', '<=', 3)
+                ->orderBy('sequence')
+                ->first();
+        }
+
         $studentPoints = collect();
         $sectionPoints = collect();
+        $sectionSummaries = collect();
 
-        foreach ($teachingAssignments->groupBy('section_id') as $sectionAssignments) {
+        $overallPresent = 0;
+        $overallLate = 0;
+        $overallAbsent = 0;
+        $overallExcused = 0;
+        $overallNotInClassroom = 0;
+        $overallTotalStudents = 0;
+        $totalPossibleStudentDays = 0;
+        $totalAttendedStudentDays = 0;
+
+        foreach ($filteredAssignments->groupBy('section_id') as $sectionId => $sectionAssignments) {
             $section = $sectionAssignments->first()->section;
             $taIds = $sectionAssignments->pluck('id');
 
             $enrollments = Enrollment::where('section_id', $section->id)
                 ->where('status', 'active')
+                ->with('student')
                 ->get();
 
             $enrollmentIds = $enrollments->pluck('id');
-            $totalStudents = $enrollmentIds->count();
+            $sectionStudentCount = $enrollmentIds->count();
 
-            if ($totalStudents === 0) {
+            if ($sectionStudentCount === 0) {
                 continue;
             }
 
-            $gradesByEnrollment = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
-                ->whereNotNull('transmuted_grade')
-                ->get()
-                ->groupBy('enrollment_id');
+            $overallTotalStudents += $sectionStudentCount;
 
-            // Approximate school-day tracking window: from this section's earliest scan to today, weekdays only.
-            $earliestScan = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)->min('scan_time');
-            $schoolDaysCount = 0;
+            // Determine tracking date window (matching RiskScoreService)
+            [$startDate, $endDate, $schoolDaysCount] = $this->resolveSchoolDaysWindow($enrollmentIds, $gradingPeriod);
 
-            if ($earliestScan) {
-                $cursor = \Carbon\Carbon::parse($earliestScan)->startOfDay();
-                $end = now()->startOfDay();
-                while ($cursor->lte($end)) {
-                    if (! $cursor->isWeekend()) {
-                        $schoolDaysCount++;
-                    }
-                    $cursor->addDay();
-                }
+            // Fetch quarterly grades for this section's students
+            $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+                ->whereNotNull('transmuted_grade');
+
+            if ($selectedTerm) {
+                $gradesQuery->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', $selectedTerm));
             }
 
-            $presentDaysByEnrollment = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
-                ->where('scan_type', 'IN')
-                ->selectRaw('enrollment_id, COUNT(DISTINCT DATE(scan_time)) as present_days')
-                ->groupBy('enrollment_id')
-                ->pluck('present_days', 'enrollment_id');
+            $gradesByEnrollment = $gradesQuery->get()->groupBy('enrollment_id');
 
-            $attendanceCountsByEnrollment = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
-                ->where('scan_type', 'IN')
-                ->selectRaw('enrollment_id, COUNT(DISTINCT scan_time) as present_count')
-                ->groupBy('enrollment_id')
-                ->pluck('present_count', 'enrollment_id');
+            // Fetch QR scans (IN) within the window
+            $qrLogsQuery = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
+                ->where('scan_type', 'IN');
 
-            $maxScans = $attendanceCountsByEnrollment->max() ?: 1;
+            if ($startDate && $endDate) {
+                $qrLogsQuery->whereBetween('scan_time', [
+                    $startDate->copy()->startOfDay(),
+                    $endDate->copy()->endOfDay(),
+                ]);
+            }
 
+            $qrLogs = $qrLogsQuery->select('enrollment_id', 'scan_time')
+                ->get()
+                ->groupBy(fn ($log) => $log->enrollment_id . '_' . Carbon::parse($log->scan_time)->toDateString());
+
+            // Fetch Teacher Verifications within the window
+            $verificationsQuery = AttendanceVerification::whereIn('enrollment_id', $enrollmentIds);
+
+            if ($startDate && $endDate) {
+                $verificationsQuery->whereBetween('attendance_date', [
+                    $startDate->toDateString(),
+                    $endDate->toDateString(),
+                ]);
+            }
+
+            $verifications = $verificationsQuery->orderBy('created_at', 'desc')
+                ->get()
+                ->groupBy(fn ($v) => $v->enrollment_id . '_' . Carbon::parse($v->attendance_date)->toDateString())
+                ->map(fn ($group) => $group->first()); // latest verification per student per date
+
+            // Section level counters
+            $sectionPresent = 0;
+            $sectionLate = 0;
+            $sectionAbsent = 0;
+            $sectionExcused = 0;
+            $sectionNotInClassroom = 0;
+            $sectionAttendedDays = 0;
             $sectionGradesSum = 0;
             $sectionGradesCount = 0;
-            $sectionPresentTotal = 0;
 
             foreach ($enrollments as $enrollment) {
                 $grades = $gradesByEnrollment->get($enrollment->id, collect());
                 $avgGrade = $grades->count() ? round($grades->avg('transmuted_grade'), 1) : null;
-                $presentDays = $presentDaysByEnrollment->get($enrollment->id, 0);
-                $absences = max(0, $schoolDaysCount - $presentDays);
+
+                // Evaluate each school day in the tracking window for this student
+                $studentAttendedDays = 0;
+                $studentAbsences = 0;
+
+                if ($schoolDaysCount > 0 && $startDate && $endDate) {
+                    $cursor = $startDate->copy();
+                    while ($cursor->lte($endDate)) {
+                        if (! $cursor->isWeekend()) {
+                            $dateKey = $enrollment->id . '_' . $cursor->toDateString();
+                            $hasQr = $qrLogs->has($dateKey);
+                            $verification = $verifications->get($dateKey);
+
+                            if ($verification) {
+                                switch ($verification->status) {
+                                    case AttendanceVerification::STATUS_PRESENT:
+                                        $sectionPresent++;
+                                        $studentAttendedDays++;
+                                        break;
+                                    case AttendanceVerification::STATUS_LATE:
+                                        $sectionLate++;
+                                        $studentAttendedDays++;
+                                        break;
+                                    case AttendanceVerification::STATUS_EXCUSED:
+                                        $sectionExcused++;
+                                        $studentAttendedDays++;
+                                        break;
+                                    case AttendanceVerification::STATUS_ABSENT:
+                                        $sectionAbsent++;
+                                        $studentAbsences++;
+                                        break;
+                                    case AttendanceVerification::STATUS_NOT_IN_CLASSROOM:
+                                        $sectionNotInClassroom++;
+                                        $studentAbsences++;
+                                        break;
+                                    default:
+                                        if ($hasQr) {
+                                            $sectionPresent++;
+                                            $studentAttendedDays++;
+                                        } else {
+                                            $sectionAbsent++;
+                                            $studentAbsences++;
+                                        }
+                                        break;
+                                }
+                            } elseif ($hasQr) {
+                                $sectionPresent++;
+                                $studentAttendedDays++;
+                            } else {
+                                // Weekday passed with no QR scan and no verification -> Absent
+                                $sectionAbsent++;
+                                $studentAbsences++;
+                            }
+                        }
+                        $cursor->addDay();
+                    }
+                }
+
+                $sectionAttendedDays += $studentAttendedDays;
 
                 if ($avgGrade !== null) {
-                    $studentPoints->push(['x' => $absences, 'y' => $avgGrade]);
+                    $studentPoints->push([
+                        'x' => $studentAbsences,
+                        'y' => $avgGrade,
+                        'name' => $enrollment->student?->full_name ?? 'Student',
+                    ]);
                     $sectionGradesSum += $avgGrade;
                     $sectionGradesCount++;
                 }
-
-                $sectionPresentTotal += $attendanceCountsByEnrollment->get($enrollment->id, 0);
             }
 
-            $sectionAttendanceRate = $maxScans > 0 ? round(($sectionPresentTotal / ($totalStudents * $maxScans)) * 100, 1) : 0;
+            $sectionPossibleDays = $sectionStudentCount * max(1, $schoolDaysCount);
+            $sectionRate = $sectionPossibleDays > 0 ? round(($sectionAttendedDays / $sectionPossibleDays) * 100, 1) : 0;
             $sectionAvgGrade = $sectionGradesCount ? round($sectionGradesSum / $sectionGradesCount, 1) : null;
+
+            $overallPresent += $sectionPresent;
+            $overallLate += $sectionLate;
+            $overallAbsent += $sectionAbsent;
+            $overallExcused += $sectionExcused;
+            $overallNotInClassroom += $sectionNotInClassroom;
+            $totalPossibleStudentDays += $sectionPossibleDays;
+            $totalAttendedStudentDays += $sectionAttendedDays;
 
             if ($sectionAvgGrade !== null) {
                 $sectionPoints->push([
-                    'x' => $sectionAttendanceRate,
+                    'x' => $sectionRate,
                     'y' => $sectionAvgGrade,
                     'label' => $section->name,
                 ]);
             }
+
+            $sectionSummaries->push([
+                'id' => $section->id,
+                'name' => $section->name,
+                'grade_level' => $section->grade_level,
+                'student_count' => $sectionStudentCount,
+                'attendance_rate' => $sectionRate,
+                'avg_grade' => $sectionAvgGrade,
+                'present' => $sectionPresent,
+                'late' => $sectionLate,
+                'absent' => $sectionAbsent,
+                'excused' => $sectionExcused,
+            ]);
         }
 
+        $overallAttendanceRate = $totalPossibleStudentDays > 0
+            ? round(($totalAttendedStudentDays / $totalPossibleStudentDays) * 100, 1)
+            : 0;
+
+        $attendanceSummary = [
+            'overall_rate' => $overallAttendanceRate,
+            'total_students' => $overallTotalStudents,
+            'present' => $overallPresent,
+            'late' => $overallLate,
+            'absent' => $overallAbsent,
+            'excused' => $overallExcused,
+            'not_in_classroom' => $overallNotInClassroom,
+        ];
+
         $insights = $this->computeInsights($studentPoints, $sectionPoints);
-        $termTrend = $this->computeTermTrend($teachingAssignments, $studentPoints);
+        $termTrend = $this->computeTermTrend($filteredAssignments);
 
         return view('teacher-modules.analytics.attendance-analytics-index', compact(
-            'studentPoints', 'sectionPoints', 'gradeLevels', 'selectedGradeLevel', 'insights', 'termTrend'
+            'studentPoints',
+            'sectionPoints',
+            'gradeLevels',
+            'sections',
+            'subjects',
+            'selectedGradeLevel',
+            'selectedSectionId',
+            'selectedSubjectId',
+            'selectedTerm',
+            'attendanceSummary',
+            'sectionSummaries',
+            'insights',
+            'termTrend'
         ));
+    }
+
+    /**
+     * Resolve the date window and school day count for a group of enrollments and optional grading period.
+     */
+    private function resolveSchoolDaysWindow($enrollmentIds, ?GradingPeriod $gradingPeriod): array
+    {
+        if ($gradingPeriod && $gradingPeriod->start_date && $gradingPeriod->end_date) {
+            $startDate = Carbon::parse($gradingPeriod->start_date)->startOfDay();
+            $endDate = Carbon::parse($gradingPeriod->end_date)->startOfDay();
+
+            // Do not project future days past today
+            if ($endDate->gt(now())) {
+                $endDate = now()->startOfDay();
+            }
+        } else {
+            // Find earliest QR scan or teacher verification
+            $earliestScan = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
+                ->where('scan_type', 'IN')
+                ->min('scan_time');
+
+            $earliestVerification = AttendanceVerification::whereIn('enrollment_id', $enrollmentIds)
+                ->min('attendance_date');
+
+            $startDates = collect([$earliestScan, $earliestVerification])
+                ->filter()
+                ->map(fn ($d) => Carbon::parse($d)->startOfDay());
+
+            if ($startDates->isEmpty()) {
+                return [null, null, 0];
+            }
+
+            $startDate = $startDates->sort()->first();
+            $endDate = now()->startOfDay();
+        }
+
+        if (! $startDate || $startDate->gt($endDate)) {
+            return [null, null, 0];
+        }
+
+        $schoolDaysCount = 0;
+        $cursor = $startDate->copy();
+        while ($cursor->lte($endDate)) {
+            if (! $cursor->isWeekend()) {
+                $schoolDaysCount++;
+            }
+            $cursor->addDay();
+        }
+
+        return [$startDate, $endDate, $schoolDaysCount];
     }
 
     private function computeInsights($studentPoints, $sectionPoints): array
     {
         $minSampleSize = 5;
 
-        // Insight 1: Observed relationship (correlation direction between absences and grade)
+        // Insight 1: Pearson correlation between absences and average grade
         $relationshipText = 'Not enough data yet to observe a pattern.';
         if ($studentPoints->count() >= $minSampleSize) {
             $n = $studentPoints->count();
@@ -204,23 +445,15 @@ class AttendanceAnalyticsController extends Controller
         ];
     }
 
-    private function computeTermTrend($teachingAssignments, $studentPoints): array
+    private function computeTermTrend($filteredAssignments): array
     {
-        $taIds = $teachingAssignments->pluck('id');
-        $gradingPeriods = GradingPeriod::orderBy('sequence')->where('sequence', '<=', 3)->get();
-
-        $sectionIds = $teachingAssignments->pluck('section_id')->unique();
+        $taIds = $filteredAssignments->pluck('id');
+        $sectionIds = $filteredAssignments->pluck('section_id')->unique();
         $enrollmentIds = Enrollment::whereIn('section_id', $sectionIds)
             ->where('status', 'active')
             ->pluck('id');
 
-        $totalStudents = $enrollmentIds->count();
-        $presentEnrollmentCount = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
-            ->where('scan_type', 'IN')
-            ->distinct('enrollment_id')
-            ->count('enrollment_id');
-
-        $overallAttendanceRate = $totalStudents ? round(($presentEnrollmentCount / $totalStudents) * 100, 1) : null;
+        $gradingPeriods = GradingPeriod::orderBy('sequence')->where('sequence', '<=', 3)->get();
 
         $gradesByPeriod = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
             ->whereNotNull('transmuted_grade')
@@ -235,7 +468,45 @@ class AttendanceAnalyticsController extends Controller
             $labels[] = 'Term ' . $period->sequence;
             $periodGrades = $gradesByPeriod->get($period->id, collect());
             $gradeSeries[] = $periodGrades->count() ? round($periodGrades->avg('transmuted_grade'), 1) : null;
-            $attendanceSeries[] = $overallAttendanceRate;
+
+            // Calculate term attendance rate for this specific grading period
+            [$startDate, $endDate, $schoolDays] = $this->resolveSchoolDaysWindow($enrollmentIds, $period);
+
+            if ($schoolDays > 0 && $enrollmentIds->isNotEmpty() && $startDate && $endDate) {
+                // QR scan dates
+                $qrDates = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
+                    ->where('scan_type', 'IN')
+                    ->whereBetween('scan_time', [
+                        $startDate->copy()->startOfDay(),
+                        $endDate->copy()->endOfDay(),
+                    ])
+                    ->selectRaw('enrollment_id, DATE(scan_time) as scan_date')
+                    ->distinct()
+                    ->get()
+                    ->map(fn ($r) => $r->enrollment_id . '_' . $r->scan_date);
+
+                // Verification attended dates
+                $verifiedDates = AttendanceVerification::whereIn('enrollment_id', $enrollmentIds)
+                    ->whereBetween('attendance_date', [
+                        $startDate->toDateString(),
+                        $endDate->toDateString(),
+                    ])
+                    ->whereIn('status', [
+                        AttendanceVerification::STATUS_PRESENT,
+                        AttendanceVerification::STATUS_LATE,
+                        AttendanceVerification::STATUS_EXCUSED,
+                    ])
+                    ->selectRaw('enrollment_id, attendance_date')
+                    ->distinct()
+                    ->get()
+                    ->map(fn ($r) => $r->enrollment_id . '_' . Carbon::parse($r->attendance_date)->toDateString());
+
+                $totalAttended = $qrDates->toBase()->merge($verifiedDates->toBase())->unique()->count();
+                $totalPossible = $enrollmentIds->count() * $schoolDays;
+                $attendanceSeries[] = $totalPossible > 0 ? round(($totalAttended / $totalPossible) * 100, 1) : null;
+            } else {
+                $attendanceSeries[] = null;
+            }
         }
 
         return [

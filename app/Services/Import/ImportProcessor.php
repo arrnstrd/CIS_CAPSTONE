@@ -9,6 +9,7 @@ use App\Models\Guardian;
 use App\Models\Student;
 use App\Services\EnrollmentService;
 use App\Services\StudentService;
+use App\Services\Notification\NotificationService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 
@@ -29,6 +30,7 @@ class ImportProcessor
     public function __construct(
         private readonly StudentService $studentService,
         private readonly EnrollmentService $enrollmentService,
+        private readonly NotificationService $notificationService,
     ) {}
 
     /**
@@ -181,6 +183,33 @@ class ImportProcessor
             'success_count' => $successCount,
             'failed_count'  => $failedCount,
         ]);
+        // Send one summary notification to the teacher who started the import.
+        // NotificationService automatically respects the Data Import preference.
+        $import->refresh();
+
+        if ($import->createdBy) {
+            $title = $finalStatus === 'completed'
+                ? 'Data Import Completed'
+                : 'Data Import Completed with Issues';
+
+            $message = $finalStatus === 'completed'
+                ? "The data import \"{$import->original_filename}\" has been completed successfully. {$successCount} student(s) were imported."
+                : "The data import \"{$import->original_filename}\" completed with issues. {$successCount} student(s) were imported and {$failedCount} failed.";
+
+            $this->notificationService->sendToUser(
+                $import->createdBy,
+                NotificationService::CATEGORY_IMPORT,
+                $title,
+                $message,
+                [
+                    'bulk_import_id' => $import->id,
+                    'filename' => $import->original_filename,
+                    'status' => $finalStatus,
+                    'success_count' => $successCount,
+                    'failed_count' => $failedCount,
+                ],
+            );
+        }
     }
 
     /**

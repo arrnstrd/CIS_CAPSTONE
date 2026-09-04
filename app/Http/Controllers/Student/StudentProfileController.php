@@ -145,6 +145,13 @@ class StudentProfileController extends Controller
 
         abort_unless($isInTeacherClass, 403, 'You can only view students in your own classes.');
 
+        if ($request->ajax() || $request->boolean('fragment')) {
+            return view(
+                'admin-modules.management.student-profile-content',
+                $this->loadProfileData($student)
+            );
+        }
+
         return view(
             'admin-modules.management.student-profile',
             $this->loadProfileData($student)

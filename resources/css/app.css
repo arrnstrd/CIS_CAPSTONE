@@ -1,30 +1,25 @@
-/* 1. Imports first */
+/* 1. Vendor Dependencies */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import '@fortawesome/fontawesome-free/css/all.min.css';
+
+/* 2. Core Layout & Shell */
 @import './sidebar.css';
 @import './top-nav.css';
 @import './layout.css';
 @import './table.css';
+
+/* 3. Feature Modules */
 @import './room-attendance.css';
 @import './grading-system.css';
-
-@import './gradeLevel.css';
-@import './status-badges.css';
-
-
-/* @import './teacher-modules/t-layout.css';
-@import './teacher-modules/t-sidebar.css'; */
-
-
+@import './students.css';
 @import './academic.css';
 @import './bulk-import.css';
 @import './flagged-modal.css';
 @import './gradeLevel.css';
 @import './import.css';
-@import './layout.css';
 @import './qr-generation.css';
 @import './qr-station.css';
-@import './sidebar.css';
 @import './status-badges.css';
-@import './table.css';
-@import './top-nav.css';
+
+/* 4. Theme & Overrides */
+@import './dark-mode.css';

@@ -1,10 +1,14 @@
-<x-layouts.teacher> <x-slot name="pageName">
-Grading System </x-slot>
+<x-layouts.teacher>
+    <x-slot name="pageName">
+        <span class="page-title-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            At-Risk Students
+        </span>
+    </x-slot>
 
-```
-<x-slot name="subtitle">
-    Review students who may need attention based on grades, missing work, attendance, or declining performance. Risk scores are system-generated.
-</x-slot>
+    <x-slot name="subtitle">
+        <span class="page-title-subtitle">Review students who may need attention based on grades, missing work, attendance, or declining performance. Risk scores are system-generated.</span>
+    </x-slot>
 
 {{-- Filters --}}
 <form method="GET"
