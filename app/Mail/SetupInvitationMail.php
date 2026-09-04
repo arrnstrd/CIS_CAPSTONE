@@ -27,7 +27,7 @@ class SetupInvitationMail extends Mailable
     public function build(): self
     {
         return $this->subject('Complete Your Account Setup')
-            ->markdown('emails.setup-invitation', [
+            ->markdown('emails.auth.setup-invitation', [
                 'name' => $this->name,
                 'setupUrl' => route('setup.show', ['token' => $this->token, 'email' => $this->email]),
             ]);

@@ -17,8 +17,8 @@
 
     <div class="page-wrapper toggled">
 
-        {{-- sidebar --}}
-        <x-layouts.admin.sidebar />
+        {{-- School Admin sidebar --}}
+        <x-layouts.school-admin.sidebar />
 
 
         <main class="page-content">

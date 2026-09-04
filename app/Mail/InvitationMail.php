@@ -42,7 +42,7 @@ class InvitationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.invitation',
+            view: 'emails.auth.invitation',
         );
     }
 

@@ -31,8 +31,8 @@
         <!-- Navigation Menu -->
         <div class="sidebar-menu">
             <ul>
-                <li class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <a href="{{ route('admin.dashboard') }}">
+                <li class="{{ request()->routeIs('admin.dashboard') || request()->routeIs('super_admin.dashboard') ? 'active' : '' }}">
+                    <a href="{{ $isSuperAdmin ? route('super_admin.dashboard') : route('admin.dashboard') }}">
                         <i class="fas fa-chart-pie"></i>
                         <span>Dashboard</span>
                     </a>

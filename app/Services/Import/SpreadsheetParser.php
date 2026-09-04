@@ -3,7 +3,7 @@
 namespace App\Services\Import;
 
 use App\DTOs\ImportRowData;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Libraries\Spreadsheet\ExcelSpreadsheetService;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
@@ -50,13 +50,17 @@ class SpreadsheetParser
         12 => 'senior_high_school',
     ];
 
+    public function __construct(
+        private readonly ExcelSpreadsheetService $spreadsheetService = new ExcelSpreadsheetService()
+    ) {}
+
     public function parse(string $filePath): array
     {
         if (!file_exists($filePath)) {
             throw new \RuntimeException('Import file not found: ' . $filePath);
         }
 
-        $spreadsheet = IOFactory::load($filePath);
+        $spreadsheet = $this->spreadsheetService->loadFile($filePath);
         $worksheet   = $this->findSf1Sheet($spreadsheet);
 
         if ($worksheet === null) {

@@ -33,7 +33,7 @@ class GateScanMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.gate-scan',
+            view: 'emails.attendance.gate-scan',
             with: [
                 'student' => $this->student,
                 'scanType' => $this->scanType,

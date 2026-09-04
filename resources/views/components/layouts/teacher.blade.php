@@ -9,6 +9,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 
     @php
         $savedTheme = auth()->user()?->dashboardPreference?->theme ?? 'system';
@@ -95,6 +96,13 @@
             </div>
 
             <div class="top-nav-actions">
+                <div class="d-none d-md-flex align-items-center gap-2 me-2">
+                    <div class="text-white-50 text-end" style="font-size: 0.75rem; line-height: 1.2;">
+                        <div>Today</div>
+                        <div class="fw-bold text-white" id="liveDate"></div>
+                    </div>
+                </div>
+
                 <!-- Notification Bell Dropdown -->
                 <div class="dropdown notification-dropdown">
                     <button
@@ -208,33 +216,28 @@
         </header>
 
         <main class="page-content teacher-page-bg">
-            <div class="container-fluid p-6">
-                <section class="admin-head-banner p-4 mx-3 mt-3">
-                    <div class="admin-head-banner__copy">
-                        <h1 class="admin-head-banner__title mt-3">{{ $pageName ?? 'Header' }}</h1>
-                        @if ($subtitle ?? null)
-                            <p class="admin-head-banner__sub">{{ $subtitle }}</p>
-                        @endif
-                    </div>
-                    <div class="admin-head-banner__meta">
-                        <div class="d-flex flex-column align-items-end gap-2">
-                            <div class="admin-head-banner__date">
-                                <i class="fa-regular fa-calendar-check"></i>
-                                <span>
-                                    <small>Today</small>
-                                    <strong id="liveDate"></strong>
-                                </span>
-                            </div>
-                            <x-help-button />
+            <div class="container-fluid p-0">
+                @if (!request()->routeIs('teacher.dashboard'))
+                    <section class="admin-head-banner p-4 mx-3 mb-4">
+                        <div class="admin-head-banner__copy">
+                            <h1 class="admin-head-banner__title mt-1">{{ $pageName ?? 'Header' }}</h1>
+                            @if ($subtitle ?? null)
+                                <p class="admin-head-banner__sub">{{ $subtitle }}</p>
+                            @endif
                         </div>
-
-                        @isset($headerActions)
-                            <div class="admin-head-banner__actions">
-                                {{ $headerActions }}
+                        <div class="admin-head-banner__meta">
+                            <div class="d-flex flex-column align-items-end gap-2">
+                                <x-help-button />
                             </div>
-                        @endisset
-                    </div>
-                </section>
+
+                            @isset($headerActions)
+                                <div class="admin-head-banner__actions">
+                                    {{ $headerActions }}
+                                </div>
+                            @endisset
+                        </div>
+                    </section>
+                @endif
 
                 <div class="admin-page-slot mx-3">
                     {{ $slot }}
@@ -353,6 +356,7 @@
         }
     });
     </script>
+    @stack('scripts')
 </body>
 
 </html>

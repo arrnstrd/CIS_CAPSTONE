@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL; // Idinagdag natin ito
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
 
         Schema::defaultStringLength(191);
+
+        Blade::anonymousComponentPath(resource_path('views/shared/components'), 'shared');
+        Blade::anonymousComponentPath(resource_path('views/shared/components'), 'ui');
+
+        // Automatically map <x-ui.*> and <x-shared.*> dot-notation calls to shared/components
+        foreach (glob(resource_path('views/shared/components/*.blade.php')) as $componentFile) {
+            $componentName = basename($componentFile, '.blade.php');
+            Blade::component('shared.components.' . $componentName, 'ui.' . $componentName);
+            Blade::component('shared.components.' . $componentName, 'shared.' . $componentName);
+        }
 
         // Eto ang mag-force ng HTTPS kapag nasa production (Render)
         if (env('APP_ENV') === 'production') {

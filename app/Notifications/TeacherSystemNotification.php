@@ -53,7 +53,7 @@ class TeacherSystemNotification extends Notification
 
         return (new MailMessage)
             ->subject("[CIS Teacher Portal] {$this->title}")
-            ->view('emails.teacher-system-notification', [
+            ->view('emails.notifications.teacher-system-notification', [
                 'recipientName' => $notifiable->first_name ?? 'Teacher',
                 'title' => $this->title,
                 'category' => $this->category,

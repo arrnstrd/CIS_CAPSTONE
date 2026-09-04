@@ -25,5 +25,7 @@ Thumbs.db
 backup.sql
 *.dump
 .env
-
+.env*
 /public/images/Downloads/
+
+.env.testing

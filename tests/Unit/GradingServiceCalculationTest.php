@@ -79,7 +79,9 @@ class GradingServiceCalculationTest extends TestCase
 
     private function assessment(int $id, int $categoryId, int $totalItems): Assessment
     {
-        return new Assessment(['assessment_category_id' => $categoryId, 'total_items' => $totalItems])->setAttribute('id', $id);
+        $assessment = new Assessment(['assessment_category_id' => $categoryId, 'total_items' => $totalItems]);
+        $assessment->setAttribute('id', $id);
+        return $assessment;
     }
 
     private function scores(array $values): Collection
