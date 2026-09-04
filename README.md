@@ -6,7 +6,6 @@ An enterprise school management platform featuring self-service QR gate attendan
 
 ## 📚 System Documentation Hub (`documentation/`)
 
-Comprehensive technical architecture, business logic specifications, and operational guides are documented in the [**`documentation/`**](documentation/README.md) hub:
 
 ```
 documentation/
