@@ -1,8 +1,9 @@
-/* =========================================================
-   TOP NAVIGATION
-   ========================================================= */
+/* ===================================================================
+   Teacher POV — Top Navigation
+   Prefix: teacher-top-nav
+   =================================================================== */
 
-.top-nav {
+.teacher-top-nav {
     position: fixed;
     top: 0;
     left: 260px;
@@ -24,12 +25,12 @@
     z-index: 990;
 }
 
-.top-nav-greeting {
+.teacher-top-nav-greeting {
     flex: 1 1 240px;
     min-width: 0;
 }
 
-.top-nav-greeting-text {
+.teacher-top-nav-greeting-text {
     font-size: clamp(1.1rem, 1.4vw, 1.35rem);
     font-weight: 700;
     color: #ffffff;
@@ -37,14 +38,14 @@
     word-break: break-word;
 }
 
-.top-nav-greeting-subtext {
+.teacher-top-nav-greeting-subtext {
     font-size: 0.82rem;
     color: rgba(255, 255, 255, 0.9);
     margin-top: 4px;
     word-break: break-word;
 }
 
-.top-nav-actions {
+.teacher-top-nav-actions {
     display: flex;
     align-items: center;
     gap: 14px;
@@ -52,7 +53,7 @@
     flex-wrap: wrap;
 }
 
-.top-nav-profile {
+.teacher-top-nav-profile {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -63,7 +64,7 @@
     max-width: 100%;
 }
 
-.top-nav-profile-avatar {
+.teacher-top-nav-profile-avatar {
     width: 34px;
     height: 34px;
     border-radius: 50%;
@@ -76,14 +77,14 @@
     flex-shrink: 0;
 }
 
-.top-nav-profile-details {
+.teacher-top-nav-profile-details {
     display: flex;
     flex-direction: column;
     line-height: 1.2;
     min-width: 0;
 }
 
-.top-nav-profile-name {
+.teacher-top-nav-profile-name {
     font-size: 0.82rem;
     font-weight: 600;
     color: #ffffff;
@@ -93,7 +94,7 @@
     max-width: 180px;
 }
 
-.top-nav-profile-email {
+.teacher-top-nav-profile-email {
     font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.8);
     white-space: nowrap;
@@ -102,11 +103,8 @@
     max-width: 180px;
 }
 
-/* =========================================================
-   TOP NAV NOTIFICATIONS
-   ========================================================= */
-
-.top-nav-bell-btn {
+/* Notification dropdown */
+.teacher-top-nav-bell-btn {
     width: 38px;
     height: 38px;
     border-radius: 50%;
@@ -122,15 +120,15 @@
     flex-shrink: 0;
 }
 
-.top-nav-bell-btn:hover,
-.top-nav-bell-btn:focus,
-.top-nav-bell-btn[aria-expanded="true"] {
+.teacher-top-nav-bell-btn:hover,
+.teacher-top-nav-bell-btn:focus,
+.teacher-top-nav-bell-btn[aria-expanded="true"] {
     background: rgba(255, 255, 255, 0.08);
     color: #ffffff;
     outline: none;
 }
 
-.top-nav-bell-badge {
+.teacher-top-nav-bell-badge {
     position: absolute;
     top: -2px;
     right: -2px;
@@ -192,9 +190,8 @@
     overflow: hidden;
 }
 
-/* Responsive queries */
 @media (max-width: 767px) {
-    .top-nav {
+    .teacher-top-nav {
         margin-left: 0;
         width: 100%;
         max-width: 100%;

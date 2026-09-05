@@ -14,24 +14,24 @@
 
 <body>
 
-    <div class="page-wrapper toggled">
+    <div class="super-admin-page-wrapper toggled">
 
         {{-- Super Admin Sidebar --}}
         <x-layouts.super-admin.sidebar />
 
-        <main class="page-content">
+        <main class="super-admin-page-content">
             <div class="container-fluid p-6 d-flex flex-column flex-grow-1">
-                <section class="admin-head-banner p-4 mx-3 mt-1.5">
-                    <div class="admin-head-banner__copy">
-                        <h1 class="admin-head-banner__title mt-3">{{ $pageName ?? 'Super Admin' }}</h1>
+                <section class="super-admin-head-banner p-4 mx-3 mt-1.5">
+                    <div class="super-admin-head-banner__copy">
+                        <h1 class="super-admin-head-banner__title mt-3">{{ $pageName ?? 'Super Admin' }}</h1>
                         @if ($subtitle ?? null)
-                            <p class="admin-head-banner__sub">{{ $subtitle }}</p>
+                            <p class="super-admin-head-banner__sub">{{ $subtitle }}</p>
                         @endif
                     </div>
 
-                    <div class="admin-head-banner__meta">
+                    <div class="super-admin-head-banner__meta">
                         <div class="d-flex flex-column align-items-end gap-2">
-                            <div class="admin-head-banner__date">
+                            <div class="super-admin-head-banner__date">
                                 <i class="fa-regular fa-calendar-check"></i>
                                 <span>
                                     <small>Today</small>
@@ -42,14 +42,14 @@
                         </div>
 
                         @isset($headerActions)
-                            <div class="admin-head-banner__actions">
+                            <div class="super-admin-head-banner__actions">
                                 {{ $headerActions }}
                             </div>
                         @endisset
                     </div>
                 </section>
 
-                <div class="admin-page-slot mx-3">
+                <div class="super-admin-page-slot mx-3">
                     {{ $slot }}
                 </div>
             </div>

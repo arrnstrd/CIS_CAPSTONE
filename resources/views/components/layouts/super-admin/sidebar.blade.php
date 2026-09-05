@@ -11,12 +11,12 @@
     $roleName = $currentUser?->role_label ?? 'Super Admin';
 @endphp
 
-<nav id="sidebar" class="sidebar-wrapper">
+<nav id="sidebar" class="super-admin-sidebar-wrapper">
 
-    <div class="sidebar-content">
+    <div class="super-admin-sidebar-content">
 
         <!-- Brand -->
-        <div class="sidebar-brand d-flex flex-column py-4 px-4">
+        <div class="super-admin-sidebar-brand d-flex flex-column py-4 px-4">
             <h5 class="text-white mb-0 fw-bold">
                 SUPER ADMIN PORTAL
             </h5>
@@ -26,7 +26,7 @@
         </div>
 
         <!-- Navigation Menu -->
-        <div class="sidebar-menu">
+        <div class="super-admin-sidebar-menu">
             <ul>
                 <li class="{{ request()->routeIs('super_admin.dashboard') || request()->is('super-admin/dashboard') ? 'active' : '' }}">
                     <a href="{{ route('super_admin.dashboard') }}">
@@ -36,7 +36,7 @@
                 </li>
 
                 <!-- SUPER ADMIN AUDIT & ACCESS CONTROL -->
-                <li class="sidebar-section-label">
+                <li class="super-admin-sidebar-section-label">
                     <small>ACCESS CONTROL & AUDITING</small>
                 </li>
                 <li class="{{ request()->routeIs('users.*') || request()->is('users*') ? 'active' : '' }}">
@@ -63,17 +63,17 @@
     </div>
 
     <!-- User Profile Footer -->
-    <div class="sidebar-footer">
-        <div class="sidebar-user-block">
-            <div class="sidebar-user-avatar">
+    <div class="super-admin-sidebar-footer">
+        <div class="super-admin-sidebar-user-block">
+            <div class="super-admin-sidebar-user-avatar">
                 {{ $initials }}
             </div>
-            <div class="sidebar-user-info">
-                <span class="sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
-                <span class="sidebar-user-role">{{ $roleName }}</span>
+            <div class="super-admin-sidebar-user-info">
+                <span class="super-admin-sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
+                <span class="super-admin-sidebar-user-role">{{ $roleName }}</span>
             </div>
             <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
-                class="sidebar-logout-btn" title="Log Out" aria-label="Log Out">
+                class="super-admin-sidebar-logout-btn" title="Log Out" aria-label="Log Out">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
         </div>

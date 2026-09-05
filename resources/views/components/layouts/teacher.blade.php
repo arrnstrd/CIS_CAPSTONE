@@ -52,7 +52,7 @@
 
 <body>
 
-    <div class="page-wrapper toggled">
+    <div class="teacher-page-wrapper toggled">
 
         {{-- sidebar --}}
         <x-layouts.teacher.sidebar />
@@ -89,13 +89,13 @@
             };
         @endphp
 
-        <header class="top-nav">
-            <div class="top-nav-greeting">
-                <div class="top-nav-greeting-text">{{ $greeting }}, {{ $teacherFirstName }}!</div>
-                <div class="top-nav-greeting-subtext">Here's what's happening in your classes today.</div>
+        <header class="teacher-top-nav">
+            <div class="teacher-top-nav-greeting">
+                <div class="teacher-top-nav-greeting-text">{{ $greeting }}, {{ $teacherFirstName }}!</div>
+                <div class="teacher-top-nav-greeting-subtext">Here's what's happening in your classes today.</div>
             </div>
 
-            <div class="top-nav-actions">
+            <div class="teacher-top-nav-actions">
                 <div class="d-none d-md-flex align-items-center gap-2 me-2">
                     <div class="text-white-50 text-end" style="font-size: 0.75rem; line-height: 1.2;">
                         <div>Today</div>
@@ -106,7 +106,7 @@
                 <!-- Notification Bell Dropdown -->
                 <div class="dropdown notification-dropdown">
                     <button
-                        class="top-nav-bell-btn btn position-relative"
+                        class="teacher-top-nav-bell-btn btn position-relative"
                         type="button"
                         id="teacherNotificationDropdown"
                         data-bs-toggle="dropdown"
@@ -116,7 +116,7 @@
                     >
                         <i class="fa-solid fa-bell"></i>
                         @if ($unreadNotificationsCount > 0)
-                            <span id="navUnreadBadge" class="top-nav-bell-badge">
+                            <span id="navUnreadBadge" class="teacher-top-nav-bell-badge">
                                 {{ $unreadNotificationsCount > 99 ? '99+' : $unreadNotificationsCount }}
                                 <span class="visually-hidden">unread notifications</span>
                             </span>
@@ -203,35 +203,35 @@
                 </div>
 
                 <!-- Teacher Profile -->
-                <div class="top-nav-profile">
-                    <div class="top-nav-profile-avatar">
+                <div class="teacher-top-nav-profile">
+                    <div class="teacher-top-nav-profile-avatar">
                         <i class="fa-solid fa-circle-user"></i>
                     </div>
-                    <div class="top-nav-profile-details">
-                        <span class="top-nav-profile-name">{{ $teacherName }}</span>
-                        <span class="top-nav-profile-email">{{ $teacherEmail }}</span>
+                    <div class="teacher-top-nav-profile-details">
+                        <span class="teacher-top-nav-profile-name">{{ $teacherName }}</span>
+                        <span class="teacher-top-nav-profile-email">{{ $teacherEmail }}</span>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="page-content teacher-page-bg">
+        <main class="teacher-page-content">
             <div class="container-fluid p-0">
                 @if (!request()->routeIs('teacher.dashboard'))
-                    <section class="admin-head-banner p-4 mx-3 mb-4">
-                        <div class="admin-head-banner__copy">
-                            <h1 class="admin-head-banner__title mt-1">{{ $pageName ?? 'Header' }}</h1>
+                    <section class="teacher-head-banner p-4 mx-3 mb-4">
+                        <div class="teacher-head-banner__copy">
+                            <h1 class="teacher-head-banner__title mt-1">{{ $pageName ?? 'Header' }}</h1>
                             @if ($subtitle ?? null)
-                                <p class="admin-head-banner__sub">{{ $subtitle }}</p>
+                                <p class="teacher-head-banner__sub">{{ $subtitle }}</p>
                             @endif
                         </div>
-                        <div class="admin-head-banner__meta">
+                        <div class="teacher-head-banner__meta">
                             <div class="d-flex flex-column align-items-end gap-2">
                                 <x-help-button />
                             </div>
 
                             @isset($headerActions)
-                                <div class="admin-head-banner__actions">
+                                <div class="teacher-head-banner__actions">
                                     {{ $headerActions }}
                                 </div>
                             @endisset
@@ -239,7 +239,7 @@
                     </section>
                 @endif
 
-                <div class="admin-page-slot mx-3">
+                <div class="teacher-page-slot mx-3">
                     {{ $slot }}
                 </div>
             </div>

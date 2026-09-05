@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     // ── Auto-Active Link Logic ──
-    const currentPath = window.location.pathname;
-    const sidebarLinks = document.querySelectorAll(".sidebar-menu ul li a");
+    const sidebarLinks = document.querySelectorAll(
+        ".sa-sidebar-menu ul li a, .teacher-sidebar-menu ul li a, .scanner-sidebar-menu ul li a, .super-admin-sidebar-menu ul li a, .sidebar-menu ul li a"
+    );
 
     sidebarLinks.forEach(function (link) {
         // Kapag nag-match yung href ng 'a' tag sa current URL

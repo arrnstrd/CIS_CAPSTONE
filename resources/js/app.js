@@ -1,29 +1,27 @@
-//
+// Master JS Manifest
 import * as bootstrap from "bootstrap";
-
 window.bootstrap = bootstrap;
 
-import "./ajax-crud.js";
+// 1. Global Core & Shell
+import "./shared/ajax-crud.js";
 import "./sidebar.js";
 import "./layout.js";
-import "./student.js";
-import "./section.js";
-import "./schedule-config.js";
-import "./settings.js";
-import "./teacher.js";
-import "./import.js";
-import "./qr-station.js";
-import "./download-excel.js";
-import "./teaching-assignments.js";
-
-// teacher modules
-import "./teacher-modules/t-sidebar.js";
-import "./teacher-modules/t-top-header.js";
-
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allow your team to quickly build robust real-time web applications.
- */
-
 import "./echo";
+
+// 2. POV: School Admin
+import "./pov/school-admin/academic/subject-modal.js";
+import "./pov/school-admin/academic/section.js";
+import "./pov/school-admin/teaching-assignments/teaching-assignments.js";
+import "./pov/school-admin/students/student.js";
+import "./pov/school-admin/teachers/teacher.js";
+import "./pov/school-admin/schedule-configuration/schedule-config.js";
+import "./pov/school-admin/settings/settings.js";
+import "./pov/school-admin/bulk-import/import.js";
+import "./pov/school-admin/qr-generation/qr-generation.js";
+import "./pov/school-admin/time-in-time-out-history/download-excel.js";
+
+// 3. POV: Scanner Operator
+import "./pov/scanner-operator/qr-station/qr-station.js";
+
+// 4. POV: Teacher
+import "./pov/teacher/attendance/room-attendance.js";

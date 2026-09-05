@@ -1,0 +1,176 @@
+/* ===================================================================
+   School Admin — Layout & Page Shell
+   Prefix: sa-
+   =================================================================== */
+
+.sa-page-wrapper {
+    min-height: 100vh;
+    background-color: #f0f4f9;
+    display: flex;
+    flex-direction: column;
+}
+
+.sa-page-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    min-width: 0;
+    padding: 20px 24px 24px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    background-color: #f0f4f9;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.sa-head-banner {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.3rem 1.4rem;
+    margin-bottom: 1rem;
+    border-radius: 1.4rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3b82f6 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+    box-shadow: 0 10px 30px rgba(30, 58, 138, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.sa-head-banner__copy {
+    min-width: 0;
+}
+
+.sa-head-banner__eyebrow {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.72;
+    margin-bottom: 0.3rem;
+}
+
+.sa-head-banner__title {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.4vw, 2.3rem);
+    line-height: 1.05;
+    font-weight: 800;
+}
+
+.sa-head-banner__sub {
+    margin: 0.45rem 0 0;
+    max-width: 52rem;
+    color: #cbd5e1;
+}
+
+.sa-head-banner__meta {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.sa-head-banner__date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+}
+
+.sa-head-banner__date i {
+    font-size: 1rem;
+}
+
+.sa-head-banner__date span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.sa-head-banner__date small {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.72;
+}
+
+.sa-head-banner__date strong {
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+.sa-head-banner__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sa-head-banner__help-btn,
+.admin-head-banner__help-btn {
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff !important;
+    backdrop-filter: blur(6px);
+    border-radius: 0.75rem;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 0.18s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+}
+
+.sa-head-banner__help-btn:hover,
+.sa-head-banner__help-btn:focus,
+.admin-head-banner__help-btn:hover,
+.admin-head-banner__help-btn:focus {
+    background: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.sa-page-slot {
+    min-width: 0;
+    margin-top: 2rem;
+    flex-grow: 1;
+}
+
+.sa-date-display-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+    .sa-page-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 16px 12px 16px;
+    }
+
+    .sa-head-banner {
+        flex-direction: column;
+    }
+
+    .sa-head-banner__meta {
+        justify-content: flex-start;
+    }
+
+    .sa-page-slot {
+        margin-top: 1.5rem;
+    }
+
+    .sa-date-display-container {
+        justify-content: center;
+    }
+}

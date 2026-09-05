@@ -1,0 +1,281 @@
+/* ===================================================================
+   Teacher POV — Sidebar Styles
+   Prefix: teacher-sidebar-
+   =================================================================== */
+
+.teacher-sidebar-wrapper {
+    width: 260px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background: #2F4AC0;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.teacher-sidebar-brand {
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teacher-sidebar-brand-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.teacher-sidebar-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.teacher-sidebar-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.teacher-sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.teacher-sidebar-teacher-info {
+    margin: 1.25rem 1rem 0.5rem;
+    padding: 0.85rem 1rem;
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.teacher-sidebar-teacher-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #fff;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.teacher-sidebar-teacher-name {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.teacher-sidebar-teacher-email {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.teacher-sidebar-teacher-class {
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.teacher-sidebar-menu {
+    padding-bottom: 10px;
+}
+
+.teacher-sidebar-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.teacher-sidebar-menu ul li {
+    position: relative;
+}
+
+.teacher-sidebar-menu ul li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.teacher-sidebar-menu ul li a i {
+    display: inline-block;
+    margin-right: 15px;
+    width: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.teacher-sidebar-menu ul li a:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.teacher-sidebar-menu ul li.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 15%;
+    height: 70%;
+    width: 4px;
+    background-color: #ffffff;
+    border-radius: 0 4px 4px 0;
+}
+
+.teacher-sidebar-menu ul li.active > a {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+}
+
+.teacher-sidebar-section-label {
+    padding: 20px 25px 8px;
+    list-style: none;
+}
+
+.teacher-sidebar-section-label small {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+}
+
+/* Submenu */
+.teacher-sidebar-submenu-toggle {
+    cursor: pointer;
+}
+
+.teacher-sidebar-submenu-caret {
+    font-size: 11px;
+    transition: transform 0.2s ease;
+}
+
+.teacher-sidebar-submenu-toggle[aria-expanded="true"] .teacher-sidebar-submenu-caret {
+    transform: rotate(180deg);
+}
+
+.teacher-sidebar-submenu {
+    list-style: none;
+    padding: 4px 0 4px 20px;
+    margin: 0;
+}
+
+.teacher-sidebar-submenu li a {
+    padding: 10px 25px 10px 20px !important;
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.teacher-sidebar-submenu li a:hover {
+    color: #ffffff !important;
+}
+
+.teacher-sidebar-submenu li.active > a {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.teacher-sidebar-footer {
+    flex-shrink: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.teacher-sidebar-user-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    width: 100%;
+}
+
+.teacher-sidebar-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.teacher-sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    text-align: left;
+}
+
+.teacher-sidebar-user-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.teacher-sidebar-user-role {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.2;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.teacher-sidebar-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.75);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.teacher-sidebar-logout-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+}

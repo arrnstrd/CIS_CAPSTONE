@@ -4,6 +4,7 @@ namespace App\Services\Notification;
 
 use App\Models\User;
 use App\Notifications\TeacherSystemNotification;
+use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
@@ -35,10 +36,20 @@ class NotificationService
             return null;
         }
 
-        $notification = new TeacherSystemNotification($category, $title, $message, $data);
-        $user->notify($notification);
+        try {
+            $notification = new TeacherSystemNotification($category, $title, $message, $data);
+            $user->notify($notification);
 
-        return $user->notifications()->latest()->first();
+            return $user->notifications()->latest()->first();
+        } catch (\Throwable $e) {
+            Log::warning('Failed to send notification to user: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'category' => $category,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     /**

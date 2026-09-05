@@ -20,7 +20,7 @@ use App\Http\Controllers\SchoolAdmin\TeachingAssignments\TeachingAssignmentContr
 use App\Http\Controllers\SchoolAdmin\TimeInTimeOutHistory\AttendanceLogController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin,teacher'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -81,6 +81,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('student-management.grade');
     Route::get('/student-management/grade/{grade}/section/{section}', [StudentManagementController::class, 'bySection'])
         ->name('student-management.section');
+    Route::get('/student-management/grade/{grade}/section/{section}/export', [StudentManagementController::class, 'export'])
+        ->name('student-management.section.export');
     Route::post('/students', [StudentManagementController::class, 'store'])
         ->name('student.store');
     Route::get('/students/search', [StudentManagementController::class, 'search'])

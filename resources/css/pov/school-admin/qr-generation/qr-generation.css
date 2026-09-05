@@ -1,7 +1,7 @@
 /* QR Generation with Scanner Integration - Custom Styles */
 
 /* Import QR Station Base Styles */
-@import url('qr-station.css');
+@import url('../../scanner-operator/qr-station/qr-station.css');
 
 /* Full-width Layout for QR Generation */
 .qr-generation-container {

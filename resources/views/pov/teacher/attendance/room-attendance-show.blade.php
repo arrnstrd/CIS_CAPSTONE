@@ -39,6 +39,19 @@
         ];
     @endphp
 
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Summary stat cards -->
     <div class="row g-3 mb-3">
         <div class="col-12 col-md-4">
@@ -113,13 +126,87 @@
         </div>
     @endif
 
+    @if ($isSingleDay)
+        <!-- Inline Spacious Bulk Operations Panel (Prominently placed in the middle above roster) -->
+        <div id="bulkActionBar" class="ra-bulk-panel-wrapper" aria-hidden="true">
+            <div class="ra-bulk-panel-inner">
+                <div class="ra-bulk-panel">
+                    <div class="ra-bulk-panel-header">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="ra-bulk-count-badge">
+                                <i class="fa-solid fa-users"></i>
+                                <span id="bulkSelectedCount">0</span> Students Selected
+                            </span>
+                            <span class="text-muted small">Choose one single status below to apply simultaneously</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted p-0" id="btnClearBulk">
+                            <i class="fa-solid fa-xmark me-1"></i>Clear selection
+                        </button>
+                    </div>
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-xl-7">
+                            <label class="ra-filter-label mb-2 d-block">Select Single Target Status:</label>
+                            <div class="ra-bulk-status-group">
+                                @foreach (App\Models\AttendanceVerification::STATUSES as $value => $label)
+                                    @php
+                                        $dotClass = match($value) {
+                                            'present' => 'dot-success',
+                                            'late', 'not_in_classroom' => 'dot-warning',
+                                            'absent' => 'dot-danger',
+                                            'excused' => 'dot-secondary',
+                                            default => 'dot-secondary'
+                                        };
+                                        $iconClass = match($value) {
+                                            'present' => 'fa-check',
+                                            'late' => 'fa-clock',
+                                            'absent' => 'fa-xmark',
+                                            'excused' => 'fa-user-shield',
+                                            'not_in_classroom' => 'fa-person-walking-arrow-right',
+                                            default => 'fa-circle'
+                                        };
+                                    @endphp
+                                    <label class="ra-bulk-status-pill {{ $value === 'present' ? 'active' : '' }}" for="bulk_status_{{ $value }}">
+                                        <input type="radio" name="bulk_status_choice" value="{{ $value }}" id="bulk_status_{{ $value }}" {{ $value === 'present' ? 'checked' : '' }}>
+                                        <span class="badge-dot {{ $dotClass }} py-1 px-2 d-inline-flex align-items-center gap-1">
+                                            <i class="fa-solid {{ $iconClass }} small"></i>
+                                            {{ $label }}
+                                            @if ($value === 'not_in_classroom')
+                                                <small class="text-muted fw-normal" style="font-size: 0.68rem;">(1h grace)</small>
+                                            @endif
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-8 col-xl-3">
+                            <label for="bulkRemarksInput" class="ra-filter-label mb-2 d-block">Remarks for all (optional):</label>
+                            <input type="text" id="bulkRemarksInput" class="form-control form-control-sm" placeholder="e.g. Excused event, clinic...">
+                        </div>
+
+                        <div class="col-12 col-md-4 col-xl-2 text-end align-self-end">
+                            <button type="button" class="btn btn-primary w-100 py-2 fw-bold" id="btnOpenBulkModal" data-bs-toggle="modal" data-bs-target="#bulkConfirmModal" disabled>
+                                <i class="fa-solid fa-check-double me-1"></i> Apply Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <p class="ra-filter-label mb-2">Full class roster &mdash; every enrolled student appears, scanned or not</p>
 
     <x-ui.table>
         <thead>
             <tr>
-                <th>Student No</th>
-                <th>Student Name</th>
+                @if ($isSingleDay)
+                    <th class="ra-checkbox-cell">
+                        <input type="checkbox" id="selectAllStudents" class="form-check-input" title="Select all students">
+                    </th>
+                @endif
+                <th>Student</th>
                 <th>Time In</th>
                 <th>Scan Type</th>
                 <th>Status</th>
@@ -139,11 +226,31 @@
 
             @if ($isSingleDay)
                 @forelse ($roster as $row)
+                    @php
+                        $student = $row->student;
+                        $firstName = $student?->first_name ?? '';
+                        $lastName = $student?->last_name ?? '';
+                        $studentName = trim($firstName . ' ' . $lastName) ?: '—';
+                        $initials = strtoupper(trim(substr($firstName, 0, 1) . substr($lastName, 0, 1))) ?: '—';
+                    @endphp
                     <tr @class(['table-warning-subtle' => $row->status !== 'present'])>
-                        <td>{{ $row->student->student_number ?? '—' }}</td>
-                        <td>
-                            {{ $row->student->first_name ?? '' }}
-                            {{ $row->student->last_name ?? '' }}
+                        <td class="ra-checkbox-cell">
+                            <input type="checkbox" 
+                                class="form-check-input ra-student-checkbox" 
+                                value="{{ $row->enrollment->id }}"
+                                data-student-name="{{ $studentName }}"
+                                data-student-no="{{ $student?->student_number ?? '—' }}"
+                                data-current-status="{{ $row->status }}"
+                                data-current-status-label="{{ $row->status_label }}">
+                        </td>
+                        <td class="table-name-cell">
+                            <div class="table-name-wrap">
+                                <div class="table-name-avatar">{{ $initials }}</div>
+                                <div class="table-name-copy">
+                                    <span class="table-name-main">{{ $studentName }}</span>
+                                    <span class="table-name-sub">{{ $student?->student_number ?? '—' }}</span>
+                                </div>
+                            </div>
                         </td>
                         <td>
                             @if ($row->log)
@@ -161,18 +268,30 @@
                         </td>
                         <td>
                             <span class="badge-dot dot-{{ $statusDotMap[$row->status] ?? 'secondary' }}">{{ $row->status_label }}</span>
+                            @if ($row->status === 'not_in_classroom' && !empty($row->is_grace_period_active))
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1" style="font-size: 0.68rem;" title="Grace period active. Transitions to Absent in {{ $row->grace_minutes_remaining }}m if not verified.">
+                                    <i class="fa-regular fa-clock me-1"></i>{{ $row->grace_minutes_remaining }}m left
+                                </span>
+                            @endif
                         </td>
                         <td>
                             <button type="button" class="btn-view-history ra-btn-sm"
                                 data-enrollment-id="{{ $row->enrollment->id }}"
                                 data-date="{{ $row->date }}"
-                                data-student-name="{{ $row->student->first_name }} {{ $row->student->last_name }}"
-                                data-student-no="{{ $row->student->student_number }}"
+                                data-student-name="{{ $studentName }}"
+                                data-student-no="{{ $student?->student_number ?? '—' }}"
+                                data-student-initials="{{ $initials }}"
                                 data-time-in="{{ $row->log?->scan_time?->format('h:i A') ?? 'No scan' }}"
+                                data-has-gate-scan="{{ $row->log ? '1' : '0' }}"
+                                data-gate-exact-time="{{ $row->log?->scan_time?->format('h:i:s A') ?? '' }}"
+                                data-gate-scan-type="{{ $row->log?->scan_type ?? '' }}"
+                                data-gate-session="{{ $row->log?->session ?? '' }}"
                                 data-current-status="{{ $row->status }}"
                                 data-current-status-label="{{ $row->status_label }}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#editModal">
+                                data-current-status-dot="dot-{{ $statusDotMap[$row->status] ?? 'secondary' }}"
+                                data-remarks="{{ $row->verification?->remarks ?? '' }}"
+                                data-bs-toggle="offcanvas"
+                                data-bs-target="#attendanceSidePanel">
                                 Edit
                             </button>
                         </td>
@@ -187,16 +306,27 @@
             @else
                 @forelse ($roster as $date => $dayRows)
                     <tr>
-                        <td colspan="6" class="fw-bold" style="background: rgba(36,56,185,0.06);">
+                        <td colspan="5" class="fw-bold" style="background: rgba(36,56,185,0.06);">
                             {{ \Carbon\Carbon::parse($date)->format('l, F d, Y') }}
                         </td>
                     </tr>
                     @foreach ($dayRows as $row)
+                        @php
+                            $student = $row->student;
+                            $firstName = $student?->first_name ?? '';
+                            $lastName = $student?->last_name ?? '';
+                            $studentName = trim($firstName . ' ' . $lastName) ?: '—';
+                            $initials = strtoupper(trim(substr($firstName, 0, 1) . substr($lastName, 0, 1))) ?: '—';
+                        @endphp
                         <tr @class(['table-warning-subtle' => $row->status !== 'present'])>
-                            <td>{{ $row->student->student_number ?? '—' }}</td>
-                            <td>
-                                {{ $row->student->first_name ?? '' }}
-                                {{ $row->student->last_name ?? '' }}
+                            <td class="table-name-cell">
+                                <div class="table-name-wrap">
+                                    <div class="table-name-avatar">{{ $initials }}</div>
+                                    <div class="table-name-copy">
+                                        <span class="table-name-main">{{ $studentName }}</span>
+                                        <span class="table-name-sub">{{ $student?->student_number ?? '—' }}</span>
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 @if ($row->log)
@@ -220,7 +350,7 @@
                     @endforeach
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="5" class="text-center text-muted py-4">
                             No active students enrolled in this section.
                         </td>
                     </tr>
@@ -230,170 +360,224 @@
     </x-ui.table>
 
     @if ($isSingleDay)
-        <!-- Edit Attendance Modal -->
-        <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form method="POST" id="editForm" action="">
+        <!-- Bulk Attendance Confirmation Modal -->
+        <div class="modal fade" id="bulkConfirmModal" tabindex="-1" aria-labelledby="bulkConfirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0">
+                    <form method="POST" id="bulkVerifyForm" action="{{ route('room-attendance.bulk-verify', $section->id) }}">
                         @csrf
-                        <input type="hidden" name="status" id="editStatusInput">
-                        <input type="hidden" name="attendance_date" id="editDateInput">
+                        <input type="hidden" name="attendance_date" value="{{ $rangeStart->toDateString() }}">
                         <input type="hidden" name="date_filter" value="{{ $currentFilter }}">
                         <input type="hidden" name="custom_start_date" value="{{ $customStartDate }}">
                         <input type="hidden" name="custom_end_date" value="{{ $customEndDate }}">
+                        <input type="hidden" name="status" id="modalFormStatus">
+                        <input type="hidden" name="remarks" id="modalFormRemarks">
+                        <div id="modalFormEnrollmentIds"></div>
 
-                        <div class="modal-header">
-                            <h5 class="modal-title">Edit Attendance</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p class="fw-bold mb-3">
-                                <span id="editStudentName"></span> (<span id="editStudentNo"></span>)
-                            </p>
-                            <p class="text-muted small mb-3">
-                                Scanned: <span id="editTimeIn"></span>
-                            </p>
-                            <p class="mb-3">Current status: <span id="editCurrentStatus" class="badge-dot dot-secondary"></span></p>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">New status:</label>
-                                <div class="d-flex flex-column gap-2">
-                                    @foreach (App\Models\AttendanceVerification::STATUSES as $value => $label)
-                                        <div class="ra-status-option">
-                                            <input type="radio" name="status" value="{{ $value }}" id="status_{{ $value }}" class="status-radio" required>
-                                            <label for="status_{{ $value }}" class="mb-0">{{ $label }}</label>
-                                        </div>
-                                    @endforeach
+                        <div class="modal-header bg-light border-bottom">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="ra-confirm-icon-box">
+                                    <i class="fa-solid fa-users-gear"></i>
+                                </div>
+                                <div>
+                                    <h5 class="modal-title fw-bold text-dark fs-6 mb-0" id="bulkConfirmModalLabel">
+                                        Confirm Bulk Attendance Verification
+                                    </h5>
+                                    <div class="text-muted small">
+                                        {{ $section->name }} &bull; {{ $rangeStart->format('l, F d, Y') }}
+                                    </div>
                                 </div>
                             </div>
-                            
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body p-4">
+                            <div class="ra-confirm-callout mb-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="ra-confirm-callout-label">Target Status to Apply:</span>
+                                    <span id="modalStatusBadge" class="badge-dot dot-success fs-6 py-1 px-3">Present</span>
+                                </div>
+                                <p class="text-muted small mb-0">
+                                    This single status will be assigned to all <strong><span id="modalSelectedCountText">0</span> selected student(s)</strong> simultaneously.
+                                </p>
+                            </div>
+
+                            <div class="mb-3" id="modalRemarksRow" style="display: none;">
+                                <label class="ra-filter-label mb-1">Remarks for Selected:</label>
+                                <div class="ra-modal-remarks-box" id="modalRemarksText"></div>
+                            </div>
+
                             <div class="mb-3">
-                                <label for="remarks" class="form-label">Remarks (optional):</label>
-                                <textarea class="form-control" id="remarks" name="remarks" rows="3" placeholder="Add any notes about this attendance change..."></textarea>
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <label class="ra-filter-label mb-0">
+                                        Affected Students (<span id="modalListCount">0</span>):
+                                    </label>
+                                    <span class="text-muted" style="font-size: 0.72rem;">Scroll to inspect</span>
+                                </div>
+                                <div class="ra-modal-chips-container" id="modalStudentListContainer">
+                                    <!-- Dynamic list of student chips -->
+                                </div>
+                            </div>
+
+                            <div class="ra-modal-alert">
+                                <i class="fa-solid fa-shield-halved text-primary mt-1 fs-6"></i>
+                                <div>
+                                    <strong>Protected Verification:</strong>
+                                    All <span id="modalWarnCount">0</span> students will be verified with this status. Original Time In and Time Out scan records remain untouched and tamper-proof.
+                                </div>
                             </div>
                         </div>
-                        <div class="modal-footer justify-content-between">
-                            <button type="button" class="btn btn-link btn-sm p-0" id="viewHistoryBtn">
-                                <i class="fa-solid fa-clock-rotate-left"></i> View full history
+
+                        <div class="modal-footer bg-light border-top">
+                            <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold" id="btnSubmitBulkVerify">
+                                <i class="fa-solid fa-check-double me-1"></i> Confirm & Apply Status
                             </button>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                            </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Attendance History Modal -->
-        <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Attendance History</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <!-- Attendance Verification & Protected History Offcanvas Side Panel -->
+        <div class="offcanvas offcanvas-end ra-side-panel" tabindex="-1" id="attendanceSidePanel" aria-labelledby="attendanceSidePanelLabel"
+            data-section-id="{{ $section->id }}"
+            data-base-url="{{ url('/teacher/room-attendance/' . $section->id) }}">
+            <div class="offcanvas-header ra-panel-header">
+                <h5 class="offcanvas-title ra-panel-title" id="attendanceSidePanelLabel">
+                    <i class="fa-solid fa-user-check text-primary"></i>
+                    <span>Attendance Verification</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+
+            <div class="offcanvas-body ra-panel-body">
+                <!-- Student Header Strip -->
+                <div class="ra-student-strip">
+                    <div class="ra-strip-avatar" id="panelStudentAvatar">--</div>
+                    <div class="ra-strip-info">
+                        <div class="ra-strip-name" id="panelStudentName">Loading student...</div>
+                        <div class="ra-strip-sub">
+                            <span id="panelStudentNo"><i class="fa-regular fa-id-badge me-1"></i>--</span>
+                            <span>&bull;</span>
+                            <span>Campus Gate: <strong id="panelTimeIn">--</strong></span>
+                        </div>
                     </div>
-                    <div class="modal-body" id="historyModalBody">
-                        <p class="text-muted text-center py-4">Loading...</p>
+                    <div>
+                        <span id="panelCurrentStatusBadge" class="badge-dot dot-secondary">--</span>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+
+                <!-- Navigation Tabs: Verify Status vs Attendance History -->
+                <div class="ra-panel-nav">
+                    <button type="button" class="ra-panel-nav-btn active" id="tabBtnVerify">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>Verify Status</span>
+                    </button>
+                    <button type="button" class="ra-panel-nav-btn" id="tabBtnTimeline">
+                        <i class="fa-solid fa-timeline"></i>
+                        <span>Attendance History</span>
+                        <span class="ra-panel-badge-count ms-1" id="panelEventCount">0</span>
+                    </button>
+                </div>
+
+                <!-- Protected Raw Gate Entry Preview (Tamper-Proof) -->
+                <div class="ra-gate-preview-card" id="panelGatePreviewCard">
+                    <div class="ra-gate-preview-left">
+                        <div class="ra-gate-preview-icon" id="panelGatePreviewIcon">
+                            <i class="fa-solid fa-door-open"></i>
+                        </div>
+                        <div>
+                            <div class="ra-gate-preview-title">Campus Gate Time-In</div>
+                            <div class="ra-gate-preview-time" id="panelGatePreviewTime">--</div>
+                            <div class="ra-gate-preview-sub" id="panelGatePreviewSub">
+                                <i class="fa-solid fa-qrcode text-muted me-1"></i>Official Turnstile Log
+                            </div>
+                        </div>
+                    </div>
+                    <span class="ra-gate-preview-badge">
+                        <i class="fa-solid fa-shield-halved text-primary me-1"></i>Protected
+                    </span>
+                </div>
+
+                <!-- TAB 1: Verification Form -->
+                <div id="panelViewVerify">
+                    <form method="POST" id="editForm">
+                        @csrf
+                        <input type="hidden" name="attendance_date" id="editDateInput">
+                        <input type="hidden" name="date_filter" value="{{ $currentFilter }}">
+                        <input type="hidden" name="custom_start_date" value="{{ $customStartDate }}">
+                        <input type="hidden" name="custom_end_date" value="{{ $customEndDate }}">
+
+                        <label class="ra-filter-label mb-2 d-block">Room Attendance Status:</label>
+                        <div class="ra-status-grid mb-3">
+                            @foreach (App\Models\AttendanceVerification::STATUSES as $value => $label)
+                                @php
+                                    $dotClass = match($value) {
+                                        'present' => 'dot-success',
+                                        'late', 'not_in_classroom' => 'dot-warning',
+                                        'absent' => 'dot-danger',
+                                        'excused' => 'dot-secondary',
+                                        default => 'dot-secondary'
+                                    };
+                                    $iconClass = match($value) {
+                                        'present' => 'fa-check',
+                                        'late' => 'fa-clock',
+                                        'absent' => 'fa-xmark',
+                                        'excused' => 'fa-user-shield',
+                                        'not_in_classroom' => 'fa-person-walking-arrow-right',
+                                        default => 'fa-circle'
+                                    };
+                                @endphp
+                                <label class="ra-status-radio-card" for="status_{{ $value }}">
+                                    <input type="radio" name="status" value="{{ $value }}" id="status_{{ $value }}" class="status-radio" required>
+                                    <span class="badge-dot {{ $dotClass }} py-1 px-2">
+                                        <i class="fa-solid {{ $iconClass }} me-1"></i>
+                                    </span>
+                                    <span class="ra-status-card-label">
+                                        {{ $label }}
+                                        @if ($value === 'not_in_classroom')
+                                            <span class="d-block text-muted small fw-normal mt-1" style="font-size: 0.72rem;">
+                                                <i class="fa-regular fa-clock me-1"></i>1-hour grace period for gate-scanned students. Automatically transitions to Absent if unverified.
+                                            </span>
+                                        @endif
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="remarks" class="ra-filter-label mb-2">Teacher Remarks (optional):</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="3" placeholder="Provide reason or context for this attendance verification..."></textarea>
+                        </div>
+
+                        <div class="d-flex gap-2 pt-2 border-top">
+                            <button type="button" class="btn btn-outline-secondary w-50" data-bs-dismiss="offcanvas">Cancel</button>
+                            <button type="submit" class="btn btn-primary w-50">
+                                <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- TAB 2: Full History Event Timeline -->
+                <div id="panelViewTimeline" style="display: none;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="ra-filter-label mb-0">Activity & Verification History</span>
+                        <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none" id="refreshTimelineBtn">
+                            <i class="fa-solid fa-arrows-rotate me-1"></i>Refresh
+                        </button>
+                    </div>
+
+                    <div id="timelineContainer">
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x mb-2 d-block"></i>
+                            <span>Loading history...</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <script>
-        (function () {
-            const editModal = document.getElementById('editModal');
-            const editForm = document.getElementById('editForm');
-            let currentEnrollmentId = null;
-            let currentDate = null;
-
-            editModal.addEventListener('show.bs.modal', function (event) {
-                const btn = event.relatedTarget;
-                currentEnrollmentId = btn.getAttribute('data-enrollment-id');
-                currentDate = btn.getAttribute('data-date');
-
-                document.getElementById('editStudentName').textContent = btn.getAttribute('data-student-name');
-                document.getElementById('editStudentNo').textContent = btn.getAttribute('data-student-no');
-                document.getElementById('editTimeIn').textContent = btn.getAttribute('data-time-in');
-                document.getElementById('editCurrentStatus').textContent = btn.getAttribute('data-current-status-label');
-                document.getElementById('editDateInput').value = currentDate;
-
-                const currentStatus = btn.getAttribute('data-current-status');
-                document.querySelectorAll('.status-radio').forEach(function (radio) {
-                    radio.checked = radio.value === currentStatus;
-                    radio.closest('.ra-status-option').classList.toggle('ra-status-option-active', radio.value === currentStatus);
-                });
-
-                editForm.action = "{{ url('/teacher/room-attendance/' . $section->id) }}/" + currentEnrollmentId + "/verify";
-            });
-
-            document.querySelectorAll('.status-radio').forEach(function (radio) {
-                radio.addEventListener('change', function () {
-                    document.querySelectorAll('.ra-status-option').forEach(function (el) {
-                        el.classList.remove('ra-status-option-active');
-                    });
-                    this.closest('.ra-status-option').classList.add('ra-status-option-active');
-                    document.getElementById('editStatusInput').value = this.value;
-                });
-            });
-
-            editForm.addEventListener('submit', function () {
-                const checked = document.querySelector('.status-radio:checked');
-                if (checked) {
-                    document.getElementById('editStatusInput').value = checked.value;
-                }
-            });
-
-            document.getElementById('viewHistoryBtn').addEventListener('click', function () {
-                const historyModalEl = document.getElementById('historyModal');
-                const historyModal = new bootstrap.Modal(historyModalEl);
-                const body = document.getElementById('historyModalBody');
-                body.innerHTML = '<p class="text-muted text-center py-4">Loading...</p>';
-                historyModal.show();
-
-                fetch("{{ url('/teacher/room-attendance/' . $section->id) }}/" + currentEnrollmentId + "/history")
-                    .then(res => res.json())
-                    .then(data => {
-                        let html = '<p class="fw-bold mb-3">' + data.student.first_name + ' ' + data.student.last_name + '</p>';
-
-                        html += '<p class="ra-filter-label mb-2">Modification history</p>';
-                        if (data.verifications.length === 0) {
-                            html += '<p class="text-muted small">No teacher edits yet.</p>';
-                        } else {
-                            html += '<div class="table-responsive"><table class="table table-sm">';
-                            html += '<thead><tr><th>Date</th><th>Status</th><th>Remarks</th><th>By</th></tr></thead><tbody>';
-                            data.verifications.forEach(function(v) {
-                                html += '<tr><td>' + new Date(v.created_at).toLocaleDateString() + '</td>';
-                                html += '<td><span class="badge-dot dot-' + (v.status === 'present' ? 'success' : v.status === 'absent' ? 'danger' : 'warning') + '">' + v.status_label + '</span></td>';
-                                html += '<td>' + (v.remarks || '—') + '</td>';
-                                html += '<td>' + (v.teacher ? v.teacher.first_name + ' ' + v.teacher.last_name : 'System') + '</td></tr>';
-                            });
-                            html += '</tbody></table></div>';
-                        }
-
-                        html += '<p class="ra-filter-label mb-2 mt-3">Raw QR scans</p>';
-                        if (data.scans.length === 0) {
-                            html += '<p class="text-muted small">No scans recorded.</p>';
-                        } else {
-                            html += '<div class="table-responsive"><table class="table table-sm">';
-                            html += '<thead><tr><th>Date</th><th>Time</th><th>Type</th></tr></thead><tbody>';
-                            data.scans.forEach(function(s) {
-                                html += '<tr><td>' + new Date(s.scan_time).toLocaleDateString() + '</td>';
-                                html += '<td>' + new Date(s.scan_time).toLocaleTimeString() + '</td>';
-                                html += '<td>' + s.scan_type + '</td></tr>';
-                            });
-                            html += '</tbody></table></div>';
-                        }
-
-                        body.innerHTML = html;
-                    });
-            });
-        })();
-        </script>
     @endif
 
 </x-layouts.teacher>

@@ -30,6 +30,8 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
     // ----------------------------------------------------
     Route::get('/teacher/student-management', [StudentManagementController::class, 'index'])
         ->name('teacher.student-management');
+    Route::get('/teacher/student-management/export', [StudentManagementController::class, 'export'])
+        ->name('teacher.student-management.export');
 
     // General Teacher Student Profile
     Route::get('/teacher/student-profile/{student}/summary', [StudentProfileController::class, 'summary'])
@@ -142,9 +144,9 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
     // ----------------------------------------------------
     // GENERAL: Room Attendance & In/Out History
     // ----------------------------------------------------
-    Route::get('/teacher/attendance', fn() => view('pov.teacher.attendance.class-attendance'))
+    Route::redirect('/teacher/attendance', '/teacher/room-attendance')
         ->name('teacher.attendance');
-    Route::get('/teacher/time-in-time-out-history', [AttendanceLogController::class, 'index'])
+    Route::redirect('/teacher/time-in-time-out-history', '/teacher/room-attendance')
         ->name('teacher.time-in-time-out-history.index');
     Route::get('/teacher/dashboard', [TeacherRoomAttendanceController::class, 'index'])
         ->name('teacher.dashboard');
@@ -154,6 +156,8 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
         ->name('room-attendance.show');
     Route::post('/teacher/room-attendance/{section}/{enrollment}/verify', [TeacherRoomAttendanceController::class, 'verify'])
         ->name('room-attendance.verify');
+    Route::post('/teacher/room-attendance/{section}/bulk-verify', [TeacherRoomAttendanceController::class, 'bulkVerify'])
+        ->name('room-attendance.bulk-verify');
     Route::get('/teacher/room-attendance/{section}/{enrollment}/history', [TeacherRoomAttendanceController::class, 'history'])
         ->name('room-attendance.history');
 
@@ -188,7 +192,7 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
     Route::patch('/teacher/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
         ->name('teacher.notifications.mark-as-read');
     Route::post('/teacher/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])
-        ->name('teacher.notifications.mark-all-read');
+        ->name('teacher.notifications.mark-all-as-read');
     Route::delete('/teacher/notifications/{id}', [NotificationController::class, 'destroy'])
         ->name('teacher.notifications.destroy');
     Route::post('/teacher/notifications/bulk-delete', [NotificationController::class, 'bulkDestroy'])

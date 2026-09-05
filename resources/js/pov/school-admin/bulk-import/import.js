@@ -278,11 +278,14 @@ export function initUpload() {
         if (uploadBtn) uploadBtn.disabled = true;
     }
 
+    let isUploading = false;
     // Submit handler: Upload file & proceed to verification
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (isUploading) return;
         if (!fileInput.files.length) return;
 
+        isUploading = true;
         const file = fileInput.files[0];
         state.currentFilename = file.name;
 
@@ -315,6 +318,8 @@ export function initUpload() {
         } catch (err) {
             setStep("upload");
             showError("Upload Failed", err.message || "Network communication error.");
+        } finally {
+            isUploading = false;
         }
     });
 }
@@ -489,8 +494,16 @@ async function loadSummaryIssuePreview() {
     }
 }
 
+let isConfirming = false;
+
 // ── Processing (Confirm & Save) ──────────────────────────────────────────
 async function doProcess() {
+    if (isConfirming) return;
+    isConfirming = true;
+    
+    const proceedBtn = document.getElementById("proceedImportBtn");
+    if (proceedBtn) proceedBtn.disabled = true;
+
     setStep("processing");
 
     const total = state.totalRows || 0;
@@ -525,6 +538,8 @@ async function doProcess() {
         stopProgressPoll();
         setStep("summary");
         showError("Processing Failed", err.message || "An unexpected error occurred during processing.");
+    } finally {
+        isConfirming = false;
     }
 }
 

@@ -40,8 +40,15 @@
                         <span>Bulk Import</span>
                     </a>
 
+                    <button type="button" class="btn btn-outline-success px-3 py-2 rounded-3 d-inline-flex align-items-center gap-1.5 fw-medium"
+                        data-bs-toggle="modal" data-bs-target="#exportFormatModal"
+                        title="Download XLSX file for this section">
+                        <i class="fas fa-file-excel fa-sm"></i>
+                        <span>Download XLSX</span>
+                    </button>
+
                     <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-inline-flex align-items-center gap-1.5"
-                        data-bs-toggle="modal" data-bs-target="#addStudentModal" data-grade="{{ $grade }}"
+                        data-bs-toggle="offcanvas" data-bs-target="#addStudentSidePanel" data-grade="{{ $grade }}"
                         data-default-section="{{ $section->id }}">
                         <i class="fas fa-plus fa-sm"></i>
                         <span>Add Student</span>
@@ -312,5 +319,6 @@
 
     @include('pov.school-admin.students.partials.add-student-modal')
     @include('pov.school-admin.students.partials.edit-student-modal')
+    @include('pov.school-admin.students.partials.export-format-modal', ['exportRoute' => route('student-management.section.export', ['grade' => $grade, 'section' => $section->id])])
 
 </x-layouts.admin>

@@ -9,6 +9,7 @@ use App\Models\SchoolYear;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\TeachingAssignment;
+use App\Services\Export\StudentSf1ExportService;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -18,6 +19,7 @@ class StudentManagementController extends Controller
 {
     public function __construct(
         private readonly StudentService $studentService,
+        private readonly StudentSf1ExportService $exportService,
     ) {}
 
 
@@ -205,6 +207,76 @@ class StudentManagementController extends Controller
         ));
     }
 
+    public function export(Request $request, string $grade, Section $section)
+    {
+        if ($request->user()?->isTeacher()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $grade = (int) $grade;
+
+        if ($grade < 1 || $grade > 12 || (int) $section->grade_level !== $grade) {
+            abort(404);
+        }
+
+        $activeSchoolYear = SchoolYear::query()->where('is_active', true)->first();
+        $schoolYearId = $request->input('school_year_id');
+        $status = $request->input('status');
+        $query = $request->input('query');
+        $sort = $request->input('sort', 'last_name_asc');
+
+        $students = Student::with(['enrollments.sectionModel', 'guardian'])
+            ->whereHas('enrollments', function ($q) use ($grade, $schoolYearId, $activeSchoolYear, $section, $status) {
+                $q->where('grade_level', (string) $grade)
+                    ->where('section_id', $section->id);
+
+                if ($schoolYearId && $schoolYearId !== 'all') {
+                    $q->where('school_year_id', $schoolYearId);
+                } elseif ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                }
+
+                if ($status && $status !== 'all') {
+                    $q->where('status', $status);
+                }
+            })
+            ->when(filled($query), function ($q) use ($query) {
+                $q->where(function ($q) use ($query) {
+                    $q->where('student_number', 'like', "%{$query}%")
+                        ->orWhere('lrn', 'like', "%{$query}%")
+                        ->orWhere('first_name', 'like', "%{$query}%")
+                        ->orWhere('last_name', 'like', "%{$query}%");
+                });
+            })
+            ->when($sort === 'last_name_desc', fn($q) => $q->orderByDesc('last_name')->orderByDesc('first_name'))
+            ->when($sort === 'first_name_asc', fn($q) => $q->orderBy('first_name')->orderBy('last_name'))
+            ->when($sort === 'first_name_desc', fn($q) => $q->orderByDesc('first_name')->orderByDesc('last_name'))
+            ->when($sort === 'student_number_asc', fn($q) => $q->orderBy('student_number'))
+            ->when($sort === 'student_number_desc', fn($q) => $q->orderByDesc('student_number'))
+            ->when(!in_array($sort, ['last_name_desc', 'first_name_asc', 'first_name_desc', 'student_number_asc', 'student_number_desc'], true), function ($q) {
+                $q->orderBy('last_name')->orderBy('first_name');
+            })
+            ->get();
+
+        $selectedSchoolYear = null;
+        if ($schoolYearId && $schoolYearId !== 'all') {
+            $selectedSchoolYear = SchoolYear::find($schoolYearId);
+        } else {
+            $selectedSchoolYear = $activeSchoolYear;
+        }
+
+        $format = $request->input('format', 'sf1');
+        $filePath = $this->exportService->export($students, $section, $selectedSchoolYear, $grade, $format);
+
+        $safeSectionName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $section->name);
+        $prefix = strtolower($format) === 'raw' ? 'Student_List_Raw' : 'SF1';
+        $filename = "{$prefix}_Grade_{$grade}_{$safeSectionName}_" . now()->format('Ymd_His') . ".xlsx";
+
+        return response()->download($filePath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
     public function store(Request $request)
     {
         $validated = $this->validatedPayload($request);
@@ -335,7 +407,7 @@ class StudentManagementController extends Controller
     private function validatedPayload(Request $request, ?int $studentId = null): array
     {
         return $request->validate([
-            'lrn' => ['required', 'digits_between:12,13', Rule::unique('students', 'lrn')->ignore($studentId)],
+            'lrn' => ['required', 'digits:12', Rule::unique('students', 'lrn')->ignore($studentId)],
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'middle_name' => ['nullable', 'string', 'max:100'],

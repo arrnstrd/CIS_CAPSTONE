@@ -1,4 +1,5 @@
 function setStudentStep(modal, step) {
+    if (!modal) return;
     modal.querySelectorAll("[data-step-panel]").forEach((panel) => {
         panel.classList.toggle(
             "d-none",
@@ -13,9 +14,10 @@ function setStudentStep(modal, step) {
     });
 }
 
-function filterSectionsByGrade(modal) {
-    const gradeSelect = modal.querySelector("select[name='grade_level']");
-    const sectionSelect = modal.querySelector("select[name='section_id']");
+function filterSectionsByGrade(container) {
+    if (!container) return;
+    const gradeSelect = container.querySelector("select[name='grade_level']");
+    const sectionSelect = container.querySelector("select[name='section_id']");
 
     if (!gradeSelect || !sectionSelect) {
         return;
@@ -61,6 +63,36 @@ document.addEventListener("click", (event) => {
     const prevBtn = event.target.closest("[data-prev-step]");
     if (prevBtn) {
         setStudentStep(prevBtn.closest(".modal"), 1);
+        return;
+    }
+
+    const confirmBtn = event.target.closest("#confirmAddStudentBtn");
+    if (confirmBtn) {
+        const form = document.getElementById("addStudentForm");
+        const confirmModalEl = document.getElementById("confirmAddStudentModal");
+        const confirmModal = confirmModalEl ? bootstrap.Modal.getInstance(confirmModalEl) : null;
+        const sidePanelEl = document.getElementById("addStudentSidePanel");
+        const sidePanel = sidePanelEl ? bootstrap.Offcanvas.getInstance(sidePanelEl) : null;
+
+        if (!form || !window.ajaxCrud) return;
+
+        confirmBtn.disabled = true;
+        const originalContent = confirmBtn.innerHTML;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Adding...';
+
+        window.ajaxCrud.submitAjaxForm(form, {
+            onSuccess: () => {
+                confirmModal?.hide();
+                sidePanel?.hide();
+                form.reset();
+            },
+            onError: () => {
+                confirmModal?.hide();
+            }
+        }).finally(() => {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalContent;
+        });
     }
 });
 
@@ -69,25 +101,55 @@ document.addEventListener("change", (event) => {
         event.target.matches("select[name='grade_level']") &&
         event.target.closest("form[data-ajax-form='student']")
     ) {
-        filterSectionsByGrade(event.target.closest(".modal"));
+        const container = event.target.closest(".modal") || event.target.closest(".offcanvas");
+        if (container) {
+            filterSectionsByGrade(container);
+        }
+    }
+});
+
+document.addEventListener("show.bs.offcanvas", function (event) {
+    const sidePanel = event.target;
+    const btn = event.relatedTarget;
+
+    if (sidePanel.id === "addStudentSidePanel") {
+        const grade = btn?.dataset.grade || "";
+        const defaultSection = btn?.dataset.defaultSection || "";
+
+        if (grade) {
+            const gradeSelect = sidePanel.querySelector("#add_grade_level");
+            if (gradeSelect) {
+                gradeSelect.value = grade;
+            }
+        }
+        filterSectionsByGrade(sidePanel);
+
+        if (defaultSection) {
+            const sectionSelect = sidePanel.querySelector("#add_section_id");
+            if (sectionSelect && !sectionSelect.options[sectionSelect.selectedIndex]?.hidden) {
+                sectionSelect.value = defaultSection;
+            }
+        }
+    }
+});
+
+document.addEventListener("hidden.bs.offcanvas", function (event) {
+    const sidePanel = event.target;
+
+    if (sidePanel.id === "addStudentSidePanel") {
+        const form = sidePanel.querySelector("form[data-ajax-form='student']");
+        if (form) {
+            form.reset();
+            if (window.ajaxCrud) {
+                window.ajaxCrud.clearFormErrors(form);
+            }
+        }
     }
 });
 
 document.addEventListener("show.bs.modal", function (event) {
     const modal = event.target;
     const btn = event.relatedTarget;
-
-    if (modal.id === "addStudentModal") {
-        const grade = btn?.dataset.grade || "";
-        if (grade) {
-            const gradeSelect = modal.querySelector("#add_grade_level");
-            if (gradeSelect) {
-                gradeSelect.value = grade;
-            }
-        }
-        filterSectionsByGrade(modal);
-        setStudentStep(modal, 1);
-    }
 
     if (modal.id === "editStudentModal") {
         if (!btn) {
@@ -133,20 +195,47 @@ document.addEventListener("show.bs.modal", function (event) {
 document.addEventListener("hidden.bs.modal", function (event) {
     const modal = event.target;
 
-    if (modal.id === "addStudentModal" || modal.id === "editStudentModal") {
+    if (modal.id === "editStudentModal") {
         const form = modal.querySelector("form[data-ajax-form='student']");
         form?.reset();
         setStudentStep(modal, 1);
     }
 });
 
-// Form submission is handled by ajax-crud.js general event listener
-// Only handle delete operations here
+// Intercept Add Student form submission in capture phase to prompt confirmation modal first
 document.addEventListener("submit", function (event) {
     const form = event.target;
+
+    if (form?.id === "addStudentForm") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const firstName = form.querySelector("#add_first_name")?.value.trim() || "";
+        const lastName = form.querySelector("#add_last_name")?.value.trim() || "";
+        const fullName = `${firstName} ${lastName}`.trim();
+        const confirmDetails = document.getElementById("confirmAddStudentDetails");
+        if (confirmDetails) {
+            confirmDetails.textContent = fullName
+                ? `Are you sure you want to add ${fullName} as a new student?`
+                : "Are you sure you want to add this student?";
+        }
+
+        const confirmModalEl = document.getElementById("confirmAddStudentModal");
+        if (confirmModalEl) {
+            const modal = bootstrap.Modal.getOrCreateInstance(confirmModalEl);
+            modal.show();
+        }
+        return;
+    }
 
     if (form?.matches('[data-ajax-delete="student"]')) {
         event.preventDefault();
         window.ajaxCrud.submitAjaxDelete(form);
     }
-});
+}, true);
+

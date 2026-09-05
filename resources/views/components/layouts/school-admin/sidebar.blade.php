@@ -11,12 +11,12 @@
     $roleName = $currentUser?->role_label ?? 'School Admin';
 @endphp
 
-<nav id="sidebar" class="sidebar-wrapper">
+<nav id="sidebar" class="sa-sidebar-wrapper">
 
-    <div class="sidebar-content">
+    <div class="sa-sidebar-content">
 
         <!-- Brand -->
-        <div class="sidebar-brand d-flex flex-column py-4 px-4">
+        <div class="sa-sidebar-brand d-flex flex-column py-4 px-4">
             <h5 class="text-white mb-0 fw-bold">
                 SCHOOL ADMIN PORTAL
             </h5>
@@ -26,7 +26,7 @@
         </div>
 
         <!-- Navigation Menu -->
-        <div class="sidebar-menu">
+        <div class="sa-sidebar-menu">
             <ul>
                 <li class="{{ request()->routeIs('admin.dashboard') || request()->is('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('admin.dashboard') }}">
@@ -36,7 +36,7 @@
                 </li>
 
                 <!-- MONITORING SECTION -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>MONITORING</small>
                 </li>
                 <li class="{{ request()->routeIs('school_admin.qr-station.*') || request()->is('school-admin/qr-station*') ? 'active' : '' }}">
@@ -65,7 +65,7 @@
                 </li>
 
                 <!-- MANAGEMENT SECTION -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>MANAGEMENT</small>
                 </li>
                 <li class="{{ request()->routeIs('teachers.*') || request()->is('teachers*') ? 'active' : '' }}">
@@ -88,7 +88,7 @@
                 </li>
 
                 <!-- ACADEMIC SETUP -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>ACADEMIC SETUP</small>
                 </li>
                 <li class="{{ request()->routeIs('academic.*') || request()->routeIs('sections.*') || request()->routeIs('subjects.*') || request()->is('academic*') || request()->is('sections*') || request()->is('subjects*') ? 'active' : '' }}">
@@ -105,7 +105,7 @@
                 </li>
 
                 <!-- UTILITIES SECTION -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>UTILITIES</small>
                 </li>
                 <li class="{{ request()->routeIs('schedconfig.*') || request()->routeIs('schedule-configuration.*') || request()->is('schedule-configuration*') ? 'active' : '' }}">
@@ -122,7 +122,7 @@
                 </li>
 
                 <!-- SYSTEM SECTION -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>SYSTEM</small>
                 </li>
                 <li class="{{ request()->routeIs('settings.*') || request()->is('settings*') ? 'active' : '' }}">
@@ -137,17 +137,17 @@
     </div>
 
     <!-- User Profile Footer -->
-    <div class="sidebar-footer">
-        <div class="sidebar-user-block">
-            <div class="sidebar-user-avatar">
+    <div class="sa-sidebar-footer">
+        <div class="sa-sidebar-user-block">
+            <div class="sa-sidebar-user-avatar">
                 {{ $initials }}
             </div>
-            <div class="sidebar-user-info">
-                <span class="sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
-                <span class="sidebar-user-role">{{ $roleName }}</span>
+            <div class="sa-sidebar-user-info">
+                <span class="sa-sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
+                <span class="sa-sidebar-user-role">{{ $roleName }}</span>
             </div>
             <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
-                class="sidebar-logout-btn" title="Log Out" aria-label="Log Out">
+                class="sa-sidebar-logout-btn" title="Log Out" aria-label="Log Out">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
         </div>

@@ -72,11 +72,18 @@
                                         Grade {{ $selectedClass?->grade_level }} - {{ $selectedClass?->name }}
                                     </p>
                                 </div>
-                                <button type="button" class="btn btn-primary d-flex align-items-center gap-1"
-                                    data-bs-toggle="modal" data-bs-target="#addStudentModal"
-                                    data-grade="{{ $selectedClass?->grade_level }}">
-                                    <i class="fa-solid fa-plus me-1"></i> Add Student
-                                </button>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" class="btn btn-outline-success d-flex align-items-center gap-1"
+                                        data-bs-toggle="modal" data-bs-target="#exportFormatModal"
+                                        title="Download XLSX file for this section">
+                                        <i class="fa-solid fa-file-excel me-1"></i> Download XLSX
+                                    </button>
+                                    <button type="button" class="btn btn-primary d-flex align-items-center gap-1"
+                                        data-bs-toggle="modal" data-bs-target="#addStudentModal"
+                                        data-grade="{{ $selectedClass?->grade_level }}">
+                                        <i class="fa-solid fa-plus me-1"></i> Add Student
+                                    </button>
+                                </div>
                             </div>
 
                         <div class="card border mb-3">
@@ -154,5 +161,7 @@
         @endif
         </div>
     @endif
+
+    @include('pov.school-admin.students.partials.export-format-modal', ['exportRoute' => route('teacher.student-management.export')])
 
 </x-layouts.teacher>

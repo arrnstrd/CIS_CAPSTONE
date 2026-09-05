@@ -18,7 +18,7 @@
             </a>
 
             <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-inline-flex align-items-center gap-1.5"
-                data-bs-toggle="modal" data-bs-target="#addStudentModal" data-grade="{{ $grade }}">
+                data-bs-toggle="offcanvas" data-bs-target="#addStudentSidePanel" data-grade="{{ $grade }}">
                 <i class="fas fa-plus fa-sm"></i>
                 <span>Add Student</span>
             </button>

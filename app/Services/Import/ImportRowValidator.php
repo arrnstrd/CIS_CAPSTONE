@@ -38,10 +38,10 @@ class ImportRowValidator
         // ── LRN ──────────────────────────────────────────────────────────
         if ($this->isEmpty($row->lrn)) {
             $issues[] = $this->error('lrn', 'LRN is required.');
-        } elseif (!preg_match('/^\d{12,13}$/', $row->lrn)) {
+        } elseif (!preg_match('/^\d{12}$/', $row->lrn)) {
             $issues[] = $this->error(
                 'lrn',
-                'LRN must be 12 or 13 digits. If Excel removed leading zeros, format the LRN column as Text.'
+                'LRN must be exactly 12 digits. If Excel removed leading zeros, format the LRN column as Text.'
             );
         }
 
