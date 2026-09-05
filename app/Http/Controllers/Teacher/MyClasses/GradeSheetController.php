@@ -156,6 +156,19 @@ class GradeSheetController extends Controller
 
             $assessmentsByCategory[$key] = $categoryAssessments;
 
+            $maxSlotInDb = $categoryAssessments->max('slot_number') ?? 0;
+            $fixedSlots[$key] = max($fixedSlots[$key] ?? 5, $maxSlotInDb);
+
+            $slotLabels[$key] = [];
+            for ($lblIdx = 1; $lblIdx <= $fixedSlots[$key]; $lblIdx++) {
+                $slotLabels[$key][] = match($key) {
+                    'written' => "WW{$lblIdx}",
+                    'performance' => "PT{$lblIdx}",
+                    'exam' => "EX{$lblIdx}",
+                    default => "Item{$lblIdx}"
+                };
+            }
+
             foreach ($categoryAssessments as $assessment) {
                 if (! isset($assessment->slot_number)) {
                     $assessment->slot_number =
@@ -165,7 +178,7 @@ class GradeSheetController extends Controller
                                 '!=',
                                 $assessment->id
                             ),
-                            $fixedSlots[$key] ?? 5
+                            $fixedSlots[$key]
                         );
                 }
 
@@ -173,7 +186,7 @@ class GradeSheetController extends Controller
 
                 if (
                     $slotIndex >= 0 &&
-                    $slotIndex < ($fixedSlots[$key] ?? 5)
+                    $slotIndex < $fixedSlots[$key]
                 ) {
                     $assessmentsBySlot[$key][$slotIndex] = $assessment;
                 }
@@ -181,7 +194,7 @@ class GradeSheetController extends Controller
 
             for (
                 $i = 0;
-                $i < ($fixedSlots[$key] ?? 5);
+                $i < $fixedSlots[$key];
                 $i++
             ) {
                 if (! isset($assessmentsBySlot[$key][$i])) {

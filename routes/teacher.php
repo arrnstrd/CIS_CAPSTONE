@@ -10,6 +10,7 @@ use App\Http\Controllers\Teacher\Attendance\AttendanceLogController;
 use App\Http\Controllers\Teacher\Attendance\TeacherRoomAttendanceController;
 use App\Http\Controllers\Teacher\GradingRules\CompRulesController;
 use App\Http\Controllers\Teacher\GradingRules\GradingRulesController;
+use App\Http\Controllers\Teacher\ImportData\DepEdClassRecordImportController;
 use App\Http\Controllers\Teacher\ImportData\ImportDataController;
 use App\Http\Controllers\Teacher\MyClasses\GradeSheetController;
 use App\Http\Controllers\Teacher\MyClasses\GradingDashboardController;
@@ -66,8 +67,14 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
         ->name('teacher.grading-system.grade-sheet.assessment.scores');
 
     // Import Data
-    Route::get('/teacher/grading-system/import-data', [ImportDataController::class, 'index'])
+    Route::get('/teacher/grading-system/import-data/{teachingAssignmentId?}', [ImportDataController::class, 'index'])
         ->name('teacher.grading-system.import-data');
+    Route::get('/teacher/grading-system/import-data/download-template/{teachingAssignmentId}', [DepEdClassRecordImportController::class, 'downloadTemplate'])
+        ->name('teacher.grading-system.import-data.download-template');
+    Route::post('/teacher/grading-system/import-data/inspect', [DepEdClassRecordImportController::class, 'inspect'])
+        ->name('teacher.grading-system.import-data.inspect');
+    Route::post('/teacher/grading-system/import-data/process', [DepEdClassRecordImportController::class, 'process'])
+        ->name('teacher.grading-system.import-data.process');
 
     // Reports
     Route::get('/teacher/grading-system/reports', [ReportsController::class, 'index'])

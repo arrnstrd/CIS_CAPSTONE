@@ -109,7 +109,7 @@
 
                 {{-- IMPORT READY-MADE EXCEL GRADES --}}
                 <a href="{{ route('teacher.grading-system.import-data', [
-                    'teaching_assignment_id' => $ta->id,
+                    'teachingAssignmentId' => $ta->id,
                     'grading_period_id' => $selectedPeriodId
                 ]) }}"
                    class="btn btn-primary btn-sm">
