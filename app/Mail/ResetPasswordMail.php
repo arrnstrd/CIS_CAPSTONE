@@ -30,6 +30,13 @@ class ResetPasswordMail extends Mailable
             'email' => $this->email,
         ]);
 
+        if (str_contains($resetUrl, 'localhost') || str_contains($resetUrl, '127.0.0.1')) {
+            $path = parse_url($resetUrl, PHP_URL_PATH) ?? '';
+            $query = parse_url($resetUrl, PHP_URL_QUERY);
+            $queryString = $query ? '?' . $query : '';
+            $resetUrl = 'https://cis-capstone.onrender.com' . $path . $queryString;
+        }
+
         return $this->subject('Reset Your Password - Concepcion Integrated School')
             ->markdown('emails.auth.reset-password', [
                 'name' => $this->name ?? 'User',

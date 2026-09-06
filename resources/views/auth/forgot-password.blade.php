@@ -139,6 +139,28 @@
       background-color: #e5e7eb;
     }
 
+    .btn-resend {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 13px;
+      background-color: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .btn-resend:hover {
+      background-color: #dbeafe;
+      border-color: #93c5fd;
+    }
+
     .back-to-login {
       display: block;
       text-align: center;
@@ -236,9 +258,22 @@
           The reset link will remain valid for 60 minutes. If you don't see the email within a few moments, please check your spam or junk folder.
         </p>
 
+        @if (session('submitted_email'))
+          <form action="{{ route('password.email') }}" method="POST">
+            @csrf
+            <input type="hidden" name="email" value="{{ session('submitted_email') }}">
+            <button type="submit" class="btn-resend">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 16px; height: 16px; margin-right: 6px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Resend Reset Link
+            </button>
+          </form>
+        @endif
+
         <a href="{{ route('login') }}" class="btn-secondary">Return to Sign In</a>
 
-        <a href="{{ route('password.request') }}" class="back-to-login">Send another link</a>
+        <a href="{{ route('password.request') }}" class="back-to-login">Use a different email address</a>
       @else
         <!-- STATE 1: ENTER EMAIL -->
         <h1 class="form-title">Forgot Password?</h1>

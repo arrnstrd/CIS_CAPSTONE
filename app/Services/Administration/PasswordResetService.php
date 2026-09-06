@@ -46,6 +46,18 @@ class PasswordResetService
             'created_at' => Carbon::now(),
         ]);
 
+        // Failsafe non-localhost link generation
+        $resetUrl = route('password.reset', ['token' => $rawToken, 'email' => $user->email]);
+        if (str_contains($resetUrl, 'localhost') || str_contains($resetUrl, '127.0.0.1')) {
+            $path = parse_url($resetUrl, PHP_URL_PATH) ?? '';
+            $query = parse_url($resetUrl, PHP_URL_QUERY);
+            $resetUrl = 'https://cis-capstone.onrender.com' . $path . ($query ? '?' . $query : '');
+        }
+
+        if (app()->environment('local')) {
+            Log::info("[DEV DEBUG] Password reset link for {$normalizedEmail}: {$resetUrl}");
+        }
+
         try {
             Mail::to($user->email)->send(new ResetPasswordMail(
                 email: $user->email,
@@ -55,6 +67,7 @@ class PasswordResetService
         } catch (\Throwable $e) {
             Log::error('Failed to send password reset email: ' . $e->getMessage(), [
                 'email' => $normalizedEmail,
+                'hint' => 'Check MAIL_USERNAME and MAIL_PASSWORD in .env (Google 16-character app password).',
             ]);
         }
     }
