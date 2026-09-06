@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
 
     <x-slot name="title">{{ $teacher->full_name }} — Teacher Workspace</x-slot>
     <x-slot name="pageName">Teacher Workspace</x-slot>
@@ -702,4 +702,4 @@
     </script>
     @endpush
 
-</x-layouts.admin>
+</x-layouts.school-admin>

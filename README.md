@@ -45,7 +45,7 @@ documentation/
    - Ingests official DepEd SF1 Excel spreadsheets via `phpoffice/phpspreadsheet`.
    - Comprehensive multi-phase validation (header verification, duplicate LRN detection, automatic section assignment/creation).
 4. **Trimester Grading Engine & At-Risk Analytics**
-   - DepEd Order 8, s. 2015 compliant computation with Written Work, Performance Tasks, and Quarterly Assessments.
+   - DepEd Order 8, s. 2015 compliant computation with Written Work, Performance Tasks, and Term Assessments.
    - Early warning indicators flagging students at academic risk.
 5. **Role-Based Point of Views (POVs)**
    - Strict segmentation across 4 roles: **Super Admin**, **School Admin**, **Teacher**, and **Scanner Operator**.

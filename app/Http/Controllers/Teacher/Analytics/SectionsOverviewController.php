@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Teacher\Analytics;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\Enrollment;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\TeachingAssignment;
 use Illuminate\Http\Request;
 
@@ -45,7 +45,7 @@ class SectionsOverviewController extends Controller
             $enrollmentIds = $enrollments->pluck('id');
             $totalStudents = $enrollmentIds->count();
 
-            $gradesByEnrollment = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $gradesByEnrollment = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade')
                 ->get()
                 ->groupBy('enrollment_id');

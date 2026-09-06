@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Shared\AuthController;
+use App\Http\Controllers\Shared\ForgotPasswordController;
 use App\Http\Controllers\Shared\SetupController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,24 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth');
 
 Route::get('/role-selection', fn() => view('login.role_selection'));
+
+// ============================================================
+// PASSWORD RECOVERY (OPTION B - RESET LINK)
+// ============================================================
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->name('password.request');
+
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->name('password.email')
+    ->middleware('throttle:password-reset');
+
+Route::get('/reset-password', [ForgotPasswordController::class, 'showResetForm'])
+    ->name('password.reset');
+
+Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])
+    ->name('password.update')
+    ->middleware('throttle:5,1');
 
 // ============================================================
 // ACCOUNT SETUP

@@ -5,7 +5,7 @@ namespace App\Services\Grading;
 use App\Models\Assessment;
 use App\Models\AssessmentCategory;
 use App\Models\StudentAssessmentScore;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\Enrollment;
 use App\Models\TeachingAssignment;
 use App\Models\GradingConfig;
@@ -49,8 +49,8 @@ class GradingService
                 ]
             );
 
-            // Recalculate Quarterly Grade for this student, teaching assignment, and grading period
-            $this->recalculateQuarterlyGrade(
+            // Recalculate Term Grade for this student, teaching assignment, and grading period
+            $this->recalculateTermGrade(
                 $data['enrollment_id'],
                 $assessment->teaching_assignment_id,
                 $assessment->grading_period_id
@@ -61,18 +61,18 @@ class GradingService
     }
 
     /**
-     * Recalculate the quarterly grade for a student.
+     * Recalculate the term grade for a student.
      *
      * @param int $enrollmentId
      * @param int $teachingAssignmentId
      * @param int $gradingPeriodId
-     * @return QuarterlyGrade|null
+     * @return TermGrade|null
      */
-    public function recalculateQuarterlyGrade(
+    public function recalculateTermGrade(
         int $enrollmentId,
         int $teachingAssignmentId,
         int $gradingPeriodId
-    ): ?QuarterlyGrade {
+    ): ?TermGrade {
         $enrollment = Enrollment::findOrFail($enrollmentId);
         $teachingAssignment = TeachingAssignment::with('subject')->findOrFail($teachingAssignmentId);
         $subject = $teachingAssignment->subject;
@@ -87,7 +87,7 @@ class GradingService
 
         $writtenCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'written'));
         $performanceCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'performance'));
-        $quarterlyCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'quarterly') || str_contains(strtolower($c->name), 'exam') || str_contains(strtolower($c->name), 'assessment'));
+        $termAssessmentCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'term assessment') || str_contains(strtolower($c->name), 'exam'));
 
         $weights = $this->resolveWeights(
             $teachingAssignmentId,
@@ -95,7 +95,7 @@ class GradingService
             [
                 'written' => $writtenCategory?->id,
                 'performance' => $performanceCategory?->id,
-                'quarterly' => $quarterlyCategory?->id,
+                'term_assessment' => $termAssessmentCategory?->id,
             ]
         );
 
@@ -118,14 +118,14 @@ class GradingService
             [
                 'written' => $writtenCategory?->id,
                 'performance' => $performanceCategory?->id,
-                'quarterly' => $quarterlyCategory?->id,
+                'term_assessment' => $termAssessmentCategory?->id,
             ]
         );
 
         // If no assessments exist at all, we cannot compute any grade yet
         if (collect($componentSummaries)->every(fn (array $summary) => $summary['hps'] === 0.0)) {
             return DB::transaction(function () use ($teachingAssignmentId, $enrollmentId, $gradingPeriodId) {
-                return QuarterlyGrade::updateOrCreate(
+                return TermGrade::updateOrCreate(
                     [
                         'teaching_assignment_id' => $teachingAssignmentId,
                         'enrollment_id' => $enrollmentId,
@@ -134,7 +134,7 @@ class GradingService
                     [
                         'written_work_grade' => null,
                         'performance_task_grade' => null,
-                        'quarterly_assessment_grade' => null,
+                        'term_assessment_grade' => null,
                         'initial_grade' => null,
                         'transmuted_grade' => null,
                     ]
@@ -149,7 +149,7 @@ class GradingService
         $transmutedGrade = $this->transmute($initialGrade);
 
         return DB::transaction(function () use ($teachingAssignmentId, $enrollmentId, $gradingPeriodId, $computedGrades, $initialGrade, $transmutedGrade) {
-            return QuarterlyGrade::updateOrCreate(
+            return TermGrade::updateOrCreate(
                 [
                     'teaching_assignment_id' => $teachingAssignmentId,
                     'enrollment_id' => $enrollmentId,
@@ -158,7 +158,7 @@ class GradingService
                 [
                     'written_work_grade' => $computedGrades['written'],
                     'performance_task_grade' => $computedGrades['performance'],
-                    'quarterly_assessment_grade' => $computedGrades['quarterly'],
+                    'term_assessment_grade' => $computedGrades['term_assessment'],
                     'initial_grade' => $initialGrade,
                     'transmuted_grade' => $transmutedGrade,
                 ]
@@ -177,7 +177,7 @@ class GradingService
         $summaries = [
             'written' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['written_work']],
             'performance' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['performance_task']],
-            'quarterly' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['quarterly_assessment']],
+            'term_assessment' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['term_assessment']],
         ];
 
         foreach ($assessments as $assessment) {
@@ -209,7 +209,7 @@ class GradingService
         $categoryIds = [
             'written' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'written'))?->id,
             'performance' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'performance'))?->id,
-            'quarterly' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'quarterly') || str_contains(strtolower($category->name), 'exam') || str_contains(strtolower($category->name), 'assessment'))?->id,
+            'term_assessment' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'term assessment') || str_contains(strtolower($category->name), 'exam'))?->id,
         ];
         $assessments = Assessment::where('teaching_assignment_id', $teachingAssignmentId)
             ->where('grading_period_id', $gradingPeriodId)
@@ -242,7 +242,7 @@ class GradingService
             return [
                 'written_work' => (float) $configuredWeights[$categoryIds['written']] / 100,
                 'performance_task' => (float) $configuredWeights[$categoryIds['performance']] / 100,
-                'quarterly_assessment' => (float) $configuredWeights[$categoryIds['quarterly']] / 100,
+                'term_assessment' => (float) $configuredWeights[$categoryIds['term_assessment']] / 100,
             ];
         }
 

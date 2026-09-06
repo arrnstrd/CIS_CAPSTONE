@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
 
     <x-slot name="title">Teachers</x-slot>
 
@@ -119,4 +119,4 @@
         {{ $teachers->links() }}
     </div>
 
-</x-layouts.admin>
+</x-layouts.school-admin>

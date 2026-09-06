@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">
         Student Management
     </x-slot>
@@ -46,4 +46,4 @@
             </div>
         @endforeach
     </div>
-</x-layouts.admin>
+</x-layouts.school-admin>

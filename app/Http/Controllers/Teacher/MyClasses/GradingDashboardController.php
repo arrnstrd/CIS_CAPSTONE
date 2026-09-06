@@ -53,7 +53,7 @@ class GradingDashboardController extends Controller
             ]);
         }
 
-        $validPeriodIds = GradingPeriod::where('sequence', '<=', 3)->pluck('id');
+        $validPeriodIds = GradingPeriod::trimester()->pluck('id');
 
         // Determine current period by request, teacher preference, or dynamic progression
         $currentPeriod = $this->gradingPeriodService->resolveSelectedPeriod(
@@ -126,7 +126,7 @@ class GradingDashboardController extends Controller
 
             // Get current grades for the period
             $currentGrades = $currentPeriod 
-                ? \App\Models\QuarterlyGrade::where('teaching_assignment_id', $ta->id)
+                ? \App\Models\TermGrade::where('teaching_assignment_id', $ta->id)
                     ->where('grading_period_id', $currentPeriod->id)
                     ->whereNotNull('transmuted_grade')
                     ->get()
@@ -216,7 +216,7 @@ class GradingDashboardController extends Controller
         // Get current period (this is the first issue to investigate)
         // TODO: Once "Finalize Term" is implemented, this should pick the lowest sequence <=3 
         // whose status is NOT "Finalized" (so it naturally advances as terms get locked)
-        $currentPeriod = GradingPeriod::where('is_active', true)->where('sequence', '<=', 3)->orderBy('sequence')->first() ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+        $currentPeriod = GradingPeriod::where('is_active', true)->trimester()->orderBy('sequence')->first() ?? GradingPeriod::trimester()->orderBy('sequence')->first();
         $allPeriods = GradingPeriod::orderBy('sequence')->get();
         
         $debugInfo = [
@@ -234,7 +234,7 @@ class GradingDashboardController extends Controller
                     'is_active' => $period->is_active,
                 ];
             })->values(),
-            'periods_with_sequence_le_3' => GradingPeriod::where('sequence', '<=', 3)->count(),
+            'periods_with_sequence_le_3' => GradingPeriod::trimester()->count(),
         ];
 
         // Get teaching assignments
@@ -372,16 +372,13 @@ class GradingDashboardController extends Controller
             ->where('status', 'active')
             ->get();
 
-        $term1 = GradingPeriod::where('sequence', 1)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 1)->first();
-        $term2 = GradingPeriod::where('sequence', 2)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 2)->first();
-        $term3 = GradingPeriod::where('sequence', 3)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 3)->first();
+        $term1 = GradingPeriod::trimester()->where('sequence', 1)->first();
+        $term2 = GradingPeriod::trimester()->where('sequence', 2)->first();
+        $term3 = GradingPeriod::trimester()->where('sequence', 3)->first();
 
         // If teacher has no active assignments or Term 1 not found, return safest fallback
         if ($activeAssignments->isEmpty() || ! $term1) {
-            return $term1 ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+            return $term1 ?? GradingPeriod::trimester()->orderBy('sequence')->first();
         }
 
         // 1. Check if Term 1 is 100% complete across ALL active assignments
@@ -414,7 +411,7 @@ class GradingDashboardController extends Controller
      * Check whether a grading period has started for the teacher's active assignments.
      *
      * A term counts as started if there is at least one assessment created OR
-     * at least one quarterly grade record with non-null component or transmuted scores
+     * at least one term grade record with non-null component or transmuted scores
      * for the teacher's active assignments.
      *
      * @param \Illuminate\Support\Collection $activeAssignments
@@ -437,15 +434,15 @@ class GradingDashboardController extends Controller
             return true;
         }
 
-        // 2. Check if any quarterly grade record exists for this period
-        $hasGrades = \App\Models\QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        // 2. Check if any term grade record exists for this period
+        $hasGrades = \App\Models\TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->where('grading_period_id', $period->id)
             ->where(function ($query) {
                 $query->whereNotNull('transmuted_grade')
                     ->orWhereNotNull('initial_grade')
                     ->orWhereNotNull('written_work_grade')
                     ->orWhereNotNull('performance_task_grade')
-                    ->orWhereNotNull('quarterly_assessment_grade');
+                    ->orWhereNotNull('term_assessment_grade');
             })
             ->exists();
 
@@ -472,7 +469,7 @@ class GradingDashboardController extends Controller
 
             // If the section has active enrolled students
             if ($totalStudents > 0) {
-                $finalizedCount = \App\Models\QuarterlyGrade::where('teaching_assignment_id', $ta->id)
+                $finalizedCount = \App\Models\TermGrade::where('teaching_assignment_id', $ta->id)
                     ->where('grading_period_id', $period->id)
                     ->whereIn('enrollment_id', $activeEnrollmentIds)
                     ->whereNotNull('transmuted_grade')

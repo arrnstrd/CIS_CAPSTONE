@@ -149,8 +149,8 @@ class DepEdClassRecordParserService
                 $currentCategory = 'written_work';
             } elseif (str_contains(strtolower($headerCell12), 'product') || str_contains(strtolower($headerCell12), 'performance') || str_contains(strtolower($headerCell9), 'performance')) {
                 $currentCategory = 'performance_task';
-            } elseif (str_contains(strtolower($headerCell12), 'examination') || str_contains(strtolower($headerCell12), 'quarterly') || str_contains(strtolower($headerCell9), 'exam')) {
-                $currentCategory = 'quarterly_assessment';
+            } elseif (str_contains(strtolower($headerCell12), 'examination') || str_contains(strtolower($headerCell12), 'term assessment') || str_contains(strtolower($headerCell12), 'quarterly') || str_contains(strtolower($headerCell9), 'exam')) {
+                $currentCategory = 'term_assessment';
             }
 
             $slotVal = $sheet->getCell([$col, $slotRow])->getFormattedValue();

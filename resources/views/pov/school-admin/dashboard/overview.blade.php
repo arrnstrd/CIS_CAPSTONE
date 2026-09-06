@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">Dashboard</x-slot>
 
     <x-slot name="subtitle">Today’s attendance and school activity at a glance.</x-slot>
@@ -1391,4 +1391,4 @@
             }, 60000);
         </script>
     @endpush
-</x-layouts.admin>
+</x-layouts.school-admin>

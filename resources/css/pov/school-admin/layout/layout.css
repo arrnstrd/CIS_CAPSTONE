@@ -5,23 +5,254 @@
 
 .sa-page-wrapper {
     min-height: 100vh;
-    background-color: #f0f4f9;
+    background-color: #edf2f7;
     display: flex;
     flex-direction: column;
 }
 
-.sa-page-content {
+.sa-main-shell {
     margin-left: 260px;
     width: calc(100% - 260px);
+    min-width: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #edf2f7;
+}
+
+.sa-page-content {
+    margin-left: 0;
+    width: 100%;
     min-width: 0;
     padding: 20px 24px 24px;
     box-sizing: border-box;
     overflow-x: hidden;
-    background-color: #f0f4f9;
-    min-height: 100vh;
+    background-color: #edf2f7;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
+}
+
+/* ── Thin Blue Top Navigation ────────────────────────────────────── */
+.sa-topbar {
+    height: 60px;
+    background: #2F4AC0;
+    background: linear-gradient(90deg, #1e3a8a 0%, #2F4AC0 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 990;
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.sa-topbar__inner {
+    height: 100%;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sa-topbar__portal-label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+}
+
+.sa-topbar__account-wrapper {
+    position: relative;
+}
+
+.sa-topbar__profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.35rem 0.65rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sa-topbar__profile-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.sa-topbar__profile-btn[aria-expanded="true"] {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.sa-topbar__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #1e3a8a;
+    font-weight: 700;
+    font-size: 0.76rem;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.sa-topbar__user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    max-width: 200px;
+}
+
+.sa-topbar__user-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sa-topbar__user-email {
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.75);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sa-topbar__caret {
+    font-size: 0.62rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: 0.2rem;
+    transition: transform 0.2s ease;
+}
+
+.sa-topbar__profile-btn[aria-expanded="true"] .sa-topbar__caret {
+    transform: rotate(180deg);
+}
+
+/* ── Top Nav Profile Dropdown ─────────────────────────────────────── */
+.sa-topbar__dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 230px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+    z-index: 1050;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.sa-topbar__dropdown.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.sa-topbar__dropdown-header {
+    padding: 0.85rem 1rem 0.75rem;
+    background: #f8fafc;
+}
+
+.sa-topbar__dropdown-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sa-topbar__dropdown-email {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sa-topbar__dropdown-divider {
+    height: 1px;
+    background: #f1f5f9;
+}
+
+.sa-topbar__dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1rem;
+    color: #374151;
+    font-size: 0.84rem;
+    font-weight: 500;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sa-topbar__dropdown-item i {
+    width: 1rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.sa-topbar__dropdown-item:hover {
+    background: #f8fafc;
+    color: #1e3a8a;
+}
+
+.sa-topbar__dropdown-item:hover i {
+    color: #1e3a8a;
+}
+
+.sa-topbar__dropdown-item--danger {
+    color: #dc2626;
+}
+
+.sa-topbar__dropdown-item--danger i {
+    color: #dc2626;
+}
+
+.sa-topbar__dropdown-item--danger:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.sa-topbar__dropdown-item--danger:hover i {
+    color: #b91c1c;
+}
+
+.sa-nav-tabs .nav-link {
+    background-color: transparent;
+    color: #6b7280;
+}
+
+.sa-nav-tabs .nav-link.active {
+    color: #ffffff;
 }
 
 .sa-head-banner {
@@ -32,10 +263,10 @@
     padding: 1.3rem 1.4rem;
     margin-bottom: 1rem;
     border-radius: 1.4rem;
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #3b82f6 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #f8fafc;
-    box-shadow: 0 10px 30px rgba(30, 58, 138, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: #f5f8fa;
+    border: 1px solid #d6dfe6;
+    color: #0f1013;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     overflow: hidden;
 }
 
@@ -61,7 +292,7 @@
 .sa-head-banner__sub {
     margin: 0.45rem 0 0;
     max-width: 52rem;
-    color: #cbd5e1;
+    color: #55565c;
 }
 
 .sa-head-banner__meta {
@@ -78,11 +309,10 @@
     gap: 0.75rem;
     padding: 0.8rem 1rem;
     border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff;
+    background: #ffffff;
+    border: 1px solid #d6dfe6;
+    color: #0f1013;
     white-space: nowrap;
-    backdrop-filter: blur(4px);
 }
 
 .sa-head-banner__date i {
@@ -152,6 +382,11 @@
 }
 
 @media (max-width: 767px) {
+    .sa-main-shell {
+        margin-left: 0;
+        width: 100%;
+    }
+
     .sa-page-content {
         margin-left: 0;
         width: 100%;

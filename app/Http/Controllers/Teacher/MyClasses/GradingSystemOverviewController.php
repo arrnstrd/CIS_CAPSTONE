@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\SchoolYear;
 use App\Models\TeachingAssignment;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ class GradingSystemOverviewController extends Controller
         $teacher = $request->user()->teacher;
 
         $schoolYears = SchoolYear::orderByDesc('school_year')->get();
-        $gradingPeriods = GradingPeriod::orderBy('sequence')->where('sequence', '<=', 3)->get();
+        $gradingPeriods = GradingPeriod::orderBy('sequence')->trimester()->get();
 
         if (! $teacher) {
             return view('pov.teacher.my-classes.grading-system', [
@@ -67,7 +67,7 @@ class GradingSystemOverviewController extends Controller
 
         $totalStudents = $enrollmentIds->count();
 
-        $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $teachingAssignmentIds)
+        $grades = TermGrade::whereIn('teaching_assignment_id', $teachingAssignmentIds)
             ->where('grading_period_id', $selectedGradingPeriodId)
             ->whereNotNull('transmuted_grade')
             ->get();
@@ -100,7 +100,7 @@ class GradingSystemOverviewController extends Controller
                 ->where('status', 'active')
                 ->pluck('id');
 
-            $sectionGrades = QuarterlyGrade::where('teaching_assignment_id', $ta->id)
+            $sectionGrades = TermGrade::where('teaching_assignment_id', $ta->id)
                 ->where('grading_period_id', $selectedGradingPeriodId)
                 ->whereNotNull('transmuted_grade')
                 ->get();
@@ -129,7 +129,7 @@ class GradingSystemOverviewController extends Controller
         })->values();
 
         $trendData = $gradingPeriods->map(function ($period) use ($teachingAssignmentIds) {
-            $periodGrades = QuarterlyGrade::whereIn('teaching_assignment_id', $teachingAssignmentIds)
+            $periodGrades = TermGrade::whereIn('teaching_assignment_id', $teachingAssignmentIds)
                 ->where('grading_period_id', $period->id)
                 ->whereNotNull('transmuted_grade')
                 ->get();

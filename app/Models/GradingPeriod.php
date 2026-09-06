@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class GradingPeriod extends Model
 {
@@ -21,13 +22,19 @@ class GradingPeriod extends Model
         'is_active' => 'boolean',
     ];
 
+    /** Limit application queries to the configured trimester calendar. */
+    public function scopeTrimester(Builder $query): Builder
+    {
+        return $query->where('period_type', 'trimester')->where('sequence', '<=', 3);
+    }
+
     public function assessments()
     {
         return $this->hasMany(Assessment::class);
     }
 
-    public function quarterlyGrades()
+    public function termGrades()
     {
-        return $this->hasMany(QuarterlyGrade::class);
+        return $this->hasMany(TermGrade::class);
     }
 }

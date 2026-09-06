@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\Section;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
@@ -62,7 +62,7 @@ class AnalyticsController extends Controller
 
         $taIds = $filtered->pluck('id');
 
-        $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->whereNotNull('transmuted_grade');
 
         if ($request->filled('term')) {
@@ -126,7 +126,7 @@ class AnalyticsController extends Controller
 
     private function getTermTrend($taIds): array
     {
-        $allGrades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $allGrades = TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->whereNotNull('transmuted_grade')
             ->with('gradingPeriod')
             ->get()
@@ -155,7 +155,7 @@ class AnalyticsController extends Controller
 
         $assessments = $assessmentsQuery->get();
 
-        $categoryLabels = ['Written Work', 'Performance Task', 'Quarterly Assessment'];
+        $categoryLabels = ['Written Work', 'Performance Task', 'Term Assessment'];
         $percentagesByCategory = array_fill_keys($categoryLabels, []);
 
         foreach ($assessments as $assessment) {
@@ -194,16 +194,16 @@ class AnalyticsController extends Controller
             $termSequence = $term;
         } else {
             $currentPeriod = GradingPeriod::where('is_active', true)
-                ->where('sequence', '<=', 3)
+                ->trimester()
                 ->orderBy('sequence')
                 ->first()
-                ?? GradingPeriod::where('sequence', '<=', 3)
+                ?? GradingPeriod::trimester()
                     ->orderBy('sequence')
                     ->first();
             $termSequence = $currentPeriod?->sequence ?? 1;
         }
 
-        $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->whereNotNull('transmuted_grade')
             ->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', $termSequence))
             ->with(['enrollment.student', 'enrollment.section']);
@@ -273,10 +273,10 @@ class AnalyticsController extends Controller
             $termSequence = $term;
         } else {
             $currentPeriod = GradingPeriod::where('is_active', true)
-                ->where('sequence', '<=', 3)
+                ->trimester()
                 ->orderBy('sequence')
                 ->first()
-                ?? GradingPeriod::where('sequence', '<=', 3)
+                ?? GradingPeriod::trimester()
                     ->orderBy('sequence')
                     ->first();
             $termSequence = $currentPeriod?->sequence ?? 1;
@@ -288,7 +288,7 @@ class AnalyticsController extends Controller
             $section = $sectionAssignments->first()->section;
             $taIds = $sectionAssignments->pluck('id');
 
-            $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade')
                 ->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', $termSequence));
 
@@ -496,10 +496,10 @@ class AnalyticsController extends Controller
             $currentSequence = (int) $term;
         } else {
             $currentPeriod = GradingPeriod::where('is_active', true)
-                ->where('sequence', '<=', 3)
+                ->trimester()
                 ->orderBy('sequence')
                 ->first()
-                ?? GradingPeriod::where('sequence', '<=', 3)
+                ?? GradingPeriod::trimester()
                     ->orderBy('sequence')
                     ->first();
             $currentSequence = $currentPeriod?->sequence ?? 1;
@@ -516,7 +516,7 @@ class AnalyticsController extends Controller
         ];
 
         if ($currentSequence <= 1) {
-            $term1Count = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $term1Count = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade')
                 ->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', 1))
                 ->pluck('enrollment_id')
@@ -529,7 +529,7 @@ class AnalyticsController extends Controller
 
         $prevSequence = $currentSequence - 1;
 
-        $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->whereNotNull('transmuted_grade')
             ->whereHas('gradingPeriod', fn ($q) => $q->whereIn('sequence', [$prevSequence, $currentSequence]))
             ->with('gradingPeriod')

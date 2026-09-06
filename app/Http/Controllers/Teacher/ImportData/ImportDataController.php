@@ -35,7 +35,7 @@ class ImportDataController extends Controller
                 ->first();
         }
 
-        $gradingPeriods = GradingPeriod::where('sequence', '<=', 3)
+        $gradingPeriods = GradingPeriod::trimester()
             ->orderBy('sequence')
             ->get();
 

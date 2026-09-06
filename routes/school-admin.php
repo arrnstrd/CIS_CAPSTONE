@@ -20,7 +20,7 @@ use App\Http\Controllers\SchoolAdmin\TeachingAssignments\TeachingAssignmentContr
 use App\Http\Controllers\SchoolAdmin\TimeInTimeOutHistory\AttendanceLogController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:admin,teacher'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -30,6 +30,7 @@ Route::middleware(['auth', 'role:admin,teacher'])->group(function () {
     Route::get('/school-admin/qr-station', [QrStationController::class, 'index'])
         ->name('school_admin.qr-station.index');
     Route::post('/school-admin/qr-station/scan', [ScanController::class, 'scan'])
+        ->middleware('throttle:qr-scan')
         ->name('school_admin.qr-station.scan');
 
     // Monitoring: In/Out History
@@ -206,4 +207,8 @@ Route::middleware(['auth', 'role:admin,teacher'])->group(function () {
     // System: Settings
     Route::get('/settings', [SettingsController::class, 'index'])
         ->name('settings.index');
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])
+        ->name('settings.profile.update');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])
+        ->name('settings.password.update');
 });

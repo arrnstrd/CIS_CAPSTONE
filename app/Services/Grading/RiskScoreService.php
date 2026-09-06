@@ -3,7 +3,7 @@
 namespace App\Services\Grading;
 
 use App\Models\Enrollment;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\GradingPeriod;
 use App\Models\TeachingAssignment;
 use App\Models\AttendanceLog;
@@ -203,7 +203,7 @@ class RiskScoreService
         TeachingAssignment $teachingAssignment,
         GradingPeriod $currentPeriod
     ): bool {
-        $grade = QuarterlyGrade::where(
+        $grade = TermGrade::where(
             'enrollment_id',
             $enrollment->id
         )
@@ -293,7 +293,7 @@ class RiskScoreService
         TeachingAssignment $teachingAssignment,
         GradingPeriod $currentPeriod
     ): bool {
-        $currentGrade = QuarterlyGrade::where(
+        $currentGrade = TermGrade::where(
             'enrollment_id',
             $enrollment->id
         )
@@ -320,7 +320,7 @@ class RiskScoreService
             return false;
         }
 
-        $previousGrade = QuarterlyGrade::where(
+        $previousGrade = TermGrade::where(
             'enrollment_id',
             $enrollment->id
         )
@@ -765,7 +765,7 @@ class RiskScoreService
             return false;
         }
 
-        $previousGrade = QuarterlyGrade::where(
+        $previousGrade = TermGrade::where(
             'enrollment_id',
             $enrollment->id
         )
@@ -791,7 +791,7 @@ class RiskScoreService
         TeachingAssignment $teachingAssignment,
         GradingPeriod $currentPeriod
     ): array {
-        $currentGrade = QuarterlyGrade::where(
+        $currentGrade = TermGrade::where(
             'enrollment_id',
             $enrollment->id
         )
@@ -812,7 +812,7 @@ class RiskScoreService
         $previousGrade = null;
 
         if ($previousPeriod) {
-            $previousGrade = QuarterlyGrade::where(
+            $previousGrade = TermGrade::where(
                 'enrollment_id',
                 $enrollment->id
             )
@@ -836,7 +836,7 @@ class RiskScoreService
                 ->first();
 
             if ($earlierPeriod) {
-                $earlierGrade = QuarterlyGrade::where(
+                $earlierGrade = TermGrade::where(
                     'enrollment_id',
                     $enrollment->id
                 )

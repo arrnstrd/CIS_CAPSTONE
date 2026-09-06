@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="pageName">
         Schedule Configuration
     </x-slot>
@@ -964,4 +964,4 @@
         });
     </script>
 
-</x-layouts.admin>
+</x-layouts.school-admin>

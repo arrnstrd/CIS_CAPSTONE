@@ -677,7 +677,7 @@ SECTION 5 — ASSESSMENT SUMMARY
                     {{ collect([
                         $assessmentCounts['written'] ?? 0,
                         $assessmentCounts['performance'] ?? 0,
-                        $assessmentCounts['quarterly'] ?? 0
+                        $assessmentCounts['term_assessment'] ?? 0
                     ])->filter(fn($count) => $count > 0)->count() }}
                 </p>
 
@@ -793,7 +793,7 @@ SECTION 5 — ASSESSMENT SUMMARY
                                 @else
 
                                     <span class="term-label">
-                                        Quarterly Assessment
+                                        Term Assessment
                                     </span>
 
                                 @endif

@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL; // Idinagdag natin ito
+use Illuminate\Http\Request;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +26,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('qr-scan', function (Request $request) {
+            $identity = $request->user()?->getAuthIdentifier() ?? $request->ip();
+            $device = (string) $request->input('device_id', 'unknown');
+
+            return Limit::perMinute(120)->by($identity . '|' . $device);
+        });
+
+        RateLimiter::for('password-reset', function (Request $request) {
+            $email = (string) $request->input('email');
+
+            return [
+                Limit::perHour(5)->by($request->ip()),
+                Limit::perHour(5)->by($email),
+            ];
+        });
+
         Paginator::useBootstrapFive();
 
         Schema::defaultStringLength(191);

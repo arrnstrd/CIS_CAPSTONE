@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">Attendance — Grade Level</x-slot>
     <x-slot name="subtitle">Select a grade level to view attendance.</x-slot>
     <x-slot name="pageName">Attendance</x-slot>
@@ -27,4 +27,4 @@
             </div>
         @endforeach
     </div>
-</x-layouts.admin>
+</x-layouts.school-admin>

@@ -41,6 +41,11 @@
             ['label' => 'Time Out scans', 'value' => $statusCounts['OUT'] ?? 0, 'icon' => 'fa-solid fa-right-from-bracket', 'variant' => 'primary', 'textVariant' => 'primary'],
             ['label' => 'Remarks', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
         ];
+
+        $historyTabs = [
+            ['label' => 'Scan History Logs', 'href' => route('school_admin.time-in-time-out-history.index', request()->query()), 'active' => true, 'icon' => 'fas fa-list-ul'],
+            ['label' => 'Attendance Analytics', 'href' => route('school_admin.time-in-time-out-history.analytics', request()->query()), 'icon' => 'fas fa-chart-pie'],
+        ];
     @endphp
 
     {{-- Flash Messages --}}
@@ -49,20 +54,7 @@
     @endif
 
     {{-- Navigation Tabs --}}
-    <div class="d-flex align-items-center justify-content-between mx-3 mb-3 pb-2 border-bottom">
-        <ul class="nav nav-pills gap-1 p-1 bg-light rounded-3 border">
-            <li class="nav-item">
-                <a class="nav-link active px-3 py-1.5 fw-semibold" aria-current="page" href="{{ route('school_admin.time-in-time-out-history.index', request()->query()) }}">
-                    <i class="fas fa-list-ul me-1.5"></i> Scan History Logs
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-muted px-3 py-1.5 fw-semibold" href="{{ route('school_admin.time-in-time-out-history.analytics', request()->query()) }}">
-                    <i class="fas fa-chart-pie me-1.5"></i> Attendance Analytics
-                </a>
-            </li>
-        </ul>
-    </div>
+    <x-layouts.school-admin.nav-tabs :tabs="$historyTabs" />
 
     {{-- Overview Cards --}}
     <div class="row g-3 mb-4 px-3">
@@ -439,10 +431,13 @@
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" formaction="{{ route('school_admin.time-in-time-out-history.download') }}" class="btn btn-dark">
+                        <button type="submit" formaction="{{ route('school_admin.time-in-time-out-history.download') }}"
+                            class="btn btn-dark">
                             <i class="fas fa-file-excel text-success me-1"></i> Download Excel
                         </button>
-                        <button type="submit" formaction="{{ route('school_admin.time-in-time-out-history.download-pdf') }}" class="btn btn-primary">
+                        <button type="submit"
+                            formaction="{{ route('school_admin.time-in-time-out-history.download-pdf') }}"
+                            class="btn btn-primary">
                             <i class="fas fa-file-pdf text-white me-1"></i> Download PDF
                         </button>
                     </div>

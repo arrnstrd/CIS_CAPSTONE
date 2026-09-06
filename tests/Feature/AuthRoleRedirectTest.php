@@ -44,7 +44,6 @@ class AuthRoleRedirectTest extends TestCase
 
     public function test_non_teacher_users_cannot_access_teacher_dashboard(): void
     {
-        // Gumamit ng ibang role (halimbawa: student o staff kung meron, o admin kung bawal talaga ang admin)
         $admin = User::create([
             'first_name' => 'Admin',
             'last_name' => 'User',

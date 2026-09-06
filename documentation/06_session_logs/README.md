@@ -13,7 +13,7 @@ This folder contains chronological records of AI coding sessions, architectural 
 
 ## AI Logging Instructions
 
-**The AI assistant is required to log every coding session in this folder.** Each session log should include:
+**The AI assistant is required to log a session only when it creates, modifies, or deletes files.** Read-only actions such as reading documentation, analyzing code, reviewing code, or troubleshooting without file changes do not require a session log. Each session log should include:
 
 ### Required Log Format
 
@@ -48,13 +48,12 @@ This folder contains chronological records of AI coding sessions, architectural 
 
 ### Logging Trigger
 
-**AI MUST create a session log when:**
-1. User asks the AI to read documentation
-2. User requests code changes or modifications
-3. User asks for analysis or review of code
-4. User requests debugging or troubleshooting
-5. User asks for new features or enhancements
-6. Any significant codebase interaction occurs
+**AI MUST create a session log when one or more files are:**
+1. Created
+2. Modified
+3. Deleted
+
+**AI MUST NOT create a session log for read-only actions**, including reading documentation, analyzing or reviewing code, or troubleshooting when no files are changed.
 
 ### Session Log Naming Convention
 
@@ -64,7 +63,7 @@ This folder contains chronological records of AI coding sessions, architectural 
 ## User Awareness
 
 **Users should be aware that:**
-- All AI coding sessions are automatically logged
+- AI sessions that change files are logged
 - Logs provide transparency into code changes
 - Logs help with merge conflict resolution
 - Logs maintain a historical record of the codebase evolution

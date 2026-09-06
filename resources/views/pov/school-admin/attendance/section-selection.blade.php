@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">Attendance — Sections</x-slot>
     <x-slot name="subtitle">Grade {{ $grade }} — Select a section.</x-slot>
     <x-slot name="pageName">Attendance</x-slot>
@@ -46,4 +46,4 @@
             @endif
         </div>
     </div>
-</x-layouts.admin>
+</x-layouts.school-admin>

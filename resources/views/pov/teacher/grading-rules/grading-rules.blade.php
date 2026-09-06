@@ -113,7 +113,7 @@
                     </div>
                     <div class="gr-formula-step">
                         <span class="gr-formula-label">Examination:</span>
-                        <span class="gr-formula-value">{{ $workedExample['ta_score'] }}% × {{ $gradingComponents['quarterly_assessment']['weight'] / 100 }} = {{ $workedExample['ta_contribution'] }}</span>
+                        <span class="gr-formula-value">{{ $workedExample['ta_score'] }}% × {{ $gradingComponents['term_assessment']['weight'] / 100 }} = {{ $workedExample['ta_contribution'] }}</span>
                     </div>
                     <div class="gr-formula-step gr-formula-total">
                         <span class="gr-formula-label">Final Grade:</span>

@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">Bulk Import Students</x-slot>
     <x-slot name="subtitle">Import and verify student records from DepEd SF-1 spreadsheets.</x-slot>
     <x-slot name="pageName">Bulk Import</x-slot>
@@ -470,4 +470,4 @@
         </div>
     </div>
 
-</x-layouts.admin>
+</x-layouts.school-admin>

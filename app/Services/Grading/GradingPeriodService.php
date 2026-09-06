@@ -100,7 +100,7 @@ class GradingPeriodService
      */
     public function getAll()
     {
-        return GradingPeriod::where('sequence', '<=', 3)
+        return GradingPeriod::trimester()
             ->orderBy('sequence')
             ->get();
     }
@@ -113,8 +113,7 @@ class GradingPeriodService
     public function getActive()
     {
         return GradingPeriod::where('is_active', true)
-            ->where('sequence', '<=', 3)
-            ->where('period_type', 'trimester')
+            ->trimester()
             ->orderBy('sequence')
             ->get();
     }
@@ -129,7 +128,7 @@ class GradingPeriodService
     {
         $selectedPeriodId = $request->input('grading_period_id');
         if ($selectedPeriodId) {
-            $period = GradingPeriod::where('id', $selectedPeriodId)->where('sequence', '<=', 3)->first();
+            $period = GradingPeriod::trimester()->where('id', $selectedPeriodId)->first();
             if ($period) {
                 return $period;
             }
@@ -144,7 +143,7 @@ class GradingPeriodService
                 default => null,
             };
             if ($targetSequence) {
-                $period = GradingPeriod::where('sequence', $targetSequence)->where('period_type', 'trimester')->first();
+                $period = GradingPeriod::trimester()->where('sequence', $targetSequence)->first();
                 if ($period) {
                     return $period;
                 }
@@ -174,16 +173,13 @@ class GradingPeriodService
             ->where('status', 'active')
             ->get();
 
-        $term1 = GradingPeriod::where('sequence', 1)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 1)->first();
-        $term2 = GradingPeriod::where('sequence', 2)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 2)->first();
-        $term3 = GradingPeriod::where('sequence', 3)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 3)->first();
+        $term1 = GradingPeriod::trimester()->where('sequence', 1)->first();
+        $term2 = GradingPeriod::trimester()->where('sequence', 2)->first();
+        $term3 = GradingPeriod::trimester()->where('sequence', 3)->first();
 
         // If teacher has no active assignments or Term 1 not found, return safest fallback
         if ($activeAssignments->isEmpty() || ! $term1) {
-            return $term1 ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+            return $term1 ?? GradingPeriod::trimester()->orderBy('sequence')->first();
         }
 
         // 1. Check if Term 1 is 100% complete across ALL active assignments
@@ -231,15 +227,15 @@ class GradingPeriodService
             return true;
         }
 
-        // 2. Check if any quarterly grade record exists for this period
-        $hasGrades = \App\Models\QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        // 2. Check if any term grade record exists for this period
+        $hasGrades = \App\Models\TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->where('grading_period_id', $period->id)
             ->where(function ($query) {
                 $query->whereNotNull('transmuted_grade')
                     ->orWhereNotNull('initial_grade')
                     ->orWhereNotNull('written_work_grade')
                     ->orWhereNotNull('performance_task_grade')
-                    ->orWhereNotNull('quarterly_assessment_grade');
+                    ->orWhereNotNull('term_assessment_grade');
             })
             ->exists();
 
@@ -261,7 +257,7 @@ class GradingPeriodService
             $totalStudents = $activeEnrollmentIds->count();
 
             if ($totalStudents > 0) {
-                $finalizedCount = \App\Models\QuarterlyGrade::where('teaching_assignment_id', $ta->id)
+                $finalizedCount = \App\Models\TermGrade::where('teaching_assignment_id', $ta->id)
                     ->where('grading_period_id', $period->id)
                     ->whereIn('enrollment_id', $activeEnrollmentIds)
                     ->whereNotNull('transmuted_grade')

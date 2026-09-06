@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">
         Grade {{ $grade }} — {{ $section->name }} Students
     </x-slot>
@@ -321,4 +321,4 @@
     @include('pov.school-admin.students.partials.edit-student-modal')
     @include('pov.school-admin.students.partials.export-format-modal', ['exportRoute' => route('student-management.section.export', ['grade' => $grade, 'section' => $section->id])])
 
-</x-layouts.admin>
+</x-layouts.school-admin>

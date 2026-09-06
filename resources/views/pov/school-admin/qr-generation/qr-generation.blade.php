@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
 
     <x-slot name="pageName">
         QR Code Generation
@@ -100,4 +100,4 @@
         </div>
     </div>
 
-</x-layouts.admin>
+</x-layouts.school-admin>

@@ -46,9 +46,9 @@ class Enrollment extends Model
         return $this->hasMany(StudentAssessmentScore::class);
     }
 
-    public function quarterlyGrades()
+    public function termGrades()
     {
-        return $this->hasMany(QuarterlyGrade::class);
+        return $this->hasMany(TermGrade::class);
     }
 
     public function academicNotes()

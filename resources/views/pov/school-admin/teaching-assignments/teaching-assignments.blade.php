@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="pageName">
         Teaching Assignments
     </x-slot>
@@ -133,4 +133,4 @@
         </form>
     </x-modal>
 
-</x-layouts.admin>
+</x-layouts.school-admin>

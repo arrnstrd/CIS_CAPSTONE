@@ -15,8 +15,10 @@ Route::middleware(['auth', 'role:scanner_operator'])->group(function () {
     Route::get('/qr-station', [QrStationController::class, 'index'])
         ->name('qr-station.index');
     Route::post('/qr-station/scan', [ScanController::class, 'scan'])
+        ->middleware('throttle:qr-scan')
         ->name('qr-station.scan');
     Route::post('/scan', [ScanController::class, 'scan'])
+        ->middleware('throttle:qr-scan')
         ->name('scan');
 
     // Attendance Log & In/Out History

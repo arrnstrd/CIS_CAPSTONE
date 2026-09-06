@@ -2,7 +2,7 @@
 
 namespace App\Services\QrSystem;
 
-use App\Mail\GateScanMail;
+use App\Jobs\SendGateScanNotification;
 use App\Models\AttendanceLog;
 use App\Models\EmailLog;
 use App\Models\Enrollment;
@@ -11,11 +11,10 @@ use App\Models\Guardian;
 use App\Models\QrAttendance;
 use App\Models\Student;
 use App\Models\SystemSetting;
+use App\Models\SchoolYear;
 use App\Services\ScheduleResolver;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class QrScanService
 {
@@ -32,6 +31,8 @@ class QrScanService
         $guardian = $student->guardian;
 
         // 2. Resolve active enrollment + section (single round trip)
+        $activeSchoolYearId = SchoolYear::query()->active()->value('id');
+
         $enrollment = Enrollment::query()
             ->select(
                 'enrollments.*',
@@ -43,6 +44,8 @@ class QrScanService
             ->leftJoin('sections', 'sections.id', '=', 'enrollments.section_id')
             ->where('enrollments.student_id', $student->id)
             ->where('enrollments.status', 'active')
+            ->where('enrollments.school_year_id', $activeSchoolYearId)
+            ->orderBy('enrollments.id')
             ->first();
 
         if (!$enrollment) {
@@ -70,75 +73,119 @@ class QrScanService
         $outStart = date('H:i', strtotime($schedule->out_start));
         $outEnd = date('H:i', strtotime($schedule->out_end));
 
-        // 4. Fetch today's official attendance record (if any)
-        $qrAttendance = QrAttendance::where('enrollment_id', $enrollment->id)
-            ->where('attendance_date', $now->toDateString())
-            ->first();
-
-        // 5. Spam shield: block scans still inside the cooldown window
-        //    (cooldown/max-attempts settings are cached — they change rarely)
+        // 4. Resolve cooldown settings before the transaction; the database remains
+        // authoritative for the attendance state itself.
         $settings = $this->scanSettings();
         $cooldownSeconds = $settings['cooldown_seconds'];
         $maxDuplicateAttempts = $settings['max_duplicate_attempts'];
-        if ($qrAttendance && $qrAttendance->cooldown_expires_at && $qrAttendance->cooldown_expires_at->isFuture()) {
-            $qrAttendance->increment('spam_offense_count');
-            FlaggedScan::create([
-                'attendance_log_id' => null,
-                'flag_type' => 'excess_scan',
-                'description' => 'Scan blocked by cooldown (spam shield)',
+        // 5. Atomic state transition: create the daily row if needed, lock it,
+        // then make every cooldown/state decision from the locked database row.
+        $result = DB::transaction(function () use ($enrollment, $now, $currentTime, $cooldownSeconds, $maxDuplicateAttempts, $data, $inStart, $inEnd, $lateThreshold, $outStart, $outEnd) {
+            $attendanceDate = $now->toDateString();
+            $timestamp = $now->toDateTimeString();
+
+            DB::table('qr_attendances')->insertOrIgnore([
+                'enrollment_id' => $enrollment->id,
+                'attendance_date' => $attendanceDate,
+                'spam_offense_count' => 0,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
             ]);
 
-            return response()->json([
-                'message' => 'Too many scans. Please wait for the cooldown to expire.',
-                'retry_after' => $qrAttendance->cooldown_expires_at->diffInSeconds($now),
-            ], 429);
-        }
+            $qrAttendance = QrAttendance::where('enrollment_id', $enrollment->id)
+                ->where('attendance_date', $attendanceDate)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        // 6. State machine: no record OR already checked out -> IN, otherwise OUT
-        $scanType = (!$qrAttendance || $qrAttendance->time_out_log_id !== null) ? 'IN' : 'OUT';
+            if ($qrAttendance->cooldown_expires_at && $qrAttendance->cooldown_expires_at->isFuture()) {
+                $qrAttendance->increment('spam_offense_count');
+                FlaggedScan::create([
+                    'attendance_log_id' => null,
+                    'flag_type' => 'excess_scan',
+                    'description' => 'Scan blocked by cooldown (spam shield)',
+                ]);
 
-        // 7. Duplicate IN: intended OUT but outside the OUT window -> second IN scan (3-strike rule)
-        if ($scanType === 'OUT' && !($currentTime >= $outStart && $currentTime <= $outEnd)) {
-            return $this->handleDuplicateIn(
-                $enrollment,
-                $now,
-                $qrAttendance,
-                $maxDuplicateAttempts,
-                $cooldownSeconds
-            );
-        }
+                return response()->json([
+                    'message' => 'Too many scans. Please wait for the cooldown to expire.',
+                    'retry_after' => $qrAttendance->cooldown_expires_at->diffInSeconds($now),
+                ], 429);
+            }
 
-        // 8. Reject duplicate IN/OUT scans
-        if ($scanType === 'IN' && $qrAttendance && $qrAttendance->time_in_log_id !== null) {
-            return $this->rejectDuplicate($enrollment, $now, 'IN');
-        }
-        if ($scanType === 'OUT' && $qrAttendance && $qrAttendance->time_out_log_id !== null) {
-            return $this->rejectDuplicate($enrollment, $now, 'OUT');
-        }
+            $scanType = $qrAttendance->time_out_log_id !== null ? 'IN' : 'OUT';
+            if ($qrAttendance->time_in_log_id === null) {
+                $scanType = 'IN';
+            }
 
-        // 9. Enforce IN/OUT time windows
-        // Note: OUT window only reaches this check when inside it (duplicate-IN returned above)
-        if ($scanType === 'IN' && !($currentTime >= $inStart && $currentTime <= $inEnd)) {
-            return response()->json([
-                'message' => 'Outside of allowed check-in window',
-                'in_window' => "{$inStart} – {$inEnd}",
-                'current_time' => $currentTime,
-            ], 400);
-        }
-        if ($scanType === 'OUT' && !($currentTime >= $outStart && $currentTime <= $outEnd)) {
-            return response()->json([
-                'message' => 'Outside of allowed check-out window',
-                'out_window' => "{$outStart} – {$outEnd}",
-                'current_time' => $currentTime,
-            ], 400);
-        }
+            if ($scanType === 'OUT' && !($currentTime >= $outStart && $currentTime <= $outEnd)) {
+                $log = AttendanceLog::create([
+                    'enrollment_id' => $enrollment->id,
+                    'scan_type' => 'IN',
+                    'session_type' => $enrollment->section_session_type,
+                    'scan_time' => $now,
+                    'scanned_by_user_id' => $data['scanned_by_user_id'] ?? null,
+                    'device_id' => $data['device_id'] ?? null,
+                ]);
 
-        // 9. Late arrival / early timeout flags
-        $isLate = $scanType === 'IN' && $currentTime > $lateThreshold;
-        $isEarlyTimeout = $scanType === 'OUT' && $currentTime < $outStart;
+                if ($qrAttendance->spam_offense_count < $maxDuplicateAttempts) {
+                    FlaggedScan::create([
+                        'attendance_log_id' => $log->id,
+                        'flag_type' => 'duplicate_scan',
+                        'description' => 'Duplicate IN scan',
+                    ]);
+                    $qrAttendance->increment('spam_offense_count');
 
-        // 10. Atomic write: raw log + official record + flags
-        $log = DB::transaction(function () use ($enrollment, $scanType, $now, $cooldownSeconds, $data, $isLate, $isEarlyTimeout, $qrAttendance) {
+                    return response()->json([
+                        'message' => 'Duplicate scan warning. Please wait for check-out time.',
+                    ], 400);
+                }
+
+                FlaggedScan::create([
+                    'attendance_log_id' => $log->id,
+                    'flag_type' => 'excess_scan',
+                    'description' => 'Exceeded duplicate attempts, cooldown applied',
+                ]);
+                $qrAttendance->cooldown_expires_at = $now->copy()->addSeconds($cooldownSeconds);
+                $qrAttendance->save();
+
+                return response()->json([
+                    'message' => 'Too many duplicate scans. You are now on cooldown.',
+                ], 429);
+            }
+
+            if ($scanType === 'IN' && $qrAttendance->time_in_log_id !== null && $qrAttendance->time_out_log_id !== null) {
+                $log = AttendanceLog::create([
+                    'enrollment_id' => $enrollment->id,
+                    'scan_type' => 'IN',
+                    'session_type' => $enrollment->section_session_type,
+                    'scan_time' => $now,
+                    'scanned_by_user_id' => $data['scanned_by_user_id'] ?? null,
+                    'device_id' => $data['device_id'] ?? null,
+                ]);
+                FlaggedScan::create([
+                    'attendance_log_id' => $log->id,
+                    'flag_type' => 'duplicate_scan',
+                    'description' => 'Duplicate IN scan rejected',
+                ]);
+
+                return response()->json(['message' => 'Duplicate IN scan rejected'], 400);
+            }
+
+            if ($scanType === 'IN' && !($currentTime >= $inStart && $currentTime <= $inEnd)) {
+                return response()->json([
+                    'message' => 'Outside of allowed check-in window',
+                    'in_window' => "{$inStart} – {$inEnd}",
+                    'current_time' => $currentTime,
+                ], 400);
+            }
+            if ($scanType === 'OUT' && !($currentTime >= $outStart && $currentTime <= $outEnd)) {
+                return response()->json([
+                    'message' => 'Outside of allowed check-out window',
+                    'out_window' => "{$outStart} – {$outEnd}",
+                    'current_time' => $currentTime,
+                ], 400);
+            }
+
+            $isLate = $scanType === 'IN' && $currentTime > $lateThreshold;
             $log = AttendanceLog::create([
                 'enrollment_id' => $enrollment->id,
                 'scan_type' => $scanType,
@@ -147,15 +194,6 @@ class QrScanService
                 'scanned_by_user_id' => $data['scanned_by_user_id'] ?? null,
                 'device_id' => $data['device_id'] ?? null,
             ]);
-
-            // Reuse the record fetched in step 4; only hit the DB again when it does
-            // not exist yet (first scan of the day), so the common path is a single write.
-            if (!$qrAttendance) {
-                $qrAttendance = QrAttendance::firstOrCreate(
-                    ['enrollment_id' => $enrollment->id, 'attendance_date' => $now->toDateString()],
-                    ['spam_offense_count' => 0]
-                );
-            }
 
             if ($scanType === 'IN') {
                 $qrAttendance->time_in_log_id = $log->id;
@@ -172,21 +210,17 @@ class QrScanService
                     'description' => 'Student arrived late',
                 ]);
             }
-            if ($isEarlyTimeout) {
-                FlaggedScan::create([
-                    'attendance_log_id' => $log->id,
-                    'flag_type' => 'early_timeout',
-                    'description' => 'Student checked out before the allowed time',
-                ]);
-            }
-
             return $log;
         });
 
+        if ($result instanceof \Illuminate\Http\JsonResponse) {
+            return $result;
+        }
+
+        $log = $result;
+
         // 11. Notify guardian by email
-        $this->sendGuardianEmail($student, $guardian, $log, $scanType, $now);
-
-
+        $this->sendGuardianEmail($student, $guardian, $log, $log->scan_type, $now);
 
         return response()->json([
             'message' => 'Scan successful',
@@ -202,10 +236,10 @@ class QrScanService
             ],
             'attendance_log' => [
                 'id' => $log->id,
-                'scan_type' => $scanType,
+                'scan_type' => $log->scan_type,
                 'scan_time' => $log->scan_time,
             ],
-            'late' => $isLate,
+            'late' => $log->scan_type === 'IN' && $currentTime > $lateThreshold,
         ]);
     }
 
@@ -350,30 +384,6 @@ class QrScanService
             'attempt_count' => 0,
         ]);
 
-        // Send after the response is flushed so the SMTP round-trip never delays
-        // the scan feedback. Status stays tracked on the EmailLog for the admin
-        // email-log page and its retry flow. No queue worker required.
-        dispatch(function () use ($student, $guardian, $emailLog, $scanType, $now) {
-            try {
-                Mail::to($guardian->email)->send(
-                    new GateScanMail($student, $scanType, $now->format('F d, Y - h:i A'))
-                );
-
-                $emailLog->update([
-                    'status' => 'sent',
-                    'sent_at' => now(),
-                    'attempt_count' => 1,
-                    'last_attempt_at' => now(),
-                ]);
-            } catch (\Exception $e) {
-                Log::error("Email failed for student {$student->id}: {$e->getMessage()}");
-
-                $emailLog->update([
-                    'status' => 'failed',
-                    'attempt_count' => 1,
-                    'last_attempt_at' => now(),
-                ]);
-            }
-        })->afterResponse();
+        SendGateScanNotification::dispatch($emailLog->id)->afterCommit();
     }
 }

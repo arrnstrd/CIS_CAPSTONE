@@ -985,7 +985,7 @@
                                     data-component="{{ $assessmentComponentKey }}"
                                     data-field="total">
 
-                                    {{ $row->component_summaries[$assessmentComponentKey]['total'] ?? ($row->component_summaries['exam']['total'] ?? ($row->component_summaries['quarterly']['total'] ?? '—')) }}
+                                    {{ $row->component_summaries[$assessmentComponentKey]['total'] ?? ($row->component_summaries['exam']['total'] ?? ($row->component_summaries['term_assessment']['total'] ?? '—')) }}
 
                                 </td>
 
@@ -994,7 +994,7 @@
                                     data-component="{{ $assessmentComponentKey }}"
                                     data-field="ps">
 
-                                    {{ $row->component_summaries[$assessmentComponentKey]['ps'] ?? ($row->component_summaries['exam']['ps'] ?? ($row->component_summaries['quarterly']['ps'] ?? '—')) }}
+                                    {{ $row->component_summaries[$assessmentComponentKey]['ps'] ?? ($row->component_summaries['exam']['ps'] ?? ($row->component_summaries['term_assessment']['ps'] ?? '—')) }}
 
                                 </td>
 
@@ -1003,7 +1003,7 @@
                                     data-component="{{ $assessmentComponentKey }}"
                                     data-field="ws">
 
-                                    {{ $row->component_summaries[$assessmentComponentKey]['ws'] ?? ($row->component_summaries['exam']['ws'] ?? ($row->component_summaries['quarterly']['ws'] ?? '—')) }}
+                                    {{ $row->component_summaries[$assessmentComponentKey]['ws'] ?? ($row->component_summaries['exam']['ws'] ?? ($row->component_summaries['term_assessment']['ws'] ?? '—')) }}
 
                                 </td>
 
@@ -1162,11 +1162,11 @@
     #gradeSheetTable thead tr:first-child th.gs-group-written,
     #gradeSheetTable thead tr:first-child th.gs-group-performance,
     #gradeSheetTable thead tr:first-child th.gs-group-exam,
-    #gradeSheetTable thead tr:first-child th.gs-group-quarterly,
+    #gradeSheetTable thead tr:first-child th.gs-group-term-assessment,
     #gradeSheetTable thead tr:nth-child(2) th.gs-group-written,
     #gradeSheetTable thead tr:nth-child(2) th.gs-group-performance,
     #gradeSheetTable thead tr:nth-child(2) th.gs-group-exam,
-    #gradeSheetTable thead tr:nth-child(2) th.gs-group-quarterly,
+    #gradeSheetTable thead tr:nth-child(2) th.gs-group-term-assessment,
     #gradeSheetTable thead .gs-assessment-header {
         background: #3b56c4 !important;
         background-color: #3b56c4 !important;
@@ -1193,14 +1193,14 @@
     #gradeSheetTable thead th.gs-divider-written,
     #gradeSheetTable thead th.gs-divider-performance,
     #gradeSheetTable thead th.gs-divider-exam,
-    #gradeSheetTable thead th.gs-divider-quarterly,
+    #gradeSheetTable thead th.gs-divider-term-assessment,
     #gradeSheetTable thead th.gs-divider-initial,
     #gradeSheetTable thead th.gs-divider-transmuted,
     #gradeSheetTable tbody td:first-child,
     #gradeSheetTable tbody td.gs-divider-written,
     #gradeSheetTable tbody td.gs-divider-performance,
     #gradeSheetTable tbody td.gs-divider-exam,
-    #gradeSheetTable tbody td.gs-divider-quarterly,
+    #gradeSheetTable tbody td.gs-divider-term-assessment,
     #gradeSheetTable tbody td.gs-divider-initial,
     #gradeSheetTable tbody td.gs-divider-transmuted {
         box-shadow: inset -3px 0 0 #b5c2ea !important;

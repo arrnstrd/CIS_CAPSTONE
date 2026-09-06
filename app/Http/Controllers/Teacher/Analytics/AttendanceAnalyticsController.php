@@ -7,7 +7,7 @@ use App\Models\AttendanceLog;
 use App\Models\AttendanceVerification;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\TeachingAssignment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -94,10 +94,10 @@ class AttendanceAnalyticsController extends Controller
         // Active grading period for term calculation
         $gradingPeriod = null;
         if ($selectedTerm) {
-            $gradingPeriod = GradingPeriod::where('sequence', $selectedTerm)->first();
+            $gradingPeriod = GradingPeriod::trimester()->where('sequence', $selectedTerm)->first();
         } else {
             $gradingPeriod = GradingPeriod::where('is_active', true)
-                ->where('sequence', '<=', 3)
+                ->trimester()
                 ->orderBy('sequence')
                 ->first();
         }
@@ -136,8 +136,8 @@ class AttendanceAnalyticsController extends Controller
             // Determine tracking date window (matching RiskScoreService)
             [$startDate, $endDate, $schoolDaysCount] = $this->resolveSchoolDaysWindow($enrollmentIds, $gradingPeriod);
 
-            // Fetch quarterly grades for this section's students
-            $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            // Fetch term grades for this section's students
+            $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade');
 
             if ($selectedTerm) {
@@ -453,9 +453,9 @@ class AttendanceAnalyticsController extends Controller
             ->where('status', 'active')
             ->pluck('id');
 
-        $gradingPeriods = GradingPeriod::orderBy('sequence')->where('sequence', '<=', 3)->get();
+        $gradingPeriods = GradingPeriod::orderBy('sequence')->trimester()->get();
 
-        $gradesByPeriod = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $gradesByPeriod = TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->whereNotNull('transmuted_grade')
             ->get()
             ->groupBy('grading_period_id');

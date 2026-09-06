@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Teacher\Students;
 
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\SchoolYear;
 use App\Models\TeachingAssignment;
 use Illuminate\Http\Request;
@@ -46,7 +46,7 @@ class GradingLevelsController extends Controller
                 $totalStudents = $enrollmentsQuery->count();
 
                 $taIds = $assignments->pluck('id');
-                $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+                $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
                     ->whereNotNull('transmuted_grade')
                     ->get();
 
@@ -100,7 +100,7 @@ class GradingLevelsController extends Controller
             $totalStudents = $enrollmentsQuery->count();
 
             $taIds = $assignments->pluck('id');
-            $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade')
                 ->get();
 
@@ -145,7 +145,7 @@ class GradingLevelsController extends Controller
         $taIds = $teachingAssignments->pluck('id');
         $enrollmentIds = $enrollments->pluck('id');
 
-        $gradesByEnrollment = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $gradesByEnrollment = TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->whereNotNull('transmuted_grade')
             ->get()
             ->groupBy('enrollment_id');
@@ -196,7 +196,7 @@ class GradingLevelsController extends Controller
 
         $taIds = $teachingAssignments->pluck('id');
 
-        $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->where('enrollment_id', $enrollmentId)
             ->with('gradingPeriod')
             ->get()

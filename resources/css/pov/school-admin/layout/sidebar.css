@@ -176,9 +176,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.sa-sidebar-logout-btn {
+}.sa-sidebar-logout-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;

@@ -121,16 +121,7 @@
                     </a>
                 </li>
 
-                <!-- SYSTEM SECTION -->
-                <li class="sa-sidebar-section-label">
-                    <small>SYSTEM</small>
-                </li>
-                <li class="{{ request()->routeIs('settings.*') || request()->is('settings*') ? 'active' : '' }}">
-                    <a href="{{ route('settings.index') }}">
-                        <i class="fas fa-sliders-h"></i>
-                        <span>Settings</span>
-                    </a>
-                </li>
+
             </ul>
         </div>
 

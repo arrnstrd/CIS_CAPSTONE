@@ -7,7 +7,7 @@ use App\Models\Assessment;
 use App\Models\AttendanceLog;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\RiskRemark;
 use App\Models\StudentAssessmentScore;
 use App\Models\TeachingAssignment;
@@ -51,10 +51,10 @@ class AtRiskController extends Controller
         |--------------------------------------------------------------------------
         */
         $currentPeriod = GradingPeriod::where('is_active', true)
-            ->where('sequence', '<=', 3)
+            ->trimester()
             ->orderBy('sequence')
             ->first()
-            ?? GradingPeriod::where('sequence', '<=', 3)
+            ?? GradingPeriod::trimester()
                 ->orderBy('sequence')
                 ->first();
 
@@ -309,7 +309,7 @@ class AtRiskController extends Controller
             'is_active',
             true
         )
-            ->where('sequence', '<=', 3)
+            ->trimester()
             ->orderBy('sequence')
             ->first()
             ?? GradingPeriod::where(
@@ -341,7 +341,7 @@ class AtRiskController extends Controller
                 )
                 ->first(
                     fn ($ta) =>
-                        QuarterlyGrade::where(
+                        TermGrade::where(
                             'enrollment_id',
                             $enrollment->id
                         )
@@ -402,7 +402,7 @@ class AtRiskController extends Controller
         | Grade Records
         |--------------------------------------------------------------------------
         */
-        $grades = QuarterlyGrade::where(
+        $grades = TermGrade::where(
             'enrollment_id',
             $enrollment->id
         )
@@ -944,7 +944,7 @@ class AtRiskController extends Controller
         int $teachingAssignmentId,
         int $gradingPeriodId
     ): ?float {
-        $grades = QuarterlyGrade::where(
+        $grades = TermGrade::where(
             'enrollment_id',
             $enrollmentId
         )

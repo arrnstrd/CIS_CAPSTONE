@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="pageName">
         Email Monitoring
     </x-slot>
@@ -351,4 +351,4 @@
     </div>
 
 
-</x-layouts.admin>
+</x-layouts.school-admin>

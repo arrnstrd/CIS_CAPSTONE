@@ -24,7 +24,7 @@ class GradingRulesController extends Controller
         $gradingComponents = [
             'written_work' => ['name' => 'Written Work (WW)', 'weight' => $weights['written_work'] * 100, 'color' => '#4CAF50'],
             'performance_task' => ['name' => 'Performance Task (PT)', 'weight' => $weights['performance_task'] * 100, 'color' => '#2196F3'],
-            'quarterly_assessment' => ['name' => 'Examination (EX)', 'weight' => $weights['quarterly_assessment'] * 100, 'color' => '#FF9800'],
+            'term_assessment' => ['name' => 'Examination (EX)', 'weight' => $weights['term_assessment'] * 100, 'color' => '#FF9800'],
         ];
         
         $formula = "Final Grade = (WW Average × 0.30) + (PT Average × 0.50) + (TA Average × 0.20)";
@@ -35,11 +35,11 @@ class GradingRulesController extends Controller
             'ta_score' => 85,
             'ww_contribution' => 85 * $weights['written_work'],
             'pt_contribution' => 90 * $weights['performance_task'],
-            'ta_contribution' => 85 * $weights['quarterly_assessment'],
-            'final_grade' => (85 * $weights['written_work']) + (90 * $weights['performance_task']) + (85 * $weights['quarterly_assessment']),
+            'ta_contribution' => 85 * $weights['term_assessment'],
+            'final_grade' => (85 * $weights['written_work']) + (90 * $weights['performance_task']) + (85 * $weights['term_assessment']),
         ];
 
-        $formula = "Initial Grade = (WW PS × {$weights['written_work']}) + (PT PS × {$weights['performance_task']}) + (EX PS × {$weights['quarterly_assessment']})";
+        $formula = "Initial Grade = (WW PS × {$weights['written_work']}) + (PT PS × {$weights['performance_task']}) + (EX PS × {$weights['term_assessment']})";
         
         $otherRules = [
             ['rule' => 'Passing Grade', 'value' => '75.00'],

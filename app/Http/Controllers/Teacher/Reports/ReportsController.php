@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\TeachingAssignment;
 use App\Services\Grading\RiskScoreService;
 use Illuminate\Http\Request;
@@ -24,7 +24,7 @@ class ReportsController extends Controller
                 ->get()
             : collect();
 
-        $gradingPeriods = GradingPeriod::where('sequence', '<=', 3)
+        $gradingPeriods = GradingPeriod::trimester()
             ->orderBy('sequence')
             ->get();
 
@@ -61,7 +61,7 @@ class ReportsController extends Controller
         /*
          * Validate selected term against the actual 3-term grading periods.
          */
-        $allGradingPeriods = GradingPeriod::where('sequence', '<=', 3)
+        $allGradingPeriods = GradingPeriod::trimester()
             ->orderBy('sequence')
             ->get();
 
@@ -146,7 +146,7 @@ class ReportsController extends Controller
         $enrollments,
         $gradingPeriods
     ) {
-        $grades = QuarterlyGrade::where(
+        $grades = TermGrade::where(
             'teaching_assignment_id',
             $ta->id
         )
@@ -212,7 +212,7 @@ class ReportsController extends Controller
         $enrollments,
         $gradingPeriods
     ) {
-        $grades = QuarterlyGrade::where(
+        $grades = TermGrade::where(
             'teaching_assignment_id',
             $ta->id
         )
@@ -269,7 +269,7 @@ class ReportsController extends Controller
      *
      * Counts submitted/available grades per term.
      *
-     * We use the actual QuarterlyGrade records because those are
+     * We use the actual TermGrade records because those are
      * the grade records already used by the grading system.
      */
     private function gradeSubmissionReport(
@@ -277,7 +277,7 @@ class ReportsController extends Controller
         $enrollments,
         $gradingPeriods
     ) {
-        $grades = QuarterlyGrade::where(
+        $grades = TermGrade::where(
             'teaching_assignment_id',
             $ta->id
         )

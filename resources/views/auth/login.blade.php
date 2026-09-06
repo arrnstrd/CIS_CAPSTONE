@@ -145,6 +145,12 @@
       color: #b91c1c;
     }
 
+    .alert-success {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+
     .alert-danger ul {
       list-style: none;
       padding-left: 0;
@@ -197,6 +203,12 @@
     <!-- RIGHT COLUMN: Form Container -->
     <div class="right-column">
       <div class="form-container">
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
         @if (session('error'))
             <div class="alert alert-danger">
                 {{ session('error') }}
@@ -240,7 +252,7 @@
             <input type="password" class="form-control" id="password" name="password" required>
           </div>
 
-          <a href="#" class="forgot-password">Forgot Password?</a>
+          <a href="{{ route('password.request') }}" class="forgot-password">Forgot Password?</a>
 
           <button type="submit" class="btn-signin">Sign In</button>
         </form>

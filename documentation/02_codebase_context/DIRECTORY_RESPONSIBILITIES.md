@@ -18,7 +18,7 @@ This guide documents the structural boundaries and architectural responsibilitie
 | `app/Http/Resources/` | JSON API transformers | `BulkImportResource` |
 | `app/Libraries/` | Third-party service wrapper adapters | `PDF/DomPdfWrapper`, `QRCode/SimpleQrCodeAdapter`, `Spreadsheet/ExcelSpreadsheetService` |
 | `app/Mail/` | Mailable notifications | `GateScanMail`, `InvitationMail`, `SetupInvitationMail` |
-| `app/Models/` | Shared Eloquent ORM models | `Student`, `User`, `AttendanceLog`, `QuarterlyGrade`, `Section`, `Subject`, `TeachingAssignment` |
+| `app/Models/` | Shared Eloquent ORM models | `Student`, `User`, `AttendanceLog`, `TermGrade`, `Section`, `Subject`, `TeachingAssignment` |
 | `app/Notifications/` | System notifications | `TeacherSystemNotification` |
 | `app/Providers/` | Application bootstrap providers | `AppServiceProvider` |
 | `app/Services/` | Core business logic and calculation engines | `Administration/`, `Grading/`, `Import/`, `Notification/`, `QrSystem/`, `SchoolAdmin/`, `AttendanceStateMachine.php` |

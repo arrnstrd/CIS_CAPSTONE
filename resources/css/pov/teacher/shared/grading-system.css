@@ -611,7 +611,7 @@
 
 #gradeSheetTable thead .gs-group-written,
 #gradeSheetTable thead .gs-group-performance,
-#gradeSheetTable thead .gs-group-quarterly,
+#gradeSheetTable thead .gs-group-term-assessment,
 #gradeSheetTable thead .gs-group-exam {
     background-color: #3b56c4 !important;
     color: #ffffff !important;
@@ -628,7 +628,7 @@
     background-color: rgba(36, 56, 185, 0.035);
 }
 
-#gradeSheetTable tbody .gs-group-quarterly,
+#gradeSheetTable tbody .gs-group-term-assessment,
 #gradeSheetTable tbody .gs-group-exam {
     background-color: rgba(36, 56, 185, 0.05);
 }
@@ -651,8 +651,8 @@
     box-shadow: inset -3px 0 0 #b5c2ea !important;
 }
 
-#gradeSheetTable th.gs-divider-quarterly,
-#gradeSheetTable td.gs-divider-quarterly,
+#gradeSheetTable th.gs-divider-term-assessment,
+#gradeSheetTable td.gs-divider-term-assessment,
 #gradeSheetTable th.gs-divider-exam,
 #gradeSheetTable td.gs-divider-exam {
     box-shadow: inset -3px 0 0 #b5c2ea !important;
@@ -680,7 +680,7 @@
 #gradeSheetTable thead tr:nth-child(2) th.gs-group-written,
 #gradeSheetTable thead tr:nth-child(2) th.gs-group-performance,
 #gradeSheetTable thead tr:nth-child(2) th.gs-group-exam,
-#gradeSheetTable thead tr:nth-child(2) th.gs-group-quarterly {
+#gradeSheetTable thead tr:nth-child(2) th.gs-group-term-assessment {
     font-size: 0.78rem;
     letter-spacing: 0.2px;
 }

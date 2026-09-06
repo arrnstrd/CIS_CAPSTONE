@@ -29,8 +29,8 @@ class GradingServiceCalculationTest extends TestCase
                 $this->assessment(3, 3, 40),
             ]),
             $this->scores([1 => 18, 2 => 40, 3 => 28]),
-            ['written_work' => 0.20, 'performance_task' => 0.50, 'quarterly_assessment' => 0.30],
-            ['written' => 1, 'performance' => 2, 'quarterly' => 3],
+            ['written_work' => 0.20, 'performance_task' => 0.50, 'term_assessment' => 0.30],
+            ['written' => 1, 'performance' => 2, 'term_assessment' => 3],
         );
 
         $this->assertSame(18.0, $summaries['written']['total']);
@@ -39,8 +39,8 @@ class GradingServiceCalculationTest extends TestCase
         $this->assertSame(18.0, $summaries['written']['ws']);
         $this->assertSame(80.0, $summaries['performance']['ps']);
         $this->assertSame(40.0, $summaries['performance']['ws']);
-        $this->assertSame(70.0, $summaries['quarterly']['ps']);
-        $this->assertSame(21.0, $summaries['quarterly']['ws']);
+        $this->assertSame(70.0, $summaries['term_assessment']['ps']);
+        $this->assertSame(21.0, $summaries['term_assessment']['ws']);
         $this->assertSame(79.0, collect($summaries)->sum('ws'));
         $this->assertSame(86.0, $this->service->transmute(79.0));
         $this->assertSame('Progressing', PerformanceDescriptorResolver::resolve(86.0)['description']);
@@ -51,14 +51,14 @@ class GradingServiceCalculationTest extends TestCase
         $summaries = $this->service->calculateComponentSummaries(
             collect([$this->assessment(1, 1, 20), $this->assessment(2, 2, 50)]),
             $this->scores([1 => 18, 2 => 40]),
-            ['written_work' => 0.20, 'performance_task' => 0.50, 'quarterly_assessment' => 0.30],
-            ['written' => 1, 'performance' => 2, 'quarterly' => 3],
+            ['written_work' => 0.20, 'performance_task' => 0.50, 'term_assessment' => 0.30],
+            ['written' => 1, 'performance' => 2, 'term_assessment' => 3],
         );
 
         $this->assertSame(18.0, $summaries['written']['ws']);
         $this->assertSame(40.0, $summaries['performance']['ws']);
-        $this->assertNull($summaries['quarterly']['ps']);
-        $this->assertNull($summaries['quarterly']['ws']);
+        $this->assertNull($summaries['term_assessment']['ps']);
+        $this->assertNull($summaries['term_assessment']['ws']);
         $this->assertSame(58.0, collect($summaries)->sum('ws'));
     }
 
@@ -67,8 +67,8 @@ class GradingServiceCalculationTest extends TestCase
         $summaries = $this->service->calculateComponentSummaries(
             collect([$this->assessment(1, 1, 20)]),
             collect(),
-            ['written_work' => 0.20, 'performance_task' => 0.50, 'quarterly_assessment' => 0.30],
-            ['written' => 1, 'performance' => 2, 'quarterly' => 3],
+            ['written_work' => 0.20, 'performance_task' => 0.50, 'term_assessment' => 0.30],
+            ['written' => 1, 'performance' => 2, 'term_assessment' => 3],
         );
 
         $this->assertSame(0.0, $summaries['written']['total']);

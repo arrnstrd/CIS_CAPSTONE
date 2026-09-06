@@ -97,7 +97,21 @@ async function refreshTables(options = {}) {
     const nextDocument = new DOMParser().parseFromString(html, 'text/html');
     const scope = options.scope || null;
 
-    replaceMatchedRegions('.table-panel', nextDocument, scope);
+    if (scope) {
+        const currentScope = document.querySelector(scope);
+        const nextScope = nextDocument.querySelector(scope);
+
+        if (currentScope && nextScope) {
+            const currentPanels = currentScope.querySelectorAll('.table-panel');
+            if (currentPanels.length > 0) {
+                replaceMatchedRegions('.table-panel', nextDocument, scope);
+            } else {
+                currentScope.replaceWith(nextScope.cloneNode(true));
+            }
+        }
+    } else {
+        replaceMatchedRegions('.table-panel', nextDocument, scope);
+    }
 
     document.dispatchEvent(new CustomEvent('ajax:table-refreshed'));
     document.dispatchEvent(new CustomEvent('ajax:content-refreshed'));

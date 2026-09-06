@@ -7,7 +7,7 @@ use App\Models\AcademicNote;
 use App\Models\AttendanceLog;
 use App\Models\AttendanceVerification;
 use App\Models\Enrollment;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\TeachingAssignment;
 use App\Models\GradingPeriod;
 use App\Models\Assessment;
@@ -157,7 +157,7 @@ class StudentProfileSearchController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            $grades = QuarterlyGrade::where(
+            $grades = TermGrade::where(
                 'enrollment_id',
                 $enrollment->id
             )
@@ -168,7 +168,7 @@ class StudentProfileSearchController extends Controller
                 ->whereHas(
                     'gradingPeriod',
                     fn ($q) =>
-                        $q->where('sequence', '<=', 3)
+                        $q->trimester()
                             ->where('period_type', 'trimester')
                 )
                 ->get();
@@ -450,7 +450,7 @@ class StudentProfileSearchController extends Controller
         $allTaIds = $allTeachingAssignments
             ->pluck('id');
 
-        $allGrades = QuarterlyGrade::whereIn(
+        $allGrades = TermGrade::whereIn(
             'teaching_assignment_id',
             $allTaIds
         )
@@ -679,8 +679,8 @@ class StudentProfileSearchController extends Controller
                     $categoryKey = 'performance';
                     $categoryLabel = 'Performance Task';
                 } else {
-                    $categoryKey = 'quarterly';
-                    $categoryLabel = 'Quarterly Assessment';
+                    $categoryKey = 'term_assessment';
+                    $categoryLabel = 'Term Assessment';
                 }
 
                 $score = $scoreRecord?->score;
@@ -789,11 +789,11 @@ class StudentProfileSearchController extends Controller
                     )
                     ->count(),
 
-            'quarterly' =>
+            'term_assessment' =>
                 $assessmentSummary
                     ->where(
                         'category_key',
-                        'quarterly'
+                        'term_assessment'
                     )
                     ->count(),
         ];

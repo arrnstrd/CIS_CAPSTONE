@@ -104,9 +104,9 @@ class DepEdClassRecordImportController extends Controller
                 $targetSequence = 3;
             }
 
-            $gradingPeriod = GradingPeriod::where('sequence', $targetSequence)
-                ->where('period_type', 'trimester')
-                ->first() ?? GradingPeriod::where('sequence', $targetSequence)->first();
+            $gradingPeriod = GradingPeriod::trimester()
+                ->where('sequence', $targetSequence)
+                ->first();
 
             if ($gradingPeriod) {
                 $existingAssessments = Assessment::where('teaching_assignment_id', $ta->id)
@@ -118,7 +118,7 @@ class DepEdClassRecordImportController extends Controller
                 $catMap = [
                     'written_work' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'written'))?->id,
                     'performance_task' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'performance'))?->id,
-                    'quarterly_assessment' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'quarterly') || str_contains(strtolower($c->name), 'exam') || str_contains(strtolower($c->name), 'assessment'))?->id,
+                    'term_assessment' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'term assessment') || str_contains(strtolower($c->name), 'exam'))?->id,
                 ];
 
                 $categoryOffsets = [];
@@ -190,15 +190,15 @@ class DepEdClassRecordImportController extends Controller
             $targetSequence = 3;
         }
 
-        $gradingPeriod = GradingPeriod::where('sequence', $targetSequence)
-            ->where('period_type', 'trimester')
-            ->first() ?? GradingPeriod::where('sequence', $targetSequence)->firstOrFail();
+        $gradingPeriod = GradingPeriod::trimester()
+            ->where('sequence', $targetSequence)
+            ->firstOrFail();
 
         $categories = AssessmentCategory::all();
         $catMap = [
             'written_work' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'written'))?->id,
             'performance_task' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'performance'))?->id,
-            'quarterly_assessment' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'quarterly') || str_contains(strtolower($c->name), 'exam') || str_contains(strtolower($c->name), 'assessment'))?->id,
+            'term_assessment' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'term assessment') || str_contains(strtolower($c->name), 'exam'))?->id,
         ];
 
         // Fetch existing assessments to append imported assessments into empty slots
@@ -230,7 +230,7 @@ class DepEdClassRecordImportController extends Controller
                     $titlePrefix = match($catKey) {
                         'written_work' => 'Written Work',
                         'performance_task' => 'Performance Task',
-                        'quarterly_assessment' => 'Exam',
+                        'term_assessment' => 'Exam',
                         default => 'Assessment',
                     };
 

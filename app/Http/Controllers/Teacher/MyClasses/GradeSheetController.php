@@ -7,7 +7,7 @@ use App\Models\Assessment;
 use App\Models\AssessmentCategory;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\StudentAssessmentScore;
 use App\Models\TeachingAssignment;
 use App\Services\Grading\GradingService;
@@ -62,8 +62,7 @@ class GradeSheetController extends Controller
         /*
          * Only Term 1, Term 2, and Term 3 are valid.
          */
-        $gradingPeriods = GradingPeriod::where('sequence', '<=', 3)
-            ->where('period_type', 'trimester')
+        $gradingPeriods = GradingPeriod::trimester()
             ->orderBy('sequence')
             ->get();
 
@@ -240,7 +239,7 @@ class GradeSheetController extends Controller
             ->get()
             ->groupBy('enrollment_id');
 
-        $quarterlyGrades = QuarterlyGrade::where(
+        $termGrades = TermGrade::where(
                 'teaching_assignment_id',
                 $ta->id
             )
@@ -258,7 +257,7 @@ class GradeSheetController extends Controller
         $componentCategoryIds = [
             'written' => $categories['written']?->id,
             'performance' => $categories['performance']?->id,
-            'quarterly' => $categories['exam']?->id,
+            'term_assessment' => $categories['exam']?->id,
             'exam' => $categories['exam']?->id,
         ];
 
@@ -271,7 +270,7 @@ class GradeSheetController extends Controller
         $rows = $enrollments->map(
             function ($enrollment) use (
                 $scores,
-                $quarterlyGrades,
+                $termGrades,
                 $assessmentsByCategory,
                 $gradingService,
                 $componentCategoryIds,
@@ -289,11 +288,11 @@ class GradeSheetController extends Controller
                         $componentCategoryIds
                     );
 
-                if (isset($componentSummaries['quarterly']) && !isset($componentSummaries['exam'])) {
-                    $componentSummaries['exam'] = $componentSummaries['quarterly'];
+                if (isset($componentSummaries['term_assessment']) && !isset($componentSummaries['exam'])) {
+                    $componentSummaries['exam'] = $componentSummaries['term_assessment'];
                 }
-                if (isset($componentSummaries['exam']) && !isset($componentSummaries['quarterly'])) {
-                    $componentSummaries['quarterly'] = $componentSummaries['exam'];
+                if (isset($componentSummaries['exam']) && !isset($componentSummaries['term_assessment'])) {
+                    $componentSummaries['term_assessment'] = $componentSummaries['exam'];
                 }
 
                 $hasAssessment = collect($componentSummaries)
@@ -515,19 +514,23 @@ class GradeSheetController extends Controller
     {
         $teacher = $request->user()->teacher;
 
+        // Older grade-sheet clients submitted this legacy component key.
+        if ($request->input('category') === 'quarterly') {
+            $request->merge(['category' => 'term_assessment']);
+        }
+
         $data = $request->validate([
             'teaching_assignment_id' => 'required|integer',
             'grading_period_id' => 'required|integer|exists:grading_periods,id',
-            'category' => 'required|in:written,performance,quarterly,exam',
+            'category' => 'required|in:written,performance,term_assessment,exam',
             'title' => 'required|string|max:100',
             'total_items' => 'required|integer|min:1',
             'assessment_date' => 'nullable|date',
             'description' => 'nullable|string|max:1000',
         ]);
 
-        $gradingPeriod = GradingPeriod::where('id', $data['grading_period_id'])
-            ->where('sequence', '<=', 3)
-            ->where('period_type', 'trimester')
+        $gradingPeriod = GradingPeriod::trimester()
+            ->where('id', $data['grading_period_id'])
             ->firstOrFail();
 
         $ta = TeachingAssignment::where(
@@ -550,8 +553,8 @@ class GradeSheetController extends Controller
         $categoryNameMap = [
             'written' => 'Written Work',
             'performance' => 'Performance Task',
-            'quarterly' => 'Quarterly Assessment',
-            'exam' => 'Quarterly Assessment',
+            'term_assessment' => 'Term Assessment',
+            'exam' => 'Term Assessment',
         ];
 
         $category = AssessmentCategory::where(
@@ -577,7 +580,7 @@ class GradeSheetController extends Controller
 
         $categoryKey = $data['category'];
         if (! isset($fixedSlots[$categoryKey])) {
-            $categoryKey = ($categoryKey === 'exam') ? 'quarterly' : 'exam';
+            $categoryKey = ($categoryKey === 'exam') ? 'term_assessment' : 'exam';
         }
         $maxSlots = $fixedSlots[$categoryKey] ?? ($fixedSlots[$data['category']] ?? 3);
 
@@ -683,14 +686,10 @@ class GradeSheetController extends Controller
 
         /*
          * Make sure scores cannot accidentally be recorded
-         * against the legacy fourth quarter.
+         * against a non-trimester grading period.
          */
-        $gradingPeriod = GradingPeriod::where(
-                'id',
-                $assessment->grading_period_id
-            )
-            ->where('sequence', '<=', 3)
-            ->where('period_type', 'trimester')
+        $gradingPeriod = GradingPeriod::trimester()
+            ->where('id', $assessment->grading_period_id)
             ->first();
 
         if (! $gradingPeriod) {
@@ -709,7 +708,7 @@ class GradeSheetController extends Controller
                     ->where('enrollment_id', $data['enrollment_id'])
                     ->delete();
 
-                $gradingService->recalculateQuarterlyGrade(
+                $gradingService->recalculateTermGrade(
                     $data['enrollment_id'],
                     $assessment->teaching_assignment_id,
                     $assessment->grading_period_id
@@ -721,7 +720,7 @@ class GradeSheetController extends Controller
             ], 422);
         }
 
-        $qg = QuarterlyGrade::where(
+        $qg = TermGrade::where(
                 'teaching_assignment_id',
                 $assessment->teaching_assignment_id
             )
@@ -752,7 +751,7 @@ class GradeSheetController extends Controller
         $totalStudents =
             $activeEnrollmentIds->count();
 
-        $allGrades = QuarterlyGrade::where(
+        $allGrades = TermGrade::where(
                 'teaching_assignment_id',
                 $assessment->teaching_assignment_id
             )
@@ -807,11 +806,11 @@ class GradeSheetController extends Controller
             $assessment->teaching_assignment_id,
             $assessment->grading_period_id
         );
-        if (isset($summaries['quarterly']) && !isset($summaries['exam'])) {
-            $summaries['exam'] = $summaries['quarterly'];
+        if (isset($summaries['term_assessment']) && !isset($summaries['exam'])) {
+            $summaries['exam'] = $summaries['term_assessment'];
         }
-        if (isset($summaries['exam']) && !isset($summaries['quarterly'])) {
-            $summaries['quarterly'] = $summaries['exam'];
+        if (isset($summaries['exam']) && !isset($summaries['term_assessment'])) {
+            $summaries['term_assessment'] = $summaries['exam'];
         }
 
         $enrollment = Enrollment::with('student')->find($data['enrollment_id']);
@@ -862,8 +861,8 @@ class GradeSheetController extends Controller
             'performance_task_grade' =>
                 $qg->performance_task_grade,
 
-            'quarterly_assessment_grade' =>
-                $qg->quarterly_assessment_grade,
+            'term_assessment_grade' =>
+                $qg->term_assessment_grade,
 
             'component_summaries' =>
                 $summaries,
@@ -930,13 +929,13 @@ class GradeSheetController extends Controller
             'description' => $data['description'] ?? null,
         ]);
 
-        // If total_items changed, recalculate quarterly grades for all enrollments in this section
+        // If total_items changed, recalculate term grades for all enrollments in this section
         if ((float) $oldTotalItems !== (float) $data['total_items']) {
             $enrollmentIds = Enrollment::where('section_id', $assessment->teachingAssignment->section_id)
                 ->pluck('id');
 
             foreach ($enrollmentIds as $enrollmentId) {
-                $gradingService->recalculateQuarterlyGrade(
+                $gradingService->recalculateTermGrade(
                     $enrollmentId,
                     $assessment->teaching_assignment_id,
                     $assessment->grading_period_id
@@ -1004,10 +1003,10 @@ class GradeSheetController extends Controller
             $assessment->delete();
         });
 
-        // Recalculate quarterly grades for all enrolled students
+        // Recalculate term grades for all enrolled students
         $enrollmentIds = Enrollment::where('section_id', $sectionId)->pluck('id');
         foreach ($enrollmentIds as $enrollmentId) {
-            $gradingService->recalculateQuarterlyGrade(
+            $gradingService->recalculateTermGrade(
                 $enrollmentId,
                 $taId,
                 $gpId
@@ -1084,7 +1083,7 @@ class GradeSheetController extends Controller
                     ->delete();
             }
 
-            $gradingService->recalculateQuarterlyGrade(
+            $gradingService->recalculateTermGrade(
                 $enrollmentId,
                 $assessment->teaching_assignment_id,
                 $assessment->grading_period_id
@@ -1105,9 +1104,8 @@ class GradeSheetController extends Controller
             ]
         );
 
-        $gradingPeriod = GradingPeriod::where('id', $assessment->grading_period_id)
-            ->where('sequence', '<=', 3)
-            ->where('period_type', 'trimester')
+        $gradingPeriod = GradingPeriod::trimester()
+            ->where('id', $assessment->grading_period_id)
             ->first();
 
         if ($gradingPeriod && $assessment->teachingAssignment) {
@@ -1334,7 +1332,7 @@ class GradeSheetController extends Controller
             return 'performance';
         }
 
-        if (str_contains($name, 'quarterly') || str_contains($name, 'exam')) {
+        if (str_contains($name, 'term assessment') || str_contains($name, 'exam')) {
             return 'exam';
         }
 

@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">Student Management — Grade {{ $grade }} Sections</x-slot>
     <x-slot name="subtitle">Grade {{ $grade }} — Select a section to view student records.</x-slot>
     <x-slot name="pageName">Student Management</x-slot>
@@ -64,4 +64,4 @@
     </div>
 
     @include('pov.school-admin.students.partials.add-student-modal')
-</x-layouts.admin>
+</x-layouts.school-admin>
