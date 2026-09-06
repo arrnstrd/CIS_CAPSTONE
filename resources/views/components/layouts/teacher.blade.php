@@ -202,15 +202,51 @@
                     </div>
                 </div>
 
-                <!-- Teacher Profile -->
-                <div class="teacher-top-nav-profile">
-                    <div class="teacher-top-nav-profile-avatar">
-                        <i class="fa-solid fa-circle-user"></i>
-                    </div>
-                    <div class="teacher-top-nav-profile-details">
-                        <span class="teacher-top-nav-profile-name">{{ $teacherName }}</span>
-                        <span class="teacher-top-nav-profile-email">{{ $teacherEmail }}</span>
-                    </div>
+                <!-- Teacher Profile Dropdown -->
+                <div class="dropdown teacher-top-nav-profile-dropdown">
+                    <button
+                        class="teacher-top-nav-profile btn border-0 p-0 text-start d-flex align-items-center gap-2"
+                        type="button"
+                        id="teacherProfileDropdown"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        style="background: transparent; cursor: pointer;"
+                    >
+                        <div class="teacher-top-nav-profile-avatar">
+                            <i class="fa-solid fa-circle-user"></i>
+                        </div>
+                        <div class="teacher-top-nav-profile-details d-none d-sm-flex">
+                            <span class="teacher-top-nav-profile-name">{{ $teacherName }}</span>
+                            <span class="teacher-top-nav-profile-email">{{ $teacherEmail }}</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-white-50 ms-1" style="font-size: 0.68rem;"></i>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 py-2 mt-2" aria-labelledby="teacherProfileDropdown" style="min-width: 220px; border-radius: 10px;">
+                        <li class="px-3 py-2 border-bottom mb-1">
+                            <div class="fw-bold text-dark text-truncate" style="font-size: 0.85rem;">{{ $teacherName }}</div>
+                            <div class="text-muted text-truncate" style="font-size: 0.75rem;">{{ $teacherEmail }}</div>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-secondary" href="{{ route('teacher.settings.index') }}" style="font-size: 0.82rem;">
+                                <i class="fa-solid fa-sliders text-muted" style="width: 16px;"></i>
+                                <span>Settings / Preferences</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-secondary" href="{{ route('teacher.account') }}" style="font-size: 0.82rem;">
+                                <i class="fa-solid fa-user-gear text-muted" style="width: 16px;"></i>
+                                <span>Manage Account</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" data-bs-toggle="modal" data-bs-target="#logoutModal" style="font-size: 0.82rem;">
+                                <i class="fa-solid fa-arrow-right-from-bracket" style="width: 16px;"></i>
+                                <span>Log Out</span>
+                            </button>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </header>

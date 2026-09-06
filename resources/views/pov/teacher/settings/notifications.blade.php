@@ -17,6 +17,8 @@
         </div>
     @endif
 
+    @include('pov.teacher.settings.partials.settings-nav')
+
     <div class="row g-3">
         <div class="col-12 col-lg-8 col-xl-6">
             <div class="gs-panel">

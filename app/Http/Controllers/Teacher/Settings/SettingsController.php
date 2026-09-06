@@ -10,6 +10,11 @@ use Illuminate\Validation\Rules\Password;
 
 class SettingsController extends Controller
 {
+    public function index(Request $request)
+    {
+        return view('pov.teacher.settings.index');
+    }
+
     public function profile(Request $request)
     {
         $user = $request->user();
@@ -94,7 +99,7 @@ class SettingsController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return redirect()->route('teacher.settings.security')
+        return redirect()->route('teacher.account.security')
             ->with('success', 'Password updated successfully.');
     }
 

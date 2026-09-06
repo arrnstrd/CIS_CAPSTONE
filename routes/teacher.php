@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Teacher\Account\AccountController;
 use App\Http\Controllers\Teacher\Analytics\AnalyticsController;
 use App\Http\Controllers\Teacher\Analytics\AttendanceAnalyticsController;
 use App\Http\Controllers\Teacher\Analytics\ByLevelController;
@@ -171,9 +172,20 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
     // ----------------------------------------------------
     // SETTINGS
     // ----------------------------------------------------
-    Route::redirect('/teacher/settings', '/teacher/settings/profile');
+    Route::get('/teacher/settings', [SettingsController::class, 'index'])
+        ->name('teacher.settings.index');
     Route::get('/teacher/settings/profile', [SettingsController::class, 'profile'])
         ->name('teacher.settings.profile');
+
+    // ----------------------------------------------------
+    // ACCOUNT
+    // ----------------------------------------------------
+    Route::redirect('/teacher/account', '/teacher/account/personal-information')
+        ->name('teacher.account');
+    Route::get('/teacher/account/personal-information', [AccountController::class, 'personalInformation'])
+        ->name('teacher.account.personal-information');
+    Route::get('/teacher/account/security', [AccountController::class, 'security'])
+        ->name('teacher.account.security');
     Route::get('/teacher/settings/notifications', [SettingsController::class, 'notifications'])
         ->name('teacher.settings.notifications');
     Route::get('/teacher/settings/appearance', [SettingsController::class, 'appearance'])
