@@ -96,12 +96,6 @@
             </div>
 
             <div class="teacher-top-nav-actions">
-                <div class="d-none d-md-flex align-items-center gap-2 me-2">
-                    <div class="text-white-50 text-end" style="font-size: 0.75rem; line-height: 1.2;">
-                        <div>Today</div>
-                        <div class="fw-bold text-white" id="liveDate"></div>
-                    </div>
-                </div>
 
                 <!-- Notification Bell Dropdown -->
                 <div class="dropdown notification-dropdown">
@@ -262,9 +256,16 @@
                             @endif
                         </div>
                         <div class="teacher-head-banner__meta">
-                            <div class="d-flex flex-column align-items-end gap-2">
-                                <x-help-button />
+
+                            <div class="teacher-head-banner__date d-none d-md-flex">
+                                <i class="fa-solid fa-calendar-day"></i>
+                                <span>
+                                    <small>Today</small>
+                                    <strong id="liveDate"></strong>
+                                </span>
                             </div>
+
+                            
 
                             @isset($headerActions)
                                 <div class="teacher-head-banner__actions">

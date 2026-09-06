@@ -205,3 +205,27 @@
     margin-top: 10px;
     line-height: 1.5;
 }
+
+.admin-head-banner__help-btn {
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff !important;
+    backdrop-filter: blur(6px);
+    border-radius: 0.75rem;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 0.18s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+}
+
+.admin-head-banner__help-btn:hover,
+.admin-head-banner__help-btn:focus {
+    background: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}

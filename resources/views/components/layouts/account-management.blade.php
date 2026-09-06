@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Account Management' }} â€” Conception Integrated School</title>
+    <title>{{ $title ?? 'Account Management' }} — Conception Integrated School</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -18,36 +18,85 @@
             flex-direction: column;
         }
 
-        .account-mgmt-header {
+        .account-mgmt-titleblock {
             background: #1F3690;
+            padding: 14px 0 0;
+        }
+
+        .account-mgmt-titleblock .back-link {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.82rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 6px;
+            padding: 8px 14px;
+            transition: all .15s;
+        }
+
+        .account-mgmt-titleblock .back-link:hover {
             color: #ffffff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            position: sticky;
-            top: 0;
-            z-index: 1020;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .account-mgmt-titleblock .titlebar-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .account-mgmt-titleblock h1 {
+            color: #ffffff;
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .account-mgmt-titleblock p {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.82rem;
+            margin: 2px 0 0;
+        }
+
+        .account-mgmt-nav {
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .account-mgmt-nav .nav-link {
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.6);
             font-weight: 500;
             font-size: 0.88rem;
-            padding: 0.65rem 1rem;
+            padding: 14px 20px;
             border-bottom: 2px solid transparent;
             border-radius: 0;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .account-mgmt-nav .nav-link i {
+            font-size: 0.82rem;
         }
 
         .account-mgmt-nav .nav-link:hover {
-            color: #ffffff;
-            border-bottom-color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.04);
         }
 
         .account-mgmt-nav .nav-link.active {
             color: #ffffff;
             font-weight: 600;
-            border-bottom-color: #ffffff;
-            background: transparent;
+            border-bottom-color: #60a5fa;
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .account-mgmt-card {
@@ -92,60 +141,39 @@
         $displayEmail = $user?->email ?? '';
     @endphp
 
-    <!-- Top Navigation Header -->
-    <header class="account-mgmt-header">
+    <header class="account-mgmt-titleblock">
         <div class="container-xl">
-            <div class="d-flex align-items-center justify-content-between py-3">
-                <!-- Branding & Back Button -->
-                <div class="d-flex align-items-center gap-3">
-                    <a href="{{ route('teacher.dashboard') }}" class="btn btn-outline-light btn-sm d-inline-flex align-items-center gap-2" style="border-color: rgba(255, 255, 255, 0.35); font-size: 0.8rem;">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span><span class="d-none d-sm-inline">Return to Teacher Portal</span><span class="d-inline d-sm-none">Back</span></span>
-                    </a>
-                    <div class="vr bg-white opacity-25 d-none d-md-block" style="height: 24px;"></div>
-                    <div>
-                        <div class="fw-bold text-white lh-1" style="font-size: 0.95rem;">Manage Account</div>
-                        <small class="text-white-50" style="font-size: 0.72rem;">Conception Integrated School</small>
-                    </div>
+            <div class="titlebar-row">
+                <div>
+                    <h1>Manage Account</h1>
+                    <p>Conception Integrated School</p>
                 </div>
-
-                <!-- User Profile & Logout -->
-                <div class="d-flex align-items-center gap-3">
-                    <div class="text-end d-none d-sm-block">
-                        <div class="fw-semibold text-white lh-1" style="font-size: 0.82rem;">{{ $displayName }}</div>
-                        <small class="text-white-50" style="font-size: 0.7rem;">{{ $displayEmail }}</small>
-                    </div>
-                    <button type="button" class="btn btn-sm text-white-50 p-1" data-bs-toggle="modal" data-bs-target="#logoutModal" title="Sign Out" aria-label="Sign Out">
-                        <i class="fa-solid fa-arrow-right-from-bracket fs-6"></i>
-                    </button>
-                </div>
+                <a href="{{ route('teacher.dashboard') }}" class="back-link">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Return to Teacher Portal</span>
+                </a>
             </div>
 
-            <!-- Navigation Tabs -->
-            <nav class="account-mgmt-nav d-flex gap-1 border-top" style="border-color: rgba(255, 255, 255, 0.15) !important;">
+            <nav class="account-mgmt-nav d-flex gap-1">
                 <a href="{{ route('teacher.account.personal-information') }}" class="nav-link {{ request()->routeIs('teacher.account.personal-information') ? 'active' : '' }}">
-                    <i class="fa-solid fa-user me-1.5"></i> Personal Information
+                    <i class="fa-solid fa-user"></i> Personal Information
                 </a>
                 <a href="{{ route('teacher.account.security') }}" class="nav-link {{ request()->routeIs('teacher.account.security') ? 'active' : '' }}">
-                    <i class="fa-solid fa-shield-halved me-1.5"></i> Security &amp; Sign-in
+                    <i class="fa-solid fa-shield-halved"></i> Security &amp; Sign-in
                 </a>
             </nav>
         </div>
     </header>
 
-    <!-- Main Content Container -->
     <main class="flex-grow-1 py-4">
         <div class="container-xl">
             {{ $slot }}
         </div>
     </main>
 
-    <!-- Logout Confirmation Modal -->
     @include('components.logout-modal')
 
     @stack('scripts')
 </body>
 
 </html>
-
-

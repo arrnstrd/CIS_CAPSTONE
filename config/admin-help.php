@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /*
 |--------------------------------------------------------------------------
@@ -333,6 +333,36 @@ return [
     ],
 
     // Report Generation — path only (placeholder / not built)
+    'teacher.settings.index' => [
+        'title' => 'Settings & Preferences - Help & FAQ',
+        'intro' => 'Manage your notifications, appearance, and dashboard preferences from here.',
+        'steps' => [
+            ['title' => 'Notifications', 'body' => 'Choose which alerts you want to receive for attendance, grading, and at-risk students.'],
+            ['title' => 'Appearance', 'body' => 'Switch between Light, Dark, or System theme.'],
+            ['title' => 'Dashboard Preferences', 'body' => 'Set your default view, class, term, and which dashboard sections are visible.'],
+            ['title' => 'Account & Security', 'body' => 'Personal information and password changes are managed separately under Manage Account.'],
+        ],
+        'faqs' => [
+            ['q' => 'Where do I change my password?', 'a' => 'Go to Manage Account, then the Security & Sign-in tab.'],
+            ['q' => 'Where do I update my personal information?', 'a' => 'Personal details are managed by the school administration. Go to Manage Account to view them.'],
+        ],
+    ],
+
+    'teacher.settings.dashboard' => [
+        'title' => 'Dashboard Preferences - Help & FAQ',
+        'intro' => 'Customize your dashboard layout, default filters, and which panels are visible when you log in.',
+        'steps' => [
+            ['title' => 'Layout', 'body' => 'Choose your Default View and Dashboard Density (Comfortable or Compact).'],
+            ['title' => 'Default Filters', 'body' => 'Set the Default Class and Default Term shown when you open your dashboard.'],
+            ['title' => 'Visible Sections', 'body' => 'Toggle Grading Progress, Class Health Indicators, At-Risk Summary, and Recent Activity on or off.'],
+            ['title' => 'Information Display', 'body' => 'Toggle Summary Cards, Student Counts, and Progress Indicators on or off.'],
+            ['title' => 'Save', 'body' => 'Click Save Dashboard Preferences at the bottom to apply your changes.'],
+        ],
+        'faqs' => [
+            ['q' => 'Will this change what my students or admin see?', 'a' => 'No, these preferences only affect your own dashboard view.'],
+            ['q' => 'Can I undo my changes?', 'a' => 'Yes, just update the settings again and save.'],
+        ],
+    ],
     'report-generation' => [
         'title' => 'Report Generation — Help',
         'intro' => 'Report generation is not built yet. This page is a placeholder.',

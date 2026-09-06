@@ -6,8 +6,7 @@
     <x-slot name="subtitle">
         Teacher Dashboard
     </x-slot>
-
-    <div class="row g-3">
+<div class="row g-3">
         <div class="col-md-4">
             <div class="card border h-100">
                 <div class="card-body">
