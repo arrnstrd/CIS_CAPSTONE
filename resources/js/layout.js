@@ -1,11 +1,12 @@
 // Live date display
 (function () {
-    const dateEl = document.getElementById('liveDate');
-    if (dateEl) {
+    const dateEls = document.querySelectorAll('#liveDate, #liveDatePageHeader');
+    if (dateEls.length > 0) {
         const now = new Date();
-        dateEl.textContent = now.toLocaleDateString('en-US', {
+        const formattedDate = now.toLocaleDateString('en-US', {
             year: 'numeric', month: 'long', day: '2-digit'
         });
+        dateEls.forEach(el => el.textContent = formattedDate);
     }
 })();
 

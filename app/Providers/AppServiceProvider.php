@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\URL; // Idinagdag natin ito
 use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\ServiceProvider;
-
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -18,7 +17,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
     }
 
     /**
@@ -102,3 +100,5 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 }
+
+

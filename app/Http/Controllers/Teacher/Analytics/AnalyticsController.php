@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
+use App\Models\SchoolYear;
 use App\Models\TermGrade;
 use App\Models\Section;
 use App\Models\Subject;
@@ -23,6 +24,9 @@ class AnalyticsController extends Controller
                 'gradeLevels' => collect(),
                 'sections' => collect(),
                 'subjects' => collect(),
+                'schoolYears' => collect(),
+                'students' => collect(),
+                'selectedSchoolYearId' => null,
                 'overview' => null,
                 'gradeDistribution' => null,
                 'termTrend' => null,
@@ -38,7 +42,7 @@ class AnalyticsController extends Controller
 
         $baseQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
-            ->with('section', 'subject');
+            ->with('section', 'subject', 'schoolYear');
 
         $allAssignments = $baseQuery->get();
 
@@ -46,7 +50,33 @@ class AnalyticsController extends Controller
         $sections = $allAssignments->pluck('section')->unique('id')->sortBy('name')->values();
         $subjects = $allAssignments->pluck('subject')->unique('id')->sortBy('name')->values();
 
+        $schoolYears = $allAssignments
+            ->pluck('schoolYear')
+            ->filter()
+            ->unique('id')
+            ->sortByDesc('school_year')
+            ->values();
+
+        $selectedSchoolYearId = $request->input('school_year_id') ?: null;
+
+        if (! $selectedSchoolYearId) {
+            $activeSchoolYearId = SchoolYear::active()->value('id');
+
+            if (
+                $activeSchoolYearId &&
+                $allAssignments->contains(
+                    fn ($assignment) => (int) $assignment->school_year_id === (int) $activeSchoolYearId
+                )
+            ) {
+                $selectedSchoolYearId = $activeSchoolYearId;
+            }
+        }
+
         $filtered = $allAssignments;
+
+        if ($selectedSchoolYearId) {
+            $filtered = $filtered->filter(fn ($ta) => (int) $ta->school_year_id === (int) $selectedSchoolYearId);
+        }
 
         if ($request->filled('grade_level')) {
             $filtered = $filtered->filter(fn ($ta) => $ta->section->grade_level == $request->grade_level);
@@ -60,6 +90,22 @@ class AnalyticsController extends Controller
             $filtered = $filtered->filter(fn ($ta) => $ta->subject_id == $request->subject_id);
         }
 
+        $availableSectionIds = $filtered
+            ->pluck('section_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $students = Enrollment::whereIn('section_id', $availableSectionIds)
+            ->where('status', 'active')
+            ->with('student')
+            ->get()
+            ->pluck('student')
+            ->filter()
+            ->unique('id')
+            ->sortBy('full_name')
+            ->values();
+
         $taIds = $filtered->pluck('id');
 
         $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
@@ -67,6 +113,14 @@ class AnalyticsController extends Controller
 
         if ($request->filled('term')) {
             $gradesQuery->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', $request->term));
+        }
+
+        if ($request->filled('student_id')) {
+            $studentEnrollmentIds = Enrollment::where('student_id', $request->student_id)
+                ->whereIn('section_id', $availableSectionIds)
+                ->pluck('id');
+
+            $gradesQuery->whereIn('enrollment_id', $studentEnrollmentIds);
         }
 
         $grades = $gradesQuery->get();
@@ -91,7 +145,7 @@ class AnalyticsController extends Controller
         $performanceInsights = $this->getPerformanceInsights($overview, $gradeDistribution, $termTrend, $assessmentPerformance);
 
         return view('pov.teacher.analytics.analytics-index', compact(
-            'gradeLevels', 'sections', 'subjects', 'overview', 'performanceStatus', 'gradeDistribution', 'termTrend', 'assessmentPerformance', 'classHealth', 'studentSnapshot', 'topPerformers', 'sectionComparison', 'performanceInsights'
+            'gradeLevels', 'sections', 'subjects', 'schoolYears', 'selectedSchoolYearId', 'students', 'overview', 'performanceStatus', 'gradeDistribution', 'termTrend', 'assessmentPerformance', 'classHealth', 'studentSnapshot', 'topPerformers', 'sectionComparison', 'performanceInsights'
         ));
     }
 

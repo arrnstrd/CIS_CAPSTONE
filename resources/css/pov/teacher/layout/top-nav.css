@@ -102,7 +102,17 @@
     text-overflow: ellipsis;
     max-width: 180px;
 }
+.teacher-top-nav-profile-btn {
+    color: #ffffff !important;
+}
 
+.teacher-top-nav-profile-btn > .fa-chevron-down {
+    color: #ffffff !important;
+}
+
+.teacher-top-nav-profile-email {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
 /* Notification dropdown */
 .teacher-top-nav-bell-btn {
     width: 38px;
@@ -150,8 +160,36 @@
     margin-top: 8px !important;
 }
 
+/* Notification filter tabs */
+.notification-filter-tabs {
+    background-color: #e9ecef;
+    border-radius: 6px;
+    gap: 2px;
+}
+
+.notification-tab-btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: #6c757d;
+    transition: all 0.15s ease;
+    line-height: 1.2;
+    background: transparent;
+}
+
+.notification-tab-btn:hover {
+    color: #1e293b;
+}
+
+.notification-tab-btn.active {
+    background-color: #ffffff;
+    color: #1F3690;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+}
+
 .notification-list {
-    max-height: 380px;
+    max-height: 290px;
     overflow-y: auto;
 }
 
@@ -199,3 +237,4 @@
         min-height: auto;
     }
 }
+

@@ -8,6 +8,7 @@ use App\Models\AttendanceLog;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
 use App\Models\TermGrade;
+use App\Models\RiskFollowUp;
 use App\Models\RiskRemark;
 use App\Models\StudentAssessmentScore;
 use App\Models\TeachingAssignment;
@@ -662,6 +663,20 @@ class AtRiskController extends Controller
 
         /*
         |--------------------------------------------------------------------------
+        | Monitoring Follow-Ups
+        |--------------------------------------------------------------------------
+        */
+        $followUps = RiskFollowUp::where(
+            'enrollment_id',
+            $enrollment->id
+        )
+            ->with('teacher')
+            ->orderByDesc('follow_up_date')
+            ->orderByDesc('created_at')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
         | Student / Subject Information
         |--------------------------------------------------------------------------
         */
@@ -718,6 +733,7 @@ class AtRiskController extends Controller
                 'recentAttendance' => $recentAttendance,
 
                 'riskRemarks' => $riskRemarks,
+                'followUps' => $followUps,
 
                 'selectedGrade' => $selectedGrade,
                 'selectedSection' => $selectedSection,
@@ -932,6 +948,86 @@ class AtRiskController extends Controller
             ->with(
                 'success',
                 'Remark deleted successfully.'
+            );
+    }
+
+    /**
+     * Store Teacher Monitoring Follow-Up
+     */
+    public function storeFollowUp(
+        Request $request,
+        int $enrollmentId
+    ) {
+        $teacher = $request->user()->teacher;
+
+        abort_unless($teacher, 403);
+
+        $enrollment = Enrollment::findOrFail($enrollmentId);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Teacher Access
+        |--------------------------------------------------------------------------
+        */
+        $teacherSectionIds = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->pluck('section_id')
+            ->unique();
+
+        abort_unless(
+            $teacherSectionIds->contains($enrollment->section_id),
+            403
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Follow-Up
+        |--------------------------------------------------------------------------
+        */
+        $validated = $request->validate([
+            'follow_up_date' => [
+                'required',
+                'date',
+            ],
+            'intervention' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'notes' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
+            'status' => [
+                'required',
+                'string',
+                'in:Completed,Ongoing',
+            ],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Save Follow-Up Record
+        |--------------------------------------------------------------------------
+        */
+        RiskFollowUp::create([
+            'enrollment_id' => $enrollment->id,
+            'teacher_id' => $teacher->id,
+            'follow_up_date' => $validated['follow_up_date'],
+            'intervention' => $validated['intervention'],
+            'notes' => $validated['notes'] ?? null,
+            'status' => $validated['status'],
+        ]);
+
+        return redirect()
+            ->route(
+                'teacher.grading-system.at-risk.show',
+                $enrollment->id
+            )
+            ->with(
+                'success',
+                'Follow-up record added successfully.'
             );
     }
 

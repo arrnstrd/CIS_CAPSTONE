@@ -48,6 +48,3 @@
 /* 6.1 Super Admin Layout & Shell */
 @import './pov/super-admin/layout/layout.css';
 @import './pov/super-admin/layout/sidebar.css';
-
-/* 7. Theme & Overrides */
-@import './dark-mode.css';

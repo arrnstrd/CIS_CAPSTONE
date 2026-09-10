@@ -334,6 +334,5 @@
     </div>
 
 </div>
-```
 
 </x-layouts.teacher>

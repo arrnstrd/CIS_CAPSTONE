@@ -10,6 +10,7 @@ use App\Http\Controllers\Teacher\Attendance\AttendanceLogController;
 use App\Http\Controllers\Teacher\Attendance\TeacherRoomAttendanceController;
 use App\Http\Controllers\Teacher\GradingRules\CompRulesController;
 use App\Http\Controllers\Teacher\GradingRules\GradingRulesController;
+use App\Http\Controllers\Teacher\GradingRules\GradingFormulaImportController;
 use App\Http\Controllers\Teacher\ImportData\DepEdClassRecordImportController;
 use App\Http\Controllers\Teacher\ImportData\ImportDataController;
 use App\Http\Controllers\Teacher\MyClasses\GradeSheetController;
@@ -85,6 +86,10 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
         ->name('teacher.grading-system.reports.student-academic-record');
     Route::get('/teacher/grading-system/reports/students/{teachingAssignmentId}', [ReportsController::class, 'studentsData'])
         ->name('teacher.grading-system.reports.students');
+    Route::post('/teacher/grading-system/reports/{teachingAssignmentId}/export-excel', [ReportsController::class, 'exportExcel'])
+        ->name('teacher.grading-system.reports.export-excel');
+    Route::post('/teacher/grading-system/reports/{teachingAssignmentId}/export-pdf', [ReportsController::class, 'exportPdf'])
+        ->name('teacher.grading-system.reports.export-pdf');
 
     // ----------------------------------------------------
     // GRADING SYSTEM: Students
@@ -117,6 +122,8 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
         ->name('teacher.grading-system.analytics');
     Route::get('/teacher/grading-system/attendance', [AttendanceAnalyticsController::class, 'index'])
         ->name('teacher.grading-system.attendance');
+    Route::get('/teacher/grading-system/correlation', [AttendanceAnalyticsController::class, 'correlation'])
+        ->name('teacher.grading-system.correlation');
     Route::get('/teacher/grading-system/by-level', [ByLevelController::class, 'index'])
         ->name('teacher.grading-system.by-level');
     Route::get('/teacher/grading-system/sections', [SectionsOverviewController::class, 'index'])
@@ -137,6 +144,8 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
         ->name('teacher.grading-system.at-risk.remarks.update');
     Route::delete('/teacher/grading-system/at-risk/{enrollmentId}/remarks/{remarkId}', [AtRiskController::class, 'destroyRemark'])
         ->name('teacher.grading-system.at-risk.remarks.destroy');
+    Route::post('/teacher/grading-system/at-risk/{enrollmentId}/follow-ups', [AtRiskController::class, 'storeFollowUp'])
+        ->name('teacher.grading-system.at-risk.follow-ups.store');
 
     // ----------------------------------------------------
     // GRADING SYSTEM: Grading Rules
@@ -147,6 +156,10 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
         ->name('teacher.grading-system.comp-rules.update');
     Route::get('/teacher/grading-system/grading-rules', [GradingRulesController::class, 'index'])
         ->name('teacher.grading-system.grading-rules');
+    Route::put('/teacher/grading-system/grading-rules', [GradingRulesController::class, 'update'])
+        ->name('teacher.grading-system.grading-rules.update');
+    Route::post('/teacher/grading-system/grading-rules/restore-defaults', [GradingRulesController::class, 'restoreDefaults'])
+        ->name('teacher.grading-system.grading-rules.restore-defaults');
 
     // ----------------------------------------------------
     // GENERAL: Room Attendance & In/Out History
@@ -176,8 +189,6 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
         ->name('teacher.settings.profile');
     Route::get('/teacher/settings/notifications', [SettingsController::class, 'notifications'])
         ->name('teacher.settings.notifications');
-    Route::get('/teacher/settings/appearance', [SettingsController::class, 'appearance'])
-        ->name('teacher.settings.appearance');
     Route::get('/teacher/settings/dashboard', [SettingsController::class, 'dashboard'])
         ->name('teacher.settings.dashboard');
     Route::get('/teacher/settings/security', [SettingsController::class, 'security'])
@@ -188,8 +199,6 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
         ->name('teacher.settings.notifications.update');
     Route::put('/teacher/settings/dashboard', [SettingsController::class, 'updateDashboardPreferences'])
         ->name('teacher.settings.dashboard.update');
-    Route::put('/teacher/settings/appearance', [SettingsController::class, 'updateAppearance'])
-        ->name('teacher.settings.appearance.update');
 
     // ----------------------------------------------------
     // NOTIFICATIONS
@@ -205,3 +214,4 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
     Route::post('/teacher/notifications/bulk-delete', [NotificationController::class, 'bulkDestroy'])
         ->name('teacher.notifications.bulk-delete');
 });
+

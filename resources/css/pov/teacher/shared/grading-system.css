@@ -3138,3 +3138,60 @@ html {
 }
 
 
+/* Current Grading Formula & Worked Example */
+.gr-formula-box {
+    background: #f8fafc;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.gr-formula-content {
+    color: #1e293b;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.gr-example-box {
+    background: #ffffff;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+
+.gr-example-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid #eef0f2;
+    font-size: 0.85rem;
+}
+
+.gr-example-row:last-child {
+    border-bottom: 0;
+}
+
+.gr-example-label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.gr-example-value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: #1e293b;
+    font-weight: 600;
+    text-align: right;
+}
+
+.gr-example-total {
+    margin-top: 4px;
+    padding-top: 12px;
+    font-weight: 700;
+}
+
+.gr-example-total .gr-example-label,
+.gr-example-total .gr-example-value {
+    color: #2438b9;
+}

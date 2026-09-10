@@ -1363,3 +1363,5 @@ class StudentProfileSearchController extends Controller
         return redirect()->back()->with('success', 'Academic note deleted successfully.');
     }
 }
+
+

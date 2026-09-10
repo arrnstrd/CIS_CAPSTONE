@@ -1,14 +1,15 @@
-<x-layouts.teacher>
-    <x-slot name="pageName">
-        <span class="page-title-icon">
-            <i class="fa-solid fa-bell"></i>
-            Settings
-        </span>
-    </x-slot>
-
-    <x-slot name="subtitle">
-        <span class="page-title-subtitle">Manage your in-app notification preferences and system alerts.</span>
-    </x-slot>
+<x-layouts.teacher-settings-layout>
+    <div class="teacher-settings-content">
+        <div class="teacher-settings-section">
+            <div class="teacher-settings-section__header">
+                <h2 class="teacher-settings-section__title">
+                    <i class="fa-solid fa-bell me-3"></i>
+                    Notifications
+                </h2>
+                <p class="teacher-settings-section__description">
+                    Manage your in-app notification preferences and system alerts.
+                </p>
+            </div>
 
     @if (session('success'))
         <div class="gs-note-banner mb-3" style="background-color: #e1f5ee; color: #085041;">
@@ -18,7 +19,7 @@
     @endif
 
     <div class="row g-3">
-        <div class="col-12 col-lg-8 col-xl-6">
+        <div class="col-12">
             <div class="gs-panel">
                 <p class="gs-panel-title">Notification Preferences</p>
                 <p class="text-muted small mb-3">
@@ -52,26 +53,6 @@
 
                         <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
                             <div>
-                                <label class="form-check-label fw-semibold" for="grading_enabled" style="font-size: 0.82rem;">
-                                    <i class="fa-solid fa-graduation-cap text-success me-2"></i> Grading & Assessment
-                                </label>
-                                <small class="text-muted d-block" style="font-size: 0.74rem;">
-                                    Updates on score encoding and term completion status.
-                                </small>
-                            </div>
-                            <input
-                                class="form-check-input ms-3"
-                                type="checkbox"
-                                role="switch"
-                                id="grading_enabled"
-                                name="grading_enabled"
-                                value="1"
-                                @checked($preferences?->grading_enabled ?? true)
-                            >
-                        </div>
-
-                        <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-                            <div>
                                 <label class="form-check-label fw-semibold" for="at_risk_enabled" style="font-size: 0.82rem;">
                                     <i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> At-Risk Student Alerts
                                 </label>
@@ -90,47 +71,7 @@
                             >
                         </div>
 
-                        <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-                            <div>
-                                <label class="form-check-label fw-semibold" for="analytics_enabled" style="font-size: 0.82rem;">
-                                    <i class="fa-solid fa-chart-line text-info me-2"></i> Analytics & Health Trends
-                                </label>
-                                <small class="text-muted d-block" style="font-size: 0.74rem;">
-                                    Notices regarding class health trends and performance insights.
-                                </small>
-                            </div>
-                            <input
-                                class="form-check-input ms-3"
-                                type="checkbox"
-                                role="switch"
-                                id="analytics_enabled"
-                                name="analytics_enabled"
-                                value="1"
-                                @checked($preferences?->analytics_enabled ?? true)
-                            >
                         </div>
-
-
-                        <div class="form-check form-switch d-flex justify-content-between align-items-center ps-0">
-                            <div>
-                                <label class="form-check-label fw-semibold" for="import_enabled" style="font-size: 0.82rem;">
-                                    <i class="fa-solid fa-file-import text-secondary me-2"></i> Data Import Notifications
-                                </label>
-                                <small class="text-muted d-block" style="font-size: 0.74rem;">
-                                    Status notifications for class and student data imports.
-                                </small>
-                            </div>
-                            <input
-                                class="form-check-input ms-3"
-                                type="checkbox"
-                                role="switch"
-                                id="import_enabled"
-                                name="import_enabled"
-                                value="1"
-                                @checked($preferences?->import_enabled ?? true)
-                            >
-                        </div>
-                    </div>
 
                     <div class="pt-2">
                         <button type="submit" class="btn btn-dark btn-sm px-3">
@@ -141,5 +82,45 @@
             </div>
         </div>
     </div>
-</x-layouts.teacher>
+        </div>
+    </div>
+
+    <style>
+    .teacher-settings-section {
+        background: white;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .teacher-settings-section__header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .teacher-settings-section__title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .teacher-settings-section__description {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin: 0.5rem 0 0 0;
+        line-height: 1.5;
+    }
+
+    .teacher-settings-content {
+        background: white;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    </style>
+</x-layouts.teacher-settings-layout>
 

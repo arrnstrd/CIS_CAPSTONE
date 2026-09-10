@@ -94,41 +94,6 @@
                     </a>
                 </li> --}}
 
-                <!-- SETTINGS SECTION -->
-                <li class="teacher-sidebar-section-label">
-                    <small>SETTINGS</small>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.profile') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.profile') }}">
-                        <i class="fas fa-user"></i>
-                        <span>Profile</span>
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.notifications') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.notifications') }}">
-                        <i class="fas fa-bell"></i>
-                        <span>Notifications</span>
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.appearance') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.appearance') }}">
-                        <i class="fas fa-palette"></i>
-                        <span>Appearance</span>
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.dashboard') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.dashboard') }}">
-                        <i class="fas fa-sliders"></i>
-                        <span>Dashboard Preferences</span>
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.security') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.security') }}">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>Account & Security</span>
-                    </a>
-                </li>
-
             </ul>
         </div>
 
