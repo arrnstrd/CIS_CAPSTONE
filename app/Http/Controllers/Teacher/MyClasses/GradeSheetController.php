@@ -618,22 +618,6 @@ class GradeSheetController extends Controller
                 $nextSlot,
         ]);
 
-        $sectionName = $ta->section ? $ta->section->name : 'Class';
-        $periodName = $gradingPeriod->name ?? "Term {$gradingPeriod->sequence}";
-
-        NotificationService::send(
-            $request->user(),
-            NotificationService::CATEGORY_GRADING,
-            'Assessment Created',
-            "Assessment \"{$assessment->title}\" was created for Section {$sectionName} under {$periodName}.",
-            [
-                'url' => route('teacher.my-classes.grade-sheet', ['teachingAssignmentId' => $ta->id]),
-                'teaching_assignment_id' => $ta->id,
-                'assessment_id' => $assessment->id,
-                'grading_period_id' => $gradingPeriod->id,
-                'section_id' => $ta->section_id,
-            ]
-        );
 
         return response()->json([
             'id' =>
@@ -817,36 +801,7 @@ class GradeSheetController extends Controller
         $studentName = $enrollment?->student
             ? trim($enrollment->student->first_name . ' ' . $enrollment->student->last_name)
             : 'Student';
-        $sectionName = $assessment->teachingAssignment?->section?->name ?? 'Class';
-
-        NotificationService::send(
-            $request->user(),
-            NotificationService::CATEGORY_GRADING,
-            'Student Score Updated',
-            "Score for {$studentName} in {$assessment->title} was updated for Section {$sectionName}.",
-            [
-                'url' => route('teacher.my-classes.grade-sheet', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
-                'teaching_assignment_id' => $assessment->teaching_assignment_id,
-                'assessment_id' => $assessment->id,
-                'enrollment_id' => $data['enrollment_id'],
-            ]
-        );
-
-        NotificationService::send(
-            $request->user(),
-            NotificationService::CATEGORY_ANALYTICS,
-            'Class Analytics Updated',
-            "Class performance analytics for Section {$sectionName} have been updated after a grade change. Current class average is " . number_format($classAverage, 2) . ", with a " . number_format($passingRate, 2) . "% passing rate.",
-            [
-                'url' => route('teacher.grading-system.analytics', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
-                'teaching_assignment_id' => $assessment->teaching_assignment_id,
-                'grading_period_id' => $gradingPeriod?->id,
-                'class_average' => $classAverage,
-                'passing_rate' => $passingRate,
-            ]
-        );
-
-        if ($gradingPeriod && $enrollment && $assessment->teachingAssignment) {
+        $sectionName = $assessment->teachingAssignment?->section?->name ?? 'Class';if ($gradingPeriod && $enrollment && $assessment->teachingAssignment) {
             app(RiskScoreService::class)->evaluateAndNotifyRiskChange(
                 $enrollment,
                 $assessment->teachingAssignment,
@@ -946,20 +901,7 @@ class GradeSheetController extends Controller
         $sectionName = $assessment->teachingAssignment?->section?->name ?? 'Class';
         $periodName = $assessment->gradingPeriod?->name ?? "Term {$assessment->grading_period_id}";
 
-        NotificationService::send(
-            $request->user(),
-            NotificationService::CATEGORY_GRADING,
-            'Assessment Updated',
-            "Assessment \"{$assessment->title}\" was updated for Section {$sectionName} under {$periodName}.",
-            [
-                'url' => route('teacher.my-classes.grade-sheet', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
-                'teaching_assignment_id' => $assessment->teaching_assignment_id,
-                'assessment_id' => $assessment->id,
-                'section_id' => $assessment->teachingAssignment?->section_id,
-            ]
-        );
-
-        return response()->json([
+                return response()->json([
             'success' => true,
             'message' => 'Assessment updated successfully.',
             'assessment' => [
@@ -1019,7 +961,7 @@ class GradeSheetController extends Controller
             'Assessment Deleted',
             "Assessment \"{$assessmentTitle}\" was removed from Section {$sectionName}.",
             [
-                'url' => route('teacher.my-classes.grade-sheet', ['teachingAssignmentId' => $taId]),
+                'url' => route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $taId]),
                 'teaching_assignment_id' => $taId,
                 'section_id' => $sectionId,
             ]
@@ -1098,7 +1040,7 @@ class GradeSheetController extends Controller
             'Scores Saved',
             "Scores for {$assessment->title} were saved for Section {$sectionName}.",
             [
-                'url' => route('teacher.my-classes.grade-sheet', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
+                'url' => route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $assessment->teaching_assignment_id]),
                 'teaching_assignment_id' => $assessment->teaching_assignment_id,
                 'assessment_id' => $assessment->id,
             ]
@@ -1339,3 +1281,9 @@ class GradeSheetController extends Controller
         return 'exam';
     }
 }
+
+
+
+
+
+
