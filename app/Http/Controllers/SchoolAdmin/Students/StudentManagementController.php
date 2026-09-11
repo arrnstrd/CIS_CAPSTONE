@@ -234,6 +234,48 @@ class StudentManagementController extends Controller
         ));
     }
 
+    public function search(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $query = trim((string) $request->input('query', $request->input('q', '')));
+
+        if (strlen($query) < 2) {
+            return response()->json(['data' => []]);
+        }
+
+        $activeSchoolYear = SchoolYear::where('is_active', true)->first();
+
+        $students = Student::query()
+            ->where(function ($q) use ($query) {
+                $q->where('student_number', 'like', "%{$query}%")
+                  ->orWhere('lrn', 'like', "%{$query}%")
+                  ->orWhere('first_name', 'like', "%{$query}%")
+                  ->orWhere('last_name', 'like', "%{$query}%");
+            })
+            ->with(['enrollments' => function ($q) use ($activeSchoolYear) {
+                if ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                }
+                $q->with('sectionModel:id,name,grade_level');
+            }])
+            ->limit(20)
+            ->get(['id', 'student_number', 'lrn', 'first_name', 'last_name', 'middle_name', 'sex']);
+
+        $results = $students->map(function (Student $student) {
+            $activeEnrollment = $student->enrollments->first();
+            return [
+                'id' => $student->id,
+                'student_number' => $student->student_number,
+                'lrn' => $student->lrn,
+                'name' => trim("{$student->last_name}, {$student->first_name} {$student->middle_name}"),
+                'grade_level' => $activeEnrollment?->sectionModel?->grade_level ?? 'Unassigned',
+                'section_name' => $activeEnrollment?->sectionModel?->name ?? 'Unassigned',
+                'profile_url' => route('student.profile', ['student' => $student->id]),
+            ];
+        });
+
+        return response()->json(['data' => $results]);
+    }
+
     public function export(Request $request, string $grade, Section $section)
     {
         if ($request->user()?->isTeacher()) {

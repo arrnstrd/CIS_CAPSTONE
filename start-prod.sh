@@ -73,10 +73,10 @@ php artisan migrate --force
 echo "Clearing Laravel caches..."
 php artisan optimize:clear
 
-# TEMPORARILY DISABLED FOR DIAGNOSTICS:
-# php artisan config:cache
-# php artisan route:cache
-# php artisan view:cache
+# Re-enable production caching
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
 # 5. Reset ownership and permissions so www-data (Apache) can write logs, sessions, and views
 echo "Setting runtime permissions for www-data..."
@@ -84,9 +84,9 @@ chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
 # 6. Configure Apache for Render port
-if [ -n "$PORT" ]; then
+if [ -n "$PORT" ] && [ "$PORT" != "80" ]; then
     echo "Configuring Apache to listen on Render port: $PORT..."
-    sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+    sed -i "s/\b80\b/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 fi
 
 # 7. Startup complete - Launch Apache directly in foreground

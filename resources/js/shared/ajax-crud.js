@@ -174,8 +174,12 @@ async function submitAjaxForm(form, options = {}) {
         submitButton.innerHTML = submitButton.dataset.loadingText || 'Saving...';
     }
 
+    let response;
+    let data;
+
+    // --- PHASE 1: HTTP / Network Transaction ---
     try {
-        const response = await fetch(form.action, {
+        response = await fetch(form.action, {
             method: getSubmitMethod(form),
             headers: {
                 'X-CSRF-TOKEN': csrfToken(),
@@ -184,53 +188,68 @@ async function submitAjaxForm(form, options = {}) {
             },
             body: new FormData(form),
         });
-        const data = await response.json().catch(() => ({}));
+        data = await response.json().catch(() => ({}));
+    } catch (networkError) {
+        console.error('[ajaxCrud] Network/Transport Error:', networkError);
+        showFormErrors(form, { message: 'Connection error. Please check your network and try again.' });
+        options.onError?.(networkError);
+        resetSubmitButton(form, submitButton, originalButtonText);
+        return false;
+    }
 
-        if (!response.ok) {
-            showFormErrors(form, data);
-            options.onError?.(data, response);
-            return false;
-        }
+    // --- PHASE 2: Server-Side Validation / Logic Failure ---
+    if (!response.ok) {
+        showFormErrors(form, data);
+        options.onError?.(data, response);
+        resetSubmitButton(form, submitButton, originalButtonText);
+        return false;
+    }
 
-        // Close modal if form is hosted inside a modal
+    // --- PHASE 3: Post-Success UI Updates (Isolated & Protected) ---
+    try {
+        // 1. Safely hide modal using getOrCreateInstance
         const modalElement = form.closest('.modal');
         if (modalElement && window.bootstrap?.Modal) {
-            bootstrap.Modal.getInstance(modalElement)?.hide();
+            const modalInstance = bootstrap.Modal.getInstance(modalElement) 
+                || bootstrap.Modal.getOrCreateInstance(modalElement);
+            modalInstance?.hide();
         }
 
-        // Close offcanvas if form is hosted inside an offcanvas drawer
+        // 2. Safely hide offcanvas drawer
         const offcanvasElement = form.closest('.offcanvas');
         if (offcanvasElement && window.bootstrap?.Offcanvas) {
-            (bootstrap.Offcanvas.getInstance(offcanvasElement) || bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement))?.hide();
+            const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvasElement) 
+                || bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+            offcanvasInstance?.hide();
         }
 
+        // 3. Reset form inputs
         form.reset();
 
-        // 1. Invoke caller's onSuccess callback first
+        // 4. Fire caller's onSuccess callback
         options.onSuccess?.(data, response);
 
-        // 2. Perform background table refresh unless explicitly skipped (e.g., when reloading)
+        // 5. Asynchronously refresh table panels if not explicitly skipped
         if (!options.skipRefresh) {
-            try {
-                await refreshTables({
-                    scope: options.scope || form.dataset.ajaxScope || modalElement?.dataset.ajaxScope || offcanvasElement?.dataset.ajaxScope || null,
-                });
-            } catch (refreshErr) {
-                console.warn('[ajaxCrud] Background refreshTables encountered an issue:', refreshErr);
-            }
+            await refreshTables({
+                scope: options.scope || form.dataset.ajaxScope || modalElement?.dataset.ajaxScope || offcanvasElement?.dataset.ajaxScope || null,
+            });
         }
-
-        return true;
-    } catch (error) {
-        showFormErrors(form, { message: 'Something went wrong. Please check your connection and try again.' });
-        options.onError?.(error);
-        return false;
+    } catch (uiError) {
+        // Log DOM/callback issues to console without displaying false server errors on the form
+        console.warn('[ajaxCrud] Non-fatal error during post-submission UI update:', uiError);
     } finally {
-        delete form.dataset.submitting;
-        if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.innerHTML = originalButtonText;
-        }
+        resetSubmitButton(form, submitButton, originalButtonText);
+    }
+
+    return true;
+}
+
+function resetSubmitButton(form, submitButton, originalButtonText) {
+    delete form.dataset.submitting;
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
     }
 }
 
