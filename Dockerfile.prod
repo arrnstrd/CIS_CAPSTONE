@@ -1,0 +1,87 @@
+# 1. Official PHP image with Apache built-in
+FROM php:8.3-apache
+
+# 2. Set working directory
+WORKDIR /var/www/html
+
+# 3. Install system dependencies, PHP extensions, and Node.js
+RUN apt-get update && apt-get install -y \
+    git curl libcurl4-openssl-dev libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip libpq-dev libmagickwand-dev \
+    && pecl install imagick || true \
+    && docker-php-ext-enable imagick || true \
+    && docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd zip xml curl \
+    && docker-php-ext-enable opcache \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Production PHP configuration tuning (upload sizes, execution limits, memory)
+RUN { \
+    echo 'memory_limit = 256M'; \
+    echo 'upload_max_filesize = 64M'; \
+    echo 'post_max_size = 64M'; \
+    echo 'max_execution_time = 300'; \
+    echo 'expose_php = Off'; \
+} > /usr/local/etc/php/conf.d/production-tuning.ini
+
+# 4. Clear default Apache webroot
+RUN rm -rf /var/www/html/*
+
+# 5. Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# 6. Copy composer definition files first for layer caching
+COPY composer.json composer.lock ./
+
+# 7. Install PHP dependencies without autoloader generation (app codebase copied next)
+RUN composer install --no-dev --no-interaction --no-scripts --no-autoloader
+
+# 8. Copy npm dependencies definition
+COPY package.json package-lock.json ./
+
+# 9. Install Node dependencies
+RUN npm install
+
+# 10. Copy complete project into container
+COPY . .
+
+# 11. Generate optimized autoloader with the full app codebase mapped
+RUN composer dump-autoload --optimize --no-dev
+
+# 12. Build frontend assets with Vite
+RUN npm run build
+
+# 13. Enable Apache mod_rewrite & mod_headers and allow .htaccess overrides
+RUN a2enmod rewrite headers \
+    && sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+
+# 14. Configure Apache DocumentRoot to /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# 15. Ensure storage directories exist and sync template assets
+RUN mkdir -p /var/www/html/storage/framework/sessions \
+             /var/www/html/storage/framework/views \
+             /var/www/html/storage/framework/cache \
+             /var/www/html/storage/logs \
+             /var/www/html/storage/app/public/qr-codes \
+             /var/www/html/storage/app/private/imports \
+             /var/www/html/storage/app/templates/teacher\(pov\) \
+    && if [ -d "/var/www/html/resources/templates" ]; then \
+           cp -rn /var/www/html/resources/templates/* /var/www/html/storage/app/templates/ 2>/dev/null || true; \
+       fi \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
+
+# 16. Install startup scripts
+COPY start-prod.sh /usr/local/bin/start-prod
+COPY start-reverb.sh /usr/local/bin/start-reverb
+RUN chmod +x /usr/local/bin/start-prod /usr/local/bin/start-reverb
+
+# 17. Expose ports (Render automatically configures via $PORT at runtime)
+EXPOSE 80 8080
+
+# 18. Launch Laravel Web Application by default
+CMD ["/usr/local/bin/start-prod"]

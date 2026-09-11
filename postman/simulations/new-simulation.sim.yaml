@@ -1,0 +1,18 @@
+id: 019eabc7-bdd0-7068-abc2-5c4c6a9acb0b
+simulation: new-simulation
+routing: header
+mocks:
+  - file: ../mocks/mock-1.js
+    scenarios:
+      - type: error
+        config:
+          status_code: 500
+      - type: latency
+        config:
+          delay_ms: 2000
+      - type: rate_limit
+        config:
+          requests_per_minute: 16
+      - type: chaos
+        config:
+          failure_rate: 10

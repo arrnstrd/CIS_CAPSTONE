@@ -1,0 +1,97 @@
+/* ===================================================================
+   Class Hub Workspace & Slide-Over Drawer Styles (School Admin POV)
+   =================================================================== */
+
+/* Context Bar */
+.class-hub-context-bar {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.2s ease;
+}
+
+.class-hub-context-bar:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Right-Side Slide-Over Drawers (Offcanvas Panels) */
+.class-hub-drawer {
+    width: 32vw !important;
+    min-width: 380px !important;
+    max-width: 500px !important;
+    z-index: 1065 !important;
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+@media (max-width: 768px) {
+    .class-hub-drawer {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+.class-hub-drawer .offcanvas-header {
+    background: #ffffff;
+}
+
+.class-hub-drawer .offcanvas-body {
+    background-color: #f8fafc;
+}
+
+.class-hub-drawer .offcanvas-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    background: #ffffff;
+}
+
+/* Locked Operational Scope / Context Badge */
+.class-hub-context-badge {
+    border-left: 3px solid #0d6efd !important;
+    background: rgba(13, 110, 253, 0.06) !important;
+}
+
+/* Class Hub Table */
+.class-hub-table thead th {
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.class-hub-table tbody td {
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.class-hub-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.class-hub-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Utilities */
+.max-h-400 {
+    max-height: 400px;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+}
+
+.tracking-wider {
+    letter-spacing: 0.05em;
+}
+
+.tracking-wide {
+    letter-spacing: 0.025em;
+}
+
+.fw-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}

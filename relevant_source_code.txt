@@ -1,0 +1,210 @@
+================================================================================
+CIS CAPSTONE - CORE FEATURE: QR ATTENDANCE MONITORING SYSTEM
+RELEVANT SOURCE CODE DOCUMENTATION (CONDENSED)
+================================================================================
+
+1. ROUTING: API SCAN ENDPOINT
+File: routes/api.php
+--------------------------------------------------------------------------------
+use App\Http\Controllers\ScannerOperator\QrStation\ScanController;
+use Illuminate\Support\Facades\Route;
+
+// QR attendance scan request from terminal/kiosk
+Route::post('/scan', [ScanController::class, 'scan']);
+
+
+================================================================================
+2. CONTROLLER: SCAN REQUEST COORDINATOR
+File: app/Http/Controllers/ScannerOperator/QrStation/ScanController.php
+--------------------------------------------------------------------------------
+namespace App\Http\Controllers\ScannerOperator\QrStation;
+
+use App\Http\Controllers\Controller;
+use App\Services\QrSystem\QrScanService;
+use Illuminate\Http\Request;
+
+class ScanController extends Controller
+{
+    public function __construct(private readonly QrScanService $qrScanService) {}
+
+    public function scan(Request $request)
+    {
+        $validated = $request->validate([
+            'code'       => ['required_without:student_id', 'string'],
+            'student_id' => ['required_without:code', 'integer'],
+            'device_id'  => ['nullable', 'string'],
+        ]);
+
+        return $this->qrScanService->processScan($validated);
+    }
+}
+
+
+================================================================================
+3. SERVICE: QR SCAN & STATE MACHINE ENGINE
+File: app/Services/QrSystem/QrScanService.php
+--------------------------------------------------------------------------------
+namespace App\Services\QrSystem;
+
+use App\Events\AttendanceRecorded;
+use App\Jobs\SendGateScanNotification;
+use App\Models\AttendanceLog;
+use App\Models\Enrollment;
+use App\Models\FlaggedScan;
+use App\Models\QrAttendance;
+use App\Services\ScheduleResolver;
+use Illuminate\Support\Facades\DB;
+
+class QrScanService
+{
+    public function processScan(array $data)
+    {
+        $now = now();
+        $currentTime = $now->format('H:i');
+
+        // Step 1: Identify student and active enrollment record
+        $student = $this->resolveStudent($data);
+        if (!$student) {
+            return response()->json(['message' => 'Invalid QR or student not found'], 404);
+        }
+
+        $enrollment = Enrollment::query()
+            ->leftJoin('sections', 'sections.id', '=', 'enrollments.section_id')
+            ->where('enrollments.student_id', $student->id)
+            ->where('enrollments.status', 'active')
+            ->first();
+
+        // Step 2: Validate schedule boundaries for current session
+        $schedule = (new ScheduleResolver())->resolve(
+            $enrollment->section_level,
+            $enrollment->section_session_type,
+            $currentTime
+        );
+
+        // Step 3: Atomic State Machine - Cooldown Shield & IN/OUT transition
+        $result = DB::transaction(function () use ($enrollment, $now, $currentTime, $schedule, $data) {
+            $attendanceDate = $now->toDateString();
+            $qrAttendance = QrAttendance::firstOrCreate([
+                'enrollment_id'   => $enrollment->id,
+                'attendance_date' => $attendanceDate,
+            ]);
+
+            // Check spam cooldown shield
+            if ($qrAttendance->cooldown_expires_at && $qrAttendance->cooldown_expires_at->isFuture()) {
+                return response()->json(['message' => 'Too many scans. Cooldown active.'], 429);
+            }
+
+            // Determine scan sequence (IN vs OUT)
+            $scanType = ($qrAttendance->time_in_log_id === null) ? 'IN' : 'OUT';
+            $isLate = ($scanType === 'IN' && $currentTime > $schedule->late_threshold);
+
+            // Persist log entry
+            $log = AttendanceLog::create([
+                'enrollment_id' => $enrollment->id,
+                'scan_type'     => $scanType,
+                'session_type'  => $enrollment->section_session_type,
+                'scan_time'     => $now,
+                'device_id'     => $data['device_id'] ?? null,
+            ]);
+
+            // Update daily kiosk state record
+            if ($scanType === 'IN') {
+                $qrAttendance->time_in_log_id = $log->id;
+            } else {
+                $qrAttendance->time_out_log_id = $log->id;
+            }
+            $qrAttendance->cooldown_expires_at = $now->copy()->addSeconds(15);
+            $qrAttendance->save();
+
+            // Flag late arrivals
+            if ($isLate) {
+                FlaggedScan::create([
+                    'attendance_log_id' => $log->id,
+                    'flag_type'         => 'late_arrival',
+                    'description'       => 'Student arrived late',
+                ]);
+            }
+
+            return $log;
+        });
+
+        // Step 4: Real-time dashboard broadcast & Guardian alert
+        AttendanceRecorded::dispatch($result);
+        SendGateScanNotification::dispatch($result->id);
+
+        return response()->json(['success' => true, 'data' => $result]);
+    }
+}
+
+
+================================================================================
+4. MODEL: ATTENDANCE LOG
+File: app/Models/AttendanceLog.php
+--------------------------------------------------------------------------------
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class AttendanceLog extends Model
+{
+    protected $fillable = [
+        'enrollment_id',
+        'scan_type',        // 'IN' or 'OUT'
+        'session_type',     // 'Morning' or 'Afternoon'
+        'scan_time',
+        'scanned_by_user_id',
+        'device_id',
+    ];
+
+    protected $casts = [
+        'scan_time' => 'datetime',
+    ];
+
+    public function enrollment()
+    {
+        return $this->belongsTo(Enrollment::class, 'enrollment_id');
+    }
+
+    public function flagged_scans()
+    {
+        return $this->hasMany(FlaggedScan::class, 'attendance_log_id');
+    }
+}
+
+
+================================================================================
+5. JOB: ASYNCHRONOUS GUARDIAN EMAIL ALERT
+File: app/Jobs/SendGateScanNotification.php
+--------------------------------------------------------------------------------
+namespace App\Jobs;
+
+use App\Mail\GateScanMail;
+use App\Models\EmailLog;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\Mail;
+
+class SendGateScanNotification implements ShouldQueue
+{
+    use Dispatchable, Queueable;
+
+    public function __construct(public int $emailLogId) {}
+
+    public function handle(): void
+    {
+        $emailLog = EmailLog::with('student', 'attendanceLog')->findOrFail($this->emailLogId);
+
+        Mail::to($emailLog->email)->send(
+            new GateScanMail(
+                $emailLog->student,
+                $emailLog->scan_type,
+                $emailLog->attendanceLog?->scan_time?->format('F d, Y - h:i A')
+            )
+        );
+
+        $emailLog->update(['status' => 'sent', 'sent_at' => now()]);
+    }
+}
+================================================================================
+

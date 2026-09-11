@@ -1,0 +1,222 @@
+/* ===================================================================
+   Scanner Operator — Sidebar Styles
+   Prefix: scanner-sidebar-
+   =================================================================== */
+
+.scanner-sidebar-wrapper {
+    width: 260px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background: #2F4AC0;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.scanner-sidebar-brand {
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.scanner-sidebar-brand-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.scanner-sidebar-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.scanner-sidebar-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scanner-sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.scanner-sidebar-menu {
+    padding-bottom: 10px;
+}
+
+.scanner-sidebar-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.scanner-sidebar-menu ul li {
+    position: relative;
+}
+
+.scanner-sidebar-menu ul li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.scanner-sidebar-menu ul li a i {
+    display: inline-block;
+    margin-right: 15px;
+    width: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.scanner-sidebar-menu ul li a:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.scanner-sidebar-menu ul li.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 15%;
+    height: 70%;
+    width: 4px;
+    background-color: #ffffff;
+    border-radius: 0 4px 4px 0;
+}
+
+.scanner-sidebar-menu ul li.active > a {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+}
+
+.scanner-sidebar-section-label {
+    padding: 20px 25px 8px;
+    list-style: none;
+}
+
+.scanner-sidebar-section-label small {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+}
+
+.scanner-sidebar-footer {
+    flex-shrink: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.scanner-sidebar-user-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    width: 100%;
+}
+
+.scanner-sidebar-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.scanner-sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+    text-align: left;
+}
+
+.scanner-sidebar-user-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.scanner-sidebar-user-role {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.2;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.scanner-sidebar-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.75);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.scanner-sidebar-logout-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Responsive Breakpoints ──────────────────────────────────────── */
+
+/* Narrow laptop: sidebar narrows to 220px */
+@media (max-width: 1023px) {
+    .scanner-sidebar-wrapper {
+        width: 220px;
+    }
+}
+
+/* Tablet / narrow: sidebar off-screen, slides in as overlay drawer */
+@media (max-width: 899px) {
+    .scanner-sidebar-wrapper {
+        width: 260px;
+        transform: translateX(-100%);
+    }
+
+    .scanner-sidebar-wrapper.is-open {
+        transform: translateX(0);
+    }
+}

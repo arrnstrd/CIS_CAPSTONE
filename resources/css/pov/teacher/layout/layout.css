@@ -1,0 +1,238 @@
+/* ===================================================================
+   Teacher POV — Layout & Page Shell
+   Prefix: teacher-
+   =================================================================== */
+
+.teacher-page-wrapper {
+    min-height: 100vh;
+    background-color: #f0f4f9;
+    display: flex;
+    flex-direction: column;
+}
+
+.teacher-page-content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    min-width: 0;
+    padding: 20px 24px 24px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    background-color: #f0f4f9;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    position: relative;
+    padding-top: 135px;
+}
+
+/* ── Responsive Breakpoints ──────────────────────────────────────── */
+
+/* Laptop compact: tighter padding, same 260px sidebar */
+@media (max-width: 1279px) {
+    .teacher-page-content {
+        padding: 16px 18px 20px;
+        padding-top: 130px;
+    }
+}
+
+/* Narrow laptop: sidebar shrinks to 220px */
+@media (max-width: 1023px) {
+    .teacher-page-content {
+        margin-left: 220px;
+        width: calc(100% - 220px);
+        padding: 14px 16px 18px;
+        padding-top: 130px;
+    }
+}
+
+/* Tablet / narrow: sidebar becomes overlay drawer */
+@media (max-width: 899px) {
+    .teacher-page-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 16px 14px 20px;
+        padding-top: 110px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+    .teacher-page-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 14px 10px 16px;
+        padding-top: 90px;
+    }
+}
+
+.teacher-head-banner {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.3rem 1.4rem;
+    margin-bottom: 1rem;
+    border-radius: 1.4rem;
+    background: #f5f8fa;
+    border: 1px solid #d6dfe6;
+    color: #0f1013;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.teacher-head-banner__copy {
+    min-width: 0;
+}
+
+.teacher-head-banner__eyebrow {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.72;
+    margin-bottom: 0.3rem;
+}
+
+.teacher-head-banner__title {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.4vw, 2.3rem);
+    line-height: 1.05;
+    font-weight: 800;
+    color: #0f1013;
+}
+
+.teacher-head-banner__sub {
+    margin: 0.45rem 0 0;
+    max-width: 52rem;
+    color: #55565c;
+}
+
+.teacher-head-banner__meta {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.teacher-head-banner__date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1rem;
+    border-radius: 1rem;
+    background: #ffffff;
+    border: 1px solid #d6dfe6;
+    color: #0f1013;
+    white-space: nowrap;
+}
+
+.teacher-head-banner__date i {
+    font-size: 1rem;
+}
+
+.teacher-head-banner__date span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.teacher-head-banner__date small {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    opacity: 0.72;
+}
+
+.teacher-head-banner__date strong {
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+.teacher-head-banner__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.teacher-head-banner__help-btn {
+    background: #ffffff;
+    border: 1px solid #d6dfe6;
+    color: #0f1013 !important;
+    border-radius: 0.75rem;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 0.18s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+}
+
+.teacher-head-banner__help-btn:hover,
+.teacher-head-banner__help-btn:focus {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a !important;
+}
+
+.teacher-page-slot {
+    min-width: 0;
+    margin-top: 2rem;
+    flex-grow: 1;
+}
+
+@media (max-width: 899px) {
+    .teacher-head-banner {
+        flex-direction: column;
+    }
+
+    .teacher-head-banner__meta {
+        justify-content: flex-start;
+    }
+
+    .teacher-page-slot {
+        margin-top: 1.5rem;
+    }
+}
+
+.teacher-page-header-box {
+    background: #f5f8fa;
+    border: 1px solid #d6dfe6;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+}
+
+.teacher-page-header-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f1013;
+    letter-spacing: -0.01em;
+}
+
+.teacher-page-header-title > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.teacher-page-header-title i {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #5a7690;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.teacher-page-header-subtitle {
+    font-size: 16px;
+    color: #52626f;
+    margin-top: 10px;
+    line-height: 1.5;
+}

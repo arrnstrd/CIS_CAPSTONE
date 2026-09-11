@@ -1,0 +1,28 @@
+.modern-tabs {
+    border-bottom: 1px solid #e4e7ec;
+    gap: 24px;
+}
+
+.modern-tabs .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    padding: 10px 2px;
+    color: #667085;
+    font-weight: 500;
+    font-size: 0.9rem;
+    background: transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.modern-tabs .nav-link:hover {
+    color: #344054;
+    border-color: #d0d5dd;
+}
+
+.modern-tabs .nav-link.active {
+    color: #101828;
+    font-weight: 600;
+    border-bottom-color: #101828;
+    background: transparent;
+}

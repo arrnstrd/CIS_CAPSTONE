@@ -1,0 +1,415 @@
+/* ===================================================================
+   School Admin Attendance Monitoring
+   =================================================================== */
+
+.sa-attendance-context,
+.sa-attendance-table-shell {
+    border-radius: 0.75rem;
+}
+
+.sa-attendance-context-header {
+    padding: 1rem 1.25rem;
+}
+
+.sa-attendance-date-panel {
+    padding: 0.85rem 1.25rem;
+}
+
+.sa-subject-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.sa-subject-pill {
+    border: 1px solid #cfd6e4;
+    border-radius: 999px;
+    color: #495057;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.42rem 0.7rem;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.sa-subject-pill:hover,
+.sa-subject-pill.is-selected {
+    border-color: #3b56c4;
+    color: #3b56c4;
+}
+
+.sa-subject-pill.is-selected {
+    background: #3b56c4;
+    color: #ffffff;
+}
+
+.sa-attendance-summary {
+    padding: 0.9rem 1.25rem 1.1rem;
+}
+
+.sa-attendance-summary-card {
+    min-height: 5.25rem;
+    padding: 0.75rem 0.85rem;
+}
+
+.sa-attendance-summary-card .sa-summary-value {
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.sa-attendance-table-shell .table-panel {
+    border: 0;
+    border-radius: 0.75rem;
+}
+
+.sa-attendance-table-shell .table {
+    min-width: 900px;
+}
+
+.sa-attendance-table-shell .table thead th {
+    padding: 0.75rem 0.9rem;
+    white-space: nowrap;
+}
+
+.sa-attendance-table-shell .table tbody td {
+    padding: 0.8rem 0.9rem;
+}
+
+.sa-attendance-table-shell .table .sa-student-cell {
+    min-width: 225px;
+}
+
+.sa-attendance-table-shell .table .sa-status-cell {
+    min-width: 120px;
+}
+
+.sa-time-in-cell {
+    min-width: 112px;
+}
+
+.sa-time-in-value,
+.sa-time-in-empty {
+    color: #64748b;
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.sa-time-in-empty {
+    color: #94a3b8;
+}
+
+.sa-scan-times {
+    align-items: center;
+    display: flex;
+    gap: 0.9rem;
+    min-width: 174px;
+}
+
+.sa-scan-time {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.76rem;
+}
+
+.sa-scan-label {
+    color: #6c757d;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.sa-verification-copy {
+    display: flex;
+    justify-content: center;
+    min-width: 176px;
+}
+
+.sa-verification-cell {
+    min-width: 210px;
+    text-align: center;
+}
+
+.sa-verification-badge {
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.7rem;
+    font-weight: 700;
+    gap: 0.35rem;
+    justify-content: center;
+    line-height: 1;
+    min-height: 1.75rem;
+    min-width: 168px;
+    padding: 0.42rem 0.65rem;
+    white-space: nowrap;
+}
+
+.sa-verification-badge i {
+    font-size: 0.68rem;
+}
+
+.sa-verification-classroom {
+    background: #dcfce7;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.sa-verification-teacher {
+    background: #cffafe;
+    border-color: #a5f3fc;
+    color: #155e75;
+}
+
+.sa-verification-danger {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.sa-verification-excused {
+    background: #dbeafe;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.sa-verification-none {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+.sa-remark-list {
+    display: grid;
+    gap: 0.2rem;
+    max-width: 145px;
+}
+
+.sa-remark {
+    display: block;
+    overflow: hidden;
+    color: #343a40;
+    font-size: 0.76rem;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sa-remark-more {
+    color: #6c757d;
+    font-size: 0.68rem;
+}
+
+.sa-history-action {
+    white-space: nowrap;
+}
+
+.sa-att-history-panel {
+    background: #f8fafc;
+    border-left: 1px solid #e2e8f0;
+    width: 32vw !important;
+    min-width: 380px !important;
+    max-width: 500px !important;
+    z-index: 1065 !important;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+.sa-att-history-header {
+    align-items: center;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+}
+
+.sa-att-history-heading {
+    align-items: center;
+    display: flex;
+    gap: 0.65rem;
+}
+
+.sa-att-history-heading-icon {
+    align-items: center;
+    background: #e8edff;
+    border-radius: 0.5rem;
+    color: #3b56c4;
+    display: flex;
+    height: 2rem;
+    justify-content: center;
+    width: 2rem;
+}
+
+.sa-att-history-heading-copy {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.sa-att-history-heading-copy h5 {
+    color: #1f2937;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.sa-att-history-heading-copy span {
+    color: #64748b;
+    font-size: 0.7rem;
+}
+
+.sa-att-history-close {
+    background: transparent;
+    border: 0;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0.15rem 0.35rem;
+}
+
+.sa-att-history-body {
+    padding: 1.1rem 1.25rem;
+}
+
+.sa-att-history-student {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.65rem;
+    padding: 0.85rem;
+}
+
+.sa-att-history-student-row,
+.sa-att-history-student-identity {
+    align-items: center;
+    display: flex;
+}
+
+.sa-att-history-student-row { justify-content: space-between; }
+.sa-att-history-student-identity { gap: 0.65rem; min-width: 0; }
+
+.sa-att-history-student-avatar {
+    align-items: center;
+    background: #3b56c4;
+    border-radius: 50%;
+    color: #ffffff;
+    display: flex;
+    flex: 0 0 2.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    height: 2.5rem;
+    justify-content: center;
+    width: 2.5rem;
+}
+
+.sa-att-history-student-copy { display: grid; gap: 0.12rem; min-width: 0; }
+.sa-att-history-student-copy strong { color: #1f2937; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sa-att-history-student-copy span { color: #64748b; font-size: 0.7rem; }
+.sa-att-history-status { color: #475569; font-size: 0.7rem; font-weight: 700; white-space: nowrap; }
+
+.sa-att-history-context {
+    display: grid;
+    gap: 0.55rem 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.85rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.65rem;
+}
+
+.sa-att-history-context-item {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.sa-att-history-context span {
+    color: #64748b;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.sa-att-history-context strong {
+    overflow: hidden;
+    color: #1e293b;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sa-att-history-section {
+    padding-top: 0.95rem;
+    margin-top: 0.95rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.sa-att-history-date { align-items: center; display: flex; justify-content: space-between; margin-bottom: 0.65rem; }
+.sa-att-history-date span,
+.sa-att-history-section-label { color: #64748b; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.sa-att-history-date time { color: #64748b; font-size: 0.72rem; }
+.sa-att-history-remarks { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.45rem; color: #475569; font-size: 0.75rem; padding: 0.6rem; }
+
+.sa-att-history-timeline { display: grid; gap: 0.65rem; }
+.sa-att-history-event { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.6rem; padding: 0.7rem; }
+.sa-att-history-event-head,
+.sa-att-history-event-states { align-items: center; display: flex; gap: 0.45rem; }
+.sa-att-history-event-head { justify-content: space-between; margin-bottom: 0.45rem; }
+.sa-att-history-event-head strong { color: #1f2937; font-size: 0.75rem; }
+.sa-att-history-event-head strong i { color: #3b56c4; margin-right: 0.35rem; }
+.sa-att-history-event-head time,
+.sa-att-history-actor,
+.sa-att-history-scan-session { color: #64748b; font-size: 0.7rem; }
+
+.sa-att-history-state,
+.sa-att-history-initial,
+.sa-att-history-current { border-radius: 999px; display: inline-flex; font-size: 0.65rem; font-weight: 700; line-height: 1; padding: 0.3rem 0.45rem; white-space: nowrap; }
+.sa-att-history-state { background: #f1f5f9; color: #475569; }
+.sa-att-history-state.dot-success { background: #dcfce7; color: #166534; }
+.sa-att-history-state.dot-warning { background: #fef3c7; color: #92400e; }
+.sa-att-history-state.dot-danger { background: #fee2e2; color: #991b1b; }
+.sa-att-history-state.dot-primary { background: #dbeafe; color: #1e40af; }
+.sa-att-history-initial { background: #f1f5f9; color: #64748b; }
+.sa-att-history-current { background: #dcfce7; color: #166534; margin-left: auto; }
+.sa-att-history-arrow { color: #94a3b8; font-size: 0.65rem; }
+.sa-att-history-actor { margin-top: 0.45rem; }
+.sa-att-history-actor i { margin-right: 0.3rem; }
+.sa-att-history-event-remark { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.35rem; color: #334155; font-size: 0.72rem; margin-top: 0.45rem; padding: 0.45rem; }
+
+.sa-att-history-scans { display: grid; gap: 0.4rem; margin-top: 0.55rem; }
+.sa-att-history-scan { align-items: center; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.45rem; display: flex; gap: 0.55rem; justify-content: space-between; padding: 0.55rem; }
+.sa-att-history-scan time { color: #1f2937; font-size: 0.72rem; font-weight: 700; }
+
+.sa-att-history-loading,
+.sa-att-history-empty,
+.sa-att-history-error { align-items: center; color: #64748b; display: flex; flex-direction: column; font-size: 0.75rem; gap: 0.45rem; justify-content: center; padding: 2.5rem 1rem; text-align: center; }
+.sa-att-history-error { color: #b91c1c; }
+.sa-att-history-loading i,
+.sa-att-history-empty i,
+.sa-att-history-error i { font-size: 1.5rem; }
+
+@media (max-width: 768px) {
+    .sa-attendance-context-header,
+    .sa-attendance-date-panel,
+    .sa-attendance-summary,
+    .sa-att-history-body {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .sa-att-history-context {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .sa-att-history-panel {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+    }
+}

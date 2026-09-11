@@ -1,0 +1,81 @@
+/* ===================================================================
+   Global Responsive Layout Utilities
+   Shared across all POVs — School Admin, Teacher, Scanner Operator,
+   Super Admin.
+
+   Breakpoints:
+   ≥ 1280px   → standard desktop / laptop  (full 260px sidebar)
+   1024–1279px → laptop compact             (full 260px, tighter padding)
+   900–1023px  → narrow laptop             (220px sidebar)
+   < 900px    → tablet / narrow            (collapsed sidebar + drawer)
+   < 768px    → existing mobile rules
+   =================================================================== */
+
+/* ── Sidebar Overlay Backdrop ───────────────────────────────────────── */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 998;
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+    opacity: 0;
+    transition: opacity 0.28s ease;
+}
+
+.sidebar-overlay.is-visible {
+    display: block;
+    opacity: 1;
+}
+
+/* ── Hamburger / Menu Toggle Button ─────────────────────────────────── */
+.sidebar-hamburger-btn {
+    display: none;                /* hidden on desktop/laptop by default */
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+    transition: background 0.18s ease, border-color 0.18s ease;
+    margin-right: 0.75rem;
+}
+
+.sidebar-hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.26);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Show hamburger on tablet/narrow viewports */
+@media (max-width: 899px) {
+    .sidebar-hamburger-btn {
+        display: inline-flex;
+    }
+}
+
+/* ── Mobile Top Bar (Scanner Operator & Super Admin) ────────────────── */
+/* A thin bar that appears only on tablet/narrow, giving a home to the   */
+/* hamburger button for POVs that have no persistent topbar.             */
+
+.scanner-mobile-topbar,
+.super-admin-mobile-topbar {
+    display: none;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    background: #2F4AC0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 899px) {
+    .scanner-mobile-topbar,
+    .super-admin-mobile-topbar {
+        display: flex;
+    }
+}
+
