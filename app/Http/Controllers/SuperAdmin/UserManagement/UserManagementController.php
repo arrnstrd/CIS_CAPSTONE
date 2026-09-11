@@ -116,6 +116,20 @@ class UserManagementController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         } catch (Exception $e) {
+            if (isset($user) && $user instanceof User && $user->exists) {
+                \Illuminate\Support\Facades\Log::error('Failed to send invitation email: ' . $e->getMessage(), [
+                    'email' => $user->email,
+                ]);
+                
+                return response()->json([
+                    'message' => 'User created successfully, but the invitation email failed to send. Please check your mail server configuration.',
+                    'data' => $user,
+                    'setup_link' => $setupLink ?? null,
+                    'expires_at' => $expiresAt ?? null,
+                    'mail_error' => $e->getMessage(),
+                ], 201);
+            }
+
             return response()->json([
                 'message' => 'Unable to create user',
                 'error' => $e->getMessage(),
@@ -306,10 +320,12 @@ class UserManagementController extends Controller
 
             return redirect()->back()->with('status', 'Invitation resent successfully.');
         } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to resend invitation email to ' . $user->email . ': ' . $e->getMessage());
+            
             if ($request->expectsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
                 return response()->json([
-                    'message' => 'Failed to resend invitation.',
-                    'error' => $e->getMessage(),
+                    'message' => 'Failed to send invitation. Please check your mail server configuration.',
+                    'mail_error' => $e->getMessage(),
                 ], 500);
             }
 
@@ -548,6 +564,8 @@ class UserManagementController extends Controller
             ->get();
 
         $count = 0;
+        $failedCount = 0;
+        $errors = [];
         $invitationService = app(InvitationService::class);
 
         foreach ($users as $user) {
@@ -563,16 +581,27 @@ class UserManagementController extends Controller
                 ));
                 $count++;
             } catch (Exception $e) {
-                // Continue sending to remaining users
+                $failedCount++;
+                $errors[] = $e->getMessage();
+                \Illuminate\Support\Facades\Log::error('Failed to resend invitation email to ' . $user->email . ': ' . $e->getMessage());
             }
         }
 
-        AdminActivityLog::record($actor, 'Bulk Resent Invitations', "{$count} User(s)", 'success', "Bulk resent setup invitations to {$count} pending user(s)");
+        if ($count > 0) {
+            AdminActivityLog::record($actor, 'Bulk Resent Invitations', "{$count} User(s)", 'success', "Bulk resent setup invitations to {$count} pending user(s)");
+        }
+
+        $message = "Invitation resent to {$count} pending user(s).";
+        if ($failedCount > 0) {
+            $message .= " Failed to send to {$failedCount} user(s). Check your mail server configuration.";
+        }
 
         return response()->json([
-            'message' => "Invitation resent to {$count} pending user(s).",
+            'message' => $message,
             'affected' => $count,
-        ], 200);
+            'failed' => $failedCount,
+            'errors' => array_unique($errors),
+        ], $failedCount > 0 && $count === 0 ? 500 : 200);
     }
 
     private function sharedValidationRules(Request $request): array

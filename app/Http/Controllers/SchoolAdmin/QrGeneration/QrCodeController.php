@@ -19,11 +19,16 @@ class QrCodeController extends Controller
 
     public function index(Request $request)
     {
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+
         $sections = Section::with('advisor.user')
             ->filterGradeLevel($request->grade_level)
-
             ->search($request->search)
-            ->withCount('students')
+            ->withCount(['students' => function ($query) use ($activeSchoolYear) {
+                if ($activeSchoolYear) {
+                    $query->where('enrollments.school_year_id', $activeSchoolYear->id);
+                }
+            }])
             ->orderBy('grade_level')
             ->orderBy('name')
             ->paginate(15)
@@ -97,11 +102,19 @@ class QrCodeController extends Controller
      */
     public function downloadSection(Section $section)
     {
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+
         $students = $section->students()
+            ->when($activeSchoolYear, function ($query) use ($activeSchoolYear) {
+                $query->where('enrollments.school_year_id', $activeSchoolYear->id);
+            })
             ->with([
                 'qrCode',
-                'enrollments' => function ($query) use ($section) {
+                'enrollments' => function ($query) use ($section, $activeSchoolYear) {
                     $query->where('section_id', $section->id);
+                    if ($activeSchoolYear) {
+                        $query->where('school_year_id', $activeSchoolYear->id);
+                    }
                 }
             ])
             ->orderBy('last_name')

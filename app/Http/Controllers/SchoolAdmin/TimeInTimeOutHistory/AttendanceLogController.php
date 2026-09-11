@@ -36,11 +36,19 @@ class AttendanceLogController extends Controller
         $customStartDate = $request->input('custom_start_date');
         $customEndDate = $request->input('custom_end_date');
 
+        $activeSchoolYear = SchoolYear::query()->active()->first();
+
         $attendanceLogsQuery = AttendanceLog::with([
             'enrollment.student',
             'enrollment.section',
             'flagged_scans'
-        ])->withoutExcessScanFlags();
+        ])
+        ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+            $q->whereHas('enrollment', function ($enrollmentQuery) use ($activeSchoolYear) {
+                $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+            });
+        })
+        ->withoutExcessScanFlags();
 
         $attendanceLogsQuery = $this->applyDateFilter(
             $attendanceLogsQuery,
@@ -94,11 +102,19 @@ class AttendanceLogController extends Controller
         $customStartDate = $request->input('custom_start_date');
         $customEndDate = $request->input('custom_end_date');
 
+        $activeSchoolYear = SchoolYear::query()->active()->first();
+
         $analyticsLogsQuery = AttendanceLog::with([
             'enrollment.student',
             'enrollment.section',
             'flagged_scans'
-        ])->withoutExcessScanFlags();
+        ])
+        ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+            $q->whereHas('enrollment', function ($enrollmentQuery) use ($activeSchoolYear) {
+                $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+            });
+        })
+        ->withoutExcessScanFlags();
 
         $analyticsLogsQuery = $this->applyDateFilter(
             $analyticsLogsQuery,
@@ -639,11 +655,19 @@ class AttendanceLogController extends Controller
         $startDate = $request->input('start_date');
         $endDate   = $request->input('end_date');
 
+        $activeSchoolYear = SchoolYear::query()->active()->first();
+
         $analyticsLogsQuery = AttendanceLog::with([
             'enrollment.student',
             'enrollment.section',
             'flagged_scans'
-        ])->withoutExcessScanFlags();
+        ])
+        ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+            $q->whereHas('enrollment', function ($enrollmentQuery) use ($activeSchoolYear) {
+                $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+            });
+        })
+        ->withoutExcessScanFlags();
 
         if ($startDate && $endDate) {
             $analyticsLogsQuery = $analyticsLogsQuery->filterByDateRange($startDate, $endDate);
@@ -699,11 +723,18 @@ class AttendanceLogController extends Controller
         $startDate = $request->input('start_date', now()->format('Y-m-d'));
         $endDate   = $request->input('end_date', now()->format('Y-m-d'));
 
+        $activeSchoolYear = SchoolYear::query()->active()->first();
+
         $logs = AttendanceLog::with([
             'enrollment.student',
             'enrollment.section',
             'flagged_scans',
         ])
+            ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+                $q->whereHas('enrollment', function ($enrollmentQuery) use ($activeSchoolYear) {
+                    $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+                });
+            })
             ->withoutExcessScanFlags()
             ->filterByDateRange($startDate, $endDate)
             ->search($request->input('query'))
@@ -743,11 +774,18 @@ class AttendanceLogController extends Controller
                 ->withInput();
         }
 
+        $activeSchoolYear = SchoolYear::query()->active()->first();
+
         $logs = AttendanceLog::with([
             'enrollment.student',
             'enrollment.section',
             'flagged_scans',
         ])
+            ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+                $q->whereHas('enrollment', function ($enrollmentQuery) use ($activeSchoolYear) {
+                    $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+                });
+            })
             ->withoutExcessScanFlags()
             ->filterByDateRange($validated['start_date'], $validated['end_date'])
             ->search($request->input('query'))

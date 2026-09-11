@@ -148,11 +148,14 @@ class RiskScoreService
         TeachingAssignment $teachingAssignment,
         GradingPeriod $period
     ): array {
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+
         $enrollments = Enrollment::where(
             'section_id',
             $teachingAssignment->section_id
         )
             ->where('status', 'active')
+            ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
             ->with('student')
             ->get();
 

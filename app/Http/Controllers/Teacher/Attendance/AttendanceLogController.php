@@ -20,11 +20,28 @@ class AttendanceLogController extends Controller
         $customStartDate = $request->input('custom_start_date');
         $customEndDate = $request->input('custom_end_date');
 
+        $teacher = $request->user()->teacher;
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+        
+        $teacherSectionIds = $teacher 
+            ? \App\Models\TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('status', 'active')
+                ->pluck('section_id')
+                ->unique() 
+            : collect();
+
         $attendanceLogsQuery = AttendanceLog::with([
             'enrollment.student',
             'enrollment.section',
             'flagged_scans'
-        ])->withoutExcessScanFlags();
+        ])
+        ->whereHas('enrollment', function ($q) use ($teacherSectionIds, $activeSchoolYear) {
+            $q->whereIn('section_id', $teacherSectionIds);
+            if ($activeSchoolYear) {
+                $q->where('school_year_id', $activeSchoolYear->id);
+            }
+        })
+        ->withoutExcessScanFlags();
 
         $attendanceLogsQuery = $this->applyDateFilter(
             $attendanceLogsQuery,

@@ -117,28 +117,10 @@ class AttendanceAnalyticsController extends Controller
         /*
          * School years available to this teacher.
          */
-        $schoolYears = $allTeacherAssignments
-            ->pluck('schoolYear')
-            ->filter()
-            ->unique('id')
-            ->sortByDesc('school_year')
-            ->values();
+        $schoolYears = SchoolYear::orderByDesc('school_year')->get();
 
-        /*
-         * If no school year was explicitly selected, use the active
-         * school year when the teacher has assignments for it.
-         */
         if (! $selectedSchoolYearId) {
-            $activeSchoolYearId = SchoolYear::active()->value('id');
-
-            if (
-                $activeSchoolYearId &&
-                $allTeacherAssignments->contains(
-                    fn ($assignment) => (int) $assignment->school_year_id === (int) $activeSchoolYearId
-                )
-            ) {
-                $selectedSchoolYearId = $activeSchoolYearId;
-            }
+            $selectedSchoolYearId = SchoolYear::active()->value('id');
         }
 
         /*
@@ -147,9 +129,14 @@ class AttendanceAnalyticsController extends Controller
         $schoolYearAssignments = $allTeacherAssignments;
 
         if ($selectedSchoolYearId) {
-            $schoolYearAssignments = $schoolYearAssignments->filter(
+            $hasMatching = $allTeacherAssignments->contains(
                 fn ($ta) => (int) $ta->school_year_id === (int) $selectedSchoolYearId
             );
+            if ($hasMatching) {
+                $schoolYearAssignments = $schoolYearAssignments->filter(
+                    fn ($ta) => (int) $ta->school_year_id === (int) $selectedSchoolYearId
+                );
+            }
         }
 
         /*
@@ -215,6 +202,7 @@ class AttendanceAnalyticsController extends Controller
 
         $students = Enrollment::whereIn('section_id', $availableSectionIds)
             ->where('status', 'active')
+            ->when($selectedSchoolYearId, fn ($q) => $q->where('school_year_id', $selectedSchoolYearId))
             ->with('student')
             ->get()
             ->pluck('student')
@@ -279,6 +267,7 @@ class AttendanceAnalyticsController extends Controller
 
             $enrollments = Enrollment::where('section_id', $section->id)
                 ->where('status', 'active')
+                ->when($selectedSchoolYearId, fn ($q) => $q->where('school_year_id', $selectedSchoolYearId))
                 ->with('student')
                 ->get();
 
@@ -320,6 +309,7 @@ class AttendanceAnalyticsController extends Controller
              */
 
             $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
+                ->whereIn('enrollment_id', $enrollmentIds)
                 ->whereNotNull('transmuted_grade');
 
             if ($selectedTerm) {
@@ -1113,7 +1103,7 @@ class AttendanceAnalyticsController extends Controller
         $selectedStudentId = null
     ): array {
         $taIds = $filteredAssignments->pluck('id');
-
+  
         $sectionIds = $filteredAssignments
             ->pluck('section_id')
             ->unique();
@@ -1153,6 +1143,7 @@ class AttendanceAnalyticsController extends Controller
             'teaching_assignment_id',
             $taIds
         )
+            ->whereIn('enrollment_id', $enrollmentIds)
             ->whereNotNull('transmuted_grade')
             ->get()
             ->groupBy('grading_period_id');

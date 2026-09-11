@@ -74,16 +74,27 @@ class TeacherProvisioningController extends Controller
             $setupLink = $this->buildSetupLink($result['plainToken']);
             $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
 
-            Mail::to($teacher['user']->email)->send(new InvitationMail(
-                $teacher['user']->first_name . ' ' . $teacher['user']->last_name,
-                $setupLink,
-                $expiresAt
-            ));
+            try {
+                Mail::to($teacher['user']->email)->send(new InvitationMail(
+                    $teacher['user']->first_name . ' ' . $teacher['user']->last_name,
+                    $setupLink,
+                    $expiresAt
+                ));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send teacher invitation email: ' . $e->getMessage(), [
+                    'email' => $teacher['user']->email
+                ]);
+                return response()->json([
+                    'message' => 'Teacher created successfully, but the invitation email failed to send. Please check your mail server configuration.',
+                    'data' => $teacher['teacher']->fresh()->load('user'),
+                    'mail_error' => $e->getMessage()
+                ], 201);
+            }
 
             return response()->json([
                 'message' => 'Teacher created successfully. Invitation sent to email.',
                 'data' => $teacher['teacher']->fresh()->load('user'),
-            ]);
+            ], 201);
         } catch (QueryException $e) {
             return response()->json([
                 'message' => 'Unable to create teacher.',

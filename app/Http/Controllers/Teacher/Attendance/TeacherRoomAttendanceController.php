@@ -39,10 +39,17 @@ class TeacherRoomAttendanceController extends Controller
 
         $today = now()->toDateString();
 
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+
         foreach ($sections as $section) {
-            $enrollments = Enrollment::where('section_id', $section->id)
-                ->where('status', 'active')
-                ->get();
+            $enrollmentsQuery = Enrollment::where('section_id', $section->id)
+                ->where('status', 'active');
+                
+            if ($activeSchoolYear) {
+                $enrollmentsQuery->where('school_year_id', $activeSchoolYear->id);
+            }
+            
+            $enrollments = $enrollmentsQuery->get();
 
             $enrollmentIds = $enrollments->pluck('id');
             $totalStudents = $enrollmentIds->count();
@@ -133,10 +140,17 @@ class TeacherRoomAttendanceController extends Controller
 
         $isSingleDay = $rangeStart->isSameDay($rangeEnd);
 
-        $enrollments = Enrollment::where('section_id', $section->id)
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+        
+        $enrollmentsQuery = Enrollment::where('section_id', $section->id)
             ->where('status', 'active')
-            ->with('student')
-            ->get();
+            ->with('student');
+            
+        if ($activeSchoolYear) {
+            $enrollmentsQuery->where('school_year_id', $activeSchoolYear->id);
+        }
+        
+        $enrollments = $enrollmentsQuery->get();
 
         $enrollmentIds = $enrollments->pluck('id');
 

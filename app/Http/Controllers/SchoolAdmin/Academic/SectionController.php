@@ -15,11 +15,17 @@ class SectionController extends Controller
 {
     public static function sectionIndexQuery(?string $search = null, ?string $status = null, $gradeLevel = null): Builder
     {
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+        
         return Section::with('advisor.user')
             ->filterGradeLevel($gradeLevel)
             ->filterStatus($status)
             ->search($search)
-            ->withCount('students')
+            ->withCount(['students' => function ($query) use ($activeSchoolYear) {
+                if ($activeSchoolYear) {
+                    $query->where('enrollments.school_year_id', $activeSchoolYear->id);
+                }
+            }])
             ->orderBy('grade_level')
             ->orderBy('name');
     }

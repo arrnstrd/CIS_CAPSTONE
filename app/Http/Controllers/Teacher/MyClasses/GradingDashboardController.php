@@ -62,9 +62,21 @@ class GradingDashboardController extends Controller
             $dashboardPreferences
         );
 
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+
         $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
             ->with(['section', 'subject']);
+
+        if ($activeSchoolYear) {
+            $hasActiveYearAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('status', 'active')
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->exists();
+            if ($hasActiveYearAssignments) {
+                $teachingAssignmentsQuery->where('school_year_id', $activeSchoolYear->id);
+            }
+        }
 
         // Default class filtering if requested or configured in teacher dashboard preferences
         $selectedClassId = $request->input('teaching_assignment_id', $dashboardPreferences?->default_class_id);
@@ -80,14 +92,16 @@ class GradingDashboardController extends Controller
 
         $teachingAssignments = $teachingAssignmentsQuery->get();
 
-        $classes = $teachingAssignments->map(function ($ta) use ($validPeriodIds, $currentPeriod) {
+        $classes = $teachingAssignments->map(function ($ta) use ($validPeriodIds, $currentPeriod, $activeSchoolYear) {
             if (! $ta->section || ! $ta->subject) {
                 return null;
             }
 
             $activeEnrollmentIds = Enrollment::where('section_id', $ta->section_id)
-                ->where('school_year_id', $ta->school_year_id)
                 ->where('status', 'active')
+                ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                })
                 ->pluck('id');
 
             $learnerCount = $activeEnrollmentIds->count();
