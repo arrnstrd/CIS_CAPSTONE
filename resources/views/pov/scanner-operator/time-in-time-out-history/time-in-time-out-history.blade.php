@@ -215,7 +215,7 @@
                 <th style="width: 16%">Grade & Section</th>
                 <th style="width: 12%">Scan Type</th>
                 <th style="width: 10%">Session</th>
-                <th style="width: 10%">Gate Time</th>
+                <th style="width: 10%">Attendance Time</th>
                 <th style="width: 10%">Remarks</th>
                 <th style="width: 6%">Action</th>
             </tr>
@@ -290,7 +290,7 @@
                     <td colspan="8" class="text-center text-muted py-5">
                         <div class="d-flex flex-column align-items-center justify-content-center">
                             <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
-                            <p class="mb-0">No gate scan logs found for the selected criteria</p>
+                            <p class="mb-0">No attendance logs found for the selected criteria</p>
                         </div>
                     </td>
                 </tr>
@@ -328,7 +328,7 @@
                 'invalid_qr' => 'Unrecognized or invalid QR code presented.',
                 'early_out' => 'Student checked out prior to the official dismissal window.',
                 'early_timeout' => 'Student checked out prior to the official dismissal window.',
-                'too_early' => 'Scan recorded prior to gate opening hours.',
+                'too_early' => 'Scan recorded prior to scheduled opening hours.',
                 'invalid_session' => 'Scan recorded outside of scheduled school hours.',
             ];
 

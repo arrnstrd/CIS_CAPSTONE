@@ -16,7 +16,7 @@
                             Concepcion Integrated School
                         </h2>
                         <p style="font-size: 11px; color: #6c757d; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">
-                            Automated Gate Monitoring System
+                            Automated Attendance Monitoring System
                         </p>
                     </div>
 

@@ -394,7 +394,7 @@ class ReportsController extends Controller
                     'name' => $this->studentName($enrollment),
                     'risk_score' => $risk['risk_score'] ?? null,
                     'risk_level' => $risk['risk_level'] ?? 'Unknown',
-                    'indicators' => $risk['indicators'] ?? [],
+                    'indicators' => $this->formatIndicatorLabels($risk['indicators'] ?? []),
                     'attendance_rate' => $attendanceRate,
                 ];
             })
@@ -541,6 +541,37 @@ class ReportsController extends Controller
             ', ' .
             ($student->first_name ?? '')
         );
+    }
+
+    /**
+     * Map raw indicator booleans to human-readable labels matching application conventions.
+     *
+     * @param array $indicators
+     * @return array<string>
+     */
+    private function formatIndicatorLabels(array $indicators): array
+    {
+        $labels = [
+            'low_grade' => 'Low Grade',
+            'missing_grades' => 'Missing Grades',
+            'low_attendance' => 'Low Attendance',
+            'declining_performance' => 'Declining Performance',
+        ];
+
+        $active = [];
+        foreach ($indicators as $key => $val) {
+            if (is_string($key) && isset($labels[$key])) {
+                if ($val) {
+                    $active[] = $labels[$key];
+                }
+            } elseif (is_string($val) && isset($labels[$val])) {
+                $active[] = $labels[$val];
+            } elseif (is_string($val) && in_array($val, $labels, true)) {
+                $active[] = $val;
+            }
+        }
+
+        return array_values(array_unique($active));
     }
 
         /**
@@ -783,7 +814,11 @@ class ReportsController extends Controller
             // Data rows
             $rowNum = 2;
             foreach ($data['rows'] as $row) {
-                $indicators = is_array($row['indicators']) ? implode('; ', $row['indicators']) : $row['indicators'];
+                $rawIndicators = is_array($row['indicators'] ?? null) ? $row['indicators'] : [];
+                $formattedIndicators = $this->formatIndicatorLabels($rawIndicators);
+                $indicators = !empty($formattedIndicators)
+                    ? implode('; ', $formattedIndicators)
+                    : '—';
                 $rowData = [
                     $row['name'],
                     $row['risk_score'],
@@ -954,7 +989,7 @@ class ReportsController extends Controller
                         'name' => $this->studentName($enrollment),
                         'risk_score' => $risk['risk_score'] ?? null,
                         'risk_level' => $risk['risk_level'] ?? 'Unknown',
-                        'indicators' => $risk['indicators'] ?? [],
+                        'indicators' => $this->formatIndicatorLabels($risk['indicators'] ?? []),
                         'attendance_rate' => $attendanceRate,
                     ];
                 })
@@ -1421,10 +1456,14 @@ class ReportsController extends Controller
                 $html .= '</td>';
                 $html .= '<td class="text-center">' . ($row['attendance_rate'] ?? '-') . '%</td>';
                 $html .= '<td>';
-                if (is_array($row['indicators']) && !empty($row['indicators'])) {
-                    foreach ($row['indicators'] as $indicator) {
-                        $html .= '<span class="badge badge-neutral me-1">' . $indicator . '</span>';
+                $rawIndicators = is_array($row['indicators'] ?? null) ? $row['indicators'] : [];
+                $formattedIndicators = $this->formatIndicatorLabels($rawIndicators);
+                if (!empty($formattedIndicators)) {
+                    foreach ($formattedIndicators as $indicator) {
+                        $html .= '<span class="badge badge-neutral me-1">' . htmlspecialchars($indicator) . '</span>';
                     }
+                } else {
+                    $html .= '<span class="text-muted">&#8212;</span>';
                 }
                 $html .= '</td>';
                 $html .= '</tr>';

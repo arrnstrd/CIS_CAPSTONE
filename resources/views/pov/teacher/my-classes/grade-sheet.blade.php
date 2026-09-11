@@ -315,6 +315,16 @@
 
             <div class="table-responsive">
 
+                @php
+                    $wwWeight = (float) ($resolvedWeights['written_work'] ?? 0.20);
+                    $ptWeight = (float) ($resolvedWeights['performance_task'] ?? 0.50);
+                    $exWeight = (float) ($resolvedWeights['term_assessment'] ?? 0.30);
+
+                    $wwWeightPercent = (int) round($wwWeight * 100);
+                    $ptWeightPercent = (int) round($ptWeight * 100);
+                    $exWeightPercent = (int) round($exWeight * 100);
+                @endphp
+
                 <table class="table table-bordered table-sm align-middle mb-0"
                        id="gradeSheetTable">
 
@@ -339,7 +349,7 @@
                                 class="text-center gs-group-written gs-divider-written py-2">
 
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="fw-bold">{{ $categoryLabels['written'] }}</span>
+                                    <span class="fw-bold">{{ $categoryLabels['written'] }} ({{ $wwWeightPercent }}%)</span>
                                     <button type="button"
                                             class="gs-add-col-btn gs-add-col"
                                             data-category="written"
@@ -360,7 +370,7 @@
                                 class="text-center gs-group-performance gs-divider-performance py-2">
 
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="fw-bold">{{ $categoryLabels['performance'] }}</span>
+                                    <span class="fw-bold">{{ $categoryLabels['performance'] }} ({{ $ptWeightPercent }}%)</span>
                                     <button type="button"
                                             class="gs-add-col-btn gs-add-col"
                                             data-category="performance"
@@ -381,7 +391,7 @@
                                 class="text-center gs-group-exam gs-divider-exam py-2">
 
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="fw-bold">{{ $categoryLabels[$assessmentComponentKey] ?? 'Examinations' }}</span>
+                                    <span class="fw-bold">{{ $categoryLabels[$assessmentComponentKey] ?? 'Examinations' }} ({{ $exWeightPercent }}%)</span>
                                     <button type="button"
                                             class="gs-add-col-btn gs-add-col"
                                             data-category="{{ $assessmentComponentKey }}"
@@ -496,8 +506,8 @@
                                 PS
                             </th>
 
-                            <th class="text-center small gs-group-written gs-divider-written fw-semibold">
-                                WS
+                            <th class="text-center small gs-group-written gs-divider-written fw-semibold" title="Weighted Score ({{ $wwWeightPercent }}%)">
+                                WS ({{ $wwWeightPercent }}%)
                             </th>
 
 
@@ -563,8 +573,8 @@
                                 PS
                             </th>
 
-                            <th class="text-center small gs-group-performance gs-divider-performance fw-semibold">
-                                WS
+                            <th class="text-center small gs-group-performance gs-divider-performance fw-semibold" title="Weighted Score ({{ $ptWeightPercent }}%)">
+                                WS ({{ $ptWeightPercent }}%)
                             </th>
 
 
@@ -630,8 +640,8 @@
                                 PS
                             </th>
 
-                            <th class="text-center small gs-group-exam gs-divider-exam fw-semibold">
-                                WS
+                            <th class="text-center small gs-group-exam gs-divider-exam fw-semibold" title="Weighted Score ({{ $exWeightPercent }}%)">
+                                WS ({{ $exWeightPercent }}%)
                             </th>
 
                         </tr>

@@ -7,7 +7,10 @@ use App\Models\Subject;
 use App\Models\SchoolYear;
 use App\Models\TeachingAssignment;
 use App\Models\AssessmentCategory;
+use App\Models\Assessment;
+use App\Models\Enrollment;
 use App\Models\GradingConfig;
+use App\Services\Grading\GradingService;
 use App\Services\Grading\SubjectWeightResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,10 +18,14 @@ use Illuminate\Support\Facades\Auth;
 class GradingRulesController extends Controller
 {
     protected SubjectWeightResolver $weightResolver;
+    protected GradingService $gradingService;
 
-    public function __construct(SubjectWeightResolver $weightResolver)
-    {
+    public function __construct(
+        SubjectWeightResolver $weightResolver,
+        GradingService $gradingService
+    ) {
         $this->weightResolver = $weightResolver;
+        $this->gradingService = $gradingService;
     }
     public function index(Request $request)
     {
@@ -175,6 +182,8 @@ class GradingRulesController extends Controller
             ['weight' => $validated['term_assessment']]
         );
 
+        $this->syncTermGradesForAssignment($assignment);
+
         return redirect()->route('teacher.grading-system.grading-rules', [
             'teaching_assignment_id' => $validated['teaching_assignment_id']
         ])->with('success', 'Grading rules updated successfully.');
@@ -234,9 +243,33 @@ class GradingRulesController extends Controller
             ],
             ['weight' => $fallbackWeights['term_assessment'] * 100]
         );
+
+        $this->syncTermGradesForAssignment($assignment);
+
         return redirect()->route('teacher.grading-system.grading-rules', [
             'teaching_assignment_id' => $validated['teaching_assignment_id']
         ])->with('success', 'Default grading rules restored successfully.');
+    }
+
+    /**
+     * Recalculate term grades for all enrolled students in assignments with active assessments.
+     */
+    private function syncTermGradesForAssignment(TeachingAssignment $assignment): void
+    {
+        $enrollmentIds = Enrollment::where('section_id', $assignment->section_id)
+            ->whereIn('status', ['active', 'enrolled'])
+            ->pluck('id');
+
+        $gradingPeriodIds = Assessment::where('teaching_assignment_id', $assignment->id)
+            ->where('status', 'active')
+            ->distinct()
+            ->pluck('grading_period_id');
+
+        foreach ($gradingPeriodIds as $gpId) {
+            foreach ($enrollmentIds as $enrollmentId) {
+                $this->gradingService->recalculateTermGrade($enrollmentId, $assignment->id, $gpId);
+            }
+        }
     }
 
     private function resolveWeightsForAssignment(int $teachingAssignmentId): array

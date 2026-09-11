@@ -80,7 +80,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <span class="qr-live-dot"></span>
                             <span class="fw-bold text-uppercase small text-dark">Live</span>
-                            <span class="text-muted small d-none d-md-inline">Today's gate scans</span>
+                            <span class="text-muted small d-none d-md-inline">Today's attendance scans</span>
                         </div>
                         <span class="badge bg-dark" id="queueCount">0</span>
                     </div>

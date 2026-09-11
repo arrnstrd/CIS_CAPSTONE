@@ -89,12 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     previewIcon.innerHTML = '<i class="fa-solid fa-door-open"></i>';
                     previewTime.textContent = gateExactTime;
                     previewSub.innerHTML = '<i class="fa-solid fa-qrcode text-muted me-1"></i>' +
-                        escapeHtml((gateScanType || 'IN') + ' Scan • ' + (gateSession ? (gateSession.charAt(0).toUpperCase() + gateSession.slice(1)) : 'Campus Gate'));
+                        escapeHtml((gateScanType || 'IN') + ' Scan • ' + (gateSession ? (gateSession.charAt(0).toUpperCase() + gateSession.slice(1)) : 'Campus Attendance'));
                 } else {
                     previewIcon.className = 'ra-gate-preview-icon no-scan';
                     previewIcon.innerHTML = '<i class="fa-solid fa-ban"></i>';
-                    previewTime.textContent = 'No gate scan recorded';
-                    previewSub.innerHTML = '<i class="fa-solid fa-circle-info text-muted me-1"></i>Student has not scanned at campus gate';
+                    previewTime.textContent = 'No attendance scan recorded';
+                    previewSub.innerHTML = '<i class="fa-solid fa-circle-info text-muted me-1"></i>No campus attendance scan recorded';
                 }
             }
 
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (step.is_raw) {
                     html += '    <div class="d-flex align-items-center gap-2 mb-2">';
                     html += '      <span class="badge-dot ' + (statusDotMap[step.status] || 'dot-secondary') + '">' + escapeHtml(step.status_label) + '</span>';
-                    html += '      <span class="ra-gate-preview-badge"><i class="fa-solid fa-lock text-muted me-1"></i>Raw Gate Log</span>';
+                    html += '      <span class="ra-gate-preview-badge"><i class="fa-solid fa-lock text-muted me-1"></i>Raw Scan Log</span>';
                     html += '    </div>';
                     html += '    <div class="ra-step-meta">';
                     html += '      <i class="fa-solid fa-id-card-clip"></i>';
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             html = '<div class="text-center py-5 text-muted small">' +
                 '<i class="fa-regular fa-calendar-xmark fa-2x mb-2 d-block text-secondary"></i>' +
-                'No attendance changes or gate scans recorded for this student.' +
+                'No attendance changes or scans recorded for this student.' +
                 '</div>';
         }
 

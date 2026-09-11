@@ -8,7 +8,7 @@
     </x-slot>
 
     <x-slot name="subtitle">
-        Comprehensive student movement and gate attendance insights.
+        Comprehensive student movement and attendance insights.
     </x-slot>
 
     @php

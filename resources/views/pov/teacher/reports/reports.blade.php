@@ -311,6 +311,34 @@
                 return 'No indicators';
             }
 
+            if (typeof indicators === 'string') {
+                try {
+                    const parsed = JSON.parse(indicators);
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        indicators = parsed;
+                    }
+                } catch (e) {
+                    // Plain string, not JSON
+                }
+            }
+
+            const indicatorLabels = {
+                'low_grade': 'Low Grade',
+                'missing_grades': 'Missing Grades',
+                'low_attendance': 'Low Attendance',
+                'declining_performance': 'Declining Performance'
+            };
+
+            if (!Array.isArray(indicators) && typeof indicators === 'object' && indicators !== null) {
+                const active = [];
+                for (const [key, value] of Object.entries(indicators)) {
+                    if (value) {
+                        active.push(indicatorLabels[key] || key);
+                    }
+                }
+                indicators = active;
+            }
+
             if (!Array.isArray(indicators)) {
                 return escapeHtml(String(indicators));
             }
@@ -319,23 +347,26 @@
                 return 'No indicators';
             }
 
-            return indicators
+            const rendered = indicators
                 .map(indicator => {
-
                     if (typeof indicator === 'string') {
+                        const label = indicatorLabels[indicator] || indicator;
                         return `<span class="gs-badge gs-badge-neutral me-1 mb-1">
-                            ${escapeHtml(indicator)}
+                            ${escapeHtml(label)}
                         </span>`;
                     }
 
                     if (typeof indicator === 'object' && indicator !== null) {
-
-                        const text =
+                        const rawText =
                             indicator.label ??
                             indicator.name ??
                             indicator.indicator ??
-                            indicator.title ??
-                            JSON.stringify(indicator);
+                            indicator.title;
+
+                        const text = rawText ? (indicatorLabels[rawText] || rawText) : '';
+                        if (!text) {
+                            return '';
+                        }
 
                         return `<span class="gs-badge gs-badge-neutral me-1 mb-1">
                             ${escapeHtml(text)}
@@ -344,7 +375,10 @@
 
                     return '';
                 })
+                .filter(Boolean)
                 .join('');
+
+            return rendered || 'No indicators';
         }
 
 

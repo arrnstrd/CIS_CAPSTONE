@@ -77,6 +77,66 @@ class GradingServiceCalculationTest extends TestCase
         $this->assertSame(0.0, $summaries['written']['ws']);
     }
 
+    public function test_it_calculates_with_custom_configured_weights(): void
+    {
+        // Custom weights configured by teacher: WW 50%, PT 30%, EX 20%
+        $customWeights = ['written_work' => 0.50, 'performance_task' => 0.30, 'term_assessment' => 0.20];
+
+        $summaries = $this->service->calculateComponentSummaries(
+            collect([
+                $this->assessment(1, 1, 100), // WW: 80 / 100 = 80%
+                $this->assessment(2, 2, 100), // PT: 90 / 100 = 90%
+                $this->assessment(3, 3, 100), // EX: 70 / 100 = 70%
+            ]),
+            $this->scores([1 => 80, 2 => 90, 3 => 70]),
+            $customWeights,
+            ['written' => 1, 'performance' => 2, 'term_assessment' => 3],
+        );
+
+        // WW WS: 80% * 0.50 = 40.00
+        $this->assertSame(40.0, $summaries['written']['ws']);
+        // PT WS: 90% * 0.30 = 27.00
+        $this->assertSame(27.0, $summaries['performance']['ws']);
+        // EX WS: 70% * 0.20 = 14.00
+        $this->assertSame(14.0, $summaries['term_assessment']['ws']);
+
+        // Initial Grade = 40 + 27 + 14 = 81.00
+        $initialGrade = collect($summaries)->sum('ws');
+        $this->assertSame(81.0, $initialGrade);
+        // Transmuted Grade for 81.0 = 88.0
+        $this->assertSame(88.0, $this->service->transmute($initialGrade));
+    }
+
+    public function test_subsequent_weight_configuration_updates_calculated_grades(): void
+    {
+        // Subsequent change: WW 40%, PT 40%, EX 20%
+        $updatedWeights = ['written_work' => 0.40, 'performance_task' => 0.40, 'term_assessment' => 0.20];
+
+        $summaries = $this->service->calculateComponentSummaries(
+            collect([
+                $this->assessment(1, 1, 100),
+                $this->assessment(2, 2, 100),
+                $this->assessment(3, 3, 100),
+            ]),
+            $this->scores([1 => 80, 2 => 90, 3 => 70]),
+            $updatedWeights,
+            ['written' => 1, 'performance' => 2, 'term_assessment' => 3],
+        );
+
+        // WW WS: 80% * 0.40 = 32.00
+        $this->assertSame(32.0, $summaries['written']['ws']);
+        // PT WS: 90% * 0.40 = 36.00
+        $this->assertSame(36.0, $summaries['performance']['ws']);
+        // EX WS: 70% * 0.20 = 14.00
+        $this->assertSame(14.0, $summaries['term_assessment']['ws']);
+
+        // Initial Grade = 32 + 36 + 14 = 82.00
+        $initialGrade = collect($summaries)->sum('ws');
+        $this->assertSame(82.0, $initialGrade);
+        // Transmuted Grade for 82.0 = 88.0
+        $this->assertSame(88.0, $this->service->transmute($initialGrade));
+    }
+
     private function assessment(int $id, int $categoryId, int $totalItems): Assessment
     {
         $assessment = new Assessment(['assessment_category_id' => $categoryId, 'total_items' => $totalItems]);

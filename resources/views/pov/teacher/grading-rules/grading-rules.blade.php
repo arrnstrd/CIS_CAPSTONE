@@ -1,4 +1,4 @@
-﻿<x-layouts.teacher>
+<x-layouts.teacher>
 
 
 <x-slot name="pageName">
@@ -67,31 +67,42 @@
             </div>
         </div>
 
-        <!-- 2. GRADING COMPONENTS PANEL -->
-        <div class="gs-panel mb-3">
+        <!-- 2. GRADING CONFIGURATION PANEL -->
+        <div class="gs-panel mb-3" id="gradingConfigurationPanel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="gs-panel-title mb-0">Grading Components</p>
+                <p class="gs-panel-title mb-0">Grading Configuration</p>
 
                 @if ($selectedAssignment)
-                    <form
-                        method="POST"
-                        action="{{ route('teacher.grading-system.grading-rules.restore-defaults') }}"
-                        id="restoreDefaultsForm"
-                        class="mb-0"
-                    >
-                        @csrf
-
-                        <input
-                            type="hidden"
-                            name="teaching_assignment_id"
-                            value="{{ $selectedAssignment->id }}"
+                    <div class="d-flex gap-2">
+                        <button
+                            type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            id="editFormulaBtn"
                         >
-
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">
-                            <i class="fa-solid fa-rotate-left me-1"></i>
-                            Restore Default
+                            <i class="fa-solid fa-pen me-1"></i>
+                            Edit
                         </button>
-                    </form>
+
+                        <form
+                            method="POST"
+                            action="{{ route('teacher.grading-system.grading-rules.restore-defaults') }}"
+                            id="restoreDefaultsForm"
+                            class="mb-0"
+                        >
+                            @csrf
+
+                            <input
+                                type="hidden"
+                                name="teaching_assignment_id"
+                                value="{{ $selectedAssignment->id }}"
+                            >
+
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                <i class="fa-solid fa-rotate-left me-1"></i>
+                                Restore Default
+                            </button>
+                        </form>
+                    </div>
                 @endif
             </div>
 
@@ -110,107 +121,204 @@
                         value="{{ $selectedAssignment->id }}"
                     >
 
-                    <div class="gr-component-row">
-                        <p class="gr-component-name mb-0">
-                            <span
-                                class="gr-component-dot"
-                                style="background-color: {{ $gradingComponents['written_work']['color'] }};"
-                            ></span>
-                            Written Work (WW)
-                        </p>
+                    <!-- Sub-section: Grading Components -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="gs-rules-heading mb-0">Grading Components</span>
+                        </div>
 
-                        <div class="gr-component-weight-wrap">
-                            <div class="gr-progress-bar">
-                                <div
-                                    class="gr-weight-bar js-weight-bar"
-                                    data-component="written_work"
-                                    style="width: {{ $gradingComponents['written_work']['weight'] }}%; background-color: {{ $gradingComponents['written_work']['color'] }};"
-                                ></div>
+                        <div class="gr-component-row">
+                            <p class="gr-component-name mb-0">
+                                <span
+                                    class="gr-component-dot"
+                                    style="background-color: {{ $gradingComponents['written_work']['color'] }};"
+                                ></span>
+                                Written Work (WW)
+                            </p>
+
+                            <div class="gr-component-weight-wrap">
+                                <div class="gr-progress-bar">
+                                    <div
+                                        class="gr-weight-bar js-weight-bar"
+                                        data-component="written_work"
+                                        style="width: {{ $gradingComponents['written_work']['weight'] }}%; background-color: {{ $gradingComponents['written_work']['color'] }};"
+                                    ></div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <input
+                                        type="number"
+                                        name="written_work"
+                                        class="form-control form-control-sm weight-input"
+                                        value="{{ $gradingComponents['written_work']['weight'] }}"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        style="width: 90px;"
+                                        required
+                                    >
+                                    <span>%</span>
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="d-flex align-items-center gap-2">
-                                <input
-                                    type="number"
-                                    name="written_work"
-                                    class="form-control form-control-sm weight-input"
-                                    value="{{ $gradingComponents['written_work']['weight'] }}"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    style="width: 90px;"
-                                    required
-                                >
-                                <span>%</span>
+                        <div class="gr-component-row">
+                            <p class="gr-component-name mb-0">
+                                <span
+                                    class="gr-component-dot"
+                                    style="background-color: {{ $gradingComponents['performance_task']['color'] }};"
+                                ></span>
+                                Performance Task (PT)
+                            </p>
+
+                            <div class="gr-component-weight-wrap">
+                                <div class="gr-progress-bar">
+                                    <div
+                                        class="gr-weight-bar js-weight-bar"
+                                        data-component="performance_task"
+                                        style="width: {{ $gradingComponents['performance_task']['weight'] }}%; background-color: {{ $gradingComponents['performance_task']['color'] }};"
+                                    ></div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <input
+                                        type="number"
+                                        name="performance_task"
+                                        class="form-control form-control-sm weight-input"
+                                        value="{{ $gradingComponents['performance_task']['weight'] }}"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        style="width: 90px;"
+                                        required
+                                    >
+                                    <span>%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="gr-component-row">
+                            <p class="gr-component-name mb-0">
+                                <span
+                                    class="gr-component-dot"
+                                    style="background-color: {{ $gradingComponents['term_assessment']['color'] }};"
+                                ></span>
+                                Term Assessment (EX)
+                            </p>
+
+                            <div class="gr-component-weight-wrap">
+                                <div class="gr-progress-bar">
+                                    <div
+                                        class="gr-weight-bar js-weight-bar"
+                                        data-component="term_assessment"
+                                        style="width: {{ $gradingComponents['term_assessment']['weight'] }}%; background-color: {{ $gradingComponents['term_assessment']['color'] }};"
+                                    ></div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <input
+                                        type="number"
+                                        name="term_assessment"
+                                        class="form-control form-control-sm weight-input"
+                                        value="{{ $gradingComponents['term_assessment']['weight'] }}"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        style="width: 90px;"
+                                        required
+                                    >
+                                    <span>%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="gr-component-row">
-                        <p class="gr-component-name mb-0">
-                            <span
-                                class="gr-component-dot"
-                                style="background-color: {{ $gradingComponents['performance_task']['color'] }};"
-                            ></span>
-                            Performance Task (PT)
-                        </p>
+                    <!-- Divider separating components from formula & example -->
+                    <div class="border-top my-4"></div>
 
-                        <div class="gr-component-weight-wrap">
-                            <div class="gr-progress-bar">
-                                <div
-                                    class="gr-weight-bar js-weight-bar"
-                                    data-component="performance_task"
-                                    style="width: {{ $gradingComponents['performance_task']['weight'] }}%; background-color: {{ $gradingComponents['performance_task']['color'] }};"
-                                ></div>
+                    <!-- Sub-section: Grading Formula & Example -->
+                    <div class="mb-3" id="formulaExamplePanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="gs-rules-heading mb-0">Grading Formula &amp; Example</span>
+                        </div>
+
+                        <div class="gs-rules-section mb-3 pb-0">
+                            <div class="gs-rules-row">
+                                <span class="gs-rules-label">Formula</span>
                             </div>
 
-                            <div class="d-flex align-items-center gap-2">
-                                <input
-                                    type="number"
-                                    name="performance_task"
-                                    class="form-control form-control-sm weight-input"
-                                    value="{{ $gradingComponents['performance_task']['weight'] }}"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    style="width: 90px;"
-                                    required
-                                >
-                                <span>%</span>
+                            <div class="gr-formula-box">
+                                <div class="gr-formula-view gr-formula-content font-monospace">
+                                    {{ $formula }}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="gr-component-row">
-                        <p class="gr-component-name mb-0">
-                            <span
-                                class="gr-component-dot"
-                                style="background-color: {{ $gradingComponents['term_assessment']['color'] }};"
-                            ></span>
-                            Term Assessment (EX)
-                        </p>
-
-                        <div class="gr-component-weight-wrap">
-                            <div class="gr-progress-bar">
-                                <div
-                                    class="gr-weight-bar js-weight-bar"
-                                    data-component="term_assessment"
-                                    style="width: {{ $gradingComponents['term_assessment']['weight'] }}%; background-color: {{ $gradingComponents['term_assessment']['color'] }};"
-                                ></div>
+                        <div class="gr-formula-highlight">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-calculator text-primary small"></i>
+                                    <span class="fw-bold small text-dark">Worked Example</span>
+                                </div>
                             </div>
 
-                            <div class="d-flex align-items-center gap-2">
-                                <input
-                                    type="number"
-                                    name="term_assessment"
-                                    class="form-control form-control-sm weight-input"
-                                    value="{{ $gradingComponents['term_assessment']['weight'] }}"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    style="width: 90px;"
-                                    required
-                                >
-                                <span>%</span>
+                            <div
+                                class="gr-example-box"
+                                data-ww-score="{{ $workedExample['ww_score'] ?? 85 }}"
+                                data-pt-score="{{ $workedExample['pt_score'] ?? 90 }}"
+                                data-ta-score="{{ $workedExample['ta_score'] ?? 85 }}"
+                            >
+                                <div class="gr-example-row">
+                                    <span class="gr-example-label">Written Work:</span>
+                                    <span class="gr-example-value">
+                                        <span class="gr-example-view">
+                                            {{ $workedExample['ww_score'] ?? 85 }}%
+                                            {!! '&times;' !!}
+                                            {{ isset($gradingComponents['written_work']['weight']) ? $gradingComponents['written_work']['weight'] / 100 : 0 }}
+                                            =
+                                            {{ $workedExample['ww_contribution'] ?? 0 }}
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <div class="gr-example-row">
+                                    <span class="gr-example-label">Performance Task:</span>
+                                    <span class="gr-example-value">
+                                        <span class="gr-example-view">
+                                            {{ $workedExample['pt_score'] ?? 90 }}%
+                                            {!! '&times;' !!}
+                                            {{ isset($gradingComponents['performance_task']['weight']) ? $gradingComponents['performance_task']['weight'] / 100 : 0 }}
+                                            =
+                                            {{ $workedExample['pt_contribution'] ?? 0 }}
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <div class="gr-example-row">
+                                    <span class="gr-example-label">Term Assessment:</span>
+                                    <span class="gr-example-value">
+                                        <span class="gr-example-view">
+                                            {{ $workedExample['ta_score'] ?? 85 }}%
+                                            {!! '&times;' !!}
+                                            {{ isset($gradingComponents['term_assessment']['weight']) ? $gradingComponents['term_assessment']['weight'] / 100 : 0 }}
+                                            =
+                                            {{ $workedExample['ta_contribution'] ?? 0 }}
+                                        </span>
+                                    </span>
+                                </div>
+
+                                <div class="gr-example-row gr-example-total">
+                                    <span class="gr-example-label">Final Grade:</span>
+                                    <span class="gr-example-value">
+                                        {{ $workedExample['ww_contribution'] ?? 0 }}
+                                        +
+                                        {{ $workedExample['pt_contribution'] ?? 0 }}
+                                        +
+                                        {{ $workedExample['ta_contribution'] ?? 0 }}
+                                        =
+                                        {{ $workedExample['final_grade'] ?? 0 }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -241,257 +349,7 @@
             @endif
         </div>
 
-        <!-- 3. GRADING FORMULA & EXAMPLE PANEL -->
-        <div class="gs-panel mb-3" id="formulaExamplePanel">
-
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="gs-panel-title mb-0">Grading Formula & Example</p>
-
-                @if ($selectedAssignment)
-                    <div class="d-flex gap-2">
-                        <button
-                            type="button"
-                            class="btn btn-outline-primary btn-sm"
-                            id="editFormulaBtn"
-                        >
-                            <i class="fa-solid fa-pen me-1"></i>
-                            Edit
-                        </button>
-
-                        <button
-                            type="submit"
-                            form="restoreDefaultsForm"
-                            class="btn btn-outline-secondary btn-sm"
-                        >
-                            <i class="fa-solid fa-rotate-left me-1"></i>
-                            Restore Default
-                        </button>
-                    </div>
-                @endif
-            </div>
-
-            @if ($selectedAssignment)
-
-                <div class="gs-rules-section mb-3 pb-0">
-                    <div class="gs-rules-row">
-                        <span class="gs-rules-label">Formula</span>
-                    </div>
-
-                    <div class="gr-formula-box">
-                        <div class="gr-formula-view gr-formula-content font-monospace">
-                            {{ $formula }}
-                        </div>
-
-                        <div class="gr-formula-edit d-none">
-                            <div class="row g-2">
-
-                                <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">
-                                        Written Work Weight
-                                    </label>
-
-                                    <div class="input-group input-group-sm">
-                                        <input
-                                            type="number"
-                                            class="form-control js-formula-weight"
-                                            data-weight="written_work"
-                                            value="{{ $gradingComponents['written_work']['weight'] }}"
-                                            min="0"
-                                            max="100"
-                                            step="0.01"
-                                        >
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">
-                                        Performance Task Weight
-                                    </label>
-
-                                    <div class="input-group input-group-sm">
-                                        <input
-                                            type="number"
-                                            class="form-control js-formula-weight"
-                                            data-weight="performance_task"
-                                            value="{{ $gradingComponents['performance_task']['weight'] }}"
-                                            min="0"
-                                            max="100"
-                                            step="0.01"
-                                        >
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">
-                                        Term Assessment Weight
-                                    </label>
-
-                                    <div class="input-group input-group-sm">
-                                        <input
-                                            type="number"
-                                            class="form-control js-formula-weight"
-                                            data-weight="term_assessment"
-                                            value="{{ $gradingComponents['term_assessment']['weight'] }}"
-                                            min="0"
-                                            max="100"
-                                            step="0.01"
-                                        >
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div class="mt-3">
-                                <small class="text-muted">
-                                    These weights are synchronized with the existing
-                                    Grading Components configuration.
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gr-formula-highlight">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fa-solid fa-calculator text-primary small"></i>
-                            <span class="fw-bold small text-dark">Worked Example</span>
-                        </div>
-                    </div>
-
-                    <div class="gr-example-box">
-
-                        <div class="gr-example-row">
-                            <span class="gr-example-label">Written Work:</span>
-
-                            <span class="gr-example-value">
-                                <span class="gr-example-view">
-                                    {{ $workedExample['ww_score'] }}%
-                                    {!! '&times;' !!}
-                                    {{ $gradingComponents['written_work']['weight'] / 100 }}
-                                    =
-                                    {{ $workedExample['ww_contribution'] }}
-                                </span>
-
-                                <span class="gr-example-edit d-none">
-                                    <input
-                                        type="number"
-                                        class="form-control form-control-sm js-example-score"
-                                        data-score="ww"
-                                        value="{{ $workedExample['ww_score'] }}"
-                                        min="0"
-                                        max="100"
-                                        step="0.01"
-                                    >
-                                </span>
-                            </span>
-                        </div>
-
-                        <div class="gr-example-row">
-                            <span class="gr-example-label">Performance Task:</span>
-
-                            <span class="gr-example-value">
-                                <span class="gr-example-view">
-                                    {{ $workedExample['pt_score'] }}%
-                                    {!! '&times;' !!}
-                                    {{ $gradingComponents['performance_task']['weight'] / 100 }}
-                                    =
-                                    {{ $workedExample['pt_contribution'] }}
-                                </span>
-
-                                <span class="gr-example-edit d-none">
-                                    <input
-                                        type="number"
-                                        class="form-control form-control-sm js-example-score"
-                                        data-score="pt"
-                                        value="{{ $workedExample['pt_score'] }}"
-                                        min="0"
-                                        max="100"
-                                        step="0.01"
-                                    >
-                                </span>
-                            </span>
-                        </div>
-
-                        <div class="gr-example-row">
-                            <span class="gr-example-label">Term Assessment:</span>
-
-                            <span class="gr-example-value">
-                                <span class="gr-example-view">
-                                    {{ $workedExample['ta_score'] }}%
-                                    {!! '&times;' !!}
-                                    {{ $gradingComponents['term_assessment']['weight'] / 100 }}
-                                    =
-                                    {{ $workedExample['ta_contribution'] }}
-                                </span>
-
-                                <span class="gr-example-edit d-none">
-                                    <input
-                                        type="number"
-                                        class="form-control form-control-sm js-example-score"
-                                        data-score="ta"
-                                        value="{{ $workedExample['ta_score'] }}"
-                                        min="0"
-                                        max="100"
-                                        step="0.01"
-                                    >
-                                </span>
-                            </span>
-                        </div>
-
-                        <div class="gr-example-row gr-example-total">
-                            <span class="gr-example-label">Final Grade:</span>
-
-                            <span class="gr-example-value">
-                                {{ $workedExample['ww_contribution'] }}
-                                +
-                                {{ $workedExample['pt_contribution'] }}
-                                +
-                                {{ $workedExample['ta_contribution'] }}
-                                =
-                                {{ $workedExample['final_grade'] }}
-                            </span>
-                        </div>
-
-                    </div>
-
-                    <div
-                        class="d-flex justify-content-end gap-2 mt-3 d-none"
-                        id="formulaEditActions"
-                    >
-                        <button
-                            type="button"
-                            class="btn btn-outline-secondary btn-sm"
-                            id="cancelFormulaBtn"
-                        >
-                            Cancel
-                        </button>
-
-                        <button
-                            type="button"
-                            class="btn btn-primary btn-sm"
-                            id="saveFormulaBtn"
-                        >
-                            <i class="fa-solid fa-floppy-disk me-1"></i>
-                            Save
-                        </button>
-                    </div>
-                </div>
-
-            @else
-
-                <div class="text-muted">
-                    Select an assignment to view and configure the grading formula and worked example.
-                </div>
-
-            @endif
-
-        </div>
-
-        <!-- 4. OTHER RULES PANEL -->
+        <!-- 3. OTHER RULES PANEL -->
         <div class="gs-panel">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <p class="gs-panel-title mb-0">Other Rules</p>
@@ -520,19 +378,17 @@
         const ptInput = document.querySelector('input[name="performance_task"]');
         const taInput = document.querySelector('input[name="term_assessment"]');
 
-        const formulaView = document.querySelector('.gr-formula-view');
-        const formulaEdit = document.querySelector('.gr-formula-edit');
-        const editFormulaBtn = document.getElementById('editFormulaBtn');
-        const cancelFormulaBtn = document.getElementById('cancelFormulaBtn');
-        const saveFormulaBtn = document.getElementById('saveFormulaBtn');
-        const formulaEditActions = document.getElementById('formulaEditActions');
-
-        const formulaWeightInputs = document.querySelectorAll('.js-formula-weight');
-        const exampleScoreInputs = document.querySelectorAll('.js-example-score');
+        const formulaView = document.querySelector('.gr-formula-content') || document.querySelector('.gr-formula-view');
         const exampleViews = document.querySelectorAll('.gr-example-view');
         const finalExample = document.querySelector('.gr-example-total .gr-example-value');
+        const exampleBox = document.querySelector('.gr-example-box');
 
-        function getNumber(input, fallback = 0) {
+        const totalElement = document.getElementById('weightTotal');
+        const totalStatusElement = document.getElementById('weightTotalStatus');
+        const saveButton = document.getElementById('saveGradingRulesBtn');
+        const editFormulaBtn = document.getElementById('editFormulaBtn');
+
+        function getWeight(input, fallback = 0) {
             if (!input) {
                 return fallback;
             }
@@ -542,40 +398,46 @@
             return Number.isFinite(value) ? value : fallback;
         }
 
-        function getFormulaWeight(component) {
-            const input = document.querySelector(
-                '.js-formula-weight[data-weight="' + component + '"]'
-            );
-
-            return getNumber(input);
-        }
-
-        function getExampleScore(component) {
-            const input = document.querySelector(
-                '.js-example-score[data-score="' + component + '"]'
-            );
-
-            return getNumber(input);
-        }
-
-        function updateFormulaExample() {
-            const wwPercent = getFormulaWeight('written_work');
-            const ptPercent = getFormulaWeight('performance_task');
-            const taPercent = getFormulaWeight('term_assessment');
+        function updateFormulaAndExample() {
+            const wwPercent = getWeight(wwInput);
+            const ptPercent = getWeight(ptInput);
+            const taPercent = getWeight(taInput);
 
             const wwWeight = wwPercent / 100;
             const ptWeight = ptPercent / 100;
             const taWeight = taPercent / 100;
 
-            const wwScore = getExampleScore('ww');
-            const ptScore = getExampleScore('pt');
-            const taScore = getExampleScore('ta');
+            const total = wwPercent + ptPercent + taPercent;
 
-            const wwContribution = wwScore * wwWeight;
-            const ptContribution = ptScore * ptWeight;
-            const taContribution = taScore * taWeight;
+            if (totalElement) {
+                totalElement.textContent = total.toFixed(2) + '%';
+            }
 
-            const finalGrade = wwContribution + ptContribution + taContribution;
+            if (totalStatusElement) {
+                if (Math.abs(total - 100) < 0.01) {
+                    totalStatusElement.textContent = 'Valid';
+                    totalStatusElement.className = 'ms-2 small text-success';
+                } else {
+                    totalStatusElement.textContent = 'Must equal 100%';
+                    totalStatusElement.className = 'ms-2 small text-danger';
+                }
+            }
+
+            if (saveButton) {
+                saveButton.disabled = Math.abs(total - 100) >= 0.01;
+            }
+
+            document.querySelectorAll('.js-weight-bar').forEach(function (bar) {
+                const component = bar.dataset.component;
+
+                if (component === 'written_work') {
+                    bar.style.width = Math.max(0, Math.min(100, wwPercent)) + '%';
+                } else if (component === 'performance_task') {
+                    bar.style.width = Math.max(0, Math.min(100, ptPercent)) + '%';
+                } else if (component === 'term_assessment') {
+                    bar.style.width = Math.max(0, Math.min(100, taPercent)) + '%';
+                }
+            });
 
             if (formulaView) {
                 formulaView.textContent =
@@ -587,6 +449,16 @@
                     taWeight.toFixed(2) +
                     ')';
             }
+
+            const wwScore = exampleBox ? parseFloat(exampleBox.dataset.wwScore || 85) : 85;
+            const ptScore = exampleBox ? parseFloat(exampleBox.dataset.ptScore || 90) : 90;
+            const taScore = exampleBox ? parseFloat(exampleBox.dataset.taScore || 85) : 85;
+
+            const wwContribution = wwScore * wwWeight;
+            const ptContribution = ptScore * ptWeight;
+            const taContribution = taScore * taWeight;
+
+            const finalGrade = wwContribution + ptContribution + taContribution;
 
             if (exampleViews[0]) {
                 exampleViews[0].textContent =
@@ -627,142 +499,29 @@
             }
         }
 
-        function enterEditMode() {
-            const currentWeights = {
-                written_work: getNumber(wwInput),
-                performance_task: getNumber(ptInput),
-                term_assessment: getNumber(taInput)
-            };
-
-            formulaWeightInputs.forEach(function (input) {
-                const component = input.dataset.weight;
-
-                if (Object.prototype.hasOwnProperty.call(currentWeights, component)) {
-                    input.value = currentWeights[component];
-                }
-            });
-
-            if (formulaView) {
-                formulaView.classList.add('d-none');
-            }
-
-            if (formulaEdit) {
-                formulaEdit.classList.remove('d-none');
-            }
-
-            document.querySelectorAll('.gr-example-view').forEach(function (element) {
-                element.classList.add('d-none');
-            });
-
-            document.querySelectorAll('.gr-example-edit').forEach(function (element) {
-                element.classList.remove('d-none');
-            });
-
-            if (formulaEditActions) {
-                formulaEditActions.classList.remove('d-none');
-            }
-
-            if (editFormulaBtn) {
-                editFormulaBtn.classList.add('d-none');
-            }
-
-            updateFormulaExample();
-        }
-
-        function exitEditMode() {
-            if (formulaView) {
-                formulaView.classList.remove('d-none');
-            }
-
-            if (formulaEdit) {
-                formulaEdit.classList.add('d-none');
-            }
-
-            document.querySelectorAll('.gr-example-view').forEach(function (element) {
-                element.classList.remove('d-none');
-            });
-
-            document.querySelectorAll('.gr-example-edit').forEach(function (element) {
-                element.classList.add('d-none');
-            });
-
-            if (formulaEditActions) {
-                formulaEditActions.classList.add('d-none');
-            }
-
-            if (editFormulaBtn) {
-                editFormulaBtn.classList.remove('d-none');
-            }
-        }
-
         if (editFormulaBtn) {
-            editFormulaBtn.addEventListener('click', enterEditMode);
-        }
-
-        if (cancelFormulaBtn) {
-            cancelFormulaBtn.addEventListener('click', function () {
-                formulaWeightInputs.forEach(function (input) {
-                    const component = input.dataset.weight;
-
-                    if (component === 'written_work' && wwInput) {
-                        input.value = wwInput.value;
-                    }
-
-                    if (component === 'performance_task' && ptInput) {
-                        input.value = ptInput.value;
-                    }
-
-                    if (component === 'term_assessment' && taInput) {
-                        input.value = taInput.value;
-                    }
-                });
-
-                exitEditMode();
-            });
-        }
-
-        if (saveFormulaBtn) {
-            saveFormulaBtn.addEventListener('click', function () {
-                const wwWeight = getFormulaWeight('written_work');
-                const ptWeight = getFormulaWeight('performance_task');
-                const taWeight = getFormulaWeight('term_assessment');
-
-                const total = wwWeight + ptWeight + taWeight;
-
-                if (Math.abs(total - 100) >= 0.01) {
-                    alert('The sum of all grading weights must equal exactly 100%.');
-                    return;
-                }
-
+            editFormulaBtn.addEventListener('click', function () {
                 if (wwInput) {
-                    wwInput.value = wwWeight;
-                }
+                    wwInput.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
 
-                if (ptInput) {
-                    ptInput.value = ptWeight;
-                }
-
-                if (taInput) {
-                    taInput.value = taWeight;
-                }
-
-                const gradingForm = document.getElementById('gradingRulesForm');
-
-                if (gradingForm) {
-                    gradingForm.requestSubmit();
+                    setTimeout(function () {
+                        wwInput.focus();
+                        wwInput.select();
+                    }, 300);
                 }
             });
         }
 
-        formulaWeightInputs.forEach(function (input) {
-            input.addEventListener('input', updateFormulaExample);
+        [wwInput, ptInput, taInput].forEach(function (input) {
+            if (input) {
+                input.addEventListener('input', updateFormulaAndExample);
+            }
         });
 
-        exampleScoreInputs.forEach(function (input) {
-            input.addEventListener('input', updateFormulaExample);
-        });
-
-        updateFormulaExample();
+        updateFormulaAndExample();
     });
 </script>
 

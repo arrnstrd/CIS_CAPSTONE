@@ -59,6 +59,29 @@ class AttendanceAnalyticsController extends Controller
                     'absence_trend' => 'No active teaching assignments found.',
                     'term_pattern' => 'No active teaching assignments found.',
                 ],
+                'correlationStats' => [
+                    'r' => null,
+                    'rFormatted' => null,
+                    'sampleSize' => 0,
+                    'avgAttendance' => null,
+                    'avgGrade' => null,
+                    'relationshipTitle' => 'No active teaching assignments found.',
+                    'teacherExplanation' => 'No active teaching assignments found.',
+                    'isSufficient' => false,
+                    'interpretation' => 'No active teaching assignments found.',
+                    'strength' => 'insufficient',
+                    'trendPoints' => [],
+                    'quadrantCounts' => [
+                        'high_att_high_grade' => 0,
+                        'low_att_high_grade' => 0,
+                        'low_att_low_grade' => 0,
+                        'high_att_low_grade' => 0,
+                    ],
+                    'benchmarks' => [
+                        'attendance' => 85.0,
+                        'grade' => 75.0,
+                    ],
+                ],
                 'termTrend' => [
                     'labels' => [],
                     'gradeSeries' => [],
@@ -507,12 +530,20 @@ class AttendanceAnalyticsController extends Controller
                     }
                 }
 
+                $studentAttendanceRate = $schoolDaysCount > 0
+                    ? round(($studentAttendedDays / $schoolDaysCount) * 100, 1)
+                    : 0;
+
                 $sectionAttendedDays += $studentAttendedDays;
 
                 if ($avgGrade !== null) {
                     $studentPoints->push([
-                        'x' => $studentAbsences,
+                        'x' => $studentAttendanceRate,
                         'y' => $avgGrade,
+                        'attendance_rate' => $studentAttendanceRate,
+                        'avg_grade' => $avgGrade,
+                        'absences' => $studentAbsences,
+                        'attended' => $studentAttendedDays,
                         'name' => $enrollment->student?->full_name ?? 'Student',
                         'student_id' => $enrollment->student?->id,
                         'section_id' => $section->id,
@@ -661,6 +692,9 @@ class AttendanceAnalyticsController extends Controller
             $sectionPoints
         );
 
+        $correlationStats = $this->computeAttendanceCorrelation($studentPoints);
+        $studentPoints = $correlationStats['studentPoints'];
+
         $termTrend = $this->computeTermTrend(
             $filteredAssignments,
             $selectedTerm,
@@ -688,6 +722,7 @@ class AttendanceAnalyticsController extends Controller
             'earlyArrivalStudents',
             'mostPresentStudents',
             'insights',
+            'correlationStats',
             'termTrend'
         );
     }
@@ -797,7 +832,7 @@ class AttendanceAnalyticsController extends Controller
         $minSampleSize = 5;
 
         /*
-         * Insight 1: Pearson correlation between absences
+         * Insight 1: Pearson correlation between attendance rate
          * and average grade.
          */
         $relationshipText =
@@ -806,19 +841,19 @@ class AttendanceAnalyticsController extends Controller
         if ($studentPoints->count() >= $minSampleSize) {
             $n = $studentPoints->count();
 
-            $sumX = $studentPoints->sum('x');
-            $sumY = $studentPoints->sum('y');
+            $sumX = $studentPoints->sum('attendance_rate');
+            $sumY = $studentPoints->sum('avg_grade');
 
             $sumXY = $studentPoints->sum(
-                fn ($p) => $p['x'] * $p['y']
+                fn ($p) => $p['attendance_rate'] * $p['avg_grade']
             );
 
             $sumX2 = $studentPoints->sum(
-                fn ($p) => $p['x'] * $p['x']
+                fn ($p) => $p['attendance_rate'] * $p['attendance_rate']
             );
 
             $sumY2 = $studentPoints->sum(
-                fn ($p) => $p['y'] * $p['y']
+                fn ($p) => $p['avg_grade'] * $p['avg_grade']
             );
 
             $numerator =
@@ -835,15 +870,15 @@ class AttendanceAnalyticsController extends Controller
                     ? $numerator / $denominator
                     : 0;
 
-            if ($correlation < -0.2) {
+            if ($correlation > 0.2) {
                 $relationshipText =
-                    'Students with more absences tend to have lower average grades in this data.';
-            } elseif ($correlation > 0.2) {
+                    'Students with higher attendance rates tend to have higher average grades in this data.';
+            } elseif ($correlation < -0.2) {
                 $relationshipText =
-                    'No clear negative pattern between absences and grades was observed in this data.';
+                    'No clear positive pattern between attendance and grades was observed in this data.';
             } else {
                 $relationshipText =
-                    'No strong pattern between absences and grades was observed in this data.';
+                    'No strong pattern between attendance rates and grades was observed in this data.';
             }
         }
 
@@ -854,15 +889,15 @@ class AttendanceAnalyticsController extends Controller
             'Not enough data yet to compare absence groups.';
 
         if ($studentPoints->count() >= $minSampleSize) {
-            $highAbsence = $studentPoints->where('x', '>=', 15);
-            $lowAbsence = $studentPoints->where('x', '<', 15);
+            $highAbsence = $studentPoints->where('absences', '>=', 15);
+            $lowAbsence = $studentPoints->where('absences', '<', 15);
 
             if (
                 $highAbsence->count() >= 2 &&
                 $lowAbsence->count() >= 2
             ) {
-                $highAvg = round($highAbsence->avg('y'), 1);
-                $lowAvg = round($lowAbsence->avg('y'), 1);
+                $highAvg = round($highAbsence->avg('avg_grade'), 1);
+                $lowAvg = round($lowAbsence->avg('avg_grade'), 1);
                 $diff = round($lowAvg - $highAvg, 1);
 
                 $absenceTrendText = $diff > 0
@@ -900,6 +935,175 @@ class AttendanceAnalyticsController extends Controller
             'relationship' => $relationshipText,
             'absence_trend' => $absenceTrendText,
             'term_pattern' => $termPatternText,
+        ];
+    }
+
+    /**
+     * Compute Pearson correlation and linear trend between attendance rate (%) and average grade.
+     */
+    private function computeAttendanceCorrelation($studentPoints): array
+    {
+        $minSampleSize = 5;
+        $count = $studentPoints->count();
+
+        $avgAttendance = $count > 0 ? round($studentPoints->avg('attendance_rate'), 1) : null;
+        $avgGrade = $count > 0 ? round($studentPoints->avg('avg_grade'), 1) : null;
+
+        $benchmarks = [
+            'attendance' => 85.0,
+            'grade' => 75.0,
+        ];
+
+        $quadrantCounts = [
+            'high_att_high_grade' => 0,
+            'low_att_high_grade' => 0,
+            'low_att_low_grade' => 0,
+            'high_att_low_grade' => 0,
+        ];
+
+        $enrichedPoints = $studentPoints->map(function ($p) use ($benchmarks, &$quadrantCounts) {
+            $isHighAtt = $p['attendance_rate'] >= $benchmarks['attendance'];
+            $isPassing = $p['avg_grade'] >= $benchmarks['grade'];
+
+            if ($isHighAtt && $isPassing) {
+                $p['quadrant'] = 'high_att_high_grade';
+                $p['quadrant_label'] = 'High Attendance & Passing (≥85%, ≥75)';
+                $p['color'] = '#10b981'; // Green
+                $quadrantCounts['high_att_high_grade']++;
+            } elseif (! $isHighAtt && $isPassing) {
+                $p['quadrant'] = 'low_att_high_grade';
+                $p['quadrant_label'] = 'Low Attendance & Passing (<85%, ≥75)';
+                $p['color'] = '#6366f1'; // Indigo
+                $quadrantCounts['low_att_high_grade']++;
+            } elseif (! $isHighAtt && ! $isPassing) {
+                $p['quadrant'] = 'low_att_low_grade';
+                $p['quadrant_label'] = 'Low Attendance & Below Passing (<85%, <75)';
+                $p['color'] = '#ef4444'; // Red
+                $quadrantCounts['low_att_low_grade']++;
+            } else {
+                $p['quadrant'] = 'high_att_low_grade';
+                $p['quadrant_label'] = 'High Attendance & Below Passing (≥85%, <75)';
+                $p['color'] = '#f59e0b'; // Amber
+                $quadrantCounts['high_att_low_grade']++;
+            }
+
+            return $p;
+        });
+
+        if ($count < $minSampleSize) {
+            return [
+                'r' => null,
+                'rFormatted' => null,
+                'sampleSize' => $count,
+                'avgAttendance' => $avgAttendance,
+                'avgGrade' => $avgGrade,
+                'relationshipTitle' => 'Insufficient Data',
+                'teacherExplanation' => 'At least 5 valid student observations with both attendance records and academic grades are needed to evaluate the statistical relationship.',
+                'isSufficient' => false,
+                'interpretation' => 'Insufficient data to calculate correlation (minimum 5 students required for statistical validity).',
+                'strength' => 'insufficient',
+                'trendPoints' => [],
+                'quadrantCounts' => $quadrantCounts,
+                'benchmarks' => $benchmarks,
+                'studentPoints' => $enrichedPoints,
+            ];
+        }
+
+        $sumX = $studentPoints->sum('attendance_rate');
+        $sumY = $studentPoints->sum('avg_grade');
+
+        $sumXY = $studentPoints->sum(fn ($p) => $p['attendance_rate'] * $p['avg_grade']);
+        $sumX2 = $studentPoints->sum(fn ($p) => $p['attendance_rate'] * $p['attendance_rate']);
+        $sumY2 = $studentPoints->sum(fn ($p) => $p['avg_grade'] * $p['avg_grade']);
+
+        $numerator = ($count * $sumXY) - ($sumX * $sumY);
+        $denominator = sqrt((($count * $sumX2) - ($sumX ** 2)) * (($count * $sumY2) - ($sumY ** 2)));
+
+        $r = $denominator != 0 ? round($numerator / $denominator, 2) : 0.0;
+
+        // Dynamic interpretation and non-causal explanation
+        $interpretation = '';
+        $relationshipTitle = '';
+        $teacherExplanation = '';
+        $strength = '';
+
+        if ($r >= 0.70) {
+            $relationshipTitle = 'Strong Positive Relationship';
+            $interpretation = 'Strong positive relationship: students with higher attendance rates consistently tend to achieve higher academic grades.';
+            $teacherExplanation = 'The selected data demonstrates a strong positive correlation between attendance rate and academic performance. Students with higher attendance rates consistently tend to achieve higher grades in this cohort.';
+            $strength = 'strong-positive';
+        } elseif ($r >= 0.40) {
+            $relationshipTitle = 'Moderate Positive Relationship';
+            $interpretation = 'Moderate positive relationship: students with higher attendance rates generally tend to achieve higher academic grades.';
+            $teacherExplanation = 'The selected data demonstrates a moderate positive correlation. Higher attendance is generally associated with stronger academic achievement in this group.';
+            $strength = 'moderate-positive';
+        } elseif ($r >= 0.20) {
+            $relationshipTitle = 'Weak Positive Relationship';
+            $interpretation = 'Weak positive relationship: a slight positive trend is observed between attendance rate and academic performance.';
+            $teacherExplanation = 'The selected data shows a slight positive trend. While students with higher attendance show slightly higher grades on average, attendance alone accounts for only a portion of grade variations.';
+            $strength = 'weak-positive';
+        } elseif ($r > -0.20) {
+            $relationshipTitle = 'Very Weak / No Relationship';
+            $interpretation = 'Very weak or no meaningful relationship: no clear linear pattern between attendance and grades in this dataset.';
+            $teacherExplanation = 'The selected data shows little to no linear correlation between attendance and academic performance. Differences in grades in this selection appear to be driven by factors other than attendance.';
+            $strength = 'neutral';
+        } elseif ($r > -0.40) {
+            $relationshipTitle = 'Weak Negative Relationship';
+            $interpretation = 'Weak negative relationship: a slight inverse trend is observed between attendance rate and academic performance.';
+            $teacherExplanation = 'The selected data shows a slight inverse trend between attendance and academic grades. Higher attendance is not accompanied by higher grades in this specific selection.';
+            $strength = 'weak-negative';
+        } elseif ($r > -0.70) {
+            $relationshipTitle = 'Moderate Negative Relationship';
+            $interpretation = 'Moderate negative relationship: students with higher attendance rates tend to have lower grades in this dataset.';
+            $teacherExplanation = 'An unexpected moderate inverse pattern is observed where students with higher attendance tend to have lower grades. Investigate individual student circumstances and assessment difficulty.';
+            $strength = 'moderate-negative';
+        } else {
+            $relationshipTitle = 'Strong Negative Relationship';
+            $interpretation = 'Strong negative relationship: a strong inverse relationship between attendance rate and academic performance is observed.';
+            $teacherExplanation = 'A strong inverse relationship is observed in the selected group. Review student factors, grading criteria, and specific class dynamics.';
+            $strength = 'strong-negative';
+        }
+
+        // Linear regression trend line: y = mx + b
+        $xDenominator = ($count * $sumX2) - ($sumX ** 2);
+        $trendPoints = [];
+
+        if ($xDenominator != 0) {
+            $m = (($count * $sumXY) - ($sumX * $sumY)) / $xDenominator;
+            $b = ($sumY - ($m * $sumX)) / $count;
+
+            $xMin = $studentPoints->min('attendance_rate');
+            $xMax = $studentPoints->max('attendance_rate');
+
+            if ($xMin == $xMax) {
+                $xMin = max(0, $xMin - 5);
+                $xMax = min(100, $xMax + 5);
+            }
+
+            $yAtMin = round(max(0, min(100, ($m * $xMin) + $b)), 1);
+            $yAtMax = round(max(0, min(100, ($m * $xMax) + $b)), 1);
+
+            $trendPoints = [
+                ['x' => $xMin, 'y' => $yAtMin],
+                ['x' => $xMax, 'y' => $yAtMax],
+            ];
+        }
+
+        return [
+            'r' => $r,
+            'rFormatted' => ($r > 0 ? '+' : '') . number_format($r, 2),
+            'sampleSize' => $count,
+            'avgAttendance' => $avgAttendance,
+            'avgGrade' => $avgGrade,
+            'relationshipTitle' => $relationshipTitle,
+            'teacherExplanation' => $teacherExplanation,
+            'isSufficient' => true,
+            'interpretation' => $interpretation,
+            'strength' => $strength,
+            'trendPoints' => $trendPoints,
+            'quadrantCounts' => $quadrantCounts,
+            'benchmarks' => $benchmarks,
+            'studentPoints' => $enrichedPoints,
         ];
     }
 

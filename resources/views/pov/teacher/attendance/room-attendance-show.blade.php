@@ -455,7 +455,7 @@
                         <div class="ra-strip-sub">
                             <span id="panelStudentNo"><i class="fa-regular fa-id-badge me-1"></i>--</span>
                             <span>&bull;</span>
-                            <span>Campus Gate: <strong id="panelTimeIn">--</strong></span>
+                            <span>Campus Time In: <strong id="panelTimeIn">--</strong></span>
                         </div>
                     </div>
                     <div>
@@ -483,10 +483,10 @@
                             <i class="fa-solid fa-door-open"></i>
                         </div>
                         <div>
-                            <div class="ra-gate-preview-title">Campus Gate Time-In</div>
+                            <div class="ra-gate-preview-title">Campus Time In</div>
                             <div class="ra-gate-preview-time" id="panelGatePreviewTime">--</div>
                             <div class="ra-gate-preview-sub" id="panelGatePreviewSub">
-                                <i class="fa-solid fa-qrcode text-muted me-1"></i>Official Turnstile Log
+                                <i class="fa-solid fa-qrcode text-muted me-1"></i>Official Scan Log
                             </div>
                         </div>
                     </div>
@@ -533,7 +533,7 @@
                                         {{ $label }}
                                         @if ($value === 'not_in_classroom')
                                             <span class="d-block text-muted small fw-normal mt-1" style="font-size: 0.72rem;">
-                                                <i class="fa-regular fa-clock me-1"></i>1-hour grace period for gate-scanned students. Automatically transitions to Absent if unverified.
+                                                <i class="fa-regular fa-clock me-1"></i>1-hour grace period for scanned students. Automatically transitions to Absent if unverified.
                                             </span>
                                         @endif
                                     </span>

@@ -283,7 +283,7 @@
         <div class="att-kpi att-kpi--info">
             <div class="att-kpi__label">Students Attending</div>
             <div class="att-kpi__val">{{ number_format($a['uniqueStudentsIn']) }}</div>
-            <div class="att-kpi__sub">{{ number_format($a['totalScans']) }} total gate scans</div>
+            <div class="att-kpi__sub">{{ number_format($a['totalScans']) }} total scans</div>
         </div>
 
         @if ($a['attendanceRate'] !== null)
@@ -412,7 +412,7 @@
         <div class="att-panel">
             <div class="att-panel__head">
                 <h4 class="att-panel__title">
-                    <i class="fas fa-chart-column text-warning"></i> Hourly Gate Traffic Density
+                    <i class="fas fa-chart-column text-warning"></i> Hourly Attendance Traffic Density
                 </h4>
                 <span class="att-panel__meta">Rush: <strong>{{ $a['rushWindow'] ?? 'Normal' }}</strong></span>
             </div>
@@ -808,7 +808,7 @@
                         <i class="fas fa-door-open"></i>
                     </div>
                     <div>
-                        <h6 class="modal-title fw-bold mb-0">Gate Queue & Staffing Directives</h6>
+                        <h6 class="modal-title fw-bold mb-0">Attendance Queue & Staffing Directives</h6>
                         <span class="text-muted" style="font-size: 0.72rem;">Peak Window: {{ $gateAction['rush_window'] }}</span>
                     </div>
                 </div>
@@ -836,7 +836,7 @@
                 <div class="list-group list-group-flush border rounded-3 p-2 small">
                     <div class="list-group-item border-0 d-flex gap-2 align-items-start py-2">
                         <i class="fas fa-check-circle text-success mt-1"></i>
-                        <div><strong>Deploy Secondary Scanner Operator:</strong> Station an additional staff member at the gate 10 minutes prior to {{ explode('–', $gateAction['rush_window'])[0] ?? 'surge' }}.</div>
+                        <div><strong>Deploy Secondary Scanner Operator:</strong> Station an additional staff member at the scanning station 10 minutes prior to {{ explode('–', $gateAction['rush_window'])[0] ?? 'surge' }}.</div>
                     </div>
                     <div class="list-group-item border-0 d-flex gap-2 align-items-start py-2">
                         <i class="fas fa-check-circle text-success mt-1"></i>
@@ -1022,7 +1022,7 @@
                             <thead class="bg-light">
                                 <tr>
                                     <th>Date</th>
-                                    <th>Gate In Time</th>
+                                    <th>Time In</th>
                                     <th>Session</th>
                                 </tr>
                             </thead>

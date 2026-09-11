@@ -254,18 +254,24 @@ class GradeSheetController extends Controller
             ->get()
             ->keyBy('enrollment_id');
 
+        $weightCategoryIds = [
+            'written' => $categories['written']?->id,
+            'performance' => $categories['performance']?->id,
+            'term_assessment' => $categories['exam']?->id,
+        ];
+
+        $resolvedWeights = $gradingService->resolveWeights(
+            $ta->id,
+            $ta->subject,
+            $weightCategoryIds
+        );
+
         $componentCategoryIds = [
             'written' => $categories['written']?->id,
             'performance' => $categories['performance']?->id,
             'term_assessment' => $categories['exam']?->id,
             'exam' => $categories['exam']?->id,
         ];
-
-        $resolvedWeights = $gradingService->resolveWeights(
-            $ta->id,
-            $ta->subject,
-            $componentCategoryIds
-        );
 
         $rows = $enrollments->map(
             function ($enrollment) use (
@@ -503,6 +509,9 @@ class GradeSheetController extends Controller
 
                 'assessmentComponentKey' =>
                     $assessmentComponentKey,
+
+                'resolvedWeights' =>
+                    $resolvedWeights,
             ]
         );
     }

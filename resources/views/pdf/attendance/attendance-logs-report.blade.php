@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Gate Scan Attendance Logs</title>
+    <title>Attendance Logs</title>
     <style>
         @page {
             margin: 8mm 10mm 10mm 10mm;
@@ -68,7 +68,7 @@
         <table>
             <tr>
                 <td>
-                    <h1>Gate Attendance & Scan Logs</h1>
+                    <h1>Attendance & Scan Logs</h1>
                     <div style="font-size: 8px; color: #64748b;">Period: {{ $dateRangeLabel }} &bull; Total Logs: {{ number_format($logs->count()) }}</div>
                 </td>
                 <td class="meta">
