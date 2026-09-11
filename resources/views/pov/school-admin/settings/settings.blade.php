@@ -37,18 +37,6 @@
                     <i class="fa-solid fa-calendar-days"></i>
                     <span>School Year</span>
                 </button>
-
-                <button type="button"
-                    class="sett-nav-pill {{ $activeTab === 'preferences' ? 'active' : '' }}"
-                    id="settTab-preferences"
-                    data-bs-toggle="pill"
-                    data-bs-target="#sett-pane-preferences"
-                    role="tab"
-                    aria-controls="sett-pane-preferences"
-                    aria-selected="{{ $activeTab === 'preferences' ? 'true' : 'false' }}">
-                    <i class="fa-solid fa-sliders"></i>
-                    <span>Preferences</span>
-                </button>
             </nav>
         </aside>
 
@@ -56,7 +44,7 @@
             {{-- Page Header --}}
             <div class="sett-page-header">
                 <h1 class="sett-page-title">Account &amp; Settings</h1>
-                <p class="sett-page-subtitle">Manage your personal credentials, institution academic years, and system preferences.</p>
+                <p class="sett-page-subtitle">Manage your personal credentials and institution academic years.</p>
             </div>
 
             {{-- White Content Container Card --}}
@@ -296,52 +284,6 @@
                 </div>{{-- /school-year-table-pane --}}
 
             </div>{{-- /school-year pane --}}
-
-
-            {{-- ══════════════════════════════════════════════════════════
-                 3. PREFERENCES
-            ══════════════════════════════════════════════════════════ --}}
-            <div class="tab-pane fade {{ $activeTab === 'preferences' ? 'show active' : '' }}"
-                id="sett-pane-preferences"
-                role="tabpanel"
-                aria-labelledby="settTab-preferences">
-
-                <div class="sett-card-header">
-                    <h2 class="sett-card-title">Preferences</h2>
-                    <p class="sett-card-desc">Configure your personal interface options and navigation defaults.</p>
-                </div>
-
-                <div class="sett-subheading">
-                    Workspace Settings
-                </div>
-
-                <div class="sett-list">
-                    <div class="sett-row">
-                        <div class="sett-row__info">
-                            <div class="sett-row__label">Default Landing Section</div>
-                            <div class="sett-row__desc">The section displayed upon opening account settings.</div>
-                        </div>
-                        <div class="sett-row__value text-muted">Account &amp; Security</div>
-                        <div class="sett-row__action">
-                            <span class="badge rounded-pill bg-light text-secondary border px-3 py-1.5" style="font-size: 0.76rem;">Default</span>
-                        </div>
-                    </div>
-
-                    <div class="sett-row">
-                        <div class="sett-row__info">
-                            <div class="sett-row__label">Academic Workflow</div>
-                            <div class="sett-row__desc">Institutional school-year cycle management integration.</div>
-                        </div>
-                        <div class="sett-row__value text-muted">Integrated</div>
-                        <div class="sett-row__action">
-                            <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-1.5" style="font-size: 0.76rem;">Enabled</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="height: 1.25rem;"></div>
-
-            </div>{{-- /preferences pane --}}
 
         </div>{{-- /tab-content --}}
             </div>{{-- /sett-card --}}
