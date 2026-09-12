@@ -75,3 +75,4 @@ class ResendApiTransport extends AbstractTransport
         return 'resend-api';
     }
 }
+
