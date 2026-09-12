@@ -226,10 +226,13 @@ async function submitAjaxForm(form, options = {}) {
         // 3. Reset form inputs
         form.reset();
 
-        // 4. Fire caller's onSuccess callback
+        // 4. Reset submit button immediately so form/modal is not kept in a locked state
+        resetSubmitButton(form, submitButton, originalButtonText);
+
+        // 5. Fire caller's onSuccess callback
         options.onSuccess?.(data, response);
 
-        // 5. Asynchronously refresh table panels if not explicitly skipped
+        // 6. Asynchronously refresh table panels if not explicitly skipped
         if (!options.skipRefresh) {
             await refreshTables({
                 scope: options.scope || form.dataset.ajaxScope || modalElement?.dataset.ajaxScope || offcanvasElement?.dataset.ajaxScope || null,

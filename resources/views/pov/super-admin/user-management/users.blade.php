@@ -234,7 +234,7 @@
 
                 <!-- Table Panel -->
                 @if($users->isEmpty())
-                    <div class="bg-white rounded-3 p-5 text-center border shadow-sm">
+                    <div class="table-panel bg-white rounded-3 p-5 text-center border shadow-sm">
                         <i class="fas fa-users-slash fa-3x text-muted mb-3 opacity-50"></i>
                         <h5 class="fw-semibold text-dark mb-1">No Matching User Records</h5>
                         <p class="text-muted small mb-3">No registered users matched the current search or filter criteria.</p>

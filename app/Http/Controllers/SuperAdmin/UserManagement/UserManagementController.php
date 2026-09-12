@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminActivityLog;
 use App\Models\User;
 use App\Services\InvitationService;
+use App\Jobs\SendInvitationEmail;
 use App\Mail\InvitationMail;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -96,11 +97,7 @@ class UserManagementController extends Controller
             $setupLink = $this->buildSetupLink($result['plainToken']);
             $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
 
-            Mail::to($user->email)->send(new InvitationMail(
-                $user->first_name . ' ' . $user->last_name,
-                $setupLink,
-                $expiresAt
-            ));
+            SendInvitationEmail::dispatch($user, $setupLink, $expiresAt)->afterResponse();
 
             AdminActivityLog::record($actor, 'Created User', $user->email, 'success', "Created {$user->role} account for {$user->first_name} {$user->last_name}", 'User', $user->id);
 
@@ -302,11 +299,7 @@ class UserManagementController extends Controller
             $setupLink = $this->buildSetupLink($result['plainToken']);
             $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
 
-            Mail::to($user->email)->send(new InvitationMail(
-                $user->first_name . ' ' . $user->last_name,
-                $setupLink,
-                $expiresAt
-            ));
+            SendInvitationEmail::dispatch($user, $setupLink, $expiresAt)->afterResponse();
 
             AdminActivityLog::record($actor, 'Resent Invitation', $user->email, 'success', "Resent setup invitation email to {$user->email}", 'User', $user->id);
 
@@ -574,11 +567,7 @@ class UserManagementController extends Controller
                 $setupLink = $this->buildSetupLink($result['plainToken']);
                 $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
 
-                Mail::to($user->email)->send(new InvitationMail(
-                    $user->first_name . ' ' . $user->last_name,
-                    $setupLink,
-                    $expiresAt
-                ));
+                SendInvitationEmail::dispatch($user, $setupLink, $expiresAt)->afterResponse();
                 $count++;
             } catch (Exception $e) {
                 $failedCount++;
