@@ -85,7 +85,7 @@ class TeacherProvisioningController extends Controller
                     'email' => $teacher['user']->email
                 ]);
                 return response()->json([
-                    'message' => 'Teacher created successfully, but the invitation email failed to send. Please check your mail server configuration.',
+                    'message' => 'Teacher created successfully, but the invitation email failed to send: ' . $e->getMessage(),
                     'data' => $teacher['teacher']->fresh()->load('user'),
                     'mail_error' => $e->getMessage()
                 ], 201);

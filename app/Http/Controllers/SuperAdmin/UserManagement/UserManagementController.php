@@ -324,7 +324,7 @@ class UserManagementController extends Controller
             
             if ($request->expectsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
                 return response()->json([
-                    'message' => 'Failed to send invitation. Please check your mail server configuration.',
+                    'message' => 'Failed to send invitation: ' . $e->getMessage(),
                     'mail_error' => $e->getMessage(),
                 ], 500);
             }

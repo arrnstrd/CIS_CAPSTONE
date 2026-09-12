@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL; // Idinagdag natin ito
 use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
@@ -58,6 +59,12 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production') || config('app.env') === 'production' || request()->header('x-forwarded-proto') === 'https') {
             URL::forceScheme('https');
         }
+
+        // Custom Resend HTTP API mail transport (works on Render free tier over HTTPS port 443 with no composer packages)
+        Mail::extend('resend', function (array $config = []) {
+            $key = $config['key'] ?? config('services.resend.key') ?? env('RESEND_API_KEY');
+            return new \App\Mail\Transport\ResendApiTransport($key);
+        });
 
         // TEMP: GLOBAL REQUEST PROFILE — remove after diagnosis.
         // Profiles the authenticated pages under investigation + the scan POST + /speed-test baseline.
