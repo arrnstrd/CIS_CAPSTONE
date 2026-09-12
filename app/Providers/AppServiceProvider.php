@@ -60,22 +60,6 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-        // Custom Resend HTTP API mail transport (works on Render free tier over HTTPS port 443 with no composer packages)
-        $resendKey = config('services.resend.key')
-            ?? env('RESEND_API_KEY')
-            ?? (str_starts_with((string) config('mail.mailers.smtp.password'), 're_') ? config('mail.mailers.smtp.password') : null);
-
-        $createResendTransport = function () use ($resendKey) {
-            $key = $resendKey ?? config('services.resend.key') ?? env('RESEND_API_KEY') ?? config('mail.mailers.smtp.password');
-            return new \App\Mail\Transport\ResendApiTransport((string) $key);
-        };
-
-        Mail::extend('resend', $createResendTransport);
-
-        // Fallback: If someone still has MAIL_MAILER=smtp with smtp.resend.com or a Resend key, redirect smtp to HTTP API so it doesn't time out on Render's blocked ports
-        if ($resendKey && (config('mail.mailers.smtp.host') === 'smtp.resend.com' || str_starts_with((string) config('mail.mailers.smtp.password'), 're_'))) {
-            Mail::extend('smtp', $createResendTransport);
-        }
 
         // TEMP: GLOBAL REQUEST PROFILE — remove after diagnosis.
         // Profiles the authenticated pages under investigation + the scan POST + /speed-test baseline.
