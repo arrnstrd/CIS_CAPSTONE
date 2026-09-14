@@ -6,11 +6,14 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\URL; // Idinagdag natin ito
+use Illuminate\Support\Facades\URL;
 use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoTransportFactory;
+use Symfony\Component\Mailer\Transport\Dsn;
 use Illuminate\Support\ServiceProvider;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -25,6 +28,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Mail::extend('brevo', function () {
+            return (new BrevoTransportFactory)->create(
+                new Dsn(
+                    'brevo+api',
+                    'default',
+                    config('services.brevo.key')
+                )
+            );
+        });
+
         RateLimiter::for('qr-scan', function (Request $request) {
             $identity = $request->user()?->getAuthIdentifier() ?? $request->ip();
             $device = (string) $request->input('device_id', 'unknown');
@@ -60,7 +73,6 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
-
         // TEMP: GLOBAL REQUEST PROFILE — remove after diagnosis.
         // Profiles the authenticated pages under investigation + the scan POST + /speed-test baseline.
         if (!app()->runningInConsole()) {
@@ -72,35 +84,44 @@ class AppServiceProvider extends ServiceProvider
 
             if ($shouldProfile) {
                 $profile = ['start' => microtime(true), 'renderStart' => null, 'queries' => []];
+
                 \Illuminate\Support\Facades\DB::listen(function ($query) use (&$profile) {
-                    $profile['queries'][] = ['sql' => $query->sql, 'time' => round($query->time, 2)];
+                    $profile['queries'][] = [
+                        'sql' => $query->sql,
+                        'time' => round($query->time, 2),
+                    ];
                 });
+
                 \Illuminate\Support\Facades\Event::listen('composing:*', function () use (&$profile) {
                     if ($profile['renderStart'] === null) {
                         $profile['renderStart'] = microtime(true);
                     }
                 });
+
                 app()->terminating(function () use (&$profile) {
                     $total = round((microtime(true) - $profile['start']) * 1000, 1);
                     $dbMs = round(array_sum(array_column($profile['queries'], 'time')), 1);
+
                     $preRender = $profile['renderStart'] !== null
                         ? round(($profile['renderStart'] - $profile['start']) * 1000, 1)
                         : null;
+
                     $render = $profile['renderStart'] !== null
                         ? round((microtime(true) - $profile['renderStart']) * 1000, 1)
                         : null;
+
                     $out = '[PROFILE-GLOBAL] ' . request()->method() . ' /' . request()->path()
                         . ' total=' . $total . 'ms dbQueries=' . count($profile['queries'])
                         . ' dbMs=' . $dbMs . 'ms preRender=' . ($preRender ?? '?')
                         . 'ms render=' . ($render ?? '?') . 'ms';
+
                     foreach ($profile['queries'] as $q) {
                         $out .= "\n  [" . $q['time'] . 'ms] ' . $q['sql'];
                     }
+
                     \Illuminate\Support\Facades\Log::debug($out);
                 });
             }
         }
     }
 }
-
-
