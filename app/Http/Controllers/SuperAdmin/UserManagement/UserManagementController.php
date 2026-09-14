@@ -299,7 +299,11 @@ class UserManagementController extends Controller
             $setupLink = $this->buildSetupLink($result['plainToken']);
             $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
 
-            SendInvitationEmail::dispatch($user, $setupLink, $expiresAt)->afterResponse();
+            Mail::to($user->email)->send(new InvitationMail(
+                $user->first_name . ' ' . $user->last_name,
+                $setupLink,
+                $expiresAt
+            ));
 
             AdminActivityLog::record($actor, 'Resent Invitation', $user->email, 'success', "Resent setup invitation email to {$user->email}", 'User', $user->id);
 
@@ -567,7 +571,11 @@ class UserManagementController extends Controller
                 $setupLink = $this->buildSetupLink($result['plainToken']);
                 $expiresAt = $result['invitation']->expires_at->format('Y-m-d H:i:s');
 
-                SendInvitationEmail::dispatch($user, $setupLink, $expiresAt)->afterResponse();
+                Mail::to($user->email)->send(new InvitationMail(
+                    $user->first_name . ' ' . $user->last_name,
+                    $setupLink,
+                    $expiresAt
+                ));
                 $count++;
             } catch (Exception $e) {
                 $failedCount++;
