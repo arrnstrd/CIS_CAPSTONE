@@ -25,10 +25,12 @@ class SetupController extends Controller
             $email = $email ?: $invitation->user->email;
         }
 
+        $isValid = (bool) ($invitation && $invitation->user && !empty($email));
+
         return view('auth.setup', [
             'token' => $token,
             'email' => $email,
-            'isValid' => (bool) $invitation || !empty($email),
+            'isValid' => $isValid,
         ]);
     }
 
