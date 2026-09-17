@@ -116,8 +116,8 @@ return [
     */
 
    'from' => [
-    'address' => env('BREVO_FROM_EMAIL'),
-    'name' => env('BREVO_FROM_NAME', env('APP_NAME', 'Laravel')),
+        'address' => env('BREVO_FROM_EMAIL', env('MAIL_FROM_ADDRESS', 'arriane.estrada0@gmail.com')),
+        'name' => env('BREVO_FROM_NAME', env('MAIL_FROM_NAME', env('APP_NAME', 'Concepcion Integrated School'))),
    ],
 
 ];
