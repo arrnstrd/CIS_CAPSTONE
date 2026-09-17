@@ -234,7 +234,9 @@
             <label for="demo-role">Quick Demo Access</label>
             <select id="demo-role" class="form-control demo-select">
               <option value="" selected disabled>Select a role to auto-fill…</option>
-              <option value="super_admin">Super Admin Account</option>
+
+              <!-- <option value="super_admin">Super Admin Account</option>
+               -->
               <option value="school_admin">School Admin Account</option>
               <option value="teacher">Teacher Account</option>
               <option value="scanner_operator">Scanner Operator Account</option>
