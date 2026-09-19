@@ -62,7 +62,7 @@ class GradingRulesController extends Controller
             ]);
         }
 
-        if (!$selectedAssignment && $activeAssignments->count() === 1) {
+        if (!$selectedAssignment && $activeAssignments->isNotEmpty()) {
             $selectedAssignment = $activeAssignments->first();
         }
 

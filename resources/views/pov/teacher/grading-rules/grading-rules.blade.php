@@ -12,6 +12,37 @@
     <span class="page-title-subtitle">{{ $policyName }} {!! "&middot;" !!} {{ $schoolYear }}</span>
 </x-slot>
 
+@if (session('success'))
+    <div class="gs-note-banner mb-3" style="background-color: #e1f5ee; color: #085041;">
+        <i class="fa-solid fa-circle-check"></i>
+        {{ session('success') }}
+    </div>
+@endif
+
+@if (session('error'))
+    <div class="gs-note-banner mb-3" style="background-color: #fde8e8; color: #9b1c1c;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        {{ session('error') }}
+    </div>
+@endif
+
+@if ($activeAssignments->count() > 1)
+    <form method="GET" action="{{ route('teacher.grading-system.grading-rules') }}" class="gs-filter-bar mb-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-6 col-lg-4">
+                <label for="teachingAssignmentSelect" class="gs-filter-label">Class / Section &amp; Subject</label>
+                <select id="teachingAssignmentSelect" name="teaching_assignment_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    @foreach ($activeAssignments as $ta)
+                        <option value="{{ $ta->id }}" @selected($selectedAssignment && $selectedAssignment->id == $ta->id)>
+                            Grade {{ $ta->section->grade_level }} - {{ $ta->section->name }} &middot; {{ $ta->subject->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </form>
+@endif
+
 <div class="gd-layout">
 
     <div class="gd-content">
