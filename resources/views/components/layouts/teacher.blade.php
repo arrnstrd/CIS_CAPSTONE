@@ -75,6 +75,17 @@
             </div>
 
             <div class="teacher-top-nav-actions">
+                <!-- Page Guide Trigger -->
+                <button type="button"
+                    id="teacherTourGuideTrigger"
+                    class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1.5 fw-semibold px-3 py-1.5"
+                    style="border-radius: 8px; font-size: 0.8rem;"
+                    title="Start Interactive Page Guide"
+                    aria-label="Start Interactive Page Guide">
+                    <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                    <span>Guide</span>
+                </button>
+
                 <!-- Notification Bell Dropdown -->
                 <div class="dropdown notification-dropdown">
                     <button
@@ -257,7 +268,21 @@
             </div>
         </header>
 
-        <main class="teacher-page-content">
+        @php
+            $currentTourPage = $tourPage ?? (
+                request()->routeIs('teacher.grading-system.grade-sheet*') ? 'teacher-gradesheet' : (
+                request()->routeIs('teacher.grading-system.dashboard', 'teacher.grading-system') ? 'teacher-myclasses' : (
+                request()->routeIs('room-attendance.*', 'teacher.dashboard', 'teacher.attendance') ? 'teacher-attendance' : (
+                request()->routeIs('teacher.student-management*') && request()->has('section_id') ? 'teacher-student-roster' : (
+                request()->routeIs('teacher.student-management*') ? 'teacher-students' : (
+                request()->routeIs('teacher.grading-system.analytics*') ? 'teacher-analytics' : (
+                request()->routeIs('teacher.grading-system.at-risk*') ? 'teacher-at-risk' : (
+                request()->routeIs('teacher.grading-system.reports*') ? 'teacher-reports' : (
+                request()->routeIs('teacher.grading-system.grading-rules*', 'teacher.grading-system.comp-rules*') ? 'teacher-grading-rules' : null
+            )))))))));
+        @endphp
+
+        <main class="teacher-page-content" @if($currentTourPage) data-tour-page="{{ $currentTourPage }}" @endif>
             <div class="container-fluid p-0">
                 @if (!request()->routeIs('teacher.dashboard'))
                     <section class="teacher-head-banner p-4 mx-3 mb-4">

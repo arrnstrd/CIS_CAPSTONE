@@ -21,7 +21,7 @@
             </div>
 
             {{-- Report Filters --}}
-            <div class="gs-filter-bar mb-4">
+            <div class="gs-filter-bar mb-4" data-tour="teacher-reports-export">
                 <div class="row g-3">
 
                     {{-- Class / Section --}}

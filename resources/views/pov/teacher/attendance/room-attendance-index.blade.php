@@ -10,7 +10,7 @@
         <span class="page-title-subtitle">Select a section to view and verify today's classroom attendance.</span>
     </x-slot>
 
-    <div class="row g-3">
+    <div class="row g-3" data-tour="teacher-attendance-sections">
         @forelse ($sections as $section)
             <div class="col-12 col-md-6">
                 <div class="ra-section-card">

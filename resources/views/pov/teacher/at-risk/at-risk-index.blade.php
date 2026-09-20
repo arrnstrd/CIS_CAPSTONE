@@ -93,7 +93,7 @@
     </div>
 
 
-    <div class="table-panel">
+    <div class="table-panel" data-tour="teacher-at-risk-table">
 
         <div class="table-responsive">
 

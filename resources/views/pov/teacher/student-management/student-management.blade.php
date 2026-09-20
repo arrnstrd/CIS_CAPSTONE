@@ -12,7 +12,7 @@
 
 
                     @if (!$sectionId)
-                        <div class="sm-classes-card">
+                        <div class="sm-classes-card" data-tour="teacher-students-classes">
                             <div class="sm-classes-header">
                                 <div class="sm-classes-icon-box">
                                     <i class="fa-solid fa-users"></i>
@@ -72,7 +72,7 @@
                                         Grade {{ $selectedClass?->grade_level }} - {{ $selectedClass?->name }}
                                     </p>
                                 </div>
-                                <div class="d-flex align-items-center gap-2">
+                                <div class="d-flex align-items-center gap-2" data-tour="teacher-student-roster-actions">
                                     <button type="button" class="btn btn-outline-success d-flex align-items-center gap-1"
                                         data-bs-toggle="modal" data-bs-target="#exportFormatModal"
                                         title="Download XLSX file for this section">
@@ -86,7 +86,7 @@
                                 </div>
                             </div>
 
-                        <div class="card border mb-3">
+                        <div class="card border mb-3" data-tour="teacher-student-roster-search">
                             <div class="card-body p-5" style="padding: 1.25rem 1.5rem !important;">
                                 <form action="{{ route('teacher.student-management') }}" method="GET">
                                     <input type="hidden" name="section_id" value="{{ $sectionId }}">
@@ -104,6 +104,7 @@
                             </div>
                         </div>
 
+                    <div data-tour="teacher-student-roster-table">
                     <x-ui.table>
                         <thead>
                             <tr>
@@ -153,6 +154,7 @@
                 @endforelse
             </tbody>
         </x-ui.table>
+        </div>
 
         @if (method_exists($students, 'links'))
             <div class="px-3 py-3">

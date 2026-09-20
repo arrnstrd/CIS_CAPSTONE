@@ -30,7 +30,7 @@
                     </p>
                 </div>
 
-                <div class="d-flex gap-2 align-items-center flex-wrap">
+                <div class="d-flex gap-2 align-items-center flex-wrap" data-tour="students-roster-actions">
                     <a href="{{ route('student-management.grade', $grade) }}" class="btn btn-outline-secondary px-3 py-2 rounded-3 d-inline-flex align-items-center gap-1.5">
                         <i class="fas fa-arrow-left fa-sm"></i>
                         <span>Back to Sections</span>
@@ -54,7 +54,7 @@
 
     {{-- Context Blocks: Advisor & Teacher Assignments --}}
     <div class="col mb-3 mx-2">
-        <div class="row g-3">
+        <div class="row g-3" data-tour="students-roster-advisor">
             {{-- Advisor Block --}}
             <div class="col-12 col-md-6">
                 <div class="bg-white rounded p-3 border shadow-sm h-100 d-flex justify-content-between align-items-center">
@@ -121,7 +121,7 @@
 
                 {{-- Action: [+ Add Student] positioned locally within student list header --}}
                 <div>
-                    <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-inline-flex align-items-center gap-1.5"
+                    <button data-tour="students-roster-add" class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-inline-flex align-items-center gap-1.5"
                         data-bs-toggle="offcanvas" data-bs-target="#addStudentDrawer" data-grade="{{ $grade }}"
                         data-section-id="{{ $section->id }}" data-section-name="{{ $section->name }}">
                         <i class="fas fa-plus fa-sm"></i>
@@ -131,7 +131,7 @@
             </div>
 
             {{-- Icon-Driven Filter Toolbar --}}
-            <div class="row g-2.5 align-items-center">
+            <div class="row g-2.5 align-items-center" data-tour="students-roster-search">
                 {{-- Search Box --}}
                 <div class="col-12 col-md-5 col-lg-4">
                     <form action="{{ route('student-management.section', ['grade' => $grade, 'section' => $section->id]) }}" method="GET" class="d-flex">
@@ -268,6 +268,7 @@
     </div>
 
     {{-- Students Table --}}
+    <div data-tour="students-roster-table">
     <x-ui.table>
         <x-slot>
             <thead class="text-uppercase">
@@ -382,6 +383,7 @@
             </tbody>
         </x-slot>
     </x-ui.table>
+    </div>
 
     <div class="px-3 py-3">
         {{ $students->links() }}

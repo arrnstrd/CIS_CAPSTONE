@@ -99,7 +99,7 @@
         </div>
 
         <!-- 2. GRADING CONFIGURATION PANEL -->
-        <div class="gs-panel mb-3" id="gradingConfigurationPanel">
+        <div class="gs-panel mb-3" id="gradingConfigurationPanel" data-tour="teacher-grading-rules-weights">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <p class="gs-panel-title mb-0">Grading Configuration</p>
 

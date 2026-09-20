@@ -105,7 +105,7 @@
             </div>
 
 
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2" data-tour="gradesheet-actions">
 
                 {{-- IMPORT READY-MADE EXCEL GRADES --}}
                 <a href="{{ route('teacher.grading-system.import-data', [
@@ -138,7 +138,7 @@
         {{-- =========================================================
              TERM TABS
              ========================================================= --}}
-        <div class="gs-tab-bar mb-3">
+        <div class="gs-tab-bar mb-3" data-tour="gradesheet-terms">
 
             @foreach ($gradingPeriods as $gp)
 
@@ -346,7 +346,8 @@
 
                             {{-- WRITTEN WORKS --}}
                             <th colspan="{{ $fixedSlots['written'] + 3 }}"
-                                class="text-center gs-group-written gs-divider-written py-2">
+                                class="text-center gs-group-written gs-divider-written py-2"
+                                data-tour="gradesheet-components">
 
                                 <div class="d-flex align-items-center justify-content-center gap-2">
                                     <span class="fw-bold">{{ $categoryLabels['written'] }} ({{ $wwWeightPercent }}%)</span>
@@ -410,7 +411,8 @@
                             {{-- INITIAL --}}
                             <th rowspan="3"
                                 class="align-middle text-center gs-divider-initial fw-semibold"
-                                style="min-width: 90px;">
+                                style="min-width: 90px;"
+                                data-tour="gradesheet-computed">
 
                                 Initial Grade
 
@@ -743,7 +745,7 @@
                     </thead>
 
 
-                    <tbody>
+                    <tbody data-tour="gradesheet-grid">
 
                         @php
                             $currentGroup = null;

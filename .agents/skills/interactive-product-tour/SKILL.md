@@ -13,16 +13,24 @@ Senior Frontend Architect and UX Engineer. Core competency: scalable, non-intrus
 ---
 
 ## 2. Input (System Context)
-* **Target Audience:** First-time users in the School Admin role (extensible to Teachers, Scanner Operators, and Super Admins).
+* **Target Audience:** First-time users in School Admin and Teacher roles (extensible to Scanner Operators and Super Admins).
 * **Core Mechanism:** Global rendering layer that dims the background, dynamically highlights a target DOM element with an SVG cutout mask, and positions a contextual popover beside it.
-* **Initial Pages Supported:** Dashboard, Academic Setup, Student Management, Teacher Management, Attendance.
+* **School Admin Scope:** Dashboard, Academic Setup, Student Management & Rosters, Teacher Management, Attendance, SF1 Bulk Import, Schedule Configuration (Time-Window Based).
+* **Teacher Scope:** Grade Sheet (Interactive Matrix), My Classes (Grading Dashboard), Room Attendance, Student Management, Analytics, At-Risk Students, Reports, Grading Rules.
 
-### Example Flow (Academic Setup):
+### Example Flow A (Academic Setup):
 1. **Highlight Tabs (`[data-tour="academic-tabs"]`)** &rarr; Explain module navigation between Subjects, Sections, and Teaching Assignments.
 2. **Highlight "Add" Button (`[data-tour="academic-add-btn"]`)** &rarr; Explain record creation.
 3. **Highlight Column Filters (`[data-tour="academic-column-filters"]`)** &rarr; Explain Excel-style filtering.
 4. **Highlight Table Actions (`[data-tour="academic-row-actions"]`)** &rarr; Explain inline edit/delete.
 5. **Finish State** &rarr; Closes overlay and records completion in `localStorage`.
+
+### Example Flow B (Teacher Interactive Grade Sheet):
+1. **Quarter / Term Tabs (`[data-tour="gradesheet-terms"]`)** &rarr; Switch between DepEd quarters (Q1–Q4).
+2. **Component Weights & Add Column (`[data-tour="gradesheet-components"]`)** &rarr; Review WW, PT, and Exam weights; insert new assessment columns.
+3. **Interactive Scoring Grid (`[data-tour="gradesheet-grid"]`)** &rarr; Record individual learner scores with input validation.
+4. **Automated Final Grades (`[data-tour="gradesheet-computed"]`)** &rarr; Explain live Initial Grade and DepEd Transmuted grade calculations.
+5. **Actions (`[data-tour="gradesheet-actions"]`)** &rarr; Shortcut for importing DepEd Excel class records or opening the Assessment Log audit trail.
 
 ---
 
@@ -36,28 +44,19 @@ Senior Frontend Architect and UX Engineer. Core competency: scalable, non-intrus
 
 ### Step 2: Tooltip & Popover UI
 The popover (`.cis-tour-popover`) contains:
-* Header with step counter badge (e.g. `Step 2 of 4`) and direct Close button.
+* Header with step counter badge (e.g. `Step 2 of 5`) and direct Close button.
 * Brief, scannable title and 1–3 short sentences of explanatory text.
 * Footer navigation: Back, Next (or Finish on final step), and global Skip Tour.
 
 ### Step 3: Page-Level Configuration
-Pages do NOT contain tour rendering logic. Steps are defined as plain declarative objects in configuration modules (e.g., `resources/js/shared/tour/tours/school-admin.js`):
-```js
-export const schoolAdminTours = {
-    academic: [
-        { target: '[data-tour="academic-tabs"]', title: 'Module Navigation', content: '...', placement: 'bottom' },
-        { target: '[data-tour="academic-add-btn"]', title: 'Record Creation', content: '...', placement: 'bottom' },
-        { target: '[data-tour="academic-column-filters"]', title: 'Excel-Style Filtering', content: '...', placement: 'bottom' },
-        { target: '[data-tour="academic-row-actions"]', title: 'Inline Actions', content: '...', placement: 'top' },
-    ],
-    // ...
-};
-```
+Pages do NOT contain tour rendering logic. Steps are defined as plain declarative objects in configuration modules:
+* `resources/js/shared/tour/tours/school-admin.js`
+* `resources/js/shared/tour/tours/teacher.js`
 
 ### Step 4: Display Logic & Lifecycle
 * **Auto-Trigger:** On page mount, check `hasCompletedTour(pageId)`. If `false`, automatically launch the tour.
 * **Completion Persistence:** Clicking Skip or Finish permanently marks that page's tour as completed in `localStorage`.
-* **Manual Trigger:** An always-available `"Guide"` button (`#saTourGuideTrigger`) in the top navigation bar restarts the tour on demand (`force = true`).
+* **Manual Trigger:** An always-available `"Guide"` button (`#saTourGuideTrigger` or `#teacherTourGuideTrigger`) in the top navigation bar restarts the tour on demand (`force = true`).
 * **Element Absence Handling:** If a target element is not in DOM or not visible, gracefully skip to the next step or cleanly abort without throwing exceptions.
 * **Auto-Scrolling:** Target elements are smoothly scrolled into view (`scrollIntoView({ behavior: 'smooth', block: 'nearest' })`) prior to bounding rect calculation.
 
@@ -72,8 +71,8 @@ export const schoolAdminTours = {
 ---
 
 ## 5. Users
-* **Immediate Target:** School Administrators.
-* **Future Targets:** Teachers, Scanner Operators, Super Admins can be supported simply by adding configuration arrays in separate role files without touching the core engine.
+* **Immediate Targets:** School Administrators and Teachers.
+* **Future Targets:** Scanner Operators and Super Admins can be supported simply by adding configuration arrays in separate role files without touching the core engine.
 
 ---
 

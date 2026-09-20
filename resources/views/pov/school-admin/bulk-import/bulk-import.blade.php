@@ -6,7 +6,7 @@
     <div class="bulk-import-page mx-2 mx-md-3 mb-4" data-import-base-url="{{ url('/import') }}">
         {{-- Navigation Bar: Mode Toggle (Import Hub vs History) + Quick Actions --}}
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 pb-2 border-bottom">
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2" data-tour="import-mode-toggle">
                 <button type="button" class="view-switch-btn active" id="viewImportBtn">
                     <i class="fas fa-file-import me-1.5 text-primary"></i> Import Workspace
                 </button>
@@ -17,7 +17,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('import.template') }}" class="bi-btn bi-btn--outline" id="downloadTemplateBtn">
+                <a href="{{ route('import.template') }}" class="bi-btn bi-btn--outline" id="downloadTemplateBtn" data-tour="import-template">
                     <i class="fas fa-download me-1 text-primary"></i> Sample Template (.xlsx)
                 </a>
             </div>
@@ -31,7 +31,7 @@
             <div class="import-card-centered mx-auto">
 
                 {{-- Interactive Stepper / Breadcrumb Trail --}}
-                <div class="import-stepper mb-4">
+                <div class="import-stepper mb-4" data-tour="import-stepper">
                     <div class="step-node active" id="stepNode1">
                         <span class="step-circle"><i class="fas fa-file-upload"></i></span>
                         <span class="step-title">1. Upload File</span>
@@ -71,7 +71,7 @@
 
                     {{-- Drag & Drop Dropzone --}}
                     <form id="uploadForm" enctype="multipart/form-data">
-                        <div class="upload-dropzone p-4 p-md-5 text-center" id="dropzone">
+                        <div class="upload-dropzone p-4 p-md-5 text-center" id="dropzone" data-tour="import-dropzone">
                             <input type="file" class="d-none" id="file" name="file" accept=".xlsx,.xls" required>
                             <div class="dropzone-default-content" id="dropzonePrompt">
                                 <div class="dropzone-icon-circle mx-auto mb-3">

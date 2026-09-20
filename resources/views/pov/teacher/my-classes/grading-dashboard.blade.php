@@ -14,7 +14,7 @@
 
         {{-- Summary Cards --}}
         @if ($dashboardPreferences?->show_summary_cards ?? true)
-            <div class="row g-3 mb-4">
+            <div class="row g-3 mb-4" data-tour="myclasses-stats">
                 <div class="col-6 col-md-3">
                     <div class="gs-stat-card d-flex align-items-center gap-3">
                         <span class="gs-stat-icon gs-stat-icon-neutral">
@@ -76,7 +76,7 @@
                     <p class="gs-panel-title mb-0">My Classes</p>
                 </div>
 
-                <div class="row g-3">
+                <div class="row g-3" data-tour="myclasses-cards">
                     @forelse ($classes as $class)
                         <div class="col-12 col-md-6 col-xl-4">
                             <a href="{{ route('teacher.grading-system.grade-sheet', ['teachingAssignmentId' => $class->teaching_assignment_id, 'grading_period_id' => $currentPeriod->id]) }}" class="text-decoration-none">

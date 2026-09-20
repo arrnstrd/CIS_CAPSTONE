@@ -35,10 +35,13 @@
                 $currentTourPage = $tourPage ?? (
                     request()->routeIs('academic.*') || request()->is('academic*') || request()->is('sections*') || request()->is('subjects*') ? 'academic' : (
                     request()->routeIs('admin.dashboard') || request()->is('dashboard') ? 'dashboard' : (
+                    request()->routeIs('student-management.section') || request()->is('student-management/grade/*/section/*') ? 'students-roster' : (
                     request()->routeIs('student-management.*') || request()->is('student-management*') ? 'students' : (
                     request()->routeIs('teachers.*') || request()->is('teachers*') ? 'teachers' : (
-                    request()->routeIs('attendance*') || request()->is('attendance*') || request()->is('school_admin/attendance*') ? 'attendance' : null
-                )))));
+                    request()->routeIs('attendance*') || request()->is('attendance*') || request()->is('school_admin/attendance*') ? 'attendance' : (
+                    request()->routeIs('bulk-import*') || request()->routeIs('import.*') || request()->is('bulk-import*') || request()->is('import*') ? 'sf1-import' : (
+                    request()->routeIs('schedconfig.*') || request()->routeIs('schedule-configuration.*') || request()->is('schedule-configuration*') ? 'schedule-config' : null
+                ))))))));
             @endphp
 
             <main class="sa-page-content" @if($currentTourPage) data-tour-page="{{ $currentTourPage }}" @endif>

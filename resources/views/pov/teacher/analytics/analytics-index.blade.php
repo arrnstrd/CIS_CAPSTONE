@@ -10,7 +10,7 @@
     </x-slot>
 
     {{-- Analytics Sub-Navigation --}}
-    <div class="d-flex align-items-center gap-2 mb-3">
+    <div class="d-flex align-items-center gap-2 mb-3" data-tour="teacher-analytics-overview">
         <a href="{{ route('teacher.grading-system.analytics') }}" class="btn btn-sm {{ request()->routeIs('teacher.grading-system.analytics*') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" style="border-radius: 20px; font-weight: 600; font-size: 0.82rem; padding: 5px 14px;">
             <i class="fa-solid fa-graduation-cap me-1"></i> Academic Analytics
         </a>
