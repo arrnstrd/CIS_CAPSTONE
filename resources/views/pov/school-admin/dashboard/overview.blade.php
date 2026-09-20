@@ -855,7 +855,7 @@
     <div class="dashboard-shell mx-2 mb-3" data-attendance-realtime
         data-resync-url="{{ route('school_admin.attendance.monitoring.resync') }}">
         {{-- Top KPI Cards --}}
-        <section class="dashboard-cards">
+        <section class="dashboard-cards" data-tour="dashboard-kpis">
             @foreach ($dashboardCards as $card)
                 <a href="{{ $card['href'] }}" class="dashboard-card card-tone-{{ $card['tone'] }}">
                     <div class="dashboard-card__top">
@@ -874,7 +874,7 @@
         </section>        {{-- Main Attendance Analytics Grid --}}
         <section class="dashboard-analytics-grid">
             {{-- Panel 1: Today's IN & OUT Timeline --}}
-            <div class="panel" data-chart-timeline data-timeline-buckets='@json($scanBuckets)'
+            <div class="panel" data-tour="dashboard-timeline" data-chart-timeline data-timeline-buckets='@json($scanBuckets)'
                 data-timeline-interval="{{ $intervalMinutes ?? 15 }}"
                 data-timeline-start="{{ isset($chartStart) ? $chartStart->format('H:i') : '06:00' }}"
                 data-max-total="{{ $maxBucketTotal }}">

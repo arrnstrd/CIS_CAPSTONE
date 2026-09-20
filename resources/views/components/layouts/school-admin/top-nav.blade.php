@@ -23,8 +23,18 @@
         <div class="sa-topbar__left"></div>
 
 
-        {{-- Right side: Account Profile Area with Dropdown --}}
-        <div class="sa-topbar__account-wrapper">
+        {{-- Right side: Account Profile Area with Dropdown & Guide Trigger --}}
+        <div class="d-flex align-items-center gap-3">
+            <button type="button"
+                id="saTourGuideTrigger"
+                class="sa-topbar__guide-btn"
+                title="Start Interactive Page Guide"
+                aria-label="Start Interactive Page Guide">
+                <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                <span>Guide</span>
+            </button>
+
+            <div class="sa-topbar__account-wrapper">
             <button type="button"
                 class="sa-topbar__profile-btn"
                 id="saTopNavProfileTrigger"
@@ -74,4 +84,6 @@
             </div>
         </div>
     </div>
+</div>
 </header>
+

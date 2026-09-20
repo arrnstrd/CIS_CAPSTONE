@@ -10,6 +10,7 @@
 /* 2. Global Core (Genuinely Application-Wide) */
 @import './table.css';
 @import './status-badges.css';
+@import './shared/tour-overlay.css';
 
 /* 2.1 Global Responsive Layout Utilities */
 @import './responsive.css';

@@ -2,7 +2,7 @@
     <div class="bg-white rounded p-4 border">
         <div class="d-flex justify-content-between align-items-center gap-3">
             <h3 class="fw-semibold text-dark m-0 fs-5">Subject Records</h3>
-            <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
+            <button data-tour="academic-add-btn" class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-flex align-items-center gap-1"
                 data-bs-toggle="modal" data-bs-target="#addSubjectModal" data-ajax-scope="#subject-table-pane">
                 <span>+ Add Subject</span>
             </button>
@@ -35,7 +35,7 @@
 
 
         <table class="table table-hover align-middle table-striped mb-0">
-            <thead class="text-uppercase">
+            <thead class="text-uppercase" data-tour="academic-column-filters">
                 <tr>
                     <th width="4%" class="text-center">
                         <input type="checkbox" id="selectAllSubjects" class="form-check-input academic-check-input select-all-checkbox">
@@ -64,7 +64,7 @@
                             <span class="badge bg-light text-secondary border">{{ $subject->level_label }}</span>
                         </td>
                         <td class="text-center text-nowrap">
-                            <div class="action-btn-group justify-content-center">
+                            <div class="action-btn-group justify-content-center" @if($loop->first) data-tour="academic-row-actions" @endif>
                                 <button type="button" class="btn btn-sm btn-outline-primary js-edit-subject"
                                     data-bs-toggle="modal" data-bs-target="#editSubjectModal"
                                     data-id="{{ $subject->id }}"

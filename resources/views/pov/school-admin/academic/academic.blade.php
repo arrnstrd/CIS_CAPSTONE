@@ -24,7 +24,9 @@
         ];
     @endphp
 
-    <x-layouts.school-admin.nav-tabs :tabs="$academicTabs" id="academicTabs" />
+    <div data-tour="academic-tabs">
+        <x-layouts.school-admin.nav-tabs :tabs="$academicTabs" id="academicTabs" />
+    </div>
 
     <div class="tab-content mt-2">
         <div class="tab-pane fade {{ $activeTab === 'subjects' ? 'show active' : '' }}" id="subject-table-pane">

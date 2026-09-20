@@ -16,7 +16,7 @@
     <div class="sa-sidebar-content">
 
         <!-- Brand -->
-        <div class="sa-sidebar-brand d-flex flex-column py-4 px-4">
+        <div class="sa-sidebar-brand d-flex flex-column justify-content-center px-4">
             <h5 class="text-white mb-0 fw-bold">
                 SCHOOL ADMIN PORTAL
             </h5>

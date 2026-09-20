@@ -31,7 +31,17 @@
             {{-- Thin Blue Top Navigation --}}
             <x-layouts.school-admin.top-nav />
 
-            <main class="sa-page-content">
+            @php
+                $currentTourPage = $tourPage ?? (
+                    request()->routeIs('academic.*') || request()->is('academic*') || request()->is('sections*') || request()->is('subjects*') ? 'academic' : (
+                    request()->routeIs('admin.dashboard') || request()->is('dashboard') ? 'dashboard' : (
+                    request()->routeIs('student-management.*') || request()->is('student-management*') ? 'students' : (
+                    request()->routeIs('teachers.*') || request()->is('teachers*') ? 'teachers' : (
+                    request()->routeIs('attendance*') || request()->is('attendance*') || request()->is('school_admin/attendance*') ? 'attendance' : null
+                )))));
+            @endphp
+
+            <main class="sa-page-content" @if($currentTourPage) data-tour-page="{{ $currentTourPage }}" @endif>
                 <div class="container-fluid p-6 d-flex flex-column flex-grow-1">
                     <section class="sa-head-banner p-4 mx-3 mt-1.5">
                         <div class="sa-head-banner__copy">

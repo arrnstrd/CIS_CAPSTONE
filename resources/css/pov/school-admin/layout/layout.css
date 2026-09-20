@@ -35,7 +35,8 @@
 
 /* ── Thin Blue Top Navigation ────────────────────────────────────── */
 .sa-topbar {
-    height: 60px;
+    height: 84px;
+    box-sizing: border-box;
     background: #2F4AC0;
     background: linear-gradient(90deg, #1e3a8a 0%, #2F4AC0 100%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.14);

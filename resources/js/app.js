@@ -8,6 +8,7 @@ import "./sidebar.js";
 import "./layout.js";
 import "./shared/attendance-realtime.js";
 import "./shared/global-realtime.js";
+import "./shared/tour/index.js";
 
 // 2. POV: School Admin
 import "./pov/school-admin/academic/subject-modal.js";

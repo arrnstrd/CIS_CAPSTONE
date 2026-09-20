@@ -11,7 +11,7 @@
         Student Management
     </x-slot>
 
-    <div class="grade-selection-wrapper">
+    <div class="grade-selection-wrapper" data-tour="students-grade-grid">
         @foreach ($grades as $level => $gradeRange)
             <div class="grade-section">
                 <p class="grade-section-title">{{ $level }}</p>
