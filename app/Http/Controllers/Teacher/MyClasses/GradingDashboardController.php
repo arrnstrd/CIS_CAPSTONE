@@ -113,30 +113,29 @@ class GradingDashboardController extends Controller
             $totalAssessments = $assessmentIds->count();
             $expectedScores = $totalAssessments * $learnerCount;
 
-            $actualScores = $expectedScores > 0
-                ? StudentAssessmentScore::whereIn('assessment_id', $assessmentIds)
+            $actualScores = 0;
+            $encodedCount = 0;
+
+            if ($expectedScores > 0) {
+                $studentScores = StudentAssessmentScore::whereIn('assessment_id', $assessmentIds)
                     ->whereIn('enrollment_id', $activeEnrollmentIds)
                     ->whereNotNull('score')
-                    ->count()
-                : 0;
+                    ->select('enrollment_id')
+                    ->get()
+                    ->groupBy('enrollment_id');
+
+                $actualScores = $studentScores->sum(fn($scores) => $scores->count());
+
+                foreach ($studentScores as $enrollmentId => $scores) {
+                    if ($scores->count() >= $totalAssessments) {
+                        $encodedCount++;
+                    }
+                }
+            }
 
             $completionPercent = $expectedScores > 0
                 ? round(($actualScores / $expectedScores) * 100, 1)
                 : null;
-
-            // Calculate encoded count (students with all assessments graded)
-            $encodedCount = 0;
-            $studentScores = StudentAssessmentScore::whereIn('assessment_id', $assessmentIds)
-                ->whereIn('enrollment_id', $activeEnrollmentIds)
-                ->whereNotNull('score')
-                ->get()
-                ->groupBy('enrollment_id');
-            
-            foreach ($studentScores as $enrollmentId => $scores) {
-                if ($scores->count() >= $totalAssessments) {
-                    $encodedCount++;
-                }
-            }
 
             // Get current grades for the period
             $currentGrades = $currentPeriod 
@@ -185,7 +184,8 @@ class GradingDashboardController extends Controller
         $classAtRiskCounts = [];
         $classRiskReasons = [];
         
-        if ($currentPeriod) {
+        $shouldCalculateRisk = ($dashboardPreferences?->show_at_risk ?? true);
+        if ($currentPeriod && $shouldCalculateRisk) {
             foreach ($teachingAssignments as $ta) {
                 if ($ta->section && $ta->subject) {
                     $riskData = $this->riskScoreService->calculateRiskScoresForClass($ta, $currentPeriod);

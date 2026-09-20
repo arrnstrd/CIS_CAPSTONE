@@ -143,6 +143,7 @@ class RiskScoreService
 
     /**
      * Calculate risk scores for all active students in a teaching assignment.
+     * Batched at the section level to eliminate N+1 database queries.
      */
     public function calculateRiskScoresForClass(
         TeachingAssignment $teachingAssignment,
@@ -159,8 +160,56 @@ class RiskScoreService
             ->with('student')
             ->get();
 
-        $riskScores = [];
+        if ($enrollments->isEmpty()) {
+            return [
+                'risk_scores' => [],
+                'stats' => ['total' => 0, 'high' => 0, 'moderate' => 0, 'low' => 0],
+            ];
+        }
 
+        $enrollmentIds = $enrollments->pluck('id')->all();
+
+        // 1. Batch fetch current term grades for all enrollments in this teaching assignment
+        $currentGrades = TermGrade::whereIn('enrollment_id', $enrollmentIds)
+            ->where('teaching_assignment_id', $teachingAssignment->id)
+            ->where('grading_period_id', $period->id)
+            ->get()
+            ->keyBy('enrollment_id');
+
+        // 2. Batch fetch previous period & previous term grades
+        $previousPeriod = $this->getPreviousPeriod($period);
+        $previousGrades = $previousPeriod
+            ? TermGrade::whereIn('enrollment_id', $enrollmentIds)
+                ->where('teaching_assignment_id', $teachingAssignment->id)
+                ->where('grading_period_id', $previousPeriod->id)
+                ->get()
+                ->keyBy('enrollment_id')
+            : collect();
+
+        // 3. Batch fetch active assessments and existing student scores
+        $assessments = Assessment::where('teaching_assignment_id', $teachingAssignment->id)
+            ->where('grading_period_id', $period->id)
+            ->where('status', 'active')
+            ->get();
+        $assessmentIds = $assessments->pluck('id')->all();
+        $totalAssessments = count($assessmentIds);
+
+        $scoresByEnrollment = [];
+        if ($totalAssessments > 0) {
+            $scores = StudentAssessmentScore::whereIn('assessment_id', $assessmentIds)
+                ->whereIn('enrollment_id', $enrollmentIds)
+                ->whereNotNull('score')
+                ->get(['enrollment_id', 'assessment_id', 'score']);
+
+            foreach ($scores as $s) {
+                $scoresByEnrollment[$s->enrollment_id][$s->assessment_id] = $s->score;
+            }
+        }
+
+        // 4. Batch fetch attendance rates for all enrollments in this section
+        $attendanceRates = $this->calculateBatchAttendanceRates($enrollmentIds, $period);
+
+        $riskScores = [];
         $stats = [
             'total' => 0,
             'high' => 0,
@@ -169,20 +218,53 @@ class RiskScoreService
         ];
 
         foreach ($enrollments as $enrollment) {
-            $riskData = $this->calculateRiskScore(
-                $enrollment,
-                $teachingAssignment,
-                $period
-            );
+            $eId = $enrollment->id;
 
-            $riskLevelKey = strtolower($riskData['risk_level']);
+            // Indicator 1: Low Grade (< 75)
+            $currGrade = $currentGrades->get($eId);
+            $lowGrade = ($currGrade && $currGrade->transmuted_grade !== null)
+                ? ((float) $currGrade->transmuted_grade < 75)
+                : false;
+
+            // Indicator 2: Missing Grades (any active assessment has no recorded score)
+            $missingGrades = false;
+            if ($totalAssessments > 0) {
+                $studentScores = $scoresByEnrollment[$eId] ?? [];
+                if (count($studentScores) < $totalAssessments) {
+                    $missingGrades = true;
+                }
+            }
+
+            // Indicator 3: Low Attendance (< 85%)
+            $attRate = $attendanceRates[$eId] ?? 0.0;
+            $lowAttendance = $attRate < 85.0;
+
+            // Indicator 4: Declining Performance (current < previous)
+            $decliningPerformance = false;
+            if ($currGrade && $currGrade->transmuted_grade !== null && $previousPeriod) {
+                $prevGrade = $previousGrades->get($eId);
+                if ($prevGrade && $prevGrade->transmuted_grade !== null) {
+                    $decliningPerformance = ((float) $currGrade->transmuted_grade < (float) $prevGrade->transmuted_grade);
+                }
+            }
+
+            $indicators = [
+                'low_grade' => $lowGrade,
+                'missing_grades' => $missingGrades,
+                'low_attendance' => $lowAttendance,
+                'declining_performance' => $decliningPerformance,
+            ];
+
+            $riskScore = $this->calculateScoreFromIndicators($indicators);
+            $riskLevel = $this->determineRiskLevel($riskScore);
+            $riskLevelKey = strtolower($riskLevel);
 
             $riskScores[] = [
                 'enrollment_id' => $enrollment->id,
-                'student_name' => $enrollment->student->full_name ?? 'Unknown Student',
-                'risk_score' => $riskData['risk_score'],
-                'risk_level' => $riskData['risk_level'],
-                'indicators' => $riskData['indicators'],
+                'student_name' => $enrollment->student?->full_name ?? 'Unknown Student',
+                'risk_score' => $riskScore,
+                'risk_level' => $riskLevel,
+                'indicators' => $indicators,
             ];
 
             $stats['total']++;
@@ -196,6 +278,157 @@ class RiskScoreService
             'risk_scores' => $riskScores,
             'stats' => $stats,
         ];
+    }
+
+    /**
+     * Batch calculate attendance rates for multiple enrollments in a grading period.
+     */
+    public function calculateBatchAttendanceRates(array $enrollmentIds, GradingPeriod $period): array
+    {
+        if (empty($enrollmentIds)) {
+            return [];
+        }
+
+        if (!$period->start_date || !$period->end_date) {
+            $earliestScans = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
+                ->where('scan_type', 'IN')
+                ->selectRaw('enrollment_id, MIN(scan_time) as earliest_scan')
+                ->groupBy('enrollment_id')
+                ->pluck('earliest_scan', 'enrollment_id');
+
+            $earliestVers = AttendanceVerification::whereIn('enrollment_id', $enrollmentIds)
+                ->whereIn('status', [
+                    AttendanceVerification::STATUS_PRESENT,
+                    AttendanceVerification::STATUS_LATE,
+                    AttendanceVerification::STATUS_EXCUSED,
+                ])
+                ->selectRaw('enrollment_id, MIN(attendance_date) as earliest_ver')
+                ->groupBy('enrollment_id')
+                ->pluck('earliest_ver', 'enrollment_id');
+
+            $qrLogs = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
+                ->where('scan_type', 'IN')
+                ->selectRaw('enrollment_id, DATE(scan_time) as attendance_date')
+                ->distinct()
+                ->get()
+                ->groupBy('enrollment_id');
+
+            $verifiedLogs = AttendanceVerification::whereIn('enrollment_id', $enrollmentIds)
+                ->whereIn('status', [
+                    AttendanceVerification::STATUS_PRESENT,
+                    AttendanceVerification::STATUS_LATE,
+                    AttendanceVerification::STATUS_EXCUSED,
+                ])
+                ->select('enrollment_id', 'attendance_date')
+                ->distinct()
+                ->get()
+                ->groupBy('enrollment_id');
+
+            $end = now()->startOfDay();
+            $rates = [];
+
+            foreach ($enrollmentIds as $id) {
+                $earliestScan = $earliestScans->get($id);
+                $earliestVerification = $earliestVers->get($id);
+
+                $startDates = collect([$earliestScan, $earliestVerification])
+                    ->filter()
+                    ->map(fn($date) => \Carbon\Carbon::parse($date)->startOfDay());
+
+                if ($startDates->isEmpty()) {
+                    $rates[$id] = 0.0;
+                    continue;
+                }
+
+                $startDate = $startDates->sortBy(fn($d) => $d->timestamp)->first();
+
+                $schoolDaysCount = 0;
+                $cursor = $startDate->copy();
+                while ($cursor->lte($end)) {
+                    if (!$cursor->isWeekend()) {
+                        $schoolDaysCount++;
+                    }
+                    $cursor->addDay();
+                }
+
+                if ($schoolDaysCount === 0) {
+                    $rates[$id] = 0.0;
+                    continue;
+                }
+
+                $qrDates = $qrLogs->get($id, collect())->pluck('attendance_date');
+                $verDates = $verifiedLogs->get($id, collect())->pluck('attendance_date');
+
+                $presentDaysCount = $qrDates
+                    ->merge($verDates)
+                    ->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())
+                    ->unique()
+                    ->count();
+
+                $rates[$id] = round(($presentDaysCount / $schoolDaysCount) * 100, 1);
+            }
+
+            return $rates;
+        }
+
+        $startDate = \Carbon\Carbon::parse($period->start_date)->startOfDay();
+        $endDate = \Carbon\Carbon::parse($period->end_date)->startOfDay();
+
+        $schoolDaysCount = 0;
+        $cursor = $startDate->copy();
+        while ($cursor->lt($endDate)) {
+            if (!$cursor->isWeekend()) {
+                $schoolDaysCount++;
+            }
+            $cursor->addDay();
+        }
+
+        if ($schoolDaysCount === 0) {
+            return array_fill_keys($enrollmentIds, 0.0);
+        }
+
+        // Batch QR attendance scans
+        $qrLogs = AttendanceLog::whereIn('enrollment_id', $enrollmentIds)
+            ->where('scan_type', 'IN')
+            ->where('scan_time', '>=', $startDate)
+            ->where('scan_time', '<', $endDate)
+            ->selectRaw('enrollment_id, DATE(scan_time) as attendance_date')
+            ->distinct()
+            ->get();
+
+        // Batch Teacher-verified attendance dates
+        $verifiedLogs = AttendanceVerification::whereIn('enrollment_id', $enrollmentIds)
+            ->whereBetween('attendance_date', [
+                $startDate->toDateString(),
+                $endDate->copy()->subDay()->toDateString(),
+            ])
+            ->whereIn('status', [
+                AttendanceVerification::STATUS_PRESENT,
+                AttendanceVerification::STATUS_LATE,
+                AttendanceVerification::STATUS_EXCUSED,
+            ])
+            ->select('enrollment_id', 'attendance_date')
+            ->distinct()
+            ->get();
+
+        $qrDatesByEnrollment = $qrLogs->groupBy('enrollment_id');
+        $verifiedDatesByEnrollment = $verifiedLogs->groupBy('enrollment_id');
+
+        $rates = [];
+        foreach ($enrollmentIds as $id) {
+            $qrDates = $qrDatesByEnrollment->get($id, collect())->pluck('attendance_date');
+            $verDates = $verifiedDatesByEnrollment->get($id, collect())->pluck('attendance_date');
+
+            $presentDaysCount = $qrDates
+                ->merge($verDates)
+                ->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())
+                ->unique()
+                ->count();
+
+            $rates[$id] = round(($presentDaysCount / $schoolDaysCount) * 100, 1);
+        }
+
+        return $rates;
     }
 
     /**
@@ -354,7 +587,13 @@ class RiskScoreService
     private function getPreviousPeriod(
         GradingPeriod $currentPeriod
     ): ?GradingPeriod {
-        return GradingPeriod::where(
+        static $previousPeriodCache = [];
+
+        if (array_key_exists($currentPeriod->id, $previousPeriodCache)) {
+            return $previousPeriodCache[$currentPeriod->id];
+        }
+
+        $previousPeriodCache[$currentPeriod->id] = GradingPeriod::where(
             'is_active',
             true
         )
@@ -377,6 +616,8 @@ class RiskScoreService
                 'desc'
             )
             ->first();
+
+        return $previousPeriodCache[$currentPeriod->id];
     }
 
     /**
