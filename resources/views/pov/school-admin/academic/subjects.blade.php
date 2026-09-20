@@ -34,81 +34,57 @@
     <div class="table-panel shadow-sm">
 
 
-        <div class="p-3 border-bottom">
-            <div class="row g-3 align-items-center">
-                <div class="col-lg-8">
-                    <input type="search" class="form-control" name="subject_search"
-                        value="{{ request('subject_search') }}" placeholder="Search subject code, name, or level..."
-                        data-tab-filter data-tab-scope="#subject-table-pane" data-page-param="subject_page">
-                </div>
-
-                <div class="col-lg-4">
-                    <select name="subject_level" class="form-select" data-tab-filter
-                        data-tab-scope="#subject-table-pane" data-page-param="subject_page">
-                        <option value="">All Levels</option>
-                        @foreach (\App\Models\Subject::levelOptions() as $value => $label)
-                            <option value="{{ $value }}" {{ \App\Models\Subject::normalizeLevel(request('subject_level')) === $value ? 'selected' : '' }}>
-                                {{ $label }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </div>
-
         <table class="table table-hover align-middle table-striped mb-0">
             <thead class="text-uppercase">
                 <tr>
                     <th width="4%" class="text-center">
                         <input type="checkbox" id="selectAllSubjects" class="form-check-input academic-check-input select-all-checkbox">
                     </th>
-                    <th width="20%">Code</th>
-                    <th width="45%">Subject</th>
-                    <th width="25%">Level</th>
-                    <th width="10%">Actions</th>
+                    <th width="20%" data-column="code" data-column-title="Code" data-column-type="text">Code</th>
+                    <th width="42%" data-column="subject" data-column-title="Subject" data-column-type="text">Subject</th>
+                    <th width="20%" data-column="level" data-column-title="Level" data-column-type="categorical">Level</th>
+                    <th width="14%" class="text-center">Actions</th>
                 </tr>
             </thead>
 
             <tbody>
                 @forelse ($subjects as $subject)
-                    <tr>
+                    <tr data-col-code="{{ $subject->code }}" data-col-subject="{{ $subject->name }}" data-col-level="{{ $subject->level_label }}">
                         <td class="text-center">
                             <input type="checkbox" class="form-check-input academic-check-input subject-select-checkbox row-checkbox"
                                 value="{{ $subject->id }}">
                         </td>
-                        <td>{{ $subject->code }}</td>
-                        <td>{{ $subject->name }}</td>
-                        <td>{{ $subject->level_label }}</td>
                         <td>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                            <span class="fw-semibold text-dark">{{ $subject->code ?: '—' }}</span>
+                        </td>
+                        <td>
+                            <span class="fw-medium text-dark">{{ $subject->name }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-secondary border">{{ $subject->level_label }}</span>
+                        </td>
+                        <td class="text-center text-nowrap">
+                            <div class="action-btn-group justify-content-center">
+                                <button type="button" class="btn btn-sm btn-outline-primary js-edit-subject"
+                                    data-bs-toggle="modal" data-bs-target="#editSubjectModal"
+                                    data-id="{{ $subject->id }}"
+                                    data-code="{{ $subject->code }}"
+                                    data-name="{{ $subject->name }}"
+                                    data-level="{{ $subject->level }}"
+                                    data-update-url="{{ route('subjects.update', $subject) }}"
+                                    data-ajax-scope="#subject-table-pane">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <span>Edit</span>
                                 </button>
-
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    <li>
-                                        <button type="button" class="dropdown-item js-edit-subject" data-bs-toggle="modal"
-                                            data-bs-target="#editSubjectModal" data-id="{{ $subject->id }}"
-                                            data-code="{{ $subject->code }}" data-name="{{ $subject->name }}"
-                                            data-level="{{ $subject->level }}"
-                                            data-update-url="{{ route('subjects.update', $subject) }}"
-                                            data-ajax-scope="#subject-table-pane">
-                                            Edit
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <form action="{{ route('subjects.destroy', $subject) }}" method="POST"
-                                            data-ajax-delete="subject" data-ajax-scope="#subject-table-pane">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="dropdown-item text-danger">Delete</button>
-                                        </form>
-                                    </li>
-                                </ul>
+                                <form action="{{ route('subjects.destroy', $subject) }}" method="POST"
+                                    data-ajax-delete="subject" data-ajax-scope="#subject-table-pane" class="d-inline mb-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fa-solid fa-trash"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -138,16 +114,18 @@
 
                     const rowCheckboxes = table.querySelectorAll('.row-checkbox');
 
-                    // Sync Select All checkbox state based on row checkboxes
+                    // Sync Select All checkbox state based on visible row checkboxes
                     function syncSelectAllState() {
-                        const checkedCount = Array.from(rowCheckboxes).filter(cb => cb.checked).length;
-                        selectAllCb.checked = rowCheckboxes.length > 0 && checkedCount === rowCheckboxes.length;
-                        selectAllCb.indeterminate = checkedCount > 0 && checkedCount < rowCheckboxes.length;
+                        const visibleCheckboxes = Array.from(table.querySelectorAll('tbody tr:not(.d-none) .row-checkbox'));
+                        const checkedCount = visibleCheckboxes.filter(cb => cb.checked).length;
+                        selectAllCb.checked = visibleCheckboxes.length > 0 && checkedCount === visibleCheckboxes.length;
+                        selectAllCb.indeterminate = checkedCount > 0 && checkedCount < visibleCheckboxes.length;
                     }
 
                     // Attach listener to Select All checkbox
                     selectAllCb.onclick = function () {
-                        rowCheckboxes.forEach(function (cb) {
+                        const visibleCheckboxes = Array.from(table.querySelectorAll('tbody tr:not(.d-none) .row-checkbox'));
+                        visibleCheckboxes.forEach(function (cb) {
                             if (!cb.disabled) {
                                 cb.checked = selectAllCb.checked;
                                 cb.dispatchEvent(new Event('change', { bubbles: true }));

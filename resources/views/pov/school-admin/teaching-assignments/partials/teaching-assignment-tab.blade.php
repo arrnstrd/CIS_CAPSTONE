@@ -36,71 +36,19 @@
     <div class="table-panel border bg-white shadow-sm">
 
 
-        <div class="p-3 border-bottom">
-            <div class="row g-2 align-items-center">
-                <div class="col-lg-5">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted">
-                            <i class="fas fa-search fa-sm"></i>
-                        </span>
-                        <input type="search" class="form-control border-start-0 ps-0" name="assignment_search"
-                            value="{{ request('assignment_search') }}"
-                            placeholder="Search by teacher, subject, or section..." data-tab-filter
-                            data-tab-scope="#assignment-table-pane" data-page-param="assignment_page">
-                    </div>
-                </div>
-
-                <div class="col-lg-3">
-                    <select name="assignment_grade_level" class="form-select" data-tab-filter
-                        data-tab-scope="#assignment-table-pane" data-page-param="assignment_page">
-                        <option value="">All Grade Levels</option>
-                        @for ($g = 1; $g <= 12; $g++)
-                            <option value="{{ $g }}" {{ request('assignment_grade_level') == $g ? 'selected' : '' }}>
-                                Grade {{ $g }}
-                            </option>
-                        @endfor
-                    </select>
-                </div>
-
-                <div class="col-lg-2">
-                    <select name="assignment_section_id" class="form-select" data-tab-filter
-                        data-tab-scope="#assignment-table-pane" data-page-param="assignment_page">
-                        <option value="">All Sections</option>
-                        @foreach ($allSections as $secOption)
-                            @if(!request('assignment_grade_level') || $secOption->grade_level == request('assignment_grade_level'))
-                                <option value="{{ $secOption->id }}" {{ request('assignment_section_id') == $secOption->id ? 'selected' : '' }}>
-                                    Grade {{ $secOption->grade_level }} - {{ $secOption->name }}
-                                </option>
-                            @endif
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-lg-2">
-                    <select name="assignment_status" class="form-select" data-tab-filter
-                        data-tab-scope="#assignment-table-pane" data-page-param="assignment_page">
-                        <option value="">All Status</option>
-                        <option value="active" {{ request('assignment_status') === 'active' ? 'selected' : '' }}>Active
-                        </option>
-                        <option value="inactive" {{ request('assignment_status') === 'inactive' ? 'selected' : '' }}>
-                            Inactive</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
         <table class="table table-hover align-middle table-striped mb-0">
             <thead class="text-uppercase">
                 <tr>
                     <th width="4%" class="text-center">
-                        <input type="checkbox" id="selectAllAssignments" class="form-check-input academic-check-input">
+                        <input type="checkbox" id="selectAllAssignments" class="form-check-input academic-check-input select-all-checkbox">
                     </th>
-                    <th width="24%">Teacher</th>
-                    <th width="24%">Subject</th>
-                    <th width="20%">Section & Grade</th>
-                    <th width="14%">School Year</th>
-                    <th width="10%">Status</th>
-                    <th width="8%">Actions</th>
+                    <th width="18%" data-column="teacher" data-column-title="Teacher" data-column-type="text">Teacher</th>
+                    <th width="18%" data-column="subject" data-column-title="Subject" data-column-type="text">Subject</th>
+                    <th width="12%" data-column="grade" data-column-title="Grade" data-column-type="grade">Grade</th>
+                    <th width="15%" data-column="section" data-column-title="Section" data-column-type="text">Section</th>
+                    <th width="13%" data-column="schoolYear" data-column-title="School Year" data-column-type="categorical">School Year</th>
+                    <th width="10%" data-column="status" data-column-title="Status" data-column-type="status">Status</th>
+                    <th width="10%" class="text-center">Actions</th>
                 </tr>
             </thead>
 
@@ -108,75 +56,79 @@
                 @forelse ($teachingAssignments as $assignment)
                     @php
                         $assignStatus = strtolower($assignment->status ?? 'active');
+                        $statusText = ucfirst($assignStatus);
+                        $gradeText = $assignment->section?->grade_level ? 'Grade ' . $assignment->section->grade_level : '—';
+                        $teacherName = $assignment->teacher?->full_name ?? '—';
+                        $subjectName = $assignment->subject?->name ?? '—';
+                        $sectionName = $assignment->section?->name ?? '—';
+                        $syText = $assignment->schoolYear?->school_year ?? '—';
                     @endphp
-                    <tr data-assignment-id="{{ $assignment->id }}">
+                    <tr data-assignment-id="{{ $assignment->id }}"
+                        data-col-teacher="{{ $teacherName }}"
+                        data-col-subject="{{ $subjectName }}"
+                        data-col-grade="{{ $gradeText }}"
+                        data-col-section="{{ $sectionName }}"
+                        data-col-school-year="{{ $syText }}"
+                        data-col-status="{{ $statusText }}">
                         <td class="text-center">
-                            <input type="checkbox" class="form-check-input academic-check-input assignment-select-checkbox"
+                            <input type="checkbox" class="form-check-input academic-check-input assignment-select-checkbox row-checkbox"
                                 value="{{ $assignment->id }}">
                         </td>
                         <td>
-                            <span class="fw-semibold text-dark">{{ $assignment->teacher?->full_name ?? '—' }}</span>
+                            <span class="fw-semibold text-dark">{{ $teacherName }}</span>
                         </td>
                         <td>
-                            <div class="fw-semibold text-dark">{{ $assignment->subject?->name ?? '—' }}</div>
+                            <div class="fw-semibold text-dark">{{ $subjectName }}</div>
                             @if($assignment->subject?->code)
-                                <div class="text-muted small" style="font-size: 0.72rem;">Code: {{ $assignment->subject->code }}
-                                </div>
+                                <div class="text-muted small" style="font-size: 0.72rem;">Code: {{ $assignment->subject->code }}</div>
                             @endif
                         </td>
                         <td>
-                            <span class="fw-semibold text-dark">{{ $assignment->section?->name ?? '—' }}</span>
                             @if($assignment->section?->grade_level)
-                                <span class="badge bg-light text-secondary border ms-1" style="font-size: 0.7rem;">
-                                    Grade {{ $assignment->section->grade_level }}
+                                <span class="badge bg-light text-secondary border">
+                                    {{ $gradeText }}
                                 </span>
+                            @else
+                                <span class="text-muted">—</span>
                             @endif
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-dark">{{ $sectionName }}</span>
                         </td>
                         <td>
                             <span class="text-secondary small fw-medium">
-                                {{ $assignment->schoolYear?->school_year ?? '—' }}
+                                {{ $syText }}
                             </span>
                         </td>
                         <td>
                             <span class="badge-dot dot-{{ $assignStatus === 'active' ? 'success' : 'secondary' }}">
-                                {{ ucfirst($assignStatus) }}
+                                {{ $statusText }}
                             </span>
                         </td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                        <td class="text-center text-nowrap">
+                            <div class="action-btn-group justify-content-center">
+                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#academicAssignmentModal"
+                                    onclick="openAcademicEditAssignmentModal({{ $assignment->id }}, {{ $assignment->teacher_id }}, {{ $assignment->subject_id }}, {{ $assignment->section_id }}, {{ $assignment->school_year_id }}, '{{ $assignment->status }}')">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    <span>Edit</span>
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                    <li>
-                                        <button class="dropdown-item" type="button" data-bs-toggle="modal"
-                                            data-bs-target="#academicAssignmentModal"
-                                            onclick="openAcademicEditAssignmentModal({{ $assignment->id }}, {{ $assignment->teacher_id }}, {{ $assignment->subject_id }}, {{ $assignment->section_id }}, {{ $assignment->school_year_id }}, '{{ $assignment->status }}')">
-                                            <i class="fas fa-pen fa-xs me-2 text-muted"></i> Edit
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li>
-                                        <form action="{{ route('teaching-assignments.destroy', $assignment->id) }}"
-                                            method="POST" data-ajax-delete="assignment" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="dropdown-item text-danger"
-                                                onclick="return confirm('Are you sure you want to delete this teaching assignment?');">
-                                                <i class="fas fa-trash fa-xs me-2"></i> Delete
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
+                                <form action="{{ route('teaching-assignments.destroy', $assignment->id) }}"
+                                    method="POST" data-ajax-delete="assignment" class="d-inline mb-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Are you sure you want to delete this teaching assignment?');">
+                                        <i class="fa-solid fa-trash"></i>
+                                        <span>Delete</span>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
+                        <td colspan="8" class="text-center py-4 text-muted">
                             <i class="fas fa-inbox fa-2x mb-2 opacity-50 d-block"></i>
                             No teaching assignments found.
                         </td>
@@ -206,7 +158,8 @@
                 const deleteBtn = document.getElementById('assignmentBulkDeleteBtn');
                 
                 function updateUI() {
-                    const checked = Array.from(checkboxes).filter(cb => cb.checked);
+                    const visibleCheckboxes = Array.from(pane.querySelectorAll('tbody tr:not(.d-none) .assignment-select-checkbox'));
+                    const checked = visibleCheckboxes.filter(cb => cb.checked);
                     const count = checked.length;
                     
                     if (countText) countText.textContent = count;
@@ -218,7 +171,7 @@
                     });
                     
                     if (selectAll) {
-                        selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
+                        selectAll.checked = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
                     }
                     
                     const currentDeleteBtn = document.getElementById('assignmentBulkDeleteBtn');
@@ -229,7 +182,8 @@
                 
                 if (selectAll) {
                     selectAll.addEventListener('change', function () {
-                        checkboxes.forEach(cb => {
+                        const visibleCheckboxes = Array.from(pane.querySelectorAll('tbody tr:not(.d-none) .assignment-select-checkbox'));
+                        visibleCheckboxes.forEach(cb => {
                             if (!cb.disabled) cb.checked = selectAll.checked;
                         });
                         updateUI();

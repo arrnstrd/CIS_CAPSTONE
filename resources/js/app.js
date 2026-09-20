@@ -12,6 +12,7 @@ import "./shared/global-realtime.js";
 // 2. POV: School Admin
 import "./pov/school-admin/academic/subject-modal.js";
 import "./pov/school-admin/academic/section.js";
+import "./pov/school-admin/academic/academic-excel-grid.js";
 import "./pov/school-admin/teaching-assignments/teaching-assignments.js";
 import "./pov/school-admin/students/student.js";
 import "./pov/school-admin/teachers/teacher.js";

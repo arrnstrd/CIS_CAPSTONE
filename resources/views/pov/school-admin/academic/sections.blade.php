@@ -37,73 +37,58 @@
     <div class="table-panel border bg-white shadow-sm">
 
 
-        <div class="p-3 border-bottom">
-            <div class="row g-3 align-items-center">
-                <div class="col-lg-6">
-                    <input type="search" class="form-control" name="section_search"
-                        value="{{ request('section_search') }}" placeholder="Search by section name or grade level..."
-                        data-tab-filter data-tab-scope="#section-table-pane" data-page-param="section_page">
-                </div>
-
-                <div class="col-lg-3">
-                    <select name="section_grade_level" class="form-select" data-tab-filter
-                        data-tab-scope="#section-table-pane" data-page-param="section_page">
-                        <option value="">All Grade Levels</option>
-                        @for ($grade = 1; $grade <= 12; $grade++)
-                            <option value="{{ $grade }}" {{ request('section_grade_level') == $grade ? 'selected' : '' }}>
-                                Grade {{ $grade }}
-                            </option>
-                        @endfor
-                    </select>
-                </div>
-
-                <div class="col-lg-3">
-                    <select name="section_status" class="form-select" data-tab-filter
-                        data-tab-scope="#section-table-pane" data-page-param="section_page">
-                        <option value="">All Status</option>
-                        <option value="active" {{ request('section_status') === 'active' ? 'selected' : '' }}>Active
-                        </option>
-                        <option value="inactive" {{ request('section_status') === 'inactive' ? 'selected' : '' }}>Inactive
-                        </option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
         <table class="table table-hover align-middle table-striped mb-0">
             <thead class="text-uppercase">
                 <tr>
                     <th width="4%" class="text-center">
                         <input type="checkbox" id="selectAllSections" class="form-check-input academic-check-input select-all-checkbox">
                     </th>
-                    <th width="12%">Section</th>
-                    <th width="10%">Grade</th>
-                    <th width="15%">Level</th>
-                    <th width="22%">Adviser</th>
-                    <th width="10%">Capacity</th>
-                    <th width="10%">Status</th>
-                    <th width="8%">Actions</th>
+                    <th width="15%" data-column="section" data-column-title="Section" data-column-type="text">Section</th>
+                    <th width="12%" data-column="grade" data-column-title="Grade" data-column-type="grade">Grade</th>
+                    <th width="15%" data-column="level" data-column-title="Level" data-column-type="categorical">Level</th>
+                    <th width="20%" data-column="advisor" data-column-title="Advisor" data-column-type="advisor">Advisor</th>
+                    <th width="13%" data-column="capacity" data-column-title="Capacity" data-column-type="capacity">Capacity</th>
+                    <th width="11%" data-column="status" data-column-title="Status" data-column-type="status">Status</th>
+                    <th width="10%">Actions</th>
                 </tr>
             </thead>
 
             <tbody>
                 @forelse ($sections as $section)
-                    <tr>
+                    @php
+                        $vacancy = max(0, $section->capacity - $section->students_count);
+                        $statusText = ucfirst($section->status);
+                    @endphp
+                    <tr data-col-section="{{ $section->name }}"
+                        data-col-grade="Grade {{ $section->grade_level }}"
+                        data-col-level="{{ Str::headline(str_replace('_', ' ', $section->level)) }}"
+                        data-col-advisor="{{ $section->advisor?->full_name ?? 'Not Assigned' }}"
+                        data-col-capacity="{{ $section->capacity }}"
+                        data-col-enrolled="{{ $section->students_count }}"
+                        data-col-vacant="{{ $vacancy }}"
+                        data-col-status="{{ $statusText }}">
                         <td class="text-center">
                             <input type="checkbox" class="form-check-input academic-check-input section-select-checkbox row-checkbox"
                                 value="{{ $section->id }}" data-status="{{ $section->status }}">
                         </td>
-                        <td>{{ $section->name }}</td>
-                        <td>Grade {{ $section->grade_level }}</td>
+                        <td><span class="fw-semibold text-dark">{{ $section->name }}</span></td>
+                        <td><span class="badge bg-light text-secondary border">Grade {{ $section->grade_level }}</span></td>
                         <td>{{ Str::headline(str_replace('_', ' ', $section->level)) }}</td>
-                        <td>{{ $section->advisor?->full_name ?? 'Not Assigned' }}</td>
-                        <td>{{ $section->students_count }} / {{ $section->capacity }}</td>
                         <td>
-                            @if ($section->status === 'active')
-                                <span class="badge-dot dot-success">Active</span>
+                            @if($section->advisor)
+                                <span class="fw-medium text-dark">{{ $section->advisor->full_name }}</span>
                             @else
-                                <span class="badge-dot dot-secondary">Inactive</span>
+                                <span class="text-muted fst-italic">Not Assigned</span>
                             @endif
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ $section->students_count }} / {{ $section->capacity }}</div>
+                            <div class="text-muted small" style="font-size: 0.72rem;">{{ $vacancy }} vacant</div>
+                        </td>
+                        <td>
+                            <span class="badge-dot dot-{{ $section->status === 'active' ? 'success' : 'secondary' }}">
+                                {{ $statusText }}
+                            </span>
                         </td>
                         <td>
                             <div class="dropdown">
@@ -190,19 +175,20 @@
                 const restoreBtn = document.getElementById('sectionBulkRestoreBtn');
                 
                 function updateUI() {
-                    const checked = Array.from(checkboxes).filter(cb => cb.checked);
+                    const visibleCheckboxes = Array.from(pane.querySelectorAll('tbody tr:not(.d-none) .row-checkbox'));
+                    const checked = visibleCheckboxes.filter(cb => cb.checked);
                     const count = checked.length;
                     
                     if (countText) countText.textContent = count;
                     if (bulkBar) bulkBar.classList.toggle('d-none', count === 0);
                     
-                    checkboxes.forEach(cb => {
+                    pane.querySelectorAll('.row-checkbox').forEach(cb => {
                         const tr = cb.closest('tr');
                         if (tr) tr.classList.toggle('academic-selected-row', cb.checked);
                     });
                     
                     if (selectAll) {
-                        selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
+                        selectAll.checked = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
                     }
                     
                     const activeCount = checked.filter(cb => cb.dataset.status === 'active').length;
