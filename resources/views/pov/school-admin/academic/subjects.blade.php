@@ -106,42 +106,6 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Generic "Select All" initialization handler using DOM traversal
-            function initGenericSelectAll() {
-                document.querySelectorAll('.select-all-checkbox').forEach(function (selectAllCb) {
-                    const table = selectAllCb.closest('table');
-                    if (!table) return;
-
-                    const rowCheckboxes = table.querySelectorAll('.row-checkbox');
-
-                    // Sync Select All checkbox state based on visible row checkboxes
-                    function syncSelectAllState() {
-                        const visibleCheckboxes = Array.from(table.querySelectorAll('tbody tr:not(.d-none) .row-checkbox'));
-                        const checkedCount = visibleCheckboxes.filter(cb => cb.checked).length;
-                        selectAllCb.checked = visibleCheckboxes.length > 0 && checkedCount === visibleCheckboxes.length;
-                        selectAllCb.indeterminate = checkedCount > 0 && checkedCount < visibleCheckboxes.length;
-                    }
-
-                    // Attach listener to Select All checkbox
-                    selectAllCb.onclick = function () {
-                        const visibleCheckboxes = Array.from(table.querySelectorAll('tbody tr:not(.d-none) .row-checkbox'));
-                        visibleCheckboxes.forEach(function (cb) {
-                            if (!cb.disabled) {
-                                cb.checked = selectAllCb.checked;
-                                cb.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                        });
-                    };
-
-                    // Listen to each row checkbox to update Select All state
-                    rowCheckboxes.forEach(function (cb) {
-                        cb.addEventListener('change', syncSelectAllState);
-                    });
-
-                    syncSelectAllState();
-                });
-            }
-
             function initSubjectBulk() {
                 const pane = document.getElementById('subject-table-pane');
                 if (!pane) return;
@@ -153,7 +117,8 @@
                 const deleteBtn = document.getElementById('subjectBulkDeleteBtn');
                 
                 function updateUI() {
-                    const checked = Array.from(checkboxes).filter(cb => cb.checked);
+                    const visibleCheckboxes = Array.from(pane.querySelectorAll('tbody tr:not(.d-none) .row-checkbox'));
+                    const checked = visibleCheckboxes.filter(cb => cb.checked);
                     const count = checked.length;
                     
                     if (countText) countText.textContent = count;
@@ -165,7 +130,9 @@
                     });
                     
                     if (selectAll) {
-                        selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
+                        const allChecked = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
+                        selectAll.checked = allChecked;
+                        selectAll.indeterminate = count > 0 && !allChecked;
                     }
                     
                     const currentDeleteBtn = document.getElementById('subjectBulkDeleteBtn');
@@ -174,6 +141,19 @@
                     }
                 }
                 
+                if (selectAll) {
+                    selectAll.onchange = function () {
+                        const isChecked = selectAll.checked;
+                        const visibleCheckboxes = Array.from(pane.querySelectorAll('tbody tr:not(.d-none) .row-checkbox'));
+                        visibleCheckboxes.forEach(cb => {
+                            if (!cb.disabled) {
+                                cb.checked = isChecked;
+                            }
+                        });
+                        updateUI();
+                    };
+                }
+
                 checkboxes.forEach(cb => {
                     cb.removeEventListener('change', updateUI);
                     cb.addEventListener('change', updateUI);
@@ -181,7 +161,10 @@
                 
                 window.clearSubjectSelection = function() {
                     checkboxes.forEach(cb => cb.checked = false);
-                    if (selectAll) selectAll.checked = false;
+                    if (selectAll) {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = false;
+                    }
                     updateUI();
                 };
                 
@@ -258,18 +241,14 @@
                         }
                     });
                 }
+
+                updateUI();
             }
             
-            initGenericSelectAll();
             initSubjectBulk();
-            document.addEventListener("ajax:table-refreshed", function() {
-                initGenericSelectAll();
-                initSubjectBulk();
-            });
-            document.addEventListener("ajax:content-refreshed", function() {
-                initGenericSelectAll();
-                initSubjectBulk();
-            });
+            document.addEventListener("ajax:table-refreshed", initSubjectBulk);
+            document.addEventListener("ajax:content-refreshed", initSubjectBulk);
+            document.getElementById('subject-table-pane')?.addEventListener('excel-grid:filtered', initSubjectBulk);
         });
     </script>
 @endpush

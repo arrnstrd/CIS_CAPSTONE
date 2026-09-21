@@ -171,7 +171,9 @@
                     });
                     
                     if (selectAll) {
-                        selectAll.checked = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
+                        const allChecked = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
+                        selectAll.checked = allChecked;
+                        selectAll.indeterminate = count > 0 && !allChecked;
                     }
                     
                     const currentDeleteBtn = document.getElementById('assignmentBulkDeleteBtn');
@@ -181,22 +183,27 @@
                 }
                 
                 if (selectAll) {
-                    selectAll.addEventListener('change', function () {
+                    selectAll.onchange = function () {
+                        const isChecked = selectAll.checked;
                         const visibleCheckboxes = Array.from(pane.querySelectorAll('tbody tr:not(.d-none) .assignment-select-checkbox'));
                         visibleCheckboxes.forEach(cb => {
-                            if (!cb.disabled) cb.checked = selectAll.checked;
+                            if (!cb.disabled) cb.checked = isChecked;
                         });
                         updateUI();
-                    });
+                    };
                 }
                 
                 checkboxes.forEach(cb => {
+                    cb.removeEventListener('change', updateUI);
                     cb.addEventListener('change', updateUI);
                 });
                 
                 window.clearAssignmentSelection = function() {
                     checkboxes.forEach(cb => cb.checked = false);
-                    if (selectAll) selectAll.checked = false;
+                    if (selectAll) {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = false;
+                    }
                     updateUI();
                 };
                 
@@ -285,11 +292,14 @@
                         }
                     });
                 }
+
+                updateUI();
             }
             
             initAssignmentBulk();
             document.addEventListener("ajax:table-refreshed", initAssignmentBulk);
             document.addEventListener("ajax:content-refreshed", initAssignmentBulk);
+            document.getElementById('assignment-table-pane')?.addEventListener('excel-grid:filtered', initAssignmentBulk);
         });
     </script>
 @endpush

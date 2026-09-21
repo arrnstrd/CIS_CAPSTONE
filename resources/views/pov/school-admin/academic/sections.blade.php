@@ -188,7 +188,9 @@
                     });
                     
                     if (selectAll) {
-                        selectAll.checked = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
+                        const allChecked = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
+                        selectAll.checked = allChecked;
+                        selectAll.indeterminate = count > 0 && !allChecked;
                     }
                     
                     const activeCount = checked.filter(cb => cb.dataset.status === 'active').length;
@@ -201,6 +203,19 @@
                     if (currentRestoreBtn) currentRestoreBtn.classList.toggle('d-none', inactiveCount === 0);
                 }
                 
+                if (selectAll) {
+                    selectAll.onchange = function () {
+                        const isChecked = selectAll.checked;
+                        const visibleCheckboxes = Array.from(pane.querySelectorAll('tbody tr:not(.d-none) .row-checkbox'));
+                        visibleCheckboxes.forEach(cb => {
+                            if (!cb.disabled) {
+                                cb.checked = isChecked;
+                            }
+                        });
+                        updateUI();
+                    };
+                }
+
                 checkboxes.forEach(cb => {
                     cb.removeEventListener('change', updateUI);
                     cb.addEventListener('change', updateUI);
@@ -208,7 +223,10 @@
                 
                 window.clearSectionSelection = function() {
                     checkboxes.forEach(cb => cb.checked = false);
-                    if (selectAll) selectAll.checked = false;
+                    if (selectAll) {
+                        selectAll.checked = false;
+                        selectAll.indeterminate = false;
+                    }
                     updateUI();
                 };
                 
@@ -337,11 +355,13 @@
                         }
                     });
                 }
+                updateUI();
             }
             
             initSectionBulk();
             document.addEventListener("ajax:table-refreshed", initSectionBulk);
             document.addEventListener("ajax:content-refreshed", initSectionBulk);
+            document.getElementById('section-table-pane')?.addEventListener('excel-grid:filtered', initSectionBulk);
         });
     </script>
 @endpush

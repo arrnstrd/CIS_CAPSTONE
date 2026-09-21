@@ -1,0 +1,317 @@
+<svg width="880" height="960" viewBox="0 0 880 960" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        .tbl-bg { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5px; }
+        .tbl-hdr { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5px; }
+        .tbl-div { stroke: #000000; stroke-width: 0.75px; }
+        .tbl-title { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 800; fill: #000000; letter-spacing: 0.3px; }
+        .col-key { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 800; fill: #000000; }
+        .col-name { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #000000; }
+        .col-type { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 10.5px; font-style: italic; font-weight: 500; fill: #222222; }
+        .conn-line { fill: none; stroke: #000000; stroke-width: 1.5px; }
+    </style>
+    <rect width="880" height="960" fill="#FFFFFF"/>
+    <!-- Title Header -->
+    <text x="35" y="26" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="14" font-weight="800" fill="#000000" letter-spacing="0.5px">Section 2: Student Profiles &amp; Enrollment</text>
+    <line x1="35" y1="34" x2="845" y2="34" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- ==================== TABLE: users ==================== -->
+    <rect x="50" y="50" width="340" height="140" class="tbl-bg"/>
+    <rect x="50" y="50" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="70" text-anchor="middle" class="tbl-title">users</text>
+    <!-- Row 0: id -->
+    <text x="58" y="95" class="col-key">[PK]</text>
+    <text x="96" y="95" class="col-name">id</text>
+    <text x="382" y="95" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="102" x2="390" y2="102" class="tbl-div"/>
+    <!-- Row 1: first_name -->
+    <text x="62" y="117" class="col-name">first_name</text>
+    <text x="382" y="117" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="50" y1="124" x2="390" y2="124" class="tbl-div"/>
+    <!-- Row 2: last_name -->
+    <text x="62" y="139" class="col-name">last_name</text>
+    <text x="382" y="139" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="50" y1="146" x2="390" y2="146" class="tbl-div"/>
+    <!-- Row 3: email -->
+    <text x="58" y="161" class="col-key">[UK]</text>
+    <text x="96" y="161" class="col-name">email</text>
+    <text x="382" y="161" text-anchor="end" class="col-type">VARCHAR(255)</text>
+    <line x1="50" y1="168" x2="390" y2="168" class="tbl-div"/>
+    <!-- Row 4: role -->
+    <text x="62" y="183" class="col-name">role</text>
+    <text x="382" y="183" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: teachers ==================== -->
+    <rect x="50" y="220" width="340" height="96" class="tbl-bg"/>
+    <rect x="50" y="220" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="240" text-anchor="middle" class="tbl-title">teachers</text>
+    <!-- Row 0: id -->
+    <text x="58" y="265" class="col-key">[PK]</text>
+    <text x="96" y="265" class="col-name">id</text>
+    <text x="382" y="265" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="272" x2="390" y2="272" class="tbl-div"/>
+    <!-- Row 1: user_id -->
+    <text x="58" y="287" class="col-key">[FK]</text>
+    <text x="96" y="287" class="col-name">user_id</text>
+    <text x="382" y="287" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="294" x2="390" y2="294" class="tbl-div"/>
+    <!-- Row 2: status -->
+    <text x="62" y="309" class="col-name">status</text>
+    <text x="382" y="309" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: sections ==================== -->
+    <rect x="50" y="345" width="340" height="228" class="tbl-bg"/>
+    <rect x="50" y="345" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="365" text-anchor="middle" class="tbl-title">sections</text>
+    <!-- Row 0: id -->
+    <text x="58" y="390" class="col-key">[PK]</text>
+    <text x="96" y="390" class="col-name">id</text>
+    <text x="382" y="390" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="397" x2="390" y2="397" class="tbl-div"/>
+    <!-- Row 1: advisor_id -->
+    <text x="58" y="412" class="col-key">[FK]</text>
+    <text x="96" y="412" class="col-name">advisor_id</text>
+    <text x="382" y="412" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="419" x2="390" y2="419" class="tbl-div"/>
+    <!-- Row 2: name -->
+    <text x="62" y="434" class="col-name">name</text>
+    <text x="382" y="434" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="50" y1="441" x2="390" y2="441" class="tbl-div"/>
+    <!-- Row 3: level -->
+    <text x="62" y="456" class="col-name">level</text>
+    <text x="382" y="456" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="463" x2="390" y2="463" class="tbl-div"/>
+    <!-- Row 4: grade_level -->
+    <text x="62" y="478" class="col-name">grade_level</text>
+    <text x="382" y="478" text-anchor="end" class="col-type">INT</text>
+    <line x1="50" y1="485" x2="390" y2="485" class="tbl-div"/>
+    <!-- Row 5: capacity -->
+    <text x="62" y="500" class="col-name">capacity</text>
+    <text x="382" y="500" text-anchor="end" class="col-type">INT</text>
+    <line x1="50" y1="507" x2="390" y2="507" class="tbl-div"/>
+    <!-- Row 6: session_type -->
+    <text x="62" y="522" class="col-name">session_type</text>
+    <text x="382" y="522" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="529" x2="390" y2="529" class="tbl-div"/>
+    <!-- Row 7: track -->
+    <text x="62" y="544" class="col-name">track</text>
+    <text x="382" y="544" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="50" y1="551" x2="390" y2="551" class="tbl-div"/>
+    <!-- Row 8: status -->
+    <text x="62" y="566" class="col-name">status</text>
+    <text x="382" y="566" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: school_years ==================== -->
+    <rect x="50" y="600" width="340" height="96" class="tbl-bg"/>
+    <rect x="50" y="600" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="620" text-anchor="middle" class="tbl-title">school_years</text>
+    <!-- Row 0: id -->
+    <text x="58" y="645" class="col-key">[PK]</text>
+    <text x="96" y="645" class="col-name">id</text>
+    <text x="382" y="645" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="652" x2="390" y2="652" class="tbl-div"/>
+    <!-- Row 1: school_year -->
+    <text x="58" y="667" class="col-key">[UK]</text>
+    <text x="96" y="667" class="col-name">school_year</text>
+    <text x="382" y="667" text-anchor="end" class="col-type">VARCHAR(20)</text>
+    <line x1="50" y1="674" x2="390" y2="674" class="tbl-div"/>
+    <!-- Row 2: is_active -->
+    <text x="62" y="689" class="col-name">is_active</text>
+    <text x="382" y="689" text-anchor="end" class="col-type">BOOLEAN</text>
+
+    <!-- ==================== TABLE: students ==================== -->
+    <rect x="470" y="50" width="360" height="272" class="tbl-bg"/>
+    <rect x="470" y="50" width="360" height="30" class="tbl-hdr"/>
+    <text x="650" y="70" text-anchor="middle" class="tbl-title">students</text>
+    <!-- Row 0: id -->
+    <text x="478" y="95" class="col-key">[PK]</text>
+    <text x="516" y="95" class="col-name">id</text>
+    <text x="822" y="95" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="102" x2="830" y2="102" class="tbl-div"/>
+    <!-- Row 1: lrn -->
+    <text x="478" y="117" class="col-key">[UK]</text>
+    <text x="516" y="117" class="col-name">lrn</text>
+    <text x="822" y="117" text-anchor="end" class="col-type">VARCHAR(12)</text>
+    <line x1="470" y1="124" x2="830" y2="124" class="tbl-div"/>
+    <!-- Row 2: student_number -->
+    <text x="478" y="139" class="col-key">[UK]</text>
+    <text x="516" y="139" class="col-name">student_number</text>
+    <text x="822" y="139" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="470" y1="146" x2="830" y2="146" class="tbl-div"/>
+    <!-- Row 3: first_name -->
+    <text x="482" y="161" class="col-name">first_name</text>
+    <text x="822" y="161" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="470" y1="168" x2="830" y2="168" class="tbl-div"/>
+    <!-- Row 4: middle_name -->
+    <text x="482" y="183" class="col-name">middle_name</text>
+    <text x="822" y="183" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="470" y1="190" x2="830" y2="190" class="tbl-div"/>
+    <!-- Row 5: last_name -->
+    <text x="482" y="205" class="col-name">last_name</text>
+    <text x="822" y="205" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="470" y1="212" x2="830" y2="212" class="tbl-div"/>
+    <!-- Row 6: suffix -->
+    <text x="482" y="227" class="col-name">suffix</text>
+    <text x="822" y="227" text-anchor="end" class="col-type">VARCHAR(20)</text>
+    <line x1="470" y1="234" x2="830" y2="234" class="tbl-div"/>
+    <!-- Row 7: sex -->
+    <text x="482" y="249" class="col-name">sex</text>
+    <text x="822" y="249" text-anchor="end" class="col-type">VARCHAR(10)</text>
+    <line x1="470" y1="256" x2="830" y2="256" class="tbl-div"/>
+    <!-- Row 8: age -->
+    <text x="482" y="271" class="col-name">age</text>
+    <text x="822" y="271" text-anchor="end" class="col-type">INT</text>
+    <line x1="470" y1="278" x2="830" y2="278" class="tbl-div"/>
+    <!-- Row 9: address -->
+    <text x="482" y="293" class="col-name">address</text>
+    <text x="822" y="293" text-anchor="end" class="col-type">TEXT</text>
+    <line x1="470" y1="300" x2="830" y2="300" class="tbl-div"/>
+    <!-- Row 10: status -->
+    <text x="482" y="315" class="col-name">status</text>
+    <text x="822" y="315" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: guardians ==================== -->
+    <rect x="470" y="345" width="360" height="162" class="tbl-bg"/>
+    <rect x="470" y="345" width="360" height="30" class="tbl-hdr"/>
+    <text x="650" y="365" text-anchor="middle" class="tbl-title">guardians</text>
+    <!-- Row 0: id -->
+    <text x="478" y="390" class="col-key">[PK]</text>
+    <text x="516" y="390" class="col-name">id</text>
+    <text x="822" y="390" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="397" x2="830" y2="397" class="tbl-div"/>
+    <!-- Row 1: student_id -->
+    <text x="478" y="412" class="col-key">[FK]</text>
+    <text x="516" y="412" class="col-name">student_id</text>
+    <text x="822" y="412" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="419" x2="830" y2="419" class="tbl-div"/>
+    <!-- Row 2: name -->
+    <text x="482" y="434" class="col-name">name</text>
+    <text x="822" y="434" text-anchor="end" class="col-type">VARCHAR(150)</text>
+    <line x1="470" y1="441" x2="830" y2="441" class="tbl-div"/>
+    <!-- Row 3: relationship -->
+    <text x="482" y="456" class="col-name">relationship</text>
+    <text x="822" y="456" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="470" y1="463" x2="830" y2="463" class="tbl-div"/>
+    <!-- Row 4: contact_number -->
+    <text x="482" y="478" class="col-name">contact_number</text>
+    <text x="822" y="478" text-anchor="end" class="col-type">VARCHAR(30)</text>
+    <line x1="470" y1="485" x2="830" y2="485" class="tbl-div"/>
+    <!-- Row 5: email -->
+    <text x="482" y="500" class="col-name">email</text>
+    <text x="822" y="500" text-anchor="end" class="col-type">VARCHAR(255)</text>
+
+    <!-- ==================== TABLE: qr_codes ==================== -->
+    <rect x="470" y="530" width="360" height="140" class="tbl-bg"/>
+    <rect x="470" y="530" width="360" height="30" class="tbl-hdr"/>
+    <text x="650" y="550" text-anchor="middle" class="tbl-title">qr_codes</text>
+    <!-- Row 0: id -->
+    <text x="478" y="575" class="col-key">[PK]</text>
+    <text x="516" y="575" class="col-name">id</text>
+    <text x="822" y="575" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="582" x2="830" y2="582" class="tbl-div"/>
+    <!-- Row 1: student_id -->
+    <text x="478" y="597" class="col-key">[FK]</text>
+    <text x="516" y="597" class="col-name">student_id</text>
+    <text x="822" y="597" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="604" x2="830" y2="604" class="tbl-div"/>
+    <!-- Row 2: code -->
+    <text x="478" y="619" class="col-key">[UK]</text>
+    <text x="516" y="619" class="col-name">code</text>
+    <text x="822" y="619" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="470" y1="626" x2="830" y2="626" class="tbl-div"/>
+    <!-- Row 3: image_path -->
+    <text x="482" y="641" class="col-name">image_path</text>
+    <text x="822" y="641" text-anchor="end" class="col-type">VARCHAR(255)</text>
+    <line x1="470" y1="648" x2="830" y2="648" class="tbl-div"/>
+    <!-- Row 4: is_active -->
+    <text x="482" y="663" class="col-name">is_active</text>
+    <text x="822" y="663" text-anchor="end" class="col-type">BOOLEAN</text>
+
+    <!-- ==================== TABLE: enrollments ==================== -->
+    <rect x="250" y="730" width="370" height="184" class="tbl-bg"/>
+    <rect x="250" y="730" width="370" height="30" class="tbl-hdr"/>
+    <text x="435" y="750" text-anchor="middle" class="tbl-title">enrollments</text>
+    <!-- Row 0: id -->
+    <text x="258" y="775" class="col-key">[PK]</text>
+    <text x="296" y="775" class="col-name">id</text>
+    <text x="612" y="775" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="250" y1="782" x2="620" y2="782" class="tbl-div"/>
+    <!-- Row 1: student_id -->
+    <text x="258" y="797" class="col-key">[FK]</text>
+    <text x="296" y="797" class="col-name">student_id</text>
+    <text x="612" y="797" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="250" y1="804" x2="620" y2="804" class="tbl-div"/>
+    <!-- Row 2: school_year_id -->
+    <text x="258" y="819" class="col-key">[FK]</text>
+    <text x="296" y="819" class="col-name">school_year_id</text>
+    <text x="612" y="819" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="250" y1="826" x2="620" y2="826" class="tbl-div"/>
+    <!-- Row 3: section_id -->
+    <text x="258" y="841" class="col-key">[FK]</text>
+    <text x="296" y="841" class="col-name">section_id</text>
+    <text x="612" y="841" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="250" y1="848" x2="620" y2="848" class="tbl-div"/>
+    <!-- Row 4: grade_level -->
+    <text x="262" y="863" class="col-name">grade_level</text>
+    <text x="612" y="863" text-anchor="end" class="col-type">INT</text>
+    <line x1="250" y1="870" x2="620" y2="870" class="tbl-div"/>
+    <!-- Row 5: level -->
+    <text x="262" y="885" class="col-name">level</text>
+    <text x="612" y="885" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="250" y1="892" x2="620" y2="892" class="tbl-div"/>
+    <!-- Row 6: status -->
+    <text x="262" y="907" class="col-name">status</text>
+    <text x="612" y="907" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== ORTHOGONAL CONNECTORS ==================== -->
+    <!-- 1. users.id (390, 91) to teachers.user_id (390, 283) [1 : 1] -->
+    <path d="M 390 91 L 415 91 L 415 283 L 390 283" class="conn-line"/>
+    <line x1="395" y1="86" x2="395" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="400" y1="86" x2="400" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="395" y1="278" x2="395" y2="288" stroke="#000000" stroke-width="1.5"/>
+    <line x1="400" y1="278" x2="400" y2="288" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 2. teachers.id (390, 261) to sections.advisor_id (390, 408) [1 : N] -->
+    <path d="M 390 261 L 430 261 L 430 408 L 390 408" class="conn-line"/>
+    <line x1="395" y1="256" x2="395" y2="266" stroke="#000000" stroke-width="1.5"/>
+    <line x1="400" y1="256" x2="400" y2="266" stroke="#000000" stroke-width="1.5"/>
+    <!-- Crow's Foot: -->
+    <line x1="390" y1="408" x2="398" y2="402" stroke="#000000" stroke-width="1.5"/>
+    <line x1="390" y1="408" x2="398" y2="414" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="404" cy="408" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 3. students.id (830, 91) to guardians.student_id (830, 408) [1 : N] -->
+    <path d="M 830 91 L 852 91 L 852 408 L 830 408" class="conn-line"/>
+    <line x1="835" y1="86" x2="835" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="840" y1="86" x2="840" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="830" y1="408" x2="838" y2="402" stroke="#000000" stroke-width="1.5"/>
+    <line x1="830" y1="408" x2="838" y2="414" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="844" cy="408" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 4. students.id (830, 91) to qr_codes.student_id (830, 593) [1 : N] -->
+    <path d="M 830 91 L 860 91 L 860 593 L 830 593" class="conn-line"/>
+    <line x1="830" y1="593" x2="838" y2="587" stroke="#000000" stroke-width="1.5"/>
+    <line x1="830" y1="593" x2="838" y2="599" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="844" cy="593" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 5. students.id (830, 91) to enrollments.student_id (620, 793) [1 : N] -->
+    <path d="M 830 91 L 868 91 L 868 793 L 620 793" class="conn-line"/>
+    <line x1="620" y1="793" x2="628" y2="787" stroke="#000000" stroke-width="1.5"/>
+    <line x1="620" y1="793" x2="628" y2="799" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="634" cy="793" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 6. school_years.id (50, 641) to enrollments.school_year_id (250, 815) [1 : N] -->
+    <path d="M 50 641 L 28 641 L 28 815 L 250 815" class="conn-line"/>
+    <line x1="45" y1="636" x2="45" y2="646" stroke="#000000" stroke-width="1.5"/>
+    <line x1="40" y1="636" x2="40" y2="646" stroke="#000000" stroke-width="1.5"/>
+    <line x1="250" y1="815" x2="242" y2="809" stroke="#000000" stroke-width="1.5"/>
+    <line x1="250" y1="815" x2="242" y2="821" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="236" cy="815" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 7. sections.id (50, 386) to enrollments.section_id (250, 837) [1 : N] -->
+    <path d="M 50 386 L 16 386 L 16 837 L 250 837" class="conn-line"/>
+    <line x1="45" y1="381" x2="45" y2="391" stroke="#000000" stroke-width="1.5"/>
+    <line x1="40" y1="381" x2="40" y2="391" stroke="#000000" stroke-width="1.5"/>
+    <line x1="250" y1="837" x2="242" y2="831" stroke="#000000" stroke-width="1.5"/>
+    <line x1="250" y1="837" x2="242" y2="843" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="236" cy="837" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+</svg>

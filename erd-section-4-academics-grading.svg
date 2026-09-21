@@ -1,0 +1,433 @@
+<svg width="880" height="1220" viewBox="0 0 880 1220" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        .tbl-bg { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5px; }
+        .tbl-hdr { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5px; }
+        .tbl-div { stroke: #000000; stroke-width: 0.75px; }
+        .tbl-title { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 800; fill: #000000; letter-spacing: 0.3px; }
+        .col-key { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 800; fill: #000000; }
+        .col-name { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #000000; }
+        .col-type { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 10.5px; font-style: italic; font-weight: 500; fill: #222222; }
+        .conn-line { fill: none; stroke: #000000; stroke-width: 1.5px; }
+    </style>
+    <rect width="880" height="1220" fill="#FFFFFF"/>
+    <text x="35" y="26" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="14" font-weight="800" fill="#000000" letter-spacing="0.5px">Section 4: Academics, Grading, Verification &amp; Interventions</text>
+    <line x1="35" y1="34" x2="845" y2="34" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- ==================== TABLE: teachers ==================== -->
+    <rect x="50" y="50" width="340" height="96" class="tbl-bg"/>
+    <rect x="50" y="50" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="70" text-anchor="middle" class="tbl-title">teachers</text>
+    <text x="58" y="95" class="col-key">[PK]</text>
+    <text x="96" y="95" class="col-name">id</text>
+    <text x="382" y="95" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="102" x2="390" y2="102" class="tbl-div"/>
+    <text x="62" y="117" class="col-name">user_id</text>
+    <text x="382" y="117" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="124" x2="390" y2="124" class="tbl-div"/>
+    <text x="62" y="139" class="col-name">status</text>
+    <text x="382" y="139" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: subjects ==================== -->
+    <rect x="50" y="160" width="340" height="140" class="tbl-bg"/>
+    <rect x="50" y="160" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="180" text-anchor="middle" class="tbl-title">subjects</text>
+    <text x="58" y="205" class="col-key">[PK]</text>
+    <text x="96" y="205" class="col-name">id</text>
+    <text x="382" y="205" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="212" x2="390" y2="212" class="tbl-div"/>
+    <text x="58" y="227" class="col-key">[UK]</text>
+    <text x="96" y="227" class="col-name">code</text>
+    <text x="382" y="227" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="234" x2="390" y2="234" class="tbl-div"/>
+    <text x="62" y="249" class="col-name">name</text>
+    <text x="382" y="249" text-anchor="end" class="col-type">VARCHAR(150)</text>
+    <line x1="50" y1="256" x2="390" y2="256" class="tbl-div"/>
+    <text x="62" y="271" class="col-name">level</text>
+    <text x="382" y="271" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="278" x2="390" y2="278" class="tbl-div"/>
+    <text x="62" y="293" class="col-name">subject_type</text>
+    <text x="382" y="293" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: teaching_assignments ==================== -->
+    <rect x="50" y="315" width="340" height="162" class="tbl-bg"/>
+    <rect x="50" y="315" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="335" text-anchor="middle" class="tbl-title">teaching_assignments</text>
+    <text x="58" y="360" class="col-key">[PK]</text>
+    <text x="96" y="360" class="col-name">id</text>
+    <text x="382" y="360" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="367" x2="390" y2="367" class="tbl-div"/>
+    <text x="58" y="382" class="col-key">[FK]</text>
+    <text x="96" y="382" class="col-name">teacher_id</text>
+    <text x="382" y="382" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="389" x2="390" y2="389" class="tbl-div"/>
+    <text x="58" y="404" class="col-key">[FK]</text>
+    <text x="96" y="404" class="col-name">subject_id</text>
+    <text x="382" y="404" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="411" x2="390" y2="411" class="tbl-div"/>
+    <text x="62" y="426" class="col-name">section_id</text>
+    <text x="382" y="426" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="433" x2="390" y2="433" class="tbl-div"/>
+    <text x="62" y="448" class="col-name">school_year_id</text>
+    <text x="382" y="448" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="455" x2="390" y2="455" class="tbl-div"/>
+    <text x="62" y="470" class="col-name">status</text>
+    <text x="382" y="470" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: grading_configs ==================== -->
+    <rect x="50" y="490" width="340" height="118" class="tbl-bg"/>
+    <rect x="50" y="490" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="510" text-anchor="middle" class="tbl-title">grading_configs</text>
+    <text x="58" y="535" class="col-key">[PK]</text>
+    <text x="96" y="535" class="col-name">id</text>
+    <text x="382" y="535" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="542" x2="390" y2="542" class="tbl-div"/>
+    <text x="58" y="557" class="col-key">[FK]</text>
+    <text x="96" y="557" class="col-name">teaching_assignment_id</text>
+    <text x="382" y="557" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="564" x2="390" y2="564" class="tbl-div"/>
+    <text x="58" y="579" class="col-key">[FK]</text>
+    <text x="96" y="579" class="col-name">assessment_category_id</text>
+    <text x="382" y="579" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="586" x2="390" y2="586" class="tbl-div"/>
+    <text x="62" y="601" class="col-name">weight</text>
+    <text x="382" y="601" text-anchor="end" class="col-type">DECIMAL(5,2)</text>
+
+    <!-- ==================== TABLE: attendance_verifications ==================== -->
+    <rect x="50" y="625" width="340" height="206" class="tbl-bg"/>
+    <rect x="50" y="625" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="645" text-anchor="middle" class="tbl-title">attendance_verifications</text>
+    <text x="58" y="670" class="col-key">[PK]</text>
+    <text x="96" y="670" class="col-name">id</text>
+    <text x="382" y="670" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="677" x2="390" y2="677" class="tbl-div"/>
+    <text x="62" y="692" class="col-name">enrollment_id</text>
+    <text x="382" y="692" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="699" x2="390" y2="699" class="tbl-div"/>
+    <text x="58" y="714" class="col-key">[FK]</text>
+    <text x="96" y="714" class="col-name">teaching_assignment_id</text>
+    <text x="382" y="714" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="721" x2="390" y2="721" class="tbl-div"/>
+    <text x="58" y="736" class="col-key">[FK]</text>
+    <text x="96" y="736" class="col-name">teacher_id</text>
+    <text x="382" y="736" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="743" x2="390" y2="743" class="tbl-div"/>
+    <text x="62" y="758" class="col-name">attendance_date</text>
+    <text x="382" y="758" text-anchor="end" class="col-type">DATE</text>
+    <line x1="50" y1="765" x2="390" y2="765" class="tbl-div"/>
+    <text x="62" y="780" class="col-name">status</text>
+    <text x="382" y="780" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="787" x2="390" y2="787" class="tbl-div"/>
+    <text x="62" y="802" class="col-name">remarks</text>
+    <text x="382" y="802" text-anchor="end" class="col-type">TEXT</text>
+    <line x1="50" y1="809" x2="390" y2="809" class="tbl-div"/>
+    <text x="62" y="824" class="col-name">resolved_by</text>
+    <text x="382" y="824" text-anchor="end" class="col-type">BIGINT</text>
+
+    <!-- ==================== TABLE: attendance_verification_histories ==================== -->
+    <rect x="50" y="845" width="340" height="162" class="tbl-bg"/>
+    <rect x="50" y="845" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="865" text-anchor="middle" class="tbl-title">attendance_verification_histories</text>
+    <text x="58" y="890" class="col-key">[PK]</text>
+    <text x="96" y="890" class="col-name">id</text>
+    <text x="382" y="890" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="897" x2="390" y2="897" class="tbl-div"/>
+    <text x="58" y="912" class="col-key">[FK]</text>
+    <text x="96" y="912" class="col-name">attendance_verification_id</text>
+    <text x="382" y="912" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="919" x2="390" y2="919" class="tbl-div"/>
+    <text x="62" y="934" class="col-name">changed_by</text>
+    <text x="382" y="934" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="941" x2="390" y2="941" class="tbl-div"/>
+    <text x="62" y="956" class="col-name">previous_status</text>
+    <text x="382" y="956" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="963" x2="390" y2="963" class="tbl-div"/>
+    <text x="62" y="978" class="col-name">new_status</text>
+    <text x="382" y="978" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="985" x2="390" y2="985" class="tbl-div"/>
+    <text x="62" y="1000" class="col-name">remarks</text>
+    <text x="382" y="1000" text-anchor="end" class="col-type">TEXT</text>
+
+    <!-- ==================== TABLE: risk_remarks ==================== -->
+    <rect x="50" y="1025" width="340" height="140" class="tbl-bg"/>
+    <rect x="50" y="1025" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="1045" text-anchor="middle" class="tbl-title">risk_remarks</text>
+    <text x="58" y="1070" class="col-key">[PK]</text>
+    <text x="96" y="1070" class="col-name">id</text>
+    <text x="382" y="1070" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="1077" x2="390" y2="1077" class="tbl-div"/>
+    <text x="62" y="1092" class="col-name">enrollment_id</text>
+    <text x="382" y="1092" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="1099" x2="390" y2="1099" class="tbl-div"/>
+    <text x="58" y="1114" class="col-key">[FK]</text>
+    <text x="96" y="1114" class="col-name">teacher_id</text>
+    <text x="382" y="1114" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="1121" x2="390" y2="1121" class="tbl-div"/>
+    <text x="62" y="1136" class="col-name">remark</text>
+    <text x="382" y="1136" text-anchor="end" class="col-type">TEXT</text>
+    <line x1="50" y1="1143" x2="390" y2="1143" class="tbl-div"/>
+    <text x="62" y="1158" class="col-name">created_at</text>
+    <text x="382" y="1158" text-anchor="end" class="col-type">TIMESTAMP</text>
+
+    <!-- ==================== TABLE: assessment_categories ==================== -->
+    <rect x="470" y="50" width="340" height="74" class="tbl-bg"/>
+    <rect x="470" y="50" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="70" text-anchor="middle" class="tbl-title">assessment_categories</text>
+    <text x="478" y="95" class="col-key">[PK]</text>
+    <text x="516" y="95" class="col-name">id</text>
+    <text x="802" y="95" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="102" x2="810" y2="102" class="tbl-div"/>
+    <text x="478" y="117" class="col-key">[UK]</text>
+    <text x="516" y="117" class="col-name">name</text>
+    <text x="802" y="117" text-anchor="end" class="col-type">VARCHAR(100)</text>
+
+    <!-- ==================== TABLE: grading_periods ==================== -->
+    <rect x="470" y="140" width="340" height="184" class="tbl-bg"/>
+    <rect x="470" y="140" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="160" text-anchor="middle" class="tbl-title">grading_periods</text>
+    <text x="478" y="185" class="col-key">[PK]</text>
+    <text x="516" y="185" class="col-name">id</text>
+    <text x="802" y="185" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="192" x2="810" y2="192" class="tbl-div"/>
+    <text x="482" y="207" class="col-name">name</text>
+    <text x="802" y="207" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="470" y1="214" x2="810" y2="214" class="tbl-div"/>
+    <text x="478" y="229" class="col-key">[UK]</text>
+    <text x="516" y="229" class="col-name">sequence</text>
+    <text x="802" y="229" text-anchor="end" class="col-type">INT</text>
+    <line x1="470" y1="236" x2="810" y2="236" class="tbl-div"/>
+    <text x="482" y="251" class="col-name">period_type</text>
+    <text x="802" y="251" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="470" y1="258" x2="810" y2="258" class="tbl-div"/>
+    <text x="482" y="273" class="col-name">is_active</text>
+    <text x="802" y="273" text-anchor="end" class="col-type">BOOLEAN</text>
+    <line x1="470" y1="280" x2="810" y2="280" class="tbl-div"/>
+    <text x="482" y="295" class="col-name">start_date</text>
+    <text x="802" y="295" text-anchor="end" class="col-type">DATE</text>
+    <line x1="470" y1="302" x2="810" y2="302" class="tbl-div"/>
+    <text x="482" y="317" class="col-name">end_date</text>
+    <text x="802" y="317" text-anchor="end" class="col-type">DATE</text>
+
+    <!-- ==================== TABLE: assessments ==================== -->
+    <rect x="470" y="340" width="340" height="184" class="tbl-bg"/>
+    <rect x="470" y="340" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="360" text-anchor="middle" class="tbl-title">assessments</text>
+    <text x="478" y="385" class="col-key">[PK]</text>
+    <text x="516" y="385" class="col-name">id</text>
+    <text x="802" y="385" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="392" x2="810" y2="392" class="tbl-div"/>
+    <text x="478" y="407" class="col-key">[FK]</text>
+    <text x="516" y="407" class="col-name">teaching_assignment_id</text>
+    <text x="802" y="407" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="414" x2="810" y2="414" class="tbl-div"/>
+    <text x="478" y="429" class="col-key">[FK]</text>
+    <text x="516" y="429" class="col-name">assessment_category_id</text>
+    <text x="802" y="429" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="436" x2="810" y2="436" class="tbl-div"/>
+    <text x="478" y="451" class="col-key">[FK]</text>
+    <text x="516" y="451" class="col-name">grading_period_id</text>
+    <text x="802" y="451" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="458" x2="810" y2="458" class="tbl-div"/>
+    <text x="482" y="473" class="col-name">title</text>
+    <text x="802" y="473" text-anchor="end" class="col-type">VARCHAR(150)</text>
+    <line x1="470" y1="480" x2="810" y2="480" class="tbl-div"/>
+    <text x="482" y="495" class="col-name">total_items</text>
+    <text x="802" y="495" text-anchor="end" class="col-type">INT</text>
+    <line x1="470" y1="502" x2="810" y2="502" class="tbl-div"/>
+    <text x="482" y="517" class="col-name">assessment_date</text>
+    <text x="802" y="517" text-anchor="end" class="col-type">DATE</text>
+
+    <!-- ==================== TABLE: student_assessment_scores ==================== -->
+    <rect x="470" y="540" width="340" height="140" class="tbl-bg"/>
+    <rect x="470" y="540" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="560" text-anchor="middle" class="tbl-title">student_assessment_scores</text>
+    <text x="478" y="585" class="col-key">[PK]</text>
+    <text x="516" y="585" class="col-name">id</text>
+    <text x="802" y="585" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="592" x2="810" y2="592" class="tbl-div"/>
+    <text x="478" y="607" class="col-key">[FK]</text>
+    <text x="516" y="607" class="col-name">assessment_id</text>
+    <text x="802" y="607" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="614" x2="810" y2="614" class="tbl-div"/>
+    <text x="62" y="629" class="col-name">enrollment_id</text>
+    <text x="802" y="629" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="636" x2="810" y2="636" class="tbl-div"/>
+    <text x="482" y="651" class="col-name">score</text>
+    <text x="802" y="651" text-anchor="end" class="col-type">DECIMAL(5,2)</text>
+    <line x1="470" y1="658" x2="810" y2="658" class="tbl-div"/>
+    <text x="482" y="673" class="col-name">remarks</text>
+    <text x="802" y="673" text-anchor="end" class="col-type">TEXT</text>
+
+    <!-- ==================== TABLE: term_grades ==================== -->
+    <rect x="470" y="695" width="340" height="184" class="tbl-bg"/>
+    <rect x="470" y="695" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="715" text-anchor="middle" class="tbl-title">term_grades</text>
+    <text x="478" y="740" class="col-key">[PK]</text>
+    <text x="516" y="740" class="col-name">id</text>
+    <text x="802" y="740" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="747" x2="810" y2="747" class="tbl-div"/>
+    <text x="478" y="762" class="col-key">[FK]</text>
+    <text x="516" y="762" class="col-name">teaching_assignment_id</text>
+    <text x="802" y="762" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="769" x2="810" y2="769" class="tbl-div"/>
+    <text x="482" y="784" class="col-name">enrollment_id</text>
+    <text x="802" y="784" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="791" x2="810" y2="791" class="tbl-div"/>
+    <text x="478" y="806" class="col-key">[FK]</text>
+    <text x="516" y="806" class="col-name">grading_period_id</text>
+    <text x="802" y="806" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="813" x2="810" y2="813" class="tbl-div"/>
+    <text x="482" y="828" class="col-name">written_work_grade</text>
+    <text x="802" y="828" text-anchor="end" class="col-type">DECIMAL(5,2)</text>
+    <line x1="470" y1="835" x2="810" y2="835" class="tbl-div"/>
+    <text x="482" y="850" class="col-name">performance_task_grade</text>
+    <text x="802" y="850" text-anchor="end" class="col-type">DECIMAL(5,2)</text>
+    <line x1="470" y1="857" x2="810" y2="857" class="tbl-div"/>
+    <text x="482" y="872" class="col-name">transmuted_grade</text>
+    <text x="802" y="872" text-anchor="end" class="col-type">DECIMAL(5,2)</text>
+
+    <!-- ==================== TABLE: risk_follow_ups ==================== -->
+    <rect x="470" y="895" width="340" height="184" class="tbl-bg"/>
+    <rect x="470" y="895" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="915" text-anchor="middle" class="tbl-title">risk_follow_ups</text>
+    <text x="478" y="940" class="col-key">[PK]</text>
+    <text x="516" y="940" class="col-name">id</text>
+    <text x="802" y="940" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="947" x2="810" y2="947" class="tbl-div"/>
+    <text x="482" y="962" class="col-name">enrollment_id</text>
+    <text x="802" y="962" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="969" x2="810" y2="969" class="tbl-div"/>
+    <text x="478" y="984" class="col-key">[FK]</text>
+    <text x="516" y="984" class="col-name">teacher_id</text>
+    <text x="802" y="984" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="991" x2="810" y2="991" class="tbl-div"/>
+    <text x="482" y="1006" class="col-name">follow_up_date</text>
+    <text x="802" y="1006" text-anchor="end" class="col-type">DATE</text>
+    <line x1="470" y1="1013" x2="810" y2="1013" class="tbl-div"/>
+    <text x="482" y="1028" class="col-name">intervention</text>
+    <text x="802" y="1028" text-anchor="end" class="col-type">TEXT</text>
+    <line x1="470" y1="1035" x2="810" y2="1035" class="tbl-div"/>
+    <text x="482" y="1050" class="col-name">status</text>
+    <text x="802" y="1050" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="470" y1="1057" x2="810" y2="1057" class="tbl-div"/>
+    <text x="482" y="1072" class="col-name">notes</text>
+    <text x="802" y="1072" text-anchor="end" class="col-type">TEXT</text>
+
+    <!-- ==================== TABLE: academic_notes ==================== -->
+    <rect x="470" y="1090" width="340" height="118" class="tbl-bg"/>
+    <rect x="470" y="1090" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="1110" text-anchor="middle" class="tbl-title">academic_notes</text>
+    <text x="478" y="1135" class="col-key">[PK]</text>
+    <text x="516" y="1135" class="col-name">id</text>
+    <text x="802" y="1135" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="1142" x2="810" y2="1142" class="tbl-div"/>
+    <text x="482" y="1157" class="col-name">enrollment_id</text>
+    <text x="802" y="1157" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="1164" x2="810" y2="1164" class="tbl-div"/>
+    <text x="478" y="1179" class="col-key">[FK]</text>
+    <text x="516" y="1179" class="col-name">teacher_id</text>
+    <text x="802" y="1179" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="1186" x2="810" y2="1186" class="tbl-div"/>
+    <text x="482" y="1201" class="col-name">note</text>
+    <text x="802" y="1201" text-anchor="end" class="col-type">TEXT</text>
+
+    <!-- ==================== CONNECTORS ==================== -->
+    <!-- 1. teachers.id (50, 91) to teaching_assignments.teacher_id (50, 378) [1 : N] -->
+    <path d="M 50 91 L 25 91 L 25 378 L 50 378" class="conn-line"/>
+    <line x1="45" y1="86" x2="45" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="40" y1="86" x2="40" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="378" x2="42" y2="372" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="378" x2="42" y2="384" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="378" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 2. subjects.id (50, 201) to teaching_assignments.subject_id (50, 400) [1 : N] -->
+    <path d="M 50 201 L 32 201 L 32 400 L 50 400" class="conn-line"/>
+    <line x1="50" y1="400" x2="42" y2="394" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="400" x2="42" y2="406" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="400" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 3. teaching_assignments.id (50, 356) to grading_configs.teaching_assignment_id (50, 553) [1 : N] -->
+    <path d="M 50 356 L 20 356 L 20 553 L 50 553" class="conn-line"/>
+    <line x1="50" y1="553" x2="42" y2="547" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="553" x2="42" y2="559" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="553" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 4. assessment_categories.id (470, 91) to grading_configs.assessment_category_id (390, 575) [1 : N] -->
+    <path d="M 470 91 L 430 91 L 430 575 L 390 575" class="conn-line"/>
+    <line x1="465" y1="86" x2="465" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="460" y1="86" x2="460" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="390" y1="575" x2="398" y2="569" stroke="#000000" stroke-width="1.5"/>
+    <line x1="390" y1="575" x2="398" y2="581" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="404" cy="575" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 5. teaching_assignments.id (390, 356) to assessments.teaching_assignment_id (470, 403) [1 : N] -->
+    <path d="M 390 356 L 430 356 L 430 403 L 470 403" class="conn-line"/>
+    <line x1="470" y1="403" x2="462" y2="397" stroke="#000000" stroke-width="1.5"/>
+    <line x1="470" y1="403" x2="462" y2="409" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="456" cy="403" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 6. assessment_categories.id (810, 91) to assessments.assessment_category_id (810, 425) [1 : N] -->
+    <path d="M 810 91 L 840 91 L 840 425 L 810 425" class="conn-line"/>
+    <line x1="810" y1="425" x2="818" y2="419" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="425" x2="818" y2="431" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="824" cy="425" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 7. grading_periods.id (810, 181) to assessments.grading_period_id (810, 447) [1 : N] -->
+    <path d="M 810 181 L 832 181 L 832 447 L 810 447" class="conn-line"/>
+    <line x1="810" y1="447" x2="818" y2="441" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="447" x2="818" y2="453" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="824" cy="447" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 8. assessments.id (810, 381) to student_assessment_scores.assessment_id (810, 603) [1 : N] -->
+    <path d="M 810 381 L 826 381 L 826 603 L 810 603" class="conn-line"/>
+    <line x1="810" y1="603" x2="818" y2="597" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="603" x2="818" y2="609" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="824" cy="603" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 9. teaching_assignments.id (390, 356) to term_grades.teaching_assignment_id (470, 758) [1 : N] -->
+    <path d="M 390 356 L 420 356 L 420 758 L 470 758" class="conn-line"/>
+    <line x1="470" y1="758" x2="462" y2="752" stroke="#000000" stroke-width="1.5"/>
+    <line x1="470" y1="758" x2="462" y2="764" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="456" cy="758" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 10. grading_periods.id (470, 181) to term_grades.grading_period_id (470, 802) [1 : N] -->
+    <path d="M 470 181 L 440 181 L 440 802 L 470 802" class="conn-line"/>
+    <line x1="470" y1="802" x2="462" y2="796" stroke="#000000" stroke-width="1.5"/>
+    <line x1="470" y1="802" x2="462" y2="808" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="456" cy="802" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 11. teaching_assignments.id (50, 356) to attendance_verifications.teaching_assignment_id (50, 710) [1 : N] -->
+    <path d="M 50 356 L 15 356 L 15 710 L 50 710" class="conn-line"/>
+    <line x1="50" y1="710" x2="42" y2="704" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="710" x2="42" y2="716" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="710" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 12. teachers.id (50, 91) to attendance_verifications.teacher_id (50, 732) [1 : N] -->
+    <path d="M 50 91 L 8 91 L 8 732 L 50 732" class="conn-line"/>
+    <line x1="50" y1="732" x2="42" y2="726" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="732" x2="42" y2="738" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="732" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 13. attendance_verifications.id (50, 666) to attendance_verification_histories.attendance_verification_id (50, 908) [1 : N] -->
+    <path d="M 50 666 L 25 666 L 25 908 L 50 908" class="conn-line"/>
+    <line x1="50" y1="908" x2="42" y2="902" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="908" x2="42" y2="914" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="908" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 14. teachers.id (50, 91) to risk_remarks.teacher_id (50, 1110) [1 : N] -->
+    <path d="M 50 91 L 8 91 L 8 1110 L 50 1110" class="conn-line"/>
+    <line x1="50" y1="1110" x2="42" y2="1104" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="1110" x2="42" y2="1116" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="1110" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 15. teachers.id (390, 91) to risk_follow_ups.teacher_id (810, 980) [1 : N] -->
+    <path d="M 390 91 L 415 91 L 415 130 L 848 130 L 848 980 L 810 980" class="conn-line"/>
+    <line x1="810" y1="980" x2="818" y2="974" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="980" x2="818" y2="986" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="824" cy="980" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 16. teachers.id (390, 91) to academic_notes.teacher_id (810, 1175) [1 : N] -->
+    <path d="M 390 91 L 415 91 L 415 130 L 856 130 L 856 1175 L 810 1175" class="conn-line"/>
+    <line x1="810" y1="1175" x2="818" y2="1169" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="1175" x2="818" y2="1181" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="824" cy="1175" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+</svg>
