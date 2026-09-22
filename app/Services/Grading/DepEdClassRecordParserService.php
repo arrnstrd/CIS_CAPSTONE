@@ -144,28 +144,34 @@ class DepEdClassRecordParserService
             
             $headerCell12 = (string) $sheet->getCell([$col, 12])->getValue();
             $headerCell9 = (string) $sheet->getCell([$col, 9])->getValue();
+            $headerCell8 = (string) $sheet->getCell([$col, 8])->getValue();
 
-            if (str_contains(strtolower($headerCell12), 'written') || str_contains(strtolower($headerCell9), 'written')) {
+            if (str_contains(strtolower($headerCell12), 'written') || str_contains(strtolower($headerCell9), 'written') || str_contains(strtolower($headerCell8), 'written')) {
                 $currentCategory = 'written_work';
-            } elseif (str_contains(strtolower($headerCell12), 'product') || str_contains(strtolower($headerCell12), 'performance') || str_contains(strtolower($headerCell9), 'performance')) {
+            } elseif (str_contains(strtolower($headerCell12), 'product') || str_contains(strtolower($headerCell12), 'performance') || str_contains(strtolower($headerCell9), 'performance') || str_contains(strtolower($headerCell8), 'performance')) {
                 $currentCategory = 'performance_task';
-            } elseif (str_contains(strtolower($headerCell12), 'examination') || str_contains(strtolower($headerCell12), 'term assessment') || str_contains(strtolower($headerCell12), 'quarterly') || str_contains(strtolower($headerCell9), 'exam')) {
+            } elseif (str_contains(strtolower($headerCell12), 'examination') || str_contains(strtolower($headerCell12), 'term assessment') || str_contains(strtolower($headerCell12), 'quarterly') || str_contains(strtolower($headerCell9), 'exam') || str_contains(strtolower($headerCell8), 'exam')) {
                 $currentCategory = 'term_assessment';
+            } elseif ($templateType === 'shs') {
+                if ($col >= 6 && $col <= 10) {
+                    $currentCategory = 'written_work';
+                } elseif ($col >= 14 && $col <= 16) {
+                    $currentCategory = 'performance_task';
+                } elseif ($col >= 20 && $col <= 22) {
+                    $currentCategory = 'term_assessment';
+                }
             }
 
             $slotVal = $sheet->getCell([$col, $slotRow])->getFormattedValue();
             $hpsVal = $sheet->getCell([$col, $hpsRow])->getCalculatedValue();
+            $slotNumber = $this->parseSlotNumber($slotVal, $currentCategory);
 
-            if (is_numeric($slotVal) && (int)$slotVal > 0 && is_numeric($hpsVal) && (float)$hpsVal > 0) {
-                if ((int)$slotVal > 10) {
-                    continue;
-                }
-
+            if ($slotNumber !== null && is_numeric($hpsVal) && (float)$hpsVal > 0) {
                 $assessments[] = [
                     'col' => $col,
                     'col_letter' => $colLetter,
                     'category' => $currentCategory,
-                    'slot_number' => (int) $slotVal,
+                    'slot_number' => $slotNumber,
                     'hps' => (float) $hpsVal,
                 ];
             }
@@ -176,6 +182,41 @@ class DepEdClassRecordParserService
             'slot_row' => $slotRow,
             'assessments' => $assessments,
         ];
+    }
+
+    /**
+     * Parse slot number from sheet header cell value (supports numbers and identifiers like ST1, ST2, TE, SA1, SA2, EX1..EX3).
+     */
+    protected function parseSlotNumber(mixed $slotVal, string $category): ?int
+    {
+        if ($slotVal === null || $slotVal === '') {
+            return null;
+        }
+
+        $val = trim((string) $slotVal);
+
+        if (is_numeric($val)) {
+            $num = (int) $val;
+            return ($num > 0 && $num <= 20) ? $num : null;
+        }
+
+        $upper = strtoupper($val);
+
+        if ($category === 'term_assessment') {
+            return match ($upper) {
+                'ST1', 'SA1', 'EX1', 'TEST 1', 'TEST1' => 1,
+                'ST2', 'SA2', 'EX2', 'TEST 2', 'TEST2' => 2,
+                'TE', 'EX3', 'QE', 'TERM EXAM', 'EXAM' => 3,
+                default => null,
+            };
+        }
+
+        if (preg_match('/^(?:WW|PT|EX)(\d+)$/i', $upper, $matches)) {
+            $num = (int) $matches[1];
+            return ($num > 0 && $num <= 20) ? $num : null;
+        }
+
+        return null;
     }
 
     /**

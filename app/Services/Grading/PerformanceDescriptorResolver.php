@@ -6,45 +6,35 @@ class PerformanceDescriptorResolver
 {
     /**
      * Resolve DepEd Performance Descriptors based on final grade.
-     * 
-     * Note: There's a gap in the official template between 79 and 88.
-     * The 80-87 band uses "Progressing" as a reasonable placeholder label.
-     * This gap needs confirmation from official DepEd documentation.
+     * Aligned with DepEd 3-Term Electronic Class Record (ECR).
      *
      * @param float $finalGrade
      * @return array{description: string, remarks: string}
      */
     public static function resolve(float $finalGrade): array
     {
-        if ($finalGrade >= 90 && $finalGrade <= 100) {
+        if ($finalGrade >= 90) {
             return [
                 'description' => 'Advancing',
                 'remarks' => 'Passed'
             ];
         }
         
-        if ($finalGrade >= 88 && $finalGrade <= 89) {
+        if ($finalGrade >= 80) {
             return [
                 'description' => 'Benchmarking',
                 'remarks' => 'Passed'
             ];
         }
         
-        if ($finalGrade >= 80 && $finalGrade <= 87) {
-            return [
-                'description' => 'Progressing',
-                'remarks' => 'Passed'
-            ];
-        }
-        
-        if ($finalGrade >= 75 && $finalGrade <= 79) {
+        if ($finalGrade >= 75) {
             return [
                 'description' => 'Connecting',
                 'remarks' => 'Passed'
             ];
         }
         
-        if ($finalGrade >= 65 && $finalGrade <= 74) {
+        if ($finalGrade >= 65) {
             return [
                 'description' => 'Developing',
                 'remarks' => 'Failed'

@@ -13,9 +13,10 @@ class AssessmentTemplateService
     public function getFixedSlots(string $level): array
     {
         return [
-            'written' => 5,    // WW1, WW2, WW3, WW4, WW5
-            'performance' => 5, // PT1, PT2, PT3, PT4, PT5
-            'exam' => 3        // EX1, EX2, EX3
+            'written' => 5,         // WW1, WW2, WW3, WW4, WW5
+            'performance' => 3,     // PT1, PT2, PT3
+            'exam' => 3,            // EX1, EX2, EX3
+            'term_assessment' => 3, // EX1, EX2, EX3
         ];
     }
 
@@ -36,7 +37,7 @@ class AssessmentTemplateService
                 $labels[$category][] = match($category) {
                     'written' => "WW{$i}",
                     'performance' => "PT{$i}",
-                    'exam' => "EX{$i}",
+                    'exam', 'term_assessment' => "EX{$i}",
                     default => "Item{$i}"
                 };
             }

@@ -155,19 +155,6 @@ class GradeSheetController extends Controller
 
             $assessmentsByCategory[$key] = $categoryAssessments;
 
-            $maxSlotInDb = $categoryAssessments->max('slot_number') ?? 0;
-            $fixedSlots[$key] = max($fixedSlots[$key] ?? 5, $maxSlotInDb);
-
-            $slotLabels[$key] = [];
-            for ($lblIdx = 1; $lblIdx <= $fixedSlots[$key]; $lblIdx++) {
-                $slotLabels[$key][] = match($key) {
-                    'written' => "WW{$lblIdx}",
-                    'performance' => "PT{$lblIdx}",
-                    'exam' => "EX{$lblIdx}",
-                    default => "Item{$lblIdx}"
-                };
-            }
-
             foreach ($categoryAssessments as $assessment) {
                 if (! isset($assessment->slot_number)) {
                     $assessment->slot_number =
@@ -280,7 +267,8 @@ class GradeSheetController extends Controller
                 $assessmentsByCategory,
                 $gradingService,
                 $componentCategoryIds,
-                $resolvedWeights
+                $resolvedWeights,
+                $schoolLevel
             ) {
                 $studentScores = $scores
                     ->get($enrollment->id, collect())
@@ -291,33 +279,22 @@ class GradeSheetController extends Controller
                         collect($assessmentsByCategory)->flatten(1),
                         $studentScores,
                         $resolvedWeights,
-                        $componentCategoryIds
+                        $componentCategoryIds,
+                        $schoolLevel
                     );
 
-                if (isset($componentSummaries['term_assessment']) && !isset($componentSummaries['exam'])) {
-                    $componentSummaries['exam'] = $componentSummaries['term_assessment'];
-                }
-                if (isset($componentSummaries['exam']) && !isset($componentSummaries['term_assessment'])) {
-                    $componentSummaries['term_assessment'] = $componentSummaries['exam'];
-                }
-
-                $hasAssessment = collect($componentSummaries)
-                    ->contains(
-                        fn (array $summary) =>
-                            $summary['hps'] > 0
-                    );
-
-                $initialGrade = $hasAssessment
-                    ? round(
-                        collect($componentSummaries)
-                            ->sum('ws'),
-                        2
-                    )
-                    : null;
+                $initialGrade = $gradingService->calculateInitialGrade(
+                    $componentSummaries,
+                    $schoolLevel
+                );
 
                 $transmutedGrade = $initialGrade === null
                     ? null
                     : $gradingService->transmute($initialGrade);
+
+                if (isset($componentSummaries['term_assessment']) && !isset($componentSummaries['exam'])) {
+                    $componentSummaries['exam'] = $componentSummaries['term_assessment'];
+                }
 
                 $middleInitial =
                     $enrollment->student->middle_name
@@ -1203,7 +1180,7 @@ class GradeSheetController extends Controller
 
                 $maxVisible = match ($categoryKey) {
                     'written' => $fixedSlots['written'] ?? 5,
-                    'performance' => $fixedSlots['performance'] ?? 5,
+                    'performance' => $fixedSlots['performance'] ?? 3,
                     default => $fixedSlots['exam'] ?? 3,
                 };
 
