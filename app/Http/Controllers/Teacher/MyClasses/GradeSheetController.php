@@ -283,14 +283,32 @@ class GradeSheetController extends Controller
                         $schoolLevel
                     );
 
-                $initialGrade = $gradingService->calculateInitialGrade(
-                    $componentSummaries,
-                    $schoolLevel
-                );
+                $savedTermGrade = $termGrades->get($enrollment->id);
 
-                $transmutedGrade = $initialGrade === null
-                    ? null
-                    : $gradingService->transmute($initialGrade);
+                if ($savedTermGrade && $savedTermGrade->initial_grade !== null && $savedTermGrade->transmuted_grade !== null) {
+                    $initialGrade = (float) $savedTermGrade->initial_grade;
+                    $transmutedGrade = (float) $savedTermGrade->transmuted_grade;
+
+                    if ($savedTermGrade->written_work_grade !== null) {
+                        $componentSummaries['written']['ws'] = (float) $savedTermGrade->written_work_grade;
+                    }
+                    if ($savedTermGrade->performance_task_grade !== null) {
+                        $componentSummaries['performance']['ws'] = (float) $savedTermGrade->performance_task_grade;
+                    }
+                    if ($savedTermGrade->term_assessment_grade !== null) {
+                        $componentSummaries['term_assessment']['ws'] = (float) $savedTermGrade->term_assessment_grade;
+                        $componentSummaries['exam']['ws'] = (float) $savedTermGrade->term_assessment_grade;
+                    }
+                } else {
+                    $initialGrade = $gradingService->calculateInitialGrade(
+                        $componentSummaries,
+                        $schoolLevel
+                    );
+
+                    $transmutedGrade = $initialGrade === null
+                        ? null
+                        : $gradingService->transmute($initialGrade);
+                }
 
                 if (isset($componentSummaries['term_assessment']) && !isset($componentSummaries['exam'])) {
                     $componentSummaries['exam'] = $componentSummaries['term_assessment'];

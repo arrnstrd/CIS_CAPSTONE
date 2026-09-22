@@ -53,6 +53,9 @@ class DepEdClassRecordParserService
         if (in_array('INPUT DATA', $allSheetNames)) {
             $sheetsToLoad[] = 'INPUT DATA';
         }
+        if (in_array('HELPER', $allSheetNames)) {
+            $sheetsToLoad[] = 'HELPER';
+        }
         $reader->setLoadSheetsOnly($sheetsToLoad);
         $spreadsheet = $reader->load($filePath);
         $sheet = $spreadsheet->getSheetByName($sheetName);
@@ -178,6 +181,7 @@ class DepEdClassRecordParserService
         }
 
         return [
+            'template_type' => $templateType,
             'hps_row' => $hpsRow,
             'slot_row' => $slotRow,
             'assessments' => $assessments,
@@ -273,12 +277,48 @@ class DepEdClassRecordParserService
                 }
             }
 
+            $templateType = $structure['template_type'] ?? 'elem_jhs';
+            if ($templateType === 'shs') {
+                $computedGrades = [
+                    'ww_total' => is_numeric($val = $sheet->getCell([11, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'ww_ps'    => is_numeric($val = $sheet->getCell([12, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'ww_ws'    => is_numeric($val = $sheet->getCell([13, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_total' => is_numeric($val = $sheet->getCell([17, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_ps'    => is_numeric($val = $sheet->getCell([18, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_ws'    => is_numeric($val = $sheet->getCell([19, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'exam_ps'  => is_numeric($val = $sheet->getCell([24, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'exam_ws'  => is_numeric($val = $sheet->getCell([25, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'initial_grade'    => is_numeric($val = $sheet->getCell([26, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'transmuted_grade' => is_numeric($val = $sheet->getCell([27, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'descriptor'       => trim((string) $sheet->getCell([28, $row])->getCalculatedValue()) ?: null,
+                ];
+            } else {
+                // Grades 2-10 (Elementary & JHS)
+                $computedGrades = [
+                    'ww_total' => is_numeric($val = $sheet->getCell([11, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'ww_ps'    => is_numeric($val = $sheet->getCell([12, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'ww_ws'    => is_numeric($val = $sheet->getCell([13, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_total' => is_numeric($val = $sheet->getCell([17, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_ps'    => is_numeric($val = $sheet->getCell([18, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_ws'    => is_numeric($val = $sheet->getCell([19, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'st1_ws'   => is_numeric($val = $sheet->getCell([23, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'st2_ws'   => is_numeric($val = $sheet->getCell([24, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'te_ws'    => is_numeric($val = $sheet->getCell([25, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'exam_ps'  => is_numeric($val = $sheet->getCell([26, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'exam_ws'  => is_numeric($val = $sheet->getCell([27, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'initial_grade'    => is_numeric($val = $sheet->getCell([28, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'transmuted_grade' => is_numeric($val = $sheet->getCell([29, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'descriptor'       => trim((string) $sheet->getCell([30, $row])->getCalculatedValue()) ?: null,
+                ];
+            }
+
             $students[] = [
                 'raw_name' => $cleanName,
                 'normalized_name' => $this->normalizeName($cleanName),
                 'gender' => $currentGender,
                 'row' => $row,
                 'scores' => $scores,
+                'computed_grades' => $computedGrades,
             ];
         }
 
@@ -315,6 +355,7 @@ class DepEdClassRecordParserService
                         'lrn' => $student->lrn,
                         'excel_name' => $extStudent['raw_name'],
                         'scores' => $extStudent['scores'],
+                        'computed_grades' => $extStudent['computed_grades'] ?? null,
                     ];
                     break;
                 }

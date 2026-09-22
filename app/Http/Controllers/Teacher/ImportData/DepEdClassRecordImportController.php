@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\AssessmentCategory;
 use App\Models\GradingPeriod;
+use App\Models\TermGrade;
 use App\Models\StudentAssessmentScore;
 use App\Models\TeachingAssignment;
 use App\Services\Grading\DepEdClassRecordParserService;
@@ -217,7 +218,7 @@ class DepEdClassRecordImportController extends Controller
                     ];
                 }
 
-                // 2. Save scores for each matched student
+                // 2. Save scores and authoritative computed grades for each matched student
                 foreach ($parsedData['matched_records'] as $studentRecord) {
                     $enrollmentId = $studentRecord['enrollment_id'];
                     $recordedKeys = [];
@@ -231,30 +232,46 @@ class DepEdClassRecordImportController extends Controller
                             $maxScore = $asmData['total_items'];
                             $safeScore = max(0, min((float) $scoreItem['score'], $maxScore));
 
-                            $this->gradingService->recordScore([
-                                'assessment_id' => $assessmentId,
-                                'enrollment_id' => $enrollmentId,
-                                'score' => $safeScore,
-                            ]);
+                            StudentAssessmentScore::updateOrCreate(
+                                [
+                                    'assessment_id' => $assessmentId,
+                                    'enrollment_id' => $enrollmentId,
+                                ],
+                                [
+                                    'score' => $safeScore,
+                                ]
+                            );
                         }
                     }
 
                     // Blank-score synchronization: clear existing scores for assessments present in this sheet but blank/omitted for this learner
-                    $clearedAny = false;
                     foreach ($createdAssessments as $key => $asmData) {
                         if (!isset($recordedKeys[$key])) {
                             $assessmentId = $asmData['id'];
-                            $deleted = StudentAssessmentScore::where('assessment_id', $assessmentId)
+                            StudentAssessmentScore::where('assessment_id', $assessmentId)
                                 ->where('enrollment_id', $enrollmentId)
                                 ->delete();
-
-                            if ($deleted > 0) {
-                                $clearedAny = true;
-                            }
                         }
                     }
 
-                    if ($clearedAny) {
+                    // Persist extracted authoritative computed grades into term_grades if available
+                    $compGrades = $studentRecord['computed_grades'] ?? null;
+                    if ($compGrades && isset($compGrades['initial_grade'], $compGrades['transmuted_grade'])) {
+                        TermGrade::updateOrCreate(
+                            [
+                                'teaching_assignment_id' => $ta->id,
+                                'enrollment_id' => $enrollmentId,
+                                'grading_period_id' => $gradingPeriod->id,
+                            ],
+                            [
+                                'written_work_grade' => $compGrades['ww_ws'] ?? null,
+                                'performance_task_grade' => $compGrades['pt_ws'] ?? null,
+                                'term_assessment_grade' => $compGrades['exam_ws'] ?? null,
+                                'initial_grade' => $compGrades['initial_grade'],
+                                'transmuted_grade' => $compGrades['transmuted_grade'],
+                            ]
+                        );
+                    } else {
                         $this->gradingService->recalculateTermGrade(
                             $enrollmentId,
                             $ta->id,
