@@ -53,6 +53,9 @@ class DepEdClassRecordParserService
         if (in_array('INPUT DATA', $allSheetNames)) {
             $sheetsToLoad[] = 'INPUT DATA';
         }
+        if (in_array('HELPER', $allSheetNames)) {
+            $sheetsToLoad[] = 'HELPER';
+        }
         $reader->setLoadSheetsOnly($sheetsToLoad);
         $spreadsheet = $reader->load($filePath);
         $sheet = $spreadsheet->getSheetByName($sheetName);
@@ -144,38 +147,80 @@ class DepEdClassRecordParserService
             
             $headerCell12 = (string) $sheet->getCell([$col, 12])->getValue();
             $headerCell9 = (string) $sheet->getCell([$col, 9])->getValue();
+            $headerCell8 = (string) $sheet->getCell([$col, 8])->getValue();
 
-            if (str_contains(strtolower($headerCell12), 'written') || str_contains(strtolower($headerCell9), 'written')) {
+            if (str_contains(strtolower($headerCell12), 'written') || str_contains(strtolower($headerCell9), 'written') || str_contains(strtolower($headerCell8), 'written')) {
                 $currentCategory = 'written_work';
-            } elseif (str_contains(strtolower($headerCell12), 'product') || str_contains(strtolower($headerCell12), 'performance') || str_contains(strtolower($headerCell9), 'performance')) {
+            } elseif (str_contains(strtolower($headerCell12), 'product') || str_contains(strtolower($headerCell12), 'performance') || str_contains(strtolower($headerCell9), 'performance') || str_contains(strtolower($headerCell8), 'performance')) {
                 $currentCategory = 'performance_task';
-            } elseif (str_contains(strtolower($headerCell12), 'examination') || str_contains(strtolower($headerCell12), 'term assessment') || str_contains(strtolower($headerCell12), 'quarterly') || str_contains(strtolower($headerCell9), 'exam')) {
+            } elseif (str_contains(strtolower($headerCell12), 'examination') || str_contains(strtolower($headerCell12), 'term assessment') || str_contains(strtolower($headerCell12), 'quarterly') || str_contains(strtolower($headerCell9), 'exam') || str_contains(strtolower($headerCell8), 'exam')) {
                 $currentCategory = 'term_assessment';
+            } elseif ($templateType === 'shs') {
+                if ($col >= 6 && $col <= 10) {
+                    $currentCategory = 'written_work';
+                } elseif ($col >= 14 && $col <= 16) {
+                    $currentCategory = 'performance_task';
+                } elseif ($col >= 20 && $col <= 22) {
+                    $currentCategory = 'term_assessment';
+                }
             }
 
             $slotVal = $sheet->getCell([$col, $slotRow])->getFormattedValue();
             $hpsVal = $sheet->getCell([$col, $hpsRow])->getCalculatedValue();
+            $slotNumber = $this->parseSlotNumber($slotVal, $currentCategory);
 
-            if (is_numeric($slotVal) && (int)$slotVal > 0 && is_numeric($hpsVal) && (float)$hpsVal > 0) {
-                if ((int)$slotVal > 10) {
-                    continue;
-                }
-
+            if ($slotNumber !== null && is_numeric($hpsVal) && (float)$hpsVal > 0) {
                 $assessments[] = [
                     'col' => $col,
                     'col_letter' => $colLetter,
                     'category' => $currentCategory,
-                    'slot_number' => (int) $slotVal,
+                    'slot_number' => $slotNumber,
                     'hps' => (float) $hpsVal,
                 ];
             }
         }
 
         return [
+            'template_type' => $templateType,
             'hps_row' => $hpsRow,
             'slot_row' => $slotRow,
             'assessments' => $assessments,
         ];
+    }
+
+    /**
+     * Parse slot number from sheet header cell value (supports numbers and identifiers like ST1, ST2, TE, SA1, SA2, EX1..EX3).
+     */
+    protected function parseSlotNumber(mixed $slotVal, string $category): ?int
+    {
+        if ($slotVal === null || $slotVal === '') {
+            return null;
+        }
+
+        $val = trim((string) $slotVal);
+
+        if (is_numeric($val)) {
+            $num = (int) $val;
+            return ($num > 0 && $num <= 20) ? $num : null;
+        }
+
+        $upper = strtoupper($val);
+
+        if ($category === 'term_assessment') {
+            return match ($upper) {
+                'ST1', 'SA1', 'EX1', 'TEST 1', 'TEST1' => 1,
+                'ST2', 'SA2', 'EX2', 'TEST 2', 'TEST2' => 2,
+                'TE', 'EX3', 'QE', 'TERM EXAM', 'EXAM' => 3,
+                default => null,
+            };
+        }
+
+        if (preg_match('/^(?:WW|PT|EX)(\d+)$/i', $upper, $matches)) {
+            $num = (int) $matches[1];
+            return ($num > 0 && $num <= 20) ? $num : null;
+        }
+
+        return null;
     }
 
     /**
@@ -232,12 +277,48 @@ class DepEdClassRecordParserService
                 }
             }
 
+            $templateType = $structure['template_type'] ?? 'elem_jhs';
+            if ($templateType === 'shs') {
+                $computedGrades = [
+                    'ww_total' => is_numeric($val = $sheet->getCell([11, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'ww_ps'    => is_numeric($val = $sheet->getCell([12, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'ww_ws'    => is_numeric($val = $sheet->getCell([13, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_total' => is_numeric($val = $sheet->getCell([17, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_ps'    => is_numeric($val = $sheet->getCell([18, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_ws'    => is_numeric($val = $sheet->getCell([19, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'exam_ps'  => is_numeric($val = $sheet->getCell([24, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'exam_ws'  => is_numeric($val = $sheet->getCell([25, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'initial_grade'    => is_numeric($val = $sheet->getCell([26, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'transmuted_grade' => is_numeric($val = $sheet->getCell([27, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'descriptor'       => trim((string) $sheet->getCell([28, $row])->getCalculatedValue()) ?: null,
+                ];
+            } else {
+                // Grades 2-10 (Elementary & JHS)
+                $computedGrades = [
+                    'ww_total' => is_numeric($val = $sheet->getCell([11, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'ww_ps'    => is_numeric($val = $sheet->getCell([12, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'ww_ws'    => is_numeric($val = $sheet->getCell([13, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_total' => is_numeric($val = $sheet->getCell([17, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_ps'    => is_numeric($val = $sheet->getCell([18, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'pt_ws'    => is_numeric($val = $sheet->getCell([19, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'st1_ws'   => is_numeric($val = $sheet->getCell([23, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'st2_ws'   => is_numeric($val = $sheet->getCell([24, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'te_ws'    => is_numeric($val = $sheet->getCell([25, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'exam_ps'  => is_numeric($val = $sheet->getCell([26, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'exam_ws'  => is_numeric($val = $sheet->getCell([27, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'initial_grade'    => is_numeric($val = $sheet->getCell([28, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'transmuted_grade' => is_numeric($val = $sheet->getCell([29, $row])->getCalculatedValue()) ? (float) $val : null,
+                    'descriptor'       => trim((string) $sheet->getCell([30, $row])->getCalculatedValue()) ?: null,
+                ];
+            }
+
             $students[] = [
                 'raw_name' => $cleanName,
                 'normalized_name' => $this->normalizeName($cleanName),
                 'gender' => $currentGender,
                 'row' => $row,
                 'scores' => $scores,
+                'computed_grades' => $computedGrades,
             ];
         }
 
@@ -274,6 +355,7 @@ class DepEdClassRecordParserService
                         'lrn' => $student->lrn,
                         'excel_name' => $extStudent['raw_name'],
                         'scores' => $extStudent['scores'],
+                        'computed_grades' => $extStudent['computed_grades'] ?? null,
                     ];
                     break;
                 }

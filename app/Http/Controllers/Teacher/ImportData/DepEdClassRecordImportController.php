@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\AssessmentCategory;
 use App\Models\GradingPeriod;
+use App\Models\TermGrade;
+use App\Models\StudentAssessmentScore;
 use App\Models\TeachingAssignment;
 use App\Services\Grading\DepEdClassRecordParserService;
 use App\Services\Grading\GradingService;
@@ -101,42 +103,10 @@ class DepEdClassRecordImportController extends Controller
 
             $parsedData = $this->parserService->parseSheet($filePath, $targetSheet, $ta);
 
-            // Compute category offsets for previewing target appended slot numbers
-            $targetSequence = 1;
-            if (str_contains(strtolower($targetSheet), 'term 2') || str_contains(strtolower($targetSheet), '2nd')) {
-                $targetSequence = 2;
-            } elseif (str_contains(strtolower($targetSheet), 'term 3') || str_contains(strtolower($targetSheet), '3rd')) {
-                $targetSequence = 3;
+            foreach ($parsedData['assessments'] as &$asm) {
+                $asm['target_slot_number'] = $asm['slot_number'];
             }
-
-            $gradingPeriod = GradingPeriod::trimester()
-                ->where('sequence', $targetSequence)
-                ->first();
-
-            if ($gradingPeriod) {
-                $existingAssessments = Assessment::where('teaching_assignment_id', $ta->id)
-                    ->where('grading_period_id', $gradingPeriod->id)
-                    ->where('status', 'active')
-                    ->get();
-
-                $categories = AssessmentCategory::all();
-                $catMap = [
-                    'written_work' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'written'))?->id,
-                    'performance_task' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'performance'))?->id,
-                    'term_assessment' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'term assessment') || str_contains(strtolower($c->name), 'exam'))?->id,
-                ];
-
-                $categoryOffsets = [];
-                foreach ($catMap as $catKey => $catId) {
-                    $categoryOffsets[$catKey] = $catId ? (int) ($existingAssessments->where('assessment_category_id', $catId)->max('slot_number') ?? 0) : 0;
-                }
-
-                foreach ($parsedData['assessments'] as &$asm) {
-                    $catKey = $asm['category'];
-                    $asm['target_slot_number'] = $asm['slot_number'] + ($categoryOffsets[$catKey] ?? 0);
-                }
-                unset($asm);
-            }
+            unset($asm);
 
             return response()->json([
                 'success' => true,
@@ -208,20 +178,9 @@ class DepEdClassRecordImportController extends Controller
             'term_assessment' => $categories->first(fn($c) => str_contains(strtolower($c->name), 'term assessment') || str_contains(strtolower($c->name), 'exam'))?->id,
         ];
 
-        // Fetch existing assessments to append imported assessments into empty slots
-        $existingAssessments = Assessment::where('teaching_assignment_id', $ta->id)
-            ->where('grading_period_id', $gradingPeriod->id)
-            ->where('status', 'active')
-            ->get();
-
-        $categoryOffsets = [];
-        foreach ($catMap as $catKey => $catId) {
-            $categoryOffsets[$catKey] = $catId ? (int) ($existingAssessments->where('assessment_category_id', $catId)->max('slot_number') ?? 0) : 0;
-        }
-
         try {
-            DB::transaction(function () use ($ta, $gradingPeriod, $parsedData, $catMap, $categoryOffsets, $targetSheet) {
-                // 1. Create or Update Assessment records, appending to next available empty slots
+            DB::transaction(function () use ($ta, $gradingPeriod, $parsedData, $catMap, $targetSheet) {
+                // 1. Create or Update Assessment records directly mapping to their slot numbers
                 $createdAssessments = [];
 
                 foreach ($parsedData['assessments'] as $asmInfo) {
@@ -229,9 +188,7 @@ class DepEdClassRecordImportController extends Controller
                     $catId = $catMap[$catKey] ?? null;
                     if (!$catId) continue;
 
-                    $excelSlotNum = $asmInfo['slot_number'];
-                    $offset = $categoryOffsets[$catKey] ?? 0;
-                    $targetSlotNum = $excelSlotNum + $offset;
+                    $targetSlotNum = $asmInfo['slot_number'];
                     $hps = $asmInfo['hps'];
 
                     $titlePrefix = match($catKey) {
@@ -257,30 +214,71 @@ class DepEdClassRecordImportController extends Controller
                         ]
                     );
 
-                    $createdAssessments["{$catKey}_{$excelSlotNum}"] = [
+                    $createdAssessments["{$catKey}_{$targetSlotNum}"] = [
                         'id' => $assessment->id,
                         'total_items' => (float) $assessment->total_items,
                     ];
                 }
 
-                // 2. Save scores for each matched student
+                // 2. Save scores and authoritative computed grades for each matched student
                 foreach ($parsedData['matched_records'] as $studentRecord) {
                     $enrollmentId = $studentRecord['enrollment_id'];
+                    $recordedKeys = [];
 
                     foreach ($studentRecord['scores'] as $scoreItem) {
                         $key = "{$scoreItem['category']}_{$scoreItem['slot_number']}";
                         if (isset($createdAssessments[$key])) {
+                            $recordedKeys[$key] = true;
                             $asmData = $createdAssessments[$key];
                             $assessmentId = $asmData['id'];
                             $maxScore = $asmData['total_items'];
                             $safeScore = max(0, min((float) $scoreItem['score'], $maxScore));
 
-                            $this->gradingService->recordScore([
-                                'assessment_id' => $assessmentId,
-                                'enrollment_id' => $enrollmentId,
-                                'score' => $safeScore,
-                            ]);
+                            StudentAssessmentScore::updateOrCreate(
+                                [
+                                    'assessment_id' => $assessmentId,
+                                    'enrollment_id' => $enrollmentId,
+                                ],
+                                [
+                                    'score' => $safeScore,
+                                ]
+                            );
                         }
+                    }
+
+                    // Blank-score synchronization: clear existing scores for assessments present in this sheet but blank/omitted for this learner
+                    foreach ($createdAssessments as $key => $asmData) {
+                        if (!isset($recordedKeys[$key])) {
+                            $assessmentId = $asmData['id'];
+                            StudentAssessmentScore::where('assessment_id', $assessmentId)
+                                ->where('enrollment_id', $enrollmentId)
+                                ->delete();
+                        }
+                    }
+
+                    // Persist extracted authoritative computed grades into term_grades if available
+                    $compGrades = $studentRecord['computed_grades'] ?? null;
+                    if ($compGrades && isset($compGrades['initial_grade'], $compGrades['transmuted_grade'])) {
+                        TermGrade::updateOrCreate(
+                            [
+                                'teaching_assignment_id' => $ta->id,
+                                'enrollment_id' => $enrollmentId,
+                                'grading_period_id' => $gradingPeriod->id,
+                            ],
+                            [
+                                'written_work_grade' => $compGrades['ww_ws'] ?? null,
+                                'performance_task_grade' => $compGrades['pt_ws'] ?? null,
+                                'term_assessment_grade' => $compGrades['exam_ws'] ?? null,
+                                'initial_grade' => $compGrades['initial_grade'],
+                                'transmuted_grade' => $compGrades['transmuted_grade'],
+                            ]
+                        );
+                    } else {
+                        $this->gradingService->recalculateTermGrade(
+                            $enrollmentId,
+                            $ta->id,
+                            $gradingPeriod->id
+                        );
                     }
                 }
             });

@@ -29,7 +29,7 @@
                 <div class="alert alert-info py-2 px-3 mb-3 small" role="alert">
                     <i class="fa-solid fa-circle-info me-1"></i>
                     <strong>Assessment Guide:</strong>
-                    Assessments beyond the visible Grade Sheet columns (WW1–WW5, PT1–PT5, EX1–EX3) are listed here.
+                    Assessments beyond the visible Grade Sheet columns (WW1–WW5, PT1–PT3, EX1–EX3) are listed here.
                     Student names are shown only for those with a recorded score. These are valid assessments and do not affect existing grading calculations.
                 </div>
 

@@ -155,19 +155,6 @@ class GradeSheetController extends Controller
 
             $assessmentsByCategory[$key] = $categoryAssessments;
 
-            $maxSlotInDb = $categoryAssessments->max('slot_number') ?? 0;
-            $fixedSlots[$key] = max($fixedSlots[$key] ?? 5, $maxSlotInDb);
-
-            $slotLabels[$key] = [];
-            for ($lblIdx = 1; $lblIdx <= $fixedSlots[$key]; $lblIdx++) {
-                $slotLabels[$key][] = match($key) {
-                    'written' => "WW{$lblIdx}",
-                    'performance' => "PT{$lblIdx}",
-                    'exam' => "EX{$lblIdx}",
-                    default => "Item{$lblIdx}"
-                };
-            }
-
             foreach ($categoryAssessments as $assessment) {
                 if (! isset($assessment->slot_number)) {
                     $assessment->slot_number =
@@ -280,7 +267,8 @@ class GradeSheetController extends Controller
                 $assessmentsByCategory,
                 $gradingService,
                 $componentCategoryIds,
-                $resolvedWeights
+                $resolvedWeights,
+                $schoolLevel
             ) {
                 $studentScores = $scores
                     ->get($enrollment->id, collect())
@@ -291,33 +279,40 @@ class GradeSheetController extends Controller
                         collect($assessmentsByCategory)->flatten(1),
                         $studentScores,
                         $resolvedWeights,
-                        $componentCategoryIds
+                        $componentCategoryIds,
+                        $schoolLevel
                     );
+
+                $savedTermGrade = $termGrades->get($enrollment->id);
+
+                if ($savedTermGrade && $savedTermGrade->initial_grade !== null && $savedTermGrade->transmuted_grade !== null) {
+                    $initialGrade = (float) $savedTermGrade->initial_grade;
+                    $transmutedGrade = (float) $savedTermGrade->transmuted_grade;
+
+                    if ($savedTermGrade->written_work_grade !== null) {
+                        $componentSummaries['written']['ws'] = (float) $savedTermGrade->written_work_grade;
+                    }
+                    if ($savedTermGrade->performance_task_grade !== null) {
+                        $componentSummaries['performance']['ws'] = (float) $savedTermGrade->performance_task_grade;
+                    }
+                    if ($savedTermGrade->term_assessment_grade !== null) {
+                        $componentSummaries['term_assessment']['ws'] = (float) $savedTermGrade->term_assessment_grade;
+                        $componentSummaries['exam']['ws'] = (float) $savedTermGrade->term_assessment_grade;
+                    }
+                } else {
+                    $initialGrade = $gradingService->calculateInitialGrade(
+                        $componentSummaries,
+                        $schoolLevel
+                    );
+
+                    $transmutedGrade = $initialGrade === null
+                        ? null
+                        : $gradingService->transmute($initialGrade);
+                }
 
                 if (isset($componentSummaries['term_assessment']) && !isset($componentSummaries['exam'])) {
                     $componentSummaries['exam'] = $componentSummaries['term_assessment'];
                 }
-                if (isset($componentSummaries['exam']) && !isset($componentSummaries['term_assessment'])) {
-                    $componentSummaries['term_assessment'] = $componentSummaries['exam'];
-                }
-
-                $hasAssessment = collect($componentSummaries)
-                    ->contains(
-                        fn (array $summary) =>
-                            $summary['hps'] > 0
-                    );
-
-                $initialGrade = $hasAssessment
-                    ? round(
-                        collect($componentSummaries)
-                            ->sum('ws'),
-                        2
-                    )
-                    : null;
-
-                $transmutedGrade = $initialGrade === null
-                    ? null
-                    : $gradingService->transmute($initialGrade);
 
                 $middleInitial =
                     $enrollment->student->middle_name
@@ -1203,7 +1198,7 @@ class GradeSheetController extends Controller
 
                 $maxVisible = match ($categoryKey) {
                     'written' => $fixedSlots['written'] ?? 5,
-                    'performance' => $fixedSlots['performance'] ?? 5,
+                    'performance' => $fixedSlots['performance'] ?? 3,
                     default => $fixedSlots['exam'] ?? 3,
                 };
 
