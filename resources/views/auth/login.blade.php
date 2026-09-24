@@ -209,6 +209,18 @@
             </div>
         @endif
 
+        @if (session('warning'))
+            <div class="alert alert-warning" style="background-color: #fffbeb; color: #92400e; border: 1px solid #fcd34d; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ session('warning') }}
+            </div>
+        @endif
+
+        @if (session('status'))
+            <div class="alert alert-info" style="background-color: #eff6ff; color: #1e40af; border: 1px solid #93c5fd; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+                {{ session('status') }}
+            </div>
+        @endif
+
         @if (session('error'))
             <div class="alert alert-danger">
                 {{ session('error') }}

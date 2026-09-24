@@ -404,8 +404,13 @@ class StudentManagementController extends Controller
             );
 
             try { StudentUpdated::dispatch('created', ['id' => $student->id, 'section_id' => $validated['section_id']]); } catch (\Throwable $e) {}
-        } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Student creation error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $isDuplicate = str_contains(strtolower($e->getMessage()), 'unique') || str_contains(strtolower($e->getMessage()), 'duplicate') || ($e instanceof \Illuminate\Database\QueryException && (string)$e->getCode() === '23505');
+            $msg = $isDuplicate
+                ? 'A student with this student number or guardian email already exists. Please check the existing records.'
+                : ($e instanceof \RuntimeException ? $e->getMessage() : 'Unable to create student record. Please check the provided information and try again.');
+            return response()->json(['message' => $msg], 422);
         }
 
         // Notify School Admin via AdminActivityLog when a Teacher creates a student.
@@ -467,8 +472,13 @@ class StudentManagementController extends Controller
             );
 
             try { StudentUpdated::dispatch('updated', ['id' => $student->id, 'section_id' => $validated['section_id']]); } catch (\Throwable $e) {}
-        } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Student update error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $isDuplicate = str_contains(strtolower($e->getMessage()), 'unique') || str_contains(strtolower($e->getMessage()), 'duplicate') || ($e instanceof \Illuminate\Database\QueryException && (string)$e->getCode() === '23505');
+            $msg = $isDuplicate
+                ? 'A student with this student number or guardian email already exists. Please check the existing records.'
+                : ($e instanceof \RuntimeException ? $e->getMessage() : 'Unable to update student record. Please check the provided information and try again.');
+            return response()->json(['message' => $msg], 422);
         }
 
         return response()->json([
@@ -480,44 +490,40 @@ class StudentManagementController extends Controller
     private function validatedPayload(Request $request, ?int $studentId = null): array
     {
         return $request->validate([
-            'lrn' => ['required', 'digits:12', Rule::unique('students', 'lrn')->ignore($studentId)],
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
-            'middle_name' => ['nullable', 'string', 'max:100'],
-            'suffix' => ['nullable', 'string', 'max:20'],
-            'sex' => ['required', 'in:female,male'],
-            'address' => ['required', 'string'],
-            'age' => ['required', 'integer', 'min:1', 'max:100'],
-            'status' => ['required', 'in:active,inactive'],
-
-            // guardian
-            'name' => ['required', 'string'],
-            'relationship' => ['required', 'in:mother,father,sibling,guardian'],
-            'contact_number' => ['nullable', 'string', 'max:20'],
-            'email' => ['required', 'email'],
-
-            // enrollment
-            'school_year_id' => ['required', 'exists:school_years,id'],
-            'grade_level' => ['required', 'integer', 'between:1,12'],
-            'section_id' => [
+            'lrn' => [
                 'required',
-                Rule::exists('sections', 'id')->where(function ($query) use ($request) {
-                    $query->where('grade_level', $request->input('grade_level'));
-                }),
+                'string',
+                'size:12',
+                'regex:/^\d{12}$/',
+                'unique:students,student_number' . ($studentId ? ',' . $studentId : ''),
             ],
-            'enrollment_status' => ['required', 'in:active,inactive'],
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'suffix' => 'nullable|string|max:255',
+            'sex' => 'required|in:Male,Female,Other',
+            'address' => 'required|string|max:500',
+            'age' => 'required|integer|min:3|max:100',
+            'status' => 'required|in:active,inactive,transferred,graduated,dropped',
+            'name' => 'required|string|max:255',
+            'relationship' => 'required|in:Mother,Father,Guardian',
+            'contact_number' => ['nullable', 'regex:/^(\+639\d{9}|09\d{9})$/'],
+            'email' => 'required|email|max:255',
+            'school_year_id' => 'required|exists:school_years,id',
+            'section_id' => 'required|exists:sections,id',
+            'enrollment_status' => 'required|in:active,inactive,completed,dropped',
         ]);
     }
 
-    public function destroy(Request $request, string $id)
+    public function destroy(string $id)
     {
-        abort_if($request->user()?->isTeacher(), 403, 'Teachers are not authorized to delete student records.');
+        abort_if(auth()->user()?->isTeacher(), 403, 'Teachers are not authorized to delete student records.');
 
         $student = Student::find($id);
 
         if (!$student) {
             return response()->json([
-                'message' => 'Student not found'
+                'message' => 'Student record not found'
             ], 404);
         }
 
@@ -525,14 +531,19 @@ class StudentManagementController extends Controller
             $student->delete();
 
             return response()->json([
-                'message' => 'Student deleted successfully',
+                'message' => 'Student record deleted successfully',
                 'data' => $student
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to delete student ID ' . $id . ': ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $isConstraint = str_contains(strtolower($e->getMessage()), 'foreign key') || str_contains(strtolower($e->getMessage()), 'constraint') || ($e instanceof \Illuminate\Database\QueryException && (string)$e->getCode() === '23503');
+            $msg = $isConstraint
+                ? 'This student cannot be deleted because they have associated attendance logs, grade records, or enrollments.'
+                : 'The student record could not be deleted. Please try again.';
+
             return response()->json([
-                'message' => 'Failed to delete student',
-                'error' => $e->getMessage(),
-            ], 500);
+                'message' => $msg,
+            ], 422);
         }
     }
 

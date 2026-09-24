@@ -17,6 +17,9 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
+                <button type="button" class="bi-btn bi-btn--outline" id="openSetupWorkflowGuideBtn">
+                    <i class="fas fa-route me-1 text-primary"></i> Setup Workflow Guide
+                </button>
                 <a href="{{ route('import.template') }}" class="bi-btn bi-btn--outline" id="downloadTemplateBtn" data-tour="import-template">
                     <i class="fas fa-download me-1 text-primary"></i> Sample Template (.xlsx)
                 </a>
@@ -303,6 +306,9 @@
                     </div>
 
                     <div class="d-flex align-items-center justify-content-center flex-wrap gap-2">
+                        <button type="button" class="bi-btn bi-btn--primary px-4 py-2" id="resultRecommendedStepsBtn">
+                            <i class="fas fa-route me-1.5"></i> Recommended Next Steps
+                        </button>
                         <button type="button" class="btn btn-outline-secondary px-3.5 py-2 rounded-pill"
                             id="resultStartNewBtn">
                             <i class="fas fa-plus me-1.5"></i> Import Another File
@@ -311,9 +317,147 @@
                             id="resultViewIssuesBtn">
                             <i class="fas fa-triangle-exclamation me-1.5"></i> View Issues
                         </button>
-                        <button type="button" class="bi-btn bi-btn--primary px-4 py-2" id="resultGoHistoryBtn">
-                            <i class="fas fa-history me-1.5"></i> View in Transaction History
+                        <button type="button" class="btn btn-outline-secondary px-3.5 py-2 rounded-pill" id="resultGoHistoryBtn">
+                            <i class="fas fa-history me-1.5"></i> Transaction History
                         </button>
+                    </div>
+
+                    {{-- Recommended Post-SF1 Setup Flow Panel --}}
+                    <div class="recommended-flow-container mt-4 pt-4 border-top text-start">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-semibold">
+                                    <i class="fas fa-route me-1"></i> Recommended Next Steps
+                                </span>
+                                <h5 class="fw-bold mb-0 text-dark">Academic Setup Pipeline</h5>
+                            </div>
+                            <button type="button" class="btn btn-link btn-sm text-decoration-none text-primary p-0 fw-semibold" id="openSetupWorkflowGuideResultBtn">
+                                <i class="fas fa-circle-info me-1"></i> Why are these steps required?
+                            </button>
+                        </div>
+
+                        {{-- Educational Callout: SF-1 auto-creates sections without advisers or teaching assignments --}}
+                        <div class="alert alert-info border-info-subtle bg-info-subtle bg-opacity-15 rounded-3 py-3 px-3 mb-3 d-flex align-items-start gap-2.5">
+                            <i class="fas fa-circle-exclamation text-info fs-5 mt-0.5 flex-shrink-0"></i>
+                            <div class="small text-secondary">
+                                <strong class="text-dark d-block mb-1">Important System Notice:</strong>
+                                Uploading DepEd SF-1 automatically creates sections and enrolls students into them. However, <strong>sections are created without assigned Class Advisers or Teaching Assignments (subject teachers)</strong>. Until advisers and teaching assignments are configured, teachers will not be able to view their class rosters, record daily attendance, or submit trimester grades.
+                            </div>
+                        </div>
+
+                        {{-- Visual Dependency Roadmap / Pipeline --}}
+                        <div class="row g-3">
+                            {{-- Step 1: Sections & Class Advisers --}}
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border-1 border-secondary-subtle shadow-none rounded-3 p-3 post-import-flow-card">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="flow-step-icon-box bg-primary-subtle text-primary">
+                                            <i class="fas fa-layer-group"></i>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-primary-subtle text-primary small fw-semibold">Step 1</span>
+                                            <h6 class="fw-bold text-dark mb-0">Sections & Advisers</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        Review auto-created sections, confirm session types (Morning/Afternoon), and appoint a <strong>Class Adviser</strong> for each section.
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="{{ route('academic.index', ['tab' => 'sections']) }}" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-semibold">
+                                            <span>Configure Sections & Advisers</span>
+                                            <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Step 2: Student Management --}}
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border-1 border-secondary-subtle shadow-none rounded-3 p-3 post-import-flow-card">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="flow-step-icon-box bg-info-subtle text-info">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-info-subtle text-info small fw-semibold">Step 2</span>
+                                            <h6 class="fw-bold text-dark mb-0">Student Management</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        Verify imported learners by grade and section, check unassigned students, inspect LRNs, and confirm guardian contact information.
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="{{ route('student-management.index') }}" class="btn btn-outline-info btn-sm rounded-pill w-100 fw-semibold">
+                                            <span>Review Enrolled Students</span>
+                                            <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Step 3: Prerequisites (Subjects & Faculty) --}}
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border-1 border-secondary-subtle shadow-none rounded-3 p-3 post-import-flow-card">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="flow-step-icon-box bg-warning-subtle text-warning">
+                                            <i class="fas fa-book-open"></i>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-warning-subtle text-warning small fw-bold">Prerequisite</span>
+                                            <h6 class="fw-bold text-dark mb-0">Subjects & Teachers</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        <strong>Prerequisite rule:</strong> Both <strong>Subjects</strong> and <strong>Sections</strong> must be registered before faculty teaching loads can be assigned.
+                                    </p>
+                                    <div class="mt-auto d-flex gap-2">
+                                        <a href="{{ route('academic.index', ['tab' => 'subjects']) }}" class="btn btn-outline-warning btn-sm rounded-pill flex-grow-1 fw-semibold">
+                                            <i class="fas fa-book me-1"></i> Manage Subjects
+                                        </a>
+                                        <a href="{{ route('teachers.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill flex-grow-1 fw-semibold">
+                                            <i class="fas fa-chalkboard-teacher me-1"></i> Teachers
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Step 4: Teaching Assignments --}}
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border-1 border-secondary-subtle shadow-none rounded-3 p-3 post-import-flow-card">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="flow-step-icon-box bg-success-subtle text-success">
+                                            <i class="fas fa-chalkboard-user"></i>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-success-subtle text-success small fw-semibold">Step 4 (Final)</span>
+                                            <h6 class="fw-bold text-dark mb-0">Teaching Assignments</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        Assign teachers to teach specific subjects in specific sections. This unlocks the teacher portal, attendance rosters, and grading sheets.
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="{{ route('academic.index', ['tab' => 'assignments']) }}" class="btn btn-outline-success btn-sm rounded-pill w-100 fw-semibold">
+                                            <span>Assign Teachers to Classes</span>
+                                            <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Flow Summary Footer --}}
+                        <div class="mt-3 p-2.5 rounded-3 bg-light border border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-2 text-muted small">
+                            <div>
+                                <i class="fas fa-diagram-project me-1 text-primary"></i>
+                                <span class="fw-semibold text-dark">Setup Sequence:</span>
+                                SF-1 Upload <i class="fas fa-angle-right mx-1"></i>
+                                Sections & Advisers <i class="fas fa-angle-right mx-1"></i>
+                                Student Management <i class="fas fa-angle-right mx-1"></i>
+                                Subjects (Prerequisite) <i class="fas fa-angle-right mx-1"></i>
+                                Teaching Assignments
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -504,6 +648,118 @@
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary btn-sm px-3" id="confirmModalYes">Yes, Proceed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Setup Workflow Guide Modal --}}
+    <div class="modal fade bulk-import-page" id="setupWorkflowModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-bottom pb-3">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-1">
+                            <i class="fas fa-route text-primary me-2"></i> Post-SF1 Academic Setup Workflow
+                        </h5>
+                        <p class="text-muted small mb-0">Understand what happens after importing DepEd SF-1 and why next steps are necessary.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    {{-- Key Insight Alert --}}
+                    <div class="alert alert-primary border-primary-subtle bg-primary-subtle bg-opacity-15 rounded-3 p-3 mb-4">
+                        <div class="d-flex align-items-start gap-2.5">
+                            <i class="fas fa-lightbulb text-primary fs-5 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <h6 class="fw-bold text-primary mb-1">How DepEd SF-1 Import Works</h6>
+                                <p class="small text-secondary mb-0">
+                                    When you upload a DepEd SF-1 spreadsheet, the system parses the grade level and section names, <strong>automatically creates the sections</strong>, and creates active enrollment records for each student.
+                                    However, <strong>sections are created without Class Advisers and without Teaching Assignments (subject teachers)</strong>.
+                                    Completing the workflow below ensures teachers have access to their classroom rosters, attendance verification, and grading sheets.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Timeline / Steps --}}
+                    <div class="workflow-modal-steps d-flex flex-column gap-3">
+                        {{-- Step 1 --}}
+                        <div class="border rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary text-white rounded-pill px-2.5 py-1">Step 1</span>
+                                    <h6 class="fw-bold text-dark mb-0">Sections & Class Advisers</h6>
+                                </div>
+                                <a href="{{ route('academic.index', ['tab' => 'sections']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    Go to Sections <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                SF-1 import generates sections automatically, but does not assign class advisers. Go to <strong>Academic Setup &gt; Sections</strong> to review section details (grade level, morning/afternoon session type, capacity) and appoint a <strong>Class Adviser</strong> to oversee the cohort.
+                            </p>
+                        </div>
+
+                        {{-- Step 2 --}}
+                        <div class="border rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-info text-white rounded-pill px-2.5 py-1">Step 2</span>
+                                    <h6 class="fw-bold text-dark mb-0">Student Management Page</h6>
+                                </div>
+                                <a href="{{ route('student-management.index') }}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                    Go to Students <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                Visit the <strong>Student Management</strong> page to verify imported rosters by grade and section. Confirm LRN uniqueness, review student profiles, check guardian contact numbers for SMS/attendance alerts, and assign any unallocated students.
+                            </p>
+                        </div>
+
+                        {{-- Step 3 --}}
+                        <div class="border rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1">Prerequisite</span>
+                                    <h6 class="fw-bold text-dark mb-0">Subjects & Faculty Setup</h6>
+                                </div>
+                                <div class="d-flex gap-1.5">
+                                    <a href="{{ route('academic.index', ['tab' => 'subjects']) }}" class="btn btn-sm btn-outline-warning rounded-pill px-2.5">
+                                        Subjects
+                                    </a>
+                                    <a href="{{ route('teachers.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5">
+                                        Teachers
+                                    </a>
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                <strong>System Prerequisite:</strong> A teaching assignment requires both a <strong>Subject</strong> and a <strong>Section</strong> to exist in the system, along with an active <strong>Teacher</strong> profile. Ensure curriculum subjects are defined for each grade level before attempting to assign faculty loads.
+                            </p>
+                        </div>
+
+                        {{-- Step 4 --}}
+                        <div class="border rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-success text-white rounded-pill px-2.5 py-1">Step 4 (Final)</span>
+                                    <h6 class="fw-bold text-dark mb-0">Teaching Assignments</h6>
+                                </div>
+                                <a href="{{ route('academic.index', ['tab' => 'assignments']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                    Go to Teaching Assignments <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                Connect subject teachers to their respective sections in <strong>Academic Setup &gt; Teaching Assignments</strong>. This enables teachers to access daily classroom verification, take subject attendance, and record trimester student grades.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top py-2.5 d-flex align-items-center justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">Close Guide</button>
+                    <a href="{{ route('academic.index', ['tab' => 'sections']) }}" class="bi-btn bi-btn--primary btn-sm px-3 py-1.5 text-decoration-none">
+                        <span>Start Step 1: Configure Sections & Advisers</span>
+                        <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
         </div>

@@ -3,7 +3,7 @@
 
     <x-slot name="pageName">QR Station</x-slot>
 
-    <x-slot name="subtitle">Live QR scanning and attendance monitoring</x-slot>
+    <x-slot name="subtitle">Live QR scanning and in and out monitoring</x-slot>
 
     <div id="qrStationApp" class="px-3" data-initial='@json($initialData)'
         data-scan-url="{{ route('school_admin.qr-station.scan') }}" data-csrf="{{ csrf_token() }}"

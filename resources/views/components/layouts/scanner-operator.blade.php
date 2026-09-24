@@ -68,6 +68,7 @@
                 </section>
 
                 <div class="scanner-page-slot mx-3">
+                    <x-alert-banner />
                     {{ $slot }}
                 </div>
             </div>

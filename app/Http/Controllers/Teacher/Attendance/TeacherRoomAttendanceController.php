@@ -33,7 +33,10 @@ class TeacherRoomAttendanceController extends Controller
             ->pluck('section_id')
             ->unique();
 
-        $sections = Section::whereIn('id', $sectionIds)
+        $advisorySectionIds = Section::where('advisor_id', $teacher->id)->pluck('id');
+        $allSectionIds = $sectionIds->merge($advisorySectionIds)->filter()->unique();
+
+        $sections = Section::whereIn('id', $allSectionIds)
             ->orderBy('name')
             ->get();
 
@@ -42,6 +45,7 @@ class TeacherRoomAttendanceController extends Controller
         $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
 
         foreach ($sections as $section) {
+            $section->is_advisory = ($teacher && $section->advisor_id === $teacher->id);
             $enrollmentsQuery = Enrollment::where('section_id', $section->id)
                 ->where('status', 'active');
                 
@@ -122,11 +126,15 @@ class TeacherRoomAttendanceController extends Controller
             ->first()
             : null;
 
+        $isAdviser = $teacher && $section->advisor_id === $teacher->id;
+
         abort_unless(
-            $teachingAssignment,
+            $teachingAssignment || $isAdviser,
             403,
-            'You do not have an active teaching assignment for this section.'
+            'You do not have an active teaching assignment or advisory role for this section.'
         );
+
+        $section->is_advisory = $isAdviser;
 
         $dateFilter = $request->input('date_filter', 'today');
         $customStartDate = $request->input('custom_start_date');

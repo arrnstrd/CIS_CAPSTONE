@@ -365,3 +365,41 @@
 .bulk-import-page .modal-footer {
     background: #f8fafc;
 }
+
+/* ---- Recommended Post-SF1 Setup Flow & Cards ---- */
+.bulk-import-page .recommended-flow-container {
+    animation: fadeInStep 0.3s ease-out;
+}
+
+.bulk-import-page .post-import-flow-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.bulk-import-page .post-import-flow-card:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05);
+}
+
+.bulk-import-page .flow-step-icon-box {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.bulk-import-page .workflow-modal-steps > div {
+    transition: all 0.2s ease;
+}
+
+.bulk-import-page .workflow-modal-steps > div:hover {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}

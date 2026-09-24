@@ -74,6 +74,7 @@
                     </section>
 
                     <div class="sa-page-slot mx-3">
+                        <x-alert-banner />
                         {{ $slot }}
                     </div>
                 </div>

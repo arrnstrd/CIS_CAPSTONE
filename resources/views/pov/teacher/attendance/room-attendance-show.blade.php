@@ -1,8 +1,13 @@
 <x-layouts.teacher>
     <x-slot name="pageName">
-        <span class="page-title-icon">
+        <span class="page-title-icon d-inline-flex align-items-center gap-2">
             <i class="fa-solid fa-clipboard-check"></i>
-            Grade {{ $section->grade_level }} - {{ $section->name }}
+            <span>Grade {{ $section->grade_level }} - {{ $section->name }}</span>
+            @if ($section->is_advisory || ($section->advisor_id && $section->advisor_id === auth()->user()?->teacher?->id))
+                <span class="gs-badge gs-badge-advisory ms-2">
+                    <i class="fa-solid fa-user-shield me-1"></i>Advisory Class
+                </span>
+            @endif
         </span>
     </x-slot>
 

@@ -9,6 +9,16 @@
         Email Monitoring
     </x-slot>
 
+    @php
+        $monitoringTabs = [
+            ['label' => 'In/Out Monitoring', 'href' => route('school_admin.time-in-time-out-history.index'), 'active' => false, 'icon' => 'fas fa-exchange-alt'],
+            ['label' => 'Email Monitoring', 'href' => route('emails.index', request()->query()), 'active' => true, 'icon' => 'fas fa-envelope'],
+        ];
+    @endphp
+
+    {{-- Navigation Tabs --}}
+    <x-layouts.school-admin.nav-tabs :tabs="$monitoringTabs" />
+
     <div class="main-content mx-2">
         <!-- Overview Cards Section -->
 

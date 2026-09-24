@@ -66,6 +66,39 @@
     align-items: center;
 }
 
+.sa-topbar__left {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.sa-topbar__greeting {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+.sa-topbar__greeting-text {
+    font-size: clamp(1.05rem, 1.35vw, 1.25rem);
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sa-topbar__greeting-subtext {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.82);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .sa-topbar__account-wrapper {
     position: relative;
 }
@@ -429,6 +462,14 @@
 
 /* Mobile (existing behaviour) */
 @media (max-width: 767px) {
+    .sa-topbar__greeting-subtext {
+        display: none;
+    }
+
+    .sa-topbar__greeting-text {
+        font-size: 0.95rem;
+    }
+
     .sa-page-content {
         padding: 14px 10px 16px;
     }

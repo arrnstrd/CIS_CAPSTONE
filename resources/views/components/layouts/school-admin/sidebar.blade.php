@@ -45,10 +45,10 @@
                         <span>QR Station</span>
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('school_admin.time-in-time-out-history.*') || request()->is('school-admin/time-in-time-out-history*') ? 'active' : '' }}">
+                <li class="{{ !request()->routeIs('school_admin.time-in-time-out-history.analytics*') && !request()->is('school-admin/time-in-time-out-history/analytics*') && (request()->routeIs('school_admin.time-in-time-out-history.*') || request()->is('school-admin/time-in-time-out-history*') || request()->routeIs('emails.*') || request()->routeIs('*.email') || request()->is('emails*')) ? 'active' : '' }}">
                     <a href="{{ route('school_admin.time-in-time-out-history.index') }}">
                         <i class="fas fa-exchange-alt"></i>
-                        <span>In/Out History</span>
+                        <span>In/Out Monitoring</span>
                     </a>
                 </li>
                 <li class="{{ request()->routeIs('attendance') || request()->routeIs('attendance.*') || request()->is('attendance*') || request()->is('school_admin/attendance*') ? 'active' : '' }}">
@@ -57,10 +57,10 @@
                         <span>Attendance</span>
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('emails.*') || request()->routeIs('*.email') || request()->is('emails*') ? 'active' : '' }}">
-                    <a href="{{ route('emails.index') }}">
-                        <i class="fas fa-envelope"></i>
-                        <span>Email Logs</span>
+                <li class="{{ request()->routeIs('school_admin.time-in-time-out-history.analytics*') || request()->is('school-admin/time-in-time-out-history/analytics*') ? 'active' : '' }}">
+                    <a href="{{ route('school_admin.time-in-time-out-history.analytics') }}">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Attendance Analytics</span>
                     </a>
                 </li>
 

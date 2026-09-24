@@ -19,7 +19,10 @@ class ClassroomVerificationController extends Controller
                 'data' => $this->service->getRoster($teachingAssignmentId),
             ]);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Teaching assignment not found'], 404);
+            return response()->json(['message' => 'Teaching assignment not found.'], 404);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Classroom verification roster error: ' . $e->getMessage());
+            return response()->json(['message' => 'Unable to load class roster. Please try again.'], 500);
         }
     }
 
@@ -39,6 +42,11 @@ class ClassroomVerificationController extends Controller
                 'message' => $e->getMessage(),
                 'errors' => $e->errors(),
             ], 422);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Classroom verification record error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Attendance verification could not be recorded at this time. Please try again.',
+            ], 500);
         }
 
         return response()->json([

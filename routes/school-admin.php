@@ -7,7 +7,9 @@ use App\Http\Controllers\SchoolAdmin\Academic\SubjectController;
 use App\Http\Controllers\SchoolAdmin\Attendance\ClassAttendanceController;
 use App\Http\Controllers\SchoolAdmin\BulkImport\BulkImportController;
 use App\Http\Controllers\SchoolAdmin\Dashboard\DashboardController;
-use App\Http\Controllers\SchoolAdmin\Emails\EmailLogController;
+use App\Http\Controllers\SchoolAdmin\AttendanceAnalytics\AttendanceAnalyticsController;
+use App\Http\Controllers\SchoolAdmin\InOutMonitoring\AttendanceLogController;
+use App\Http\Controllers\SchoolAdmin\InOutMonitoring\EmailLogController;
 use App\Http\Controllers\SchoolAdmin\QrGeneration\QrCodeController;
 use App\Http\Controllers\SchoolAdmin\QrStation\QrStationController;
 use App\Http\Controllers\SchoolAdmin\QrStation\ScanController;
@@ -17,7 +19,6 @@ use App\Http\Controllers\SchoolAdmin\Students\StudentManagementController;
 use App\Http\Controllers\SchoolAdmin\Students\StudentProfileController;
 use App\Http\Controllers\SchoolAdmin\Teachers\TeacherManagementController;
 use App\Http\Controllers\SchoolAdmin\TeachingAssignments\TeachingAssignmentController;
-use App\Http\Controllers\SchoolAdmin\TimeInTimeOutHistory\AttendanceLogController;
 use App\Http\Controllers\Shared\AttendanceMonitoringController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,17 +37,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/school-admin/attendance/monitoring/resync', [AttendanceMonitoringController::class, 'resync'])
         ->name('school_admin.attendance.monitoring.resync');
 
-    // Monitoring: In/Out History
+    // Monitoring: In/Out Monitoring
     Route::get('/school-admin/time-in-time-out-history', [AttendanceLogController::class, 'index'])
         ->name('school_admin.time-in-time-out-history.index');
-    Route::get('/school-admin/time-in-time-out-history/analytics', [AttendanceLogController::class, 'analytics'])
-        ->name('school_admin.time-in-time-out-history.analytics');
-    Route::get('/school-admin/time-in-time-out-history/analytics/download-pdf', [AttendanceLogController::class, 'downloadAnalyticsPdf'])
-        ->name('school_admin.time-in-time-out-history.analytics-pdf');
     Route::get('/school-admin/time-in-time-out-history/download', [AttendanceLogController::class, 'download'])
         ->name('school_admin.time-in-time-out-history.download');
     Route::get('/school-admin/time-in-time-out-history/download-pdf', [AttendanceLogController::class, 'downloadPdf'])
         ->name('school_admin.time-in-time-out-history.download-pdf');
+
+    // Monitoring: Attendance Analytics
+    Route::get('/school-admin/time-in-time-out-history/analytics', [AttendanceAnalyticsController::class, 'analytics'])
+        ->name('school_admin.time-in-time-out-history.analytics');
+    Route::get('/school-admin/time-in-time-out-history/analytics/download-pdf', [AttendanceAnalyticsController::class, 'downloadAnalyticsPdf'])
+        ->name('school_admin.time-in-time-out-history.analytics-pdf');
 
     // Monitoring: Attendance
     Route::get('/attendance', [ClassAttendanceController::class, 'index'])

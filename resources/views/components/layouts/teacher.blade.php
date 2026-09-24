@@ -315,6 +315,7 @@
                 @endif
 
                 <div class="teacher-page-slot mx-3">
+                    <x-alert-banner />
                     {{ $slot }}
                 </div>
             </div>

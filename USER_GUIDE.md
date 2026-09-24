@@ -107,9 +107,9 @@ Each POV's views and controllers are deliberately structured to match the **Side
 |---|---|---|---|
 | **Dashboard** | `dashboard/` | `Dashboard/` (`DashboardController`) | High-level school KPIs, attendance rates, recent logs |
 | **QR Station (Monitor)** | `qr-station/` | `QrStation/` (`QrStationController`) | Live administrative monitoring of campus kiosk activity |
-| **In/Out History** | `time-in-time-out-history/` | `TimeInTimeOutHistory/` (`AttendanceLogController`) | Audit table of all student scan logs with filters and PDF exports |
+| **In/Out Monitoring** | `in-out-monitoring/` | `InOutMonitoring/` (`AttendanceLogController`, `EmailLogController`) | Unified gate scan history and guardian email delivery monitoring (tabbed view) |
 | **Attendance** | `attendance/` | `Attendance/` (`ClassAttendanceController`) | Institutional attendance overview across grade levels and sections |
-| **Email Logs** | `emails/` | `Emails/` (`EmailLogController`) | Tracking automated scan notification emails dispatched to guardians |
+| **Attendance Analytics** | `attendance-analytics/` | `AttendanceAnalytics/` (`AttendanceAnalyticsController`) | Dedicated deep attendance insights, punctuality trends, and metrics |
 | **Teachers** | `teachers/` | `Teachers/` (`TeacherManagementController`) | Managing teacher profiles, specialties, and active assignment counts |
 | **Students** | `students/` | `Students/` (`StudentManagementController`) | Student master records, LRNs, section enrollment, guardian contacts |
 | **Bulk Import** | `bulk-import/` | `BulkImport/` (`BulkImportController`) | Excel/CSV ingestion pipeline for bulk student onboarding |

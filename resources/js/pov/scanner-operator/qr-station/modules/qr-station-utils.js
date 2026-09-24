@@ -14,20 +14,20 @@ export const STATE_CLASSES = [
 ];
 
 export const RESULT_LABELS = {
-    "time-in": "Attendance Recorded",
-    "time-out": "Attendance Recorded",
-    late: "Late Arrival",
-    duplicate: "Duplicate Scan",
-    invalid: "Invalid QR",
-    excess: "Excess Scan",
-    error: "Scan Failed",
+    "time-in": "Time-In Recorded",
+    "time-out": "Time-Out Recorded",
+    late: "Late Arrival Recorded",
+    duplicate: "Already Recorded",
+    invalid: "Scan Notice",
+    excess: "Cooldown Active",
+    error: "Service Notice",
 };
 
 export const ERROR_TITLES = {
-    duplicate: "Duplicate Scan",
-    invalid: "Invalid QR Code",
-    excess: "Too Many Scans",
-    error: "Scan Failed",
+    duplicate: "Already Recorded",
+    invalid: "Unable to Process Scan",
+    excess: "Please Wait",
+    error: "Service Notice",
 };
 
 export const RESULT_META = {

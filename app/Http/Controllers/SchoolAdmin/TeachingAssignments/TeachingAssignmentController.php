@@ -164,10 +164,18 @@ class TeachingAssignmentController extends Controller
             return redirect()->route('teaching-assignments.index')
                 ->with('success', 'Teaching assignment created successfully.');
         } catch (\InvalidArgumentException $e) {
+            \Illuminate\Support\Facades\Log::warning('Teaching assignment validation: ' . $e->getMessage());
             if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
                 return response()->json(['message' => $e->getMessage(), 'errors' => []], 422);
             }
             return back()->withErrors(['error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Teaching assignment creation error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $msg = 'Unable to create teaching assignment. Please check that this assignment does not already exist.';
+            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => $msg], 422);
+            }
+            return back()->withErrors(['error' => $msg]);
         }
     }
 
@@ -218,10 +226,18 @@ class TeachingAssignmentController extends Controller
             return redirect()->route('teaching-assignments.index')
                 ->with('success', 'Teaching assignment updated successfully.');
         } catch (\InvalidArgumentException $e) {
+            \Illuminate\Support\Facades\Log::warning('Teaching assignment update validation: ' . $e->getMessage());
             if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
                 return response()->json(['message' => $e->getMessage(), 'errors' => []], 422);
             }
             return back()->withErrors(['error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Teaching assignment update error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $msg = 'Unable to update teaching assignment. Please check your entries and try again.';
+            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => $msg], 422);
+            }
+            return back()->withErrors(['error' => $msg]);
         }
     }
 
@@ -230,19 +246,33 @@ class TeachingAssignmentController extends Controller
      */
     public function destroy(Request $request, TeachingAssignment $teachingAssignment)
     {
-        $this->teachingAssignmentService->delete($teachingAssignment);
-
         try {
-            TeachingAssignmentUpdated::dispatch('deleted', ['id' => $teachingAssignment->id, 'section_id' => $teachingAssignment->section_id]);
+            $this->teachingAssignmentService->delete($teachingAssignment);
+
+            try {
+                TeachingAssignmentUpdated::dispatch('deleted', ['id' => $teachingAssignment->id, 'section_id' => $teachingAssignment->section_id]);
+            } catch (\Throwable $e) {
+            }
+
+            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => 'Teaching assignment deleted successfully.']);
+            }
+
+            return redirect()->route('teaching-assignments.index')
+                ->with('success', 'Teaching assignment deleted successfully.');
         } catch (\Throwable $e) {
-        }
+            \Illuminate\Support\Facades\Log::error('Failed to delete teaching assignment ID ' . $teachingAssignment->id . ': ' . $e->getMessage());
+            $isConstraint = str_contains(strtolower($e->getMessage()), 'foreign key') || str_contains(strtolower($e->getMessage()), 'constraint');
+            $msg = $isConstraint
+                ? 'This teaching assignment cannot be deleted because grades or attendance verifications are associated with it.'
+                : 'The teaching assignment could not be deleted. Please try again.';
 
-        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
-            return response()->json(['message' => 'Teaching assignment deleted successfully.']);
-        }
+            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+                return response()->json(['message' => $msg], 422);
+            }
 
-        return redirect()->route('teaching-assignments.index')
-            ->with('success', 'Teaching assignment deleted successfully.');
+            return back()->withErrors(['error' => $msg]);
+        }
     }
 
     /**
@@ -257,20 +287,27 @@ class TeachingAssignmentController extends Controller
 
         $ids = $request->input('ids', []);
 
-        $assignments = TeachingAssignment::whereIn('id', $ids)->get();
+        try {
+            $assignments = TeachingAssignment::whereIn('id', $ids)->get();
 
-        foreach ($assignments as $assignment) {
-            $this->teachingAssignmentService->delete($assignment);
-            try {
-                TeachingAssignmentUpdated::dispatch('deleted', ['id' => $assignment->id, 'section_id' => $assignment->section_id]);
-            } catch (\Throwable $e) {
+            foreach ($assignments as $assignment) {
+                $this->teachingAssignmentService->delete($assignment);
+                try {
+                    TeachingAssignmentUpdated::dispatch('deleted', ['id' => $assignment->id, 'section_id' => $assignment->section_id]);
+                } catch (\Throwable $e) {
+                }
             }
-        }
 
-        return response()->json([
-            'message' => count($assignments) . ' teaching assignment(s) deleted successfully.',
-            'affected' => count($assignments),
-        ]);
+            return response()->json([
+                'message' => count($assignments) . ' teaching assignment(s) deleted successfully.',
+                'affected' => count($assignments),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Bulk delete teaching assignments failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Unable to delete one or more selected teaching assignments because they are referenced by grades or attendance verifications.',
+            ], 422);
+        }
     }
 
     /**

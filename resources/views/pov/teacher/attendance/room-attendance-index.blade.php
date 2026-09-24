@@ -12,51 +12,51 @@
 
     <div class="row g-3" data-tour="teacher-attendance-sections">
         @forelse ($sections as $section)
-            <div class="col-12 col-md-6">
-                <div class="ra-section-card">
-                    <span class="ra-grade-pill">Grade {{ $section->grade_level }}</span>
-                    <p class="ra-section-card-name mt-2">{{ $section->name }}</p>
-
-                    <div class="ra-enrolled-row">
-                        <span class="ra-stat-icon ra-stat-icon-neutral">
-                            <i class="fa-solid fa-users"></i>
-                        </span>
+            <div class="col-12 col-md-6 col-xl-4">
+                <a href="{{ route('room-attendance.show', $section) }}" class="text-decoration-none">
+                    <div class="gs-panel gs-class-card h-100 d-flex flex-column justify-content-between">
                         <div>
-                            <p class="ra-enrolled-value">{{ $section->total_students }}</p>
-                            <p class="ra-enrolled-label">students enrolled</p>
-                        </div>
-                    </div>
-
-                    <div class="ra-mini-stats">
-                        <div class="ra-mini-stat ra-mini-stat-present">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-user-check ra-mini-stat-icon"></i>
-                                <div>
-                                    <p class="ra-mini-stat-value">{{ $section->present_count }}</p>
-                                    <p class="ra-mini-stat-label">Present</p>
+                            <div class="gs-class-card-header">
+                                <div class="gs-class-card-id">
+                                    <div class="gs-grade-avatar">{{ $section->grade_level }}</div>
+                                    <div>
+                                        <p class="gs-panel-title mb-0">{{ $section->name }}</p>
+                                        <p class="gs-class-card-subtitle mb-0">Grade {{ $section->grade_level }}</p>
+                                    </div>
                                 </div>
+                                @if ($section->is_advisory)
+                                    <span class="gs-badge gs-badge-advisory">
+                                        <i class="fa-solid fa-user-shield me-1"></i>Advisory Class
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="gs-row-subtext mb-3">
+                                <span><i class="fa-solid fa-users me-1"></i>{{ $section->total_students }} enrolled</span>
+                            </div>
+
+                            <div class="gs-stat-group mb-3">
+                                <span class="gs-stat-chip gs-stat-chip-success">
+                                    <i class="fa-solid fa-user-check me-1"></i>Present: {{ $section->present_count }}
+                                </span>
+                                <span class="gs-stat-chip gs-stat-chip-danger">
+                                    <i class="fa-solid fa-user-xmark me-1"></i>Absent: {{ $section->absent_count }}
+                                </span>
                             </div>
                         </div>
-                        <div class="ra-mini-stat ra-mini-stat-absent">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fa-solid fa-user-xmark ra-mini-stat-icon"></i>
-                                <div>
-                                    <p class="ra-mini-stat-value">{{ $section->absent_count }}</p>
-                                    <p class="ra-mini-stat-label">Absent</p>
-                                </div>
-                            </div>
+
+                        <div class="gs-class-card-footer mt-auto">
+                            <span class="gs-class-open-btn">
+                                Open Section <i class="fa-solid fa-arrow-right ms-1"></i>
+                            </span>
                         </div>
                     </div>
-
-                    <a href="{{ route('room-attendance.show', $section) }}" class="btn-view-history w-100 justify-content-center text-decoration-none">
-                        Open Section
-                    </a>
-                </div>
+                </a>
             </div>
         @empty
             <div class="col-12">
                 <div class="ra-filter-bar text-center text-muted py-4">
-                    No active teaching assignments found. Contact your admin if this seems wrong.
+                    No active teaching assignments or advisory sections found. Contact your admin if this seems wrong.
                 </div>
             </div>
         @endforelse

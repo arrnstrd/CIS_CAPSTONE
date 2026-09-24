@@ -160,22 +160,36 @@ class SubjectController extends Controller
      */
     public function destroy(Subject $subject)
     {
-        $this->subjectService->delete($subject);
-
         try {
-            SubjectUpdated::dispatch('deleted', ['id' => $subject->id]);
+            $this->subjectService->delete($subject);
+
+            try {
+                SubjectUpdated::dispatch('deleted', ['id' => $subject->id]);
+            } catch (\Throwable $e) {
+            }
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'message' => 'Subject deleted successfully.',
+                    'data' => ['id' => $subject->id],
+                ]);
+            }
+
+            return redirect()->route('subjects.index')
+                ->with('success', 'Subject deleted successfully.');
         } catch (\Throwable $e) {
-        }
+            \Illuminate\Support\Facades\Log::error('Subject deletion failed for ID ' . $subject->id . ': ' . $e->getMessage());
+            $isConstraint = str_contains(strtolower($e->getMessage()), 'foreign key') || str_contains(strtolower($e->getMessage()), 'constraint');
+            $msg = $isConstraint
+                ? 'This subject cannot be deleted because it is currently assigned to teachers, sections, or grade records.'
+                : 'The subject could not be deleted. Please try again.';
 
-        if (request()->ajax()) {
-            return response()->json([
-                'message' => 'Subject deleted successfully.',
-                'data' => ['id' => $subject->id],
-            ]);
-        }
+            if (request()->ajax()) {
+                return response()->json(['message' => $msg], 422);
+            }
 
-        return redirect()->route('subjects.index')
-            ->with('success', 'Subject deleted successfully.');
+            return redirect()->route('subjects.index')->with('error', $msg);
+        }
     }
 
     /**
@@ -198,9 +212,9 @@ class SubjectController extends Controller
                 'affected' => $count,
             ]);
         } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Bulk delete subjects failed: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to delete selected subjects. They may be referenced by other records (e.g., sections, schedules, or grades).',
-                'error' => $e->getMessage()
+                'message' => 'Unable to delete one or more selected subjects because they are currently assigned to teachers, sections, or grade records.',
             ], 422);
         }
     }

@@ -674,11 +674,20 @@ function renderResult(data) {
         viewIssuesBtn?.classList.remove("d-none");
     }
 
+    rebind("resultRecommendedStepsBtn", () => showM("setupWorkflowModal"));
     rebind("resultStartNewBtn", () => resetImportUI());
     rebind("resultViewIssuesBtn", () => openIssueInspector());
     rebind("resultGoHistoryBtn", () => {
         document.getElementById("viewHistoryBtn")?.click();
     });
+    rebind("openSetupWorkflowGuideResultBtn", () => showM("setupWorkflowModal"));
+
+    // Automatically pop up Recommended Setup Actions modal on successful import
+    if (isSuccess) {
+        setTimeout(() => {
+            showM("setupWorkflowModal");
+        }, 400);
+    }
 }
 
 // ── Reset Import UI ──────────────────────────────────────────────────────
@@ -1173,6 +1182,9 @@ export function init() {
     initAckAll();
     initFilters();
     loadHistory();
+    rebind("openSetupWorkflowGuideBtn", () => showM("setupWorkflowModal"));
+    rebind("openSetupWorkflowGuideResultBtn", () => showM("setupWorkflowModal"));
+    rebind("resultRecommendedStepsBtn", () => showM("setupWorkflowModal"));
 }
 
 if (document.readyState === "loading") {

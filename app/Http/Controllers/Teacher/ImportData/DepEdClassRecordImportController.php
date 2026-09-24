@@ -147,9 +147,11 @@ class DepEdClassRecordImportController extends Controller
 
         } catch (\Throwable $e) {
             Log::error('DepEd Class Record Inspection Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $msg = 'The selected Excel file could not be read. Please make sure it is a valid DepEd e-Class Record spreadsheet (.xlsx) and try again.';
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to process Excel file: ' . $e->getMessage(),
+                'message' => $msg,
+                'error' => $msg,
             ], 422);
         }
     }
@@ -291,9 +293,11 @@ class DepEdClassRecordImportController extends Controller
 
         } catch (\Throwable $e) {
             Log::error('DepEd Class Record Import Process Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $msg = 'An unexpected problem occurred while saving imported grades. Please check your data and try again.';
             return response()->json([
                 'success' => false,
-                'error' => 'An error occurred while saving grades: ' . $e->getMessage(),
+                'message' => $msg,
+                'error' => $msg,
             ], 500);
         }
     }

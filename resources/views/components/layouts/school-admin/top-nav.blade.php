@@ -5,6 +5,15 @@
     $topNavFullName = trim($topNavFirst . ' ' . $topNavLast) ?: 'School Administrator';
     $topNavEmail    = $topNavUser?->email ?? 'admin@example.com';
     $topNavInitials = mb_strtoupper(mb_substr($topNavFirst, 0, 1) . mb_substr($topNavLast, 0, 1)) ?: 'SA';
+
+    $hour = now()->hour;
+    if ($hour < 12) {
+        $greeting = 'Good morning';
+    } elseif ($hour < 18) {
+        $greeting = 'Good afternoon';
+    } else {
+        $greeting = 'Good evening';
+    }
 @endphp
 
 <header class="sa-topbar" id="saTopBar">
@@ -19,8 +28,13 @@
             <i class="fas fa-bars" aria-hidden="true"></i>
         </button>
 
-        {{-- Left side: Subtle branding / portal indicator --}}
-        <div class="sa-topbar__left"></div>
+        {{-- Left side: Greeting --}}
+        <div class="sa-topbar__left">
+            <div class="sa-topbar__greeting">
+                <div class="sa-topbar__greeting-text">{{ $greeting }}, {{ $topNavFirst ?: 'Administrator' }}!</div>
+                <div class="sa-topbar__greeting-subtext">Here's what's happening in your school today.</div>
+            </div>
+        </div>
 
 
         {{-- Right side: Account Profile Area with Dropdown & Guide Trigger --}}

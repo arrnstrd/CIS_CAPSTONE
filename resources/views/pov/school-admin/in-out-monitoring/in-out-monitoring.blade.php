@@ -64,9 +64,9 @@
             ['label' => 'Remarks', 'value' => $statusCounts['FLAGGED'] ?? 0, 'icon' => 'fa-solid fa-triangle-exclamation', 'variant' => 'danger', 'textVariant' => 'danger'],
         ];
 
-        $historyTabs = [
-            ['label' => 'Scan History Logs', 'href' => route('school_admin.time-in-time-out-history.index', request()->query()), 'active' => true, 'icon' => 'fas fa-list-ul'],
-            ['label' => 'Attendance Analytics', 'href' => route('school_admin.time-in-time-out-history.analytics', request()->query()), 'icon' => 'fas fa-chart-pie'],
+        $monitoringTabs = [
+            ['label' => 'In/Out Monitoring', 'href' => route('school_admin.time-in-time-out-history.index', request()->query()), 'active' => true, 'icon' => 'fas fa-exchange-alt'],
+            ['label' => 'Email Monitoring', 'href' => route('emails.index'), 'active' => false, 'icon' => 'fas fa-envelope'],
         ];
     @endphp
 
@@ -76,7 +76,7 @@
     @endif
 
     {{-- Navigation Tabs --}}
-    <x-layouts.school-admin.nav-tabs :tabs="$historyTabs" />
+    <x-layouts.school-admin.nav-tabs :tabs="$monitoringTabs" />
 
     {{-- Overview Cards --}}
     <div class="row g-3 mb-4 px-3">

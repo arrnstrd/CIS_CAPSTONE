@@ -211,31 +211,6 @@
             </div>
         @endif
 
-        {{-- Recent Activity Section --}}
-        @if (($dashboardPreferences?->show_recent_activity ?? true) && isset($recentActivities) && $recentActivities->isNotEmpty())
-            <div class="gd-panel mt-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <p class="gs-panel-title mb-0">Recent Activity</p>
-                    <a href="{{ route('teacher.notifications.index') }}" class="btn btn-link btn-sm text-decoration-none p-0">View All</a>
-                </div>
-                <div class="list-group list-group-flush">
-                    @foreach ($recentActivities as $activity)
-                        <div class="list-group-item d-flex align-items-center justify-content-between px-0 py-2 border-bottom">
-                            <div class="d-flex align-items-center gap-3">
-                                <span class="badge bg-light text-dark p-2 rounded-circle border">
-                                    <i class="fa-solid {{ ($activity->data['category'] ?? '') === 'at_risk' ? 'fa-triangle-exclamation text-danger' : (($activity->data['category'] ?? '') === 'grading' ? 'fa-graduation-cap text-success' : 'fa-bell text-primary') }}"></i>
-                                </span>
-                                <div>
-                                    <p class="mb-0 fw-semibold text-dark" style="font-size: 0.82rem;">{{ $activity->data['title'] ?? 'Activity' }}</p>
-                                    <small class="text-muted" style="font-size: 0.74rem;">{{ $activity->data['message'] ?? '' }}</small>
-                                </div>
-                            </div>
-                            <small class="text-muted flex-shrink-0 ms-2" style="font-size: 0.72rem;">{{ $activity->created_at->diffForHumans() }}</small>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
 
     </div>
 </x-layouts.teacher>

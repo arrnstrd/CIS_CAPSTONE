@@ -21,7 +21,7 @@ import "./pov/school-admin/schedule-configuration/schedule-config.js";
 import "./pov/school-admin/settings/settings.js";
 import "./pov/school-admin/bulk-import/import.js";
 import "./pov/school-admin/qr-generation/qr-generation.js";
-import "./pov/school-admin/time-in-time-out-history/download-excel.js";
+import "./pov/school-admin/in-out-monitoring/download-excel.js";
 
 // 3. POV: Scanner Operator
 import "./pov/scanner-operator/qr-station/qr-station.js";

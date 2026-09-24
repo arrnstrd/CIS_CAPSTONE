@@ -28,7 +28,7 @@
 @import './pov/school-admin/students/class-hub.css';
 @import './pov/school-admin/attendance/attendance.css';
 @import './pov/school-admin/qr-generation/qr-generation.css';
-@import './pov/school-admin/time-in-time-out-history/flagged-modal.css';
+@import './pov/school-admin/in-out-monitoring/flagged-modal.css';
 
 /* 4. POV: Teacher */
 /* 4.1 Teacher Layout & Shell */

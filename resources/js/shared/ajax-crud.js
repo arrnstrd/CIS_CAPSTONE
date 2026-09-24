@@ -54,16 +54,23 @@ function sanitizeUserErrorMessage(msg) {
     if (!msg || typeof msg !== 'string') {
         return 'An unexpected error occurred. Please try again.';
     }
+    if (/unique constraint/i.test(msg) || /duplicate key/i.test(msg)) {
+        return 'This record already exists. Please check the existing information before continuing.';
+    }
+    if (/foreign key constraint/i.test(msg) || /violates foreign key/i.test(msg)) {
+        return 'This record cannot be modified or deleted because it is currently linked to other records in the system.';
+    }
     if (
         /SQLSTATE/i.test(msg) ||
         /QueryException/i.test(msg) ||
         /SQL:/i.test(msg) ||
         /Illuminate\\Database/i.test(msg) ||
-        /foreign key constraint/i.test(msg) ||
-        /unique constraint/i.test(msg) ||
         /Connection refused/i.test(msg) ||
         /\.php/i.test(msg) ||
-        /vendor\//i.test(msg)
+        /vendor\//i.test(msg) ||
+        /stack trace/i.test(msg) ||
+        /Fatal error/i.test(msg) ||
+        /Uncaught Exception/i.test(msg)
     ) {
         return 'An error occurred while processing your request. Please check your entries and try again.';
     }
@@ -199,7 +206,13 @@ async function submitAjaxForm(form, options = {}) {
 
     // --- PHASE 2: Server-Side Validation / Logic Failure ---
     if (!response.ok) {
-        showFormErrors(form, data);
+        if (response.status === 419 || data?.session_expired) {
+            showFormErrors(form, { message: 'Your session has expired. Please refresh the page and log in again to continue.' });
+        } else if (response.status === 403) {
+            showFormErrors(form, { message: data?.message || 'You do not have permission to perform this action.' });
+        } else {
+            showFormErrors(form, data);
+        }
         options.onError?.(data, response);
         resetSubmitButton(form, submitButton, originalButtonText);
         return false;
@@ -281,7 +294,13 @@ async function submitAjaxDelete(form, options = {}) {
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            showFormErrors(form, data);
+            const fallbackMsg = response.status === 419
+                ? 'Your session has expired. Please refresh the page and log in again.'
+                : (response.status === 403
+                    ? 'You do not have permission to delete this record.'
+                    : sanitizeUserErrorMessage(data?.message || 'The record could not be deleted. Please try again.'));
+            alert(fallbackMsg);
+            showFormErrors(form, { message: fallbackMsg });
             return;
         }
 

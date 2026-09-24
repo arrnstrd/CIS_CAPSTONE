@@ -108,28 +108,23 @@ class UserManagementController extends Controller
                 'expires_at' => $expiresAt,
             ], 201);
         } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Unable to create user',
-                'error' => $e->getMessage(),
-            ], 500);
+            \Illuminate\Support\Facades\Log::error('User creation query error: ' . $e->getMessage());
+            $isDuplicate = str_contains(strtolower($e->getMessage()), 'unique') || str_contains(strtolower($e->getMessage()), 'duplicate') || (string)$e->getCode() === '23505';
+            $msg = $isDuplicate ? 'A user with this email address already exists.' : 'Unable to create user account. Please check your entries.';
+            return response()->json(['message' => $msg], 422);
         } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send invitation email or create user: ' . $e->getMessage());
             if (isset($user) && $user instanceof User && $user->exists) {
-                \Illuminate\Support\Facades\Log::error('Failed to send invitation email: ' . $e->getMessage(), [
-                    'email' => $user->email,
-                ]);
-                
                 return response()->json([
-                    'message' => 'User created successfully, but the invitation email failed to send. Please check your mail server configuration.',
+                    'message' => 'User created successfully, but the invitation email could not be delivered at this time. You can resend the invitation from the user list.',
                     'data' => $user,
                     'setup_link' => $setupLink ?? null,
                     'expires_at' => $expiresAt ?? null,
-                    'mail_error' => $e->getMessage(),
                 ], 201);
             }
 
             return response()->json([
-                'message' => 'Unable to create user',
-                'error' => $e->getMessage(),
+                'message' => 'Unable to create user account. Please try again.',
             ], 500);
         }
     }
@@ -139,44 +134,31 @@ class UserManagementController extends Controller
         $actor = Auth::user();
         $user = User::findOrFail($id);
 
-        if ($user->isSuperAdmin() && Auth::id() !== $user->id) {
-            AdminActivityLog::record($actor, 'Attempted Super Admin Modification', $user->email, 'denied', 'Super Admin accounts cannot be modified by another user.', 'User', $user->id);
-
-            return response()->json([
-                'message' => 'Super Admin accounts cannot be modified by another user.',
-            ], 403);
-        }
-
         if (! $actor?->isSuperAdmin()) {
-            AdminActivityLog::record($actor, 'Attempted User Modification', $user->email, 'denied', 'Only the Super Admin can edit user accounts.', 'User', $user->id);
+            AdminActivityLog::record($actor, 'Attempted User Update', $user->email, 'denied', 'Only the Super Admin can modify user profiles.', 'User', $user->id);
 
             return response()->json([
-                'message' => 'Unauthorized. Only the Super Admin can modify user accounts.',
+                'message' => 'Unauthorized. Only the Super Admin can modify user profiles.',
             ], 403);
         }
 
-        $rules = [
-            'first_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-]+$/'],
-            'last_name' => ['required', 'string', 'max:100', 'regex:/^[a-zA-Z\s\-]+$/'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'role' => ['sometimes', 'required', 'in:super_admin,admin,teacher,scanner_operator'],
-            'status' => ['sometimes', 'required', 'in:active,inactive,suspended,pending'],
-        ];
-
-        if ($request->has('current_password')) {
-            $rules['current_password'] = ['required', 'current_password'];
-        }
-
-        $validatedData = $request->validate($rules);
-        $validatedData = $this->normalizeEmail($validatedData);
-
-        if ($user->isSuperAdmin()) {
-            $validatedData['role'] = 'super_admin';
-            $validatedData['status'] = 'active';
-        }
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
 
         try {
-            $user->update($validatedData);
+            $user->first_name = $validated['first_name'];
+            $user->last_name = $validated['last_name'];
+            $user->email = $validated['email'];
+
+            if (! empty($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
+            }
+
+            $user->save();
 
             AdminActivityLog::record($actor, 'Updated User Details', $user->email, 'success', "Updated account details for {$user->first_name} {$user->last_name}", 'User', $user->id);
 
@@ -185,10 +167,10 @@ class UserManagementController extends Controller
                 'data' => $user,
             ], 200);
         } catch (QueryException $e) {
-            return response()->json([
-                'message' => 'Unable to update user information',
-                'error' => $e->getMessage(),
-            ], 500);
+            \Illuminate\Support\Facades\Log::error('User update query error: ' . $e->getMessage());
+            $isDuplicate = str_contains(strtolower($e->getMessage()), 'unique') || str_contains(strtolower($e->getMessage()), 'duplicate') || (string)$e->getCode() === '23505';
+            $msg = $isDuplicate ? 'A user with this email address already exists.' : 'Unable to update user information. Please check your entries.';
+            return response()->json(['message' => $msg], 422);
         }
     }
 
@@ -228,9 +210,9 @@ class UserManagementController extends Controller
                 'data' => $user,
             ], 200);
         } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('User archive error: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to archive user',
-                'error' => $e->getMessage(),
+                'message' => 'The user account could not be archived. Please try again.',
             ], 500);
         }
     }
@@ -264,9 +246,9 @@ class UserManagementController extends Controller
                 'data' => $user->fresh(),
             ], 200);
         } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('User restore error: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to restore user',
-                'error' => $e->getMessage(),
+                'message' => 'The user account could not be restored. Please try again.',
             ], 500);
         }
     }
@@ -319,14 +301,14 @@ class UserManagementController extends Controller
         } catch (Exception $e) {
             \Illuminate\Support\Facades\Log::error('Failed to resend invitation email to ' . $user->email . ': ' . $e->getMessage());
             
+            $msg = 'The invitation email could not be delivered at this time. Please verify the recipient address and try again later.';
             if ($request->expectsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
                 return response()->json([
-                    'message' => 'Failed to send invitation: ' . $e->getMessage(),
-                    'mail_error' => $e->getMessage(),
+                    'message' => $msg,
                 ], 500);
             }
 
-            return redirect()->back()->with('error', 'Failed to resend invitation: ' . $e->getMessage());
+            return redirect()->back()->with('error', $msg);
         }
     }
 
@@ -381,9 +363,9 @@ class UserManagementController extends Controller
                 'data' => $user,
             ], 200);
         } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('User deactivation error: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to deactivate user',
-                'error' => $e->getMessage(),
+                'message' => 'The user account could not be deactivated. Please try again.',
             ], 500);
         }
     }
@@ -439,9 +421,9 @@ class UserManagementController extends Controller
                 'data' => $user,
             ], 200);
         } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('User reactivation error: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to reactivate user',
-                'error' => $e->getMessage(),
+                'message' => 'The user account could not be reactivated. Please try again.',
             ], 500);
         }
     }
@@ -597,7 +579,6 @@ class UserManagementController extends Controller
             'message' => $message,
             'affected' => $count,
             'failed' => $failedCount,
-            'errors' => array_unique($errors),
         ], $failedCount > 0 && $count === 0 ? 500 : 200);
     }
 
