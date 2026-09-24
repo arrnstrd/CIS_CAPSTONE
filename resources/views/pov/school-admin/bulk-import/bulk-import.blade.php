@@ -712,7 +712,7 @@
                                 </a>
                             </div>
                             <p class="text-muted small mb-0">
-                                Visit the <strong>Student Management</strong> page to verify imported rosters by grade and section. Confirm LRN uniqueness, review student profiles, check guardian contact numbers for SMS/attendance alerts, and assign any unallocated students.
+                                Visit the <strong>Student Management</strong> page to verify imported rosters by grade and section. Confirm LRN uniqueness, review student profiles, check guardian emails for time in/out alerts, and assign any unallocated students.
                             </p>
                         </div>
 

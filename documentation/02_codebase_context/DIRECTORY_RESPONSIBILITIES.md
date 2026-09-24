@@ -38,7 +38,7 @@ This guide documents the structural boundaries and architectural responsibilitie
 | `resources/views/super-admin/` | Super Admin views | User management, security audit log, recent activity |
 | `resources/views/teacher/` | Teacher portal views | Room attendance, my classes, grade sheets, student management, analytics, settings |
 | `resources/views/scanner-operator/` | Kiosk views | Fullscreen QR scan station, time-in/out logs |
-| `resources/css/` | Feature stylesheets | Modular CSS (`qr-station.css`, `grading-system.css`, `sidebar.css`, etc.) |
+| `resources/css/` | Feature stylesheets — **Bootstrap 5 + custom POV-isolated CSS only. Tailwind CSS is NOT used.** Modular CSS under `pov/<role>/<page>/`. Valid Bootstrap spacing: `p-0`–`p-5`, `m-0`–`m-5`, `gap-0`–`gap-5` (integer steps only). |
 | `resources/js/` | Client-side logic | Reverb Echo listener (`echo.js`), camera scanner handler (`qr-station.js`), table handlers |
 
 ---

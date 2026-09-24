@@ -225,6 +225,18 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('students.qr.download');
     Route::get('/sections/{section}/qr/download', [QrCodeController::class, 'downloadSection'])
         ->name('sections.qr.download');
+    Route::post('/qr-generation/download-batch', [QrCodeController::class, 'downloadBatch'])
+        ->name('sections.qr.download-batch');
+    Route::get('/sections/{section}/students/json', [QrCodeController::class, 'getSectionStudents'])
+        ->name('sections.students.json');
+
+    // QR Basket (session-backed)
+    Route::post('/qr-generation/basket/add', [QrCodeController::class, 'basketAdd'])
+        ->name('qr.basket.add');
+    Route::post('/qr-generation/basket/remove', [QrCodeController::class, 'basketRemove'])
+        ->name('qr.basket.remove');
+    Route::post('/qr-generation/basket/clear', [QrCodeController::class, 'basketClear'])
+        ->name('qr.basket.clear');
 
     // System: Settings
     Route::get('/settings', [SettingsController::class, 'index'])
