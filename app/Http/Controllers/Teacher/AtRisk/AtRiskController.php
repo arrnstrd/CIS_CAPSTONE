@@ -1176,7 +1176,8 @@ class AtRiskController extends Controller
 
         $sentCount = 0;
         $failedCount = 0;
-        $errors = [];
+        $sentStudents = [];
+        $skippedStudents = [];
 
         foreach ($validated['interventions'] as $item) {
             $enrollmentId = (int) $item['enrollment_id'];
@@ -1187,7 +1188,10 @@ class AtRiskController extends Controller
 
             if (!$enrollment) {
                 $failedCount++;
-                $errors[] = "Enrollment #{$enrollmentId} not found.";
+                $skippedStudents[] = [
+                    'student_name' => "Enrollment #{$enrollmentId}",
+                    'reason' => 'Student enrollment record could not be found.',
+                ];
                 continue;
             }
 
@@ -1195,13 +1199,19 @@ class AtRiskController extends Controller
 
             if (!$data) {
                 $failedCount++;
-                $errors[] = "Unauthorized access to student: " . ($enrollment->student?->full_name ?? "#{$enrollmentId}");
+                $skippedStudents[] = [
+                    'student_name' => $enrollment->student?->full_name ?? "#{$enrollmentId}",
+                    'reason' => 'Unauthorized or student is not in your assigned sections.',
+                ];
                 continue;
             }
 
             if (empty($data['guardian_email']) || !filter_var($data['guardian_email'], FILTER_VALIDATE_EMAIL)) {
                 $failedCount++;
-                $errors[] = "No valid parent/guardian email on file for {$data['student_name']}.";
+                $skippedStudents[] = [
+                    'student_name' => $data['student_name'],
+                    'reason' => 'No valid parent/guardian email address on file.',
+                ];
                 continue;
             }
 
@@ -1234,23 +1244,39 @@ class AtRiskController extends Controller
                 ]);
 
                 $sentCount++;
+                $sentStudents[] = [
+                    'student_name' => $data['student_name'],
+                    'guardian_email' => $data['guardian_email'],
+                    'condition' => $data['risk_condition_label'],
+                ];
             } catch (\Throwable $e) {
                 Log::error("Failed to send intervention email for enrollment #{$enrollmentId}: " . $e->getMessage());
                 $failedCount++;
-                $errors[] = "Failed to send email to guardian of {$data['student_name']}. Please try again later.";
+                $skippedStudents[] = [
+                    'student_name' => $data['student_name'],
+                    'reason' => 'Email delivery service encountered an issue. Please try again later.',
+                ];
             }
         }
 
-        $message = $sentCount > 0
-            ? ($sentCount === 1 ? 'Intervention email sent successfully.' : "{$sentCount} intervention emails sent successfully.")
-            : 'Could not send intervention email(s).';
+        // Formulate feedback message aligned with CIS Feedback Auditor
+        if ($sentCount > 0 && $failedCount === 0) {
+            $message = $sentCount === 1
+                ? 'Intervention email sent successfully.'
+                : "{$sentCount} intervention emails sent successfully.";
+        } elseif ($sentCount > 0 && $failedCount > 0) {
+            $message = "{$sentCount} intervention email(s) sent successfully. {$failedCount} student(s) skipped.";
+        } else {
+            $message = 'No intervention emails could be sent. Please review the missing contact information.';
+        }
 
         return response()->json([
             'success' => $sentCount > 0,
             'sent_count' => $sentCount,
             'failed_count' => $failedCount,
             'message' => $message,
-            'errors' => $errors,
+            'sent_students' => $sentStudents,
+            'skipped_students' => $skippedStudents,
         ]);
     }
 

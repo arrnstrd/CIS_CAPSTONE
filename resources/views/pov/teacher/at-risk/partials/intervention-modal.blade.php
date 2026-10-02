@@ -545,6 +545,7 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function updateBulkHeaderAndCounts() {
         const count = currentInterventionStudents.length;
+        const withEmailCount = currentInterventionStudents.filter(s => s.has_guardian_email).length;
 
         interventionModeBadge.innerHTML = `<i class="fa-solid fa-users me-1"></i> Bulk Review (${count} Selected)`;
         interventionModeBadge.className = 'badge bg-primary text-white';
@@ -552,17 +553,29 @@ document.addEventListener('DOMContentLoaded', function () {
         interventionModalSubtitle.textContent = 'Review each student independently. Each message is tailored to that student\'s specific condition and parent.';
         modalCloseBtnText.textContent = 'Cancel';
 
-        bulkSummaryText.textContent = `${count} ${count === 1 ? 'student' : 'students'} in intervention queue`;
-        sendBtnText.textContent = `Send All Interventions (${count})`;
-
         if (count === 0) {
+            bulkSummaryText.textContent = '0 students in intervention queue';
             bulkEmptyState.classList.remove('d-none');
             bulkStudentsListContainer.classList.add('d-none');
             sendBtn.disabled = true;
+            sendBtnText.textContent = 'Send Interventions (0)';
         } else {
             bulkEmptyState.classList.add('d-none');
             bulkStudentsListContainer.classList.remove('d-none');
-            sendBtn.disabled = false;
+
+            if (withEmailCount === 0) {
+                bulkSummaryText.innerHTML = `${count} ${count === 1 ? 'student' : 'students'} in queue &middot; <span class="badge bg-warning text-dark ms-1">No parent emails on file</span>`;
+                sendBtn.disabled = true;
+                sendBtnText.textContent = 'No Emails on File';
+            } else if (withEmailCount < count) {
+                bulkSummaryText.innerHTML = `${count} students in queue &middot; <strong class="text-primary">${withEmailCount} ready to send</strong> (${count - withEmailCount} missing parent email)`;
+                sendBtn.disabled = false;
+                sendBtnText.textContent = `Send Interventions (${withEmailCount} ready)`;
+            } else {
+                bulkSummaryText.textContent = `${count} ${count === 1 ? 'student' : 'students'} in intervention queue (all parent emails verified)`;
+                sendBtn.disabled = false;
+                sendBtnText.textContent = `Send All Interventions (${count})`;
+            }
         }
     }
 
