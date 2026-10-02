@@ -60,7 +60,7 @@
                 <li class="{{ request()->routeIs('school_admin.time-in-time-out-history.analytics*') || request()->is('school-admin/time-in-time-out-history/analytics*') ? 'active' : '' }}">
                     <a href="{{ route('school_admin.time-in-time-out-history.analytics') }}">
                         <i class="fas fa-chart-pie"></i>
-                        <span>Attendance Analytics</span>
+                        <span>IN and OUT Analytics</span>
                     </a>
                 </li>
 

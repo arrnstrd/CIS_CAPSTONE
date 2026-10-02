@@ -50,6 +50,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('school_admin.time-in-time-out-history.analytics');
     Route::get('/school-admin/time-in-time-out-history/analytics/download-pdf', [AttendanceAnalyticsController::class, 'downloadAnalyticsPdf'])
         ->name('school_admin.time-in-time-out-history.analytics-pdf');
+    Route::get('/school-admin/time-in-time-out-history/intervention/prepare', [AttendanceAnalyticsController::class, 'prepareIntervention'])
+        ->name('school_admin.in-out-intervention.prepare');
+    Route::post('/school-admin/time-in-time-out-history/intervention/send', [AttendanceAnalyticsController::class, 'sendIntervention'])
+        ->name('school_admin.in-out-intervention.send');
 
     // Monitoring: Attendance
     Route::get('/attendance', [ClassAttendanceController::class, 'index'])

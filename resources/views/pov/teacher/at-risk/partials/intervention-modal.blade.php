@@ -235,6 +235,51 @@
 
                 </div> {{-- END interventionContent --}}
 
+                {{-- Dispatch Results Summary Container (Full or Partial Batch Report) --}}
+                <div id="interventionResultsSummary" class="d-none">
+                    <div class="card border-0 shadow-sm" style="border-radius: 8px;">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div id="resultsSummaryIcon" class="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0 text-dark" id="resultsSummaryTitle">Intervention Complete</h6>
+                                    <p class="text-muted small mb-0" id="resultsSummarySubtitle">All notices have been processed.</p>
+                                </div>
+                            </div>
+
+                            <div id="resultsSummaryStats" class="d-flex gap-2 mb-3">
+                                {{-- Badges for sent & skipped counts --}}
+                            </div>
+
+                            {{-- Delivered List --}}
+                            <div id="resultsDeliveredContainer" class="mb-3 d-none">
+                                <div class="text-success small fw-semibold mb-1 text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                                    <i class="fa-solid fa-check me-1"></i> Successfully Sent
+                                </div>
+                                <div class="list-group list-group-flush border rounded" id="resultsDeliveredList" style="max-height: 160px; overflow-y: auto; font-size: 0.78rem;">
+                                </div>
+                            </div>
+
+                            {{-- Skipped List --}}
+                            <div id="resultsSkippedContainer" class="mb-3 d-none">
+                                <div class="text-warning-emphasis small fw-semibold mb-1 text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Skipped / Needs Follow-up
+                                </div>
+                                <div class="list-group list-group-flush border rounded" id="resultsSkippedList" style="max-height: 160px; overflow-y: auto; font-size: 0.78rem;">
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-4 pt-2 border-top">
+                                <button type="button" class="btn btn-sm btn-primary px-3" onclick="window.location.reload()">
+                                    <i class="fa-solid fa-rotate-right me-1"></i> Return to Registry & Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div> {{-- END modal-body --}}
 
             {{-- Modal Footer --}}
@@ -283,6 +328,28 @@ document.addEventListener('DOMContentLoaded', function () {
     const bulkStudentsListContainer = document.getElementById('bulkStudentsListContainer');
     const bulkSummaryText = document.getElementById('bulkSummaryText');
     const bulkEmptyState = document.getElementById('bulkEmptyState');
+
+    // Results Summary Elements
+    const resultsSummaryContainer = document.getElementById('interventionResultsSummary');
+    const resultsSummaryIcon = document.getElementById('resultsSummaryIcon');
+    const resultsSummaryTitle = document.getElementById('resultsSummaryTitle');
+    const resultsSummarySubtitle = document.getElementById('resultsSummarySubtitle');
+    const resultsSummaryStats = document.getElementById('resultsSummaryStats');
+    const resultsDeliveredContainer = document.getElementById('resultsDeliveredContainer');
+    const resultsDeliveredList = document.getElementById('resultsDeliveredList');
+    const resultsSkippedContainer = document.getElementById('resultsSkippedContainer');
+    const resultsSkippedList = document.getElementById('resultsSkippedList');
+
+    // Helper: Escape HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
     // Single student fields
     const modalStudentName = document.getElementById('modalStudentName');
@@ -357,10 +424,13 @@ document.addEventListener('DOMContentLoaded', function () {
         errorEl.classList.add('d-none');
         successEl.classList.add('d-none');
         contentEl.classList.add('d-none');
+        if (resultsSummaryContainer) resultsSummaryContainer.classList.add('d-none');
         loadingEl.classList.remove('d-none');
+        sendBtn.classList.remove('d-none');
         sendBtn.disabled = true;
         sendBtnSpinner.classList.add('d-none');
         sendBtnIcon.classList.remove('d-none');
+        modalCloseBtnText.textContent = 'Close';
         if (singleTeacherNote) singleTeacherNote.value = '';
         if (previewTeacherNoteCallout) previewTeacherNoteCallout.classList.add('d-none');
 
@@ -819,23 +889,103 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             body: JSON.stringify({ interventions: payloadInterventions })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok && response.status !== 422) {
+                throw new Error('A server issue occurred during intervention dispatch. Please try again.');
+            }
+            return response.json();
+        })
         .then(res => {
             sendBtnSpinner.classList.add('d-none');
             sendBtnIcon.classList.remove('d-none');
             sendBtnText.textContent = isBulkMode ? `Send All Interventions (${studentsToSend.length})` : 'Send Intervention Email';
 
-            if (res.success) {
-                successMessageEl.textContent = res.message || 'Intervention email(s) sent successfully.';
+            if (res.success && res.failed_count === 0 && !isBulkMode) {
+                // Single student full success
+                successMessageEl.textContent = res.message || 'Intervention email sent successfully.';
                 successEl.classList.remove('d-none');
                 sendBtn.disabled = true;
+                sendBtnText.textContent = 'Sent Successfully';
                 
                 setTimeout(() => {
                     window.location.reload();
                 }, 1400);
+            } else if (res.sent_count > 0 || res.failed_count > 0) {
+                // Batch dispatch or single student with skipped/partial status
+                contentEl.classList.add('d-none');
+                errorEl.classList.add('d-none');
+                successEl.classList.add('d-none');
+                loadingEl.classList.add('d-none');
+
+                if (resultsSummaryContainer) {
+                    resultsSummaryContainer.classList.remove('d-none');
+                    resultsSummarySubtitle.textContent = res.message;
+
+                    if (res.failed_count === 0) {
+                        // 100% batch success
+                        resultsSummaryIcon.className = 'd-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success flex-shrink-0';
+                        resultsSummaryIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                        resultsSummaryTitle.textContent = 'Intervention Emails Dispatched Successfully';
+                        resultsSummaryStats.innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle py-1 px-2 font-monospace" style="font-size: 0.75rem;"><i class="fa-solid fa-check me-1"></i> ${res.sent_count} Delivered</span>`;
+                        
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2500);
+                    } else if (res.sent_count > 0) {
+                        // Partial success (some sent, some skipped)
+                        resultsSummaryIcon.className = 'd-flex align-items-center justify-content-center rounded-circle bg-warning-subtle text-warning-emphasis flex-shrink-0';
+                        resultsSummaryIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                        resultsSummaryTitle.textContent = 'Batch Processed with Skipped Students';
+                        resultsSummaryStats.innerHTML = `
+                            <span class="badge bg-success-subtle text-success border border-success-subtle py-1 px-2 font-monospace" style="font-size: 0.75rem;"><i class="fa-solid fa-check me-1"></i> ${res.sent_count} Delivered</span>
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle py-1 px-2 font-monospace" style="font-size: 0.75rem;"><i class="fa-solid fa-exclamation me-1"></i> ${res.failed_count} Skipped</span>
+                        `;
+                    } else {
+                        // Zero sent (e.g. all selected had missing parent emails)
+                        resultsSummaryIcon.className = 'd-flex align-items-center justify-content-center rounded-circle bg-danger-subtle text-danger flex-shrink-0';
+                        resultsSummaryIcon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+                        resultsSummaryTitle.textContent = 'Intervention Notices Could Not Be Sent';
+                        resultsSummaryStats.innerHTML = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle py-1 px-2 font-monospace" style="font-size: 0.75rem;"><i class="fa-solid fa-xmark me-1"></i> ${res.failed_count} Skipped</span>`;
+                    }
+
+                    // Populate delivered list
+                    if (res.sent_students && res.sent_students.length > 0) {
+                        resultsDeliveredContainer.classList.remove('d-none');
+                        resultsDeliveredList.innerHTML = res.sent_students.map(s => `
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                <div>
+                                    <strong class="text-dark">${escapeHtml(s.student_name)}</strong>
+                                    <div class="text-muted small" style="font-size: 0.72rem;">To: <span class="font-monospace">${escapeHtml(s.guardian_email)}</span></div>
+                                </div>
+                                <span class="badge bg-light text-secondary border" style="font-size: 0.68rem;">${escapeHtml(s.condition)}</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        resultsDeliveredContainer.classList.add('d-none');
+                    }
+
+                    // Populate skipped list
+                    if (res.skipped_students && res.skipped_students.length > 0) {
+                        resultsSkippedContainer.classList.remove('d-none');
+                        resultsSkippedList.innerHTML = res.skipped_students.map(s => `
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                                <div>
+                                    <strong class="text-dark">${escapeHtml(s.student_name)}</strong>
+                                    <div class="text-danger small" style="font-size: 0.72rem;">${escapeHtml(s.reason)}</div>
+                                </div>
+                                <span class="badge bg-warning-subtle text-dark border border-warning" style="font-size: 0.68rem;">Action Required</span>
+                            </div>
+                        `).join('');
+                    } else {
+                        resultsSkippedContainer.classList.add('d-none');
+                    }
+
+                    sendBtn.classList.add('d-none');
+                    modalCloseBtnText.textContent = 'Close';
+                }
             } else {
                 sendBtn.disabled = false;
-                errorMessageEl.textContent = (res.errors && res.errors.length) ? res.errors.join(' ') : (res.message || 'Could not send intervention.');
+                errorMessageEl.textContent = res.message || 'Could not send intervention.';
                 errorEl.classList.remove('d-none');
             }
         })
@@ -844,7 +994,7 @@ document.addEventListener('DOMContentLoaded', function () {
             sendBtnSpinner.classList.add('d-none');
             sendBtnIcon.classList.remove('d-none');
             sendBtnText.textContent = isBulkMode ? `Send All Interventions (${studentsToSend.length})` : 'Send Intervention Email';
-            errorMessageEl.textContent = 'Network or server error while dispatching email. Please try again.';
+            errorMessageEl.textContent = 'A temporary connection issue occurred while dispatching the intervention notice. Please try again.';
             errorEl.classList.remove('d-none');
         });
     });
