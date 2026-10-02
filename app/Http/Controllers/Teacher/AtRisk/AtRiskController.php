@@ -12,8 +12,11 @@ use App\Models\RiskFollowUp;
 use App\Models\RiskRemark;
 use App\Models\StudentAssessmentScore;
 use App\Models\TeachingAssignment;
+use App\Mail\StudentRiskInterventionMail;
 use App\Services\Grading\RiskScoreService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class AtRiskController extends Controller
 {
@@ -1063,5 +1066,392 @@ class AtRiskController extends Controller
             $grades->avg('transmuted_grade'),
             1
         );
+    }
+
+    /**
+     * Prepare student intervention data and email preview(s).
+     */
+    public function prepareIntervention(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+
+        if (!$teacher) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized action. Teacher profile not found.',
+            ], 403);
+        }
+
+        $rawIds = $request->input('enrollment_ids', $request->input('enrollment_id'));
+
+        if (!$rawIds) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No student was selected for intervention.',
+            ], 422);
+        }
+
+        $enrollmentIds = is_array($rawIds) ? $rawIds : [$rawIds];
+        $enrollmentIds = array_filter(array_map('intval', $enrollmentIds));
+
+        if (empty($enrollmentIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid student selection.',
+            ], 422);
+        }
+
+        $currentPeriod = GradingPeriod::where('is_active', true)
+            ->trimester()
+            ->orderBy('sequence')
+            ->first()
+            ?? GradingPeriod::trimester()->orderBy('sequence')->first();
+
+        $teacherAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->with(['section', 'subject'])
+            ->get();
+
+        $students = [];
+
+        foreach ($enrollmentIds as $id) {
+            $enrollment = Enrollment::with(['student.guardian', 'section'])->find($id);
+
+            if (!$enrollment) {
+                continue;
+            }
+
+            $data = $this->buildStudentInterventionData($enrollment, $teacher, $currentPeriod, $teacherAssignments);
+
+            if ($data) {
+                $students[] = $data;
+            }
+        }
+
+        if (empty($students)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Could not find or authorize the selected student(s).',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'count' => count($students),
+            'students' => $students,
+        ]);
+    }
+
+    /**
+     * Send intervention email(s) and record follow-ups.
+     */
+    public function sendIntervention(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+
+        if (!$teacher) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized action. Teacher profile not found.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'interventions' => ['required', 'array', 'min:1'],
+            'interventions.*.enrollment_id' => ['required', 'integer', 'exists:enrollments,id'],
+            'interventions.*.teacher_note' => ['nullable', 'string', 'max:2000'],
+            'interventions.*.language' => ['nullable', 'string', 'in:en,tl'],
+        ]);
+
+        $currentPeriod = GradingPeriod::where('is_active', true)
+            ->trimester()
+            ->orderBy('sequence')
+            ->first()
+            ?? GradingPeriod::trimester()->orderBy('sequence')->first();
+
+        $teacherAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+            ->where('status', 'active')
+            ->with(['section', 'subject'])
+            ->get();
+
+        $sentCount = 0;
+        $failedCount = 0;
+        $errors = [];
+
+        foreach ($validated['interventions'] as $item) {
+            $enrollmentId = (int) $item['enrollment_id'];
+            $teacherNote = !empty($item['teacher_note']) ? trim((string) $item['teacher_note']) : null;
+            $lang = (!empty($item['language']) && in_array($item['language'], ['en', 'tl'], true)) ? $item['language'] : 'en';
+
+            $enrollment = Enrollment::with(['student.guardian', 'section'])->find($enrollmentId);
+
+            if (!$enrollment) {
+                $failedCount++;
+                $errors[] = "Enrollment #{$enrollmentId} not found.";
+                continue;
+            }
+
+            $data = $this->buildStudentInterventionData($enrollment, $teacher, $currentPeriod, $teacherAssignments);
+
+            if (!$data) {
+                $failedCount++;
+                $errors[] = "Unauthorized access to student: " . ($enrollment->student?->full_name ?? "#{$enrollmentId}");
+                continue;
+            }
+
+            if (empty($data['guardian_email']) || !filter_var($data['guardian_email'], FILTER_VALIDATE_EMAIL)) {
+                $failedCount++;
+                $errors[] = "No valid parent/guardian email on file for {$data['student_name']}.";
+                continue;
+            }
+
+            // Apply selected language package
+            if (isset($data['languages'][$lang])) {
+                $data['language'] = $lang;
+                $data['subject'] = $data['languages'][$lang]['subject'];
+                $data['message_body'] = $data['languages'][$lang]['message_body'];
+                $data['salutation'] = $data['languages'][$lang]['salutation'];
+                $data['risk_condition_label'] = $data['languages'][$lang]['condition_label'];
+                $data['closing'] = $data['languages'][$lang]['closing'];
+                $data['teacher_note_label'] = $data['languages'][$lang]['teacher_note_label'];
+                $data['status_label'] = $data['languages'][$lang]['status_label'];
+            }
+
+            try {
+                // Send intervention email
+                Mail::to($data['guardian_email'])->send(new StudentRiskInterventionMail($data, $teacherNote));
+
+                // Log RiskFollowUp
+                $langLabel = $lang === 'tl' ? 'Tagalog' : 'English';
+                RiskFollowUp::create([
+                    'enrollment_id' => $enrollment->id,
+                    'teacher_id' => $teacher->id,
+                    'follow_up_date' => now()->toDateString(),
+                    'intervention' => 'Parent Email Notice (' . $data['risk_condition_label'] . ' - ' . $langLabel . ')',
+                    'notes' => 'Dispatched ' . $langLabel . ' intervention notice to parent (' . $data['guardian_email'] . ')'
+                        . ($teacherNote ? "\nTeacher Note: " . $teacherNote : ''),
+                    'status' => 'Completed',
+                ]);
+
+                $sentCount++;
+            } catch (\Throwable $e) {
+                Log::error("Failed to send intervention email for enrollment #{$enrollmentId}: " . $e->getMessage());
+                $failedCount++;
+                $errors[] = "Failed to send email to guardian of {$data['student_name']}. Please try again later.";
+            }
+        }
+
+        $message = $sentCount > 0
+            ? ($sentCount === 1 ? 'Intervention email sent successfully.' : "{$sentCount} intervention emails sent successfully.")
+            : 'Could not send intervention email(s).';
+
+        return response()->json([
+            'success' => $sentCount > 0,
+            'sent_count' => $sentCount,
+            'failed_count' => $failedCount,
+            'message' => $message,
+            'errors' => $errors,
+        ]);
+    }
+
+    /**
+     * Build isolated student intervention payload with risk conditions and template messages.
+     */
+    private function buildStudentInterventionData(
+        Enrollment $enrollment,
+        $teacher,
+        $currentPeriod = null,
+        $teacherAssignments = null
+    ): ?array {
+        if (!$teacherAssignments) {
+            $teacherAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('status', 'active')
+                ->with(['section', 'subject'])
+                ->get();
+        }
+
+        $teacherSectionIds = $teacherAssignments->pluck('section_id')->unique();
+
+        if (!$teacherSectionIds->contains($enrollment->section_id)) {
+            return null;
+        }
+
+        // Determine assignment
+        $assignment = null;
+        if ($currentPeriod) {
+            $assignment = $teacherAssignments
+                ->filter(fn ($ta) => (int) $ta->section_id === (int) $enrollment->section_id)
+                ->first(fn ($ta) => TermGrade::where('enrollment_id', $enrollment->id)
+                    ->where('teaching_assignment_id', $ta->id)
+                    ->where('grading_period_id', $currentPeriod->id)
+                    ->exists()
+                );
+        }
+
+        if (!$assignment) {
+            $assignment = $teacherAssignments->firstWhere('section_id', $enrollment->section_id);
+        }
+
+        $riskData = ($currentPeriod && $assignment)
+            ? $this->riskScoreService->calculateRiskScore($enrollment, $assignment, $currentPeriod)
+            : $this->riskScoreService->getDefaultRiskScore();
+
+        $attendanceRate = $currentPeriod
+            ? $this->riskScoreService->getAttendanceRate($enrollment->id, $currentPeriod->id)
+            : null;
+
+        $currentGrade = null;
+        if ($currentPeriod && $assignment) {
+            $currentGrade = $this->getStudentAverageGrade($enrollment->id, $assignment->id, $currentPeriod->id);
+        }
+
+        $rawIndicators = $riskData['indicators'] ?? [];
+        $activeIndicators = [];
+        $indicatorLabels = [
+            'low_grade' => 'Low Grade',
+            'missing_grades' => 'Missing Grades',
+            'low_attendance' => 'Low Attendance',
+            'declining_performance' => 'Declining Performance',
+        ];
+
+        foreach ($rawIndicators as $ind => $isTrue) {
+            if ($isTrue && isset($indicatorLabels[$ind])) {
+                $activeIndicators[] = $indicatorLabels[$ind];
+            }
+        }
+
+        // Evaluate risk conditions
+        $isAcademic = !empty($rawIndicators['low_grade'])
+            || !empty($rawIndicators['missing_grades'])
+            || !empty($rawIndicators['declining_performance'])
+            || ($currentGrade !== null && $currentGrade < 75);
+
+        $isAttendance = !empty($rawIndicators['low_attendance'])
+            || ($attendanceRate !== null && $attendanceRate < 85);
+
+        if ($isAcademic && $isAttendance) {
+            $riskCondition = 'dual';
+        } elseif ($isAttendance) {
+            $riskCondition = 'attendance';
+        } else {
+            $riskCondition = 'academic';
+        }
+
+        $student = $enrollment->student;
+        $studentName = $student?->full_name ?? 'Unknown Student';
+        $studentNumber = $student?->student_number ?? 'N/A';
+        $sectionName = $enrollment->section?->name ?? 'N/A';
+        $gradeLevel = $enrollment->section?->grade_level ?? 'N/A';
+        $subjectName = $assignment?->subject?->name ?? 'Assigned Subject';
+
+        $guardian = $student?->guardian;
+        $guardianName = $guardian?->name ?? 'Parent / Guardian';
+        $guardianEmail = $guardian?->email ?? null;
+        $guardianRelationship = $guardian?->relationship ?? 'Parent/Guardian';
+        $hasGuardianEmail = !empty($guardianEmail) && filter_var($guardianEmail, FILTER_VALIDATE_EMAIL) !== false;
+        $teacherName = $teacher->full_name ?? 'Teacher';
+
+        // 1. English Version Templates
+        if ($riskCondition === 'academic') {
+            $subjectEn = "Academic Support Notice: {$studentName} - {$subjectName}";
+            $messageBodyEn = "We are reaching out to inform you regarding the current academic standing of your child, {$studentName} (Grade {$gradeLevel} - {$sectionName}), in {$subjectName}.\n\n"
+                . "Our academic records indicate that {$studentName} is currently experiencing learning challenges"
+                . ($currentGrade !== null ? ", with a recorded grade average of {$currentGrade}%" : "")
+                . (!empty($rawIndicators['missing_grades']) ? ", alongside missing assessment submissions" : "")
+                . (!empty($rawIndicators['declining_performance']) ? ", and a recent decline in performance" : "")
+                . ".\n\n"
+                . "We believe that prompt collaboration between home and school can significantly help {$studentName} improve. We encourage you to discuss these academic areas at home. Our faculty is readily available for guidance, consultation, and remedial assistance.";
+            $salutationEn = "Dear " . $guardianName;
+            $conditionLabelEn = "Academic Risk";
+        } elseif ($riskCondition === 'attendance') {
+            $subjectEn = "Attendance Monitoring Notice: {$studentName} - Grade {$gradeLevel} {$sectionName}";
+            $messageBodyEn = "We are reaching out to bring to your attention the attendance record of your child, {$studentName} (Grade {$gradeLevel} - {$sectionName}).\n\n"
+                . "Our attendance monitoring system reflects a current attendance rate of " . ($attendanceRate !== null ? "{$attendanceRate}%" : "below standard") . ", which has fallen below our expected threshold. Regular classroom attendance and participation are crucial to academic progress.\n\n"
+                . "We kindly ask for your cooperation in ensuring regular school attendance. If {$studentName} is experiencing any health, transport, or family difficulties, please inform us so that we may extend necessary accommodations and support.";
+            $salutationEn = "Dear " . $guardianName;
+            $conditionLabelEn = "Attendance Risk";
+        } else { // dual
+            $subjectEn = "Important Academic & Attendance Notice: {$studentName} - {$subjectName}";
+            $messageBodyEn = "We are writing to share an important monitoring update regarding your child, {$studentName} (Grade {$gradeLevel} - {$sectionName}), in {$subjectName}.\n\n"
+                . "Our continuous tracking shows that {$studentName} is currently facing challenges in both attendance and academic performance. Specifically, the recorded attendance rate is " . ($attendanceRate !== null ? "{$attendanceRate}%" : "below standard")
+                . ($currentGrade !== null ? " and the current subject grade stands at {$currentGrade}%" : "") . ".\n\n"
+                . "Because frequent absences directly affect daily classroom instruction and test scores, urgent coordinated support between school and home is essential. We encourage you to connect with us at your earliest opportunity so we can establish an intervention and recovery plan together.";
+            $salutationEn = "Dear " . $guardianName;
+            $conditionLabelEn = "Academic + Attendance Risk";
+        }
+
+        // 2. Tagalog / Filipino Version Templates (Polite, natural Philippine school communication, not overly archaic)
+        if ($riskCondition === 'academic') {
+            $subjectTl = "Abiso sa Academic Standing: {$studentName} - {$subjectName}";
+            $messageBodyTl = "Nais po naming ipagbigay-alam sa inyo ang kasalukuyang academic standing ng inyong anak na si {$studentName} (Grade {$gradeLevel} - {$sectionName}) sa asignaturang {$subjectName}.\n\n"
+                . "Ayon po sa aming academic monitoring records, kasalukuyang nangangailangan ng karagdagang gabay si {$studentName}"
+                . ($currentGrade !== null ? ", na may naitalang grade average na {$currentGrade}%" : "")
+                . (!empty($rawIndicators['missing_grades']) ? ", kasama ang mga assessment na hindi pa naisusumite" : "")
+                . (!empty($rawIndicators['declining_performance']) ? ", at pagbaba ng kanyang performance sa klase" : "")
+                . ".\n\n"
+                . "Naniniwala po kami na sa pamamagitan ng maagang pagtutulungan ng paaralan at ng inyong tahanan, mas madaling makakabawi si {$studentName}. Hinihikayat po namin kayo na kausapin at subaybayan siya sa kanyang mga gawain. Handa po ang aming guro para sa consultation at remedial support.";
+            $salutationTl = "Magandang araw po, " . $guardianName;
+            $conditionLabelTl = "Academic Risk (Nangangailangan ng Gabay)";
+        } elseif ($riskCondition === 'attendance') {
+            $subjectTl = "Abiso sa Attendance: {$studentName} - Grade {$gradeLevel} {$sectionName}";
+            $messageBodyTl = "Nais po naming ipaalam sa inyo ang ulat patungkol sa attendance ng inyong anak na si {$studentName} (Grade {$gradeLevel} - {$sectionName}).\n\n"
+                . "Ayon po sa aming attendance monitoring, ang kanyang attendance rate sa kasalukuyan ay nasa " . ($attendanceRate !== null ? "{$attendanceRate}%" : "mababa sa standard") . ", na mas mababa sa inaasahang attendance standard ng paaralan. Mahalaga po ang regular na pagpasok sa klase upang makasabay sa araw-araw na talakayan at mga pagsusulit.\n\n"
+                . "Hinihiling po namin ang inyong tulong at pakikipagtulungan upang matiyak ang kanyang regular na pagpasok. Kung may nararanasan pong karamdaman o anumang suliranin si {$studentName}, mangyaring ipagbigay-alam po sa amin upang makapagbigay kami ng kaukulang tulong.";
+            $salutationTl = "Magandang araw po, " . $guardianName;
+            $conditionLabelTl = "Attendance Risk (Mababang Pagpasok)";
+        } else { // dual
+            $subjectTl = "Mahalagang Abiso sa Pag-aaral at Attendance: {$studentName} - {$subjectName}";
+            $messageBodyTl = "Nais po naming magbahagi ng mahalagang monitoring update tungkol sa inyong anak na si {$studentName} (Grade {$gradeLevel} - {$sectionName}) sa asignaturang {$subjectName}.\n\n"
+                . "Ipinapakita po ng aming monitoring na kasalukuyang nahaharap sa mga hamon si {$studentName} sa parehong attendance at academic performance. Sa kasalukuyan, ang kanyang attendance rate ay nasa " . ($attendanceRate !== null ? "{$attendanceRate}%" : "mababa sa standard")
+                . ($currentGrade !== null ? " at ang kanyang subject grade ay nasa {$currentGrade}%" : "") . ".\n\n"
+                . "Dahil ang madalas na pagliban ay may direktang epekto sa kanyang pagkatuto sa klase at mga pagsusulit, napakahalaga po ng maagap na pagtutulungan natin. Hinihikayat po namin kayo na makipag-ugnayan sa amin sa lalong madaling panahon upang makabuo tayo ng magkatuwang na intervention at recovery plan para kay {$studentName}.";
+            $salutationTl = "Magandang araw po, " . $guardianName;
+            $conditionLabelTl = "Academic + Attendance Risk (Dual Risk)";
+        }
+
+        return [
+            'enrollment_id' => $enrollment->id,
+            'student_name' => $studentName,
+            'student_number' => $studentNumber,
+            'grade_level' => $gradeLevel,
+            'section_name' => $sectionName,
+            'subject_name' => $subjectName,
+            'teacher_name' => $teacherName,
+            'guardian_name' => $guardianName,
+            'guardian_email' => $guardianEmail,
+            'guardian_relationship' => $guardianRelationship,
+            'has_guardian_email' => $hasGuardianEmail,
+            'current_grade' => $currentGrade,
+            'attendance_rate' => $attendanceRate,
+            'risk_level' => $riskData['risk_level'] ?? 'Moderate',
+            'risk_score' => $riskData['risk_score'] ?? 0,
+            'active_indicators' => $activeIndicators,
+            'risk_condition' => $riskCondition,
+            'risk_condition_label' => $conditionLabelEn,
+            'language' => 'en',
+            'subject' => $subjectEn,
+            'message_body' => $messageBodyEn,
+            'salutation' => $salutationEn,
+            'languages' => [
+                'en' => [
+                    'subject' => $subjectEn,
+                    'message_body' => $messageBodyEn,
+                    'salutation' => $salutationEn,
+                    'condition_label' => $conditionLabelEn,
+                    'closing' => "Warm regards,\n{$teacherName}\nSubject Teacher / Faculty\nConcepcion Integrated School",
+                    'teacher_note_label' => "Note from Teacher ({$teacherName}):",
+                    'status_label' => "Status: {$conditionLabelEn}",
+                ],
+                'tl' => [
+                    'subject' => $subjectTl,
+                    'message_body' => $messageBodyTl,
+                    'salutation' => $salutationTl,
+                    'condition_label' => $conditionLabelTl,
+                    'closing' => "Lubos na gumagalang,\n{$teacherName}\nSubject Teacher / Faculty\nConcepcion Integrated School",
+                    'teacher_note_label' => "Mensahe mula sa Guro ({$teacherName}):",
+                    'status_label' => "Katayuan: {$conditionLabelTl}",
+                ],
+            ],
+        ];
     }
 }

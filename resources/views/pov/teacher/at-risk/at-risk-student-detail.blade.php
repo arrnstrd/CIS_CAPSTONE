@@ -90,6 +90,10 @@
                 </p>
             </div>
 
+            <button type="button" class="btn btn-sm btn-primary" data-intervene-enrollment="{{ $enrollment->id }}">
+                <i class="fa-solid fa-paper-plane me-1"></i> Intervene
+            </button>
+
             <x-ui.backButton />
 
         </div>
@@ -387,6 +391,9 @@
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addRemarkModal">
             <i class="fa-solid fa-plus me-1"></i> Add Remark
         </button>
+
+      
+
     </div>
 
     @if ($riskRemarks->count())
@@ -507,9 +514,14 @@
             <p class="gs-panel-title mb-1">Monitoring Follow-Up</p>
             <p class="text-muted small mb-0">Record and track manual follow-ups, interventions, and consultation actions.</p>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
-            <i class="fa-solid fa-plus me-1"></i> Add Follow-Up
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-primary" data-intervene-enrollment="{{ $enrollment->id }}">
+                <i class="fa-solid fa-paper-plane me-1"></i> Intervene
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+                <i class="fa-solid fa-plus me-1"></i> Add Follow-Up
+            </button>
+        </div>
     </div>
 
     @if ($followUps->count())
@@ -551,6 +563,7 @@
 </div>
 
 @include('pov.teacher.at-risk.partials.add-followup-modal')
+@include('pov.teacher.at-risk.partials.intervention-modal')
 
 
 {{-- CHART SCRIPT --}}

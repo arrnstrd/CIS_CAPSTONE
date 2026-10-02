@@ -1,22 +1,419 @@
-================================================================================
-CIS CAPSTONE - CORE FEATURE: QR ATTENDANCE MONITORING SYSTEM
-RELEVANT SOURCE CODE DOCUMENTATION (CONDENSED)
-================================================================================
+// ==============================================================================
+// 1. SCHOOL YEAR (SchoolYearController.php)
+// ==============================================================================
 
-1. ROUTING: API SCAN ENDPOINT
-File: routes/api.php
---------------------------------------------------------------------------------
-use App\Http\Controllers\ScannerOperator\QrStation\ScanController;
-use Illuminate\Support\Facades\Route;
+namespace App\Http\Controllers\SchoolAdmin\Academic;
 
-// QR attendance scan request from terminal/kiosk
-Route::post('/scan', [ScanController::class, 'scan']);
+use App\Http\Controllers\Controller;
+use App\Models\SchoolYear;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
+class SchoolYearController extends Controller
+{
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'school_year' => ['required', 'string', 'unique:school_years,school_year'],
+            'is_active'   => ['required', 'boolean'],
+        ]);
 
-================================================================================
-2. CONTROLLER: SCAN REQUEST COORDINATOR
-File: app/Http/Controllers/ScannerOperator/QrStation/ScanController.php
---------------------------------------------------------------------------------
+        $schoolYear = DB::transaction(function () use ($validatedData) {
+            if ($validatedData['is_active']) {
+                SchoolYear::where('is_active', true)->update(['is_active' => false]);
+            }
+            return SchoolYear::create($validatedData);
+        });
+
+        return response()->json([
+            'message' => 'School year created successfully',
+            'data'    => $schoolYear,
+        ]);
+    }
+}
+
+// ==============================================================================
+// 2. STUDENTS (StudentService.php)
+// ==============================================================================
+
+namespace App\Services;
+
+use App\Models\Guardian;
+use App\Models\QrCode;
+use App\Models\Student;
+use App\Services\QrSystem\QRCodeService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+class StudentService
+{
+    public function __construct(
+        private readonly QRCodeService $qrCodeService,
+        private readonly EnrollmentService $enrollmentService,
+    ) {}
+
+    public function createStudent(array $studentData, array $guardianData, ?array $enrollmentData = null): Student
+    {
+        return DB::transaction(function () use ($studentData, $guardianData, $enrollmentData) {
+            $student = Student::create([
+                'lrn'         => $studentData['lrn'],
+                'first_name'  => strip_tags($studentData['first_name']),
+                'last_name'   => strip_tags($studentData['last_name']),
+                'middle_name' => $studentData['middle_name'] ?? null,
+                'sex'         => $studentData['sex'],
+                'address'     => strip_tags($studentData['address']),
+                'status'      => $studentData['status'],
+            ]);
+
+            if (!empty(trim((string) ($guardianData['name'] ?? '')))) {
+                Guardian::create([
+                    'student_id'     => $student->id,
+                    'name'           => strip_tags($guardianData['name']),
+                    'relationship'   => $guardianData['relationship'] ?? 'guardian',
+                    'contact_number' => $guardianData['contact_number'] ?? null,
+                    'email'          => $guardianData['email'] ?? null,
+                ]);
+            }
+
+            $this->ensureQrCode($student);
+
+            if ($enrollmentData) {
+                $this->enrollmentService->createEnrollment(
+                    $this->enrollmentPayload($student->id, $enrollmentData),
+                    $enrollmentData['school_year_id']
+                );
+            }
+
+            return $student;
+        });
+    }
+
+    private function ensureQrCode(Student $student): QrCode
+    {
+        $qrCode = QrCode::where('student_id', $student->id)->first();
+        if ($qrCode === null) {
+            do {
+                $code = Str::upper(Str::random(64));
+            } while (QrCode::where('code', $code)->exists());
+
+            $qrCode = QrCode::create([
+                'student_id' => $student->id,
+                'code'       => $code,
+                'is_active'  => true,
+            ]);
+        }
+        return $this->qrCodeService->ensureImage($qrCode);
+    }
+}
+
+// ==============================================================================
+// 3. TEACHER (TeacherManagementController.php)
+// ==============================================================================
+
+namespace App\Http\Controllers\SchoolAdmin\Teachers;
+
+use App\Http\Controllers\Controller;
+use App\Mail\InvitationMail;
+use App\Models\Teacher;
+use App\Models\User;
+use App\Services\InvitationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
+
+class TeacherManagementController extends Controller
+{
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name'  => ['required', 'string', 'max:255'],
+            'email'      => ['required', 'email', Rule::unique('users', 'email')],
+        ]);
+
+        $teacher = DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'first_name' => ucwords(strtolower(trim($validated['first_name']))),
+                'last_name'  => ucwords(strtolower(trim($validated['last_name']))),
+                'email'      => strtolower(trim($validated['email'])),
+                'role'       => 'teacher',
+                'status'     => 'pending',
+                'password'   => null,
+            ]);
+
+            $invitation = app(InvitationService::class)->generate($user);
+
+            return [
+                'user'       => $user,
+                'teacher'    => Teacher::create([
+                    'user_id' => $user->id,
+                    'status'  => 'pending',
+                ]),
+                'invitation' => $invitation,
+            ];
+        });
+
+        Mail::to($teacher['user']->email)->send(new InvitationMail(
+            $teacher['user']->first_name . ' ' . $teacher['user']->last_name,
+            $this->buildSetupLink($teacher['invitation']['plainToken']),
+            $teacher['invitation']['invitation']->expires_at->format('Y-m-d H:i:s')
+        ));
+
+        return response()->json([
+            'message' => 'Teacher created successfully. Invitation sent to email.',
+            'data'    => $teacher['teacher']->fresh()->load('user'),
+        ]);
+    }
+}
+
+// ==============================================================================
+// 4. USER (UserManagementController.php)
+// ==============================================================================
+
+namespace App\Http\Controllers\SuperAdmin\UserManagement;
+
+use App\Http\Controllers\Controller;
+use App\Jobs\SendInvitationEmail;
+use App\Models\AdminActivityLog;
+use App\Models\User;
+use App\Services\InvitationService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+
+class UserManagementController extends Controller
+{
+    public function store(Request $request)
+    {
+        $actor = Auth::user();
+        if (!$actor?->isSuperAdmin()) {
+            return response()->json(['message' => 'Unauthorized access.'], 403);
+        }
+
+        $validatedData = $request->validate([
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name'  => ['required', 'string', 'max:100'],
+            'role'       => ['required', 'in:super_admin,admin,teacher,scanner_operator'],
+            'email'      => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+        ]);
+
+        $validatedData['status'] = 'pending';
+        $validatedData['password'] = null;
+
+        $user = User::create($validatedData);
+        $result = app(InvitationService::class)->generate($user);
+
+        SendInvitationEmail::dispatch(
+            $user,
+            $this->buildSetupLink($result['plainToken']),
+            $result['invitation']->expires_at->format('Y-m-d H:i:s')
+        )->afterResponse();
+
+        AdminActivityLog::record($actor, 'User Creation', $user->email, 'success');
+
+        return response()->json([
+            'message' => 'User created successfully.',
+            'data'    => $user,
+        ], 201);
+    }
+}
+
+// ==============================================================================
+// 5. GRADING SYSTEM (GradingService.php)
+// ==============================================================================
+
+namespace App\Services\Grading;
+
+use App\Models\Assessment;
+use App\Models\StudentAssessmentScore;
+use App\Models\TeachingAssignment;
+use App\Models\TermGrade;
+use Illuminate\Support\Facades\DB;
+
+class GradingService
+{
+    public function __construct(
+        protected SubjectWeightResolver $weightResolver,
+        protected SchoolLevelDetector $levelDetector
+    ) {}
+
+    public function recordScore(array $data): StudentAssessmentScore
+    {
+        $assessment = Assessment::findOrFail($data['assessment_id']);
+        if ($data['score'] < 0 || $data['score'] > $assessment->total_items) {
+            throw new \InvalidArgumentException("Score exceeds total items or is invalid.");
+        }
+
+        return DB::transaction(function () use ($data, $assessment) {
+            $score = StudentAssessmentScore::updateOrCreate(
+                ['assessment_id' => $data['assessment_id'], 'enrollment_id' => $data['enrollment_id']],
+                ['score' => $data['score'], 'remarks' => $data['remarks'] ?? null]
+            );
+
+            $this->recalculateTermGrade(
+                $data['enrollment_id'],
+                $assessment->teaching_assignment_id,
+                $assessment->grading_period_id
+            );
+
+            return $score;
+        });
+    }
+
+    public function recalculateTermGrade(int $enrollmentId, int $teachingAssignmentId, int $gradingPeriodId): ?TermGrade
+    {
+        $teachingAssignment = TeachingAssignment::with(['subject', 'section'])->findOrFail($teachingAssignmentId);
+        $assessments = Assessment::where('teaching_assignment_id', $teachingAssignmentId)
+            ->where('grading_period_id', $gradingPeriodId)
+            ->where('status', 'active')
+            ->get();
+
+        $scores = StudentAssessmentScore::where('enrollment_id', $enrollmentId)
+            ->whereIn('assessment_id', $assessments->pluck('id'))
+            ->get()
+            ->keyBy('assessment_id');
+
+        $weights = $this->resolveWeights($teachingAssignmentId, $teachingAssignment->subject);
+        $componentSummaries = $this->calculateComponentSummaries($assessments, $scores, $weights);
+        $initialGrade = $this->calculateInitialGrade($componentSummaries);
+        $transmutedGrade = $initialGrade === null ? null : $this->transmute($initialGrade);
+
+        return TermGrade::updateOrCreate(
+            [
+                'teaching_assignment_id' => $teachingAssignmentId,
+                'enrollment_id'          => $enrollmentId,
+                'grading_period_id'      => $gradingPeriodId,
+            ],
+            [
+                'written_work_grade'     => $componentSummaries['written']['ws'] ?? null,
+                'performance_task_grade' => $componentSummaries['performance']['ws'] ?? null,
+                'term_assessment_grade'  => $componentSummaries['term_assessment']['ws'] ?? null,
+                'initial_grade'          => $initialGrade,
+                'transmuted_grade'       => $transmutedGrade,
+            ]
+        );
+    }
+}
+
+// ==============================================================================
+// 6. IN AND OUT (AttendanceStateMachine.php)
+// ==============================================================================
+
+namespace App\Services;
+
+use App\Models\AttendanceLog;
+
+class AttendanceStateMachine
+{
+    public function nextState(?AttendanceLog $lastLog): string
+    {
+        if (!$lastLog) {
+            return 'IN';
+        }
+
+        return match ($lastLog->scan_type) {
+            'IN'    => 'OUT',
+            'OUT'   => 'IN',
+            default => 'IN',
+        };
+    }
+}
+
+// ==============================================================================
+// 7. ATTENDANCE (AttendanceLog.php)
+// ==============================================================================
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class AttendanceLog extends Model
+{
+    protected $fillable = [
+        'enrollment_id',
+        'scan_type',
+        'session_type',
+        'scan_time',
+        'scanned_by_user_id',
+        'device_id',
+    ];
+
+    protected $casts = [
+        'scan_time' => 'datetime',
+    ];
+
+    public function enrollment()
+    {
+        return $this->belongsTo(Enrollment::class, 'enrollment_id');
+    }
+
+    public function flagged_scans()
+    {
+        return $this->hasMany(FlaggedScan::class, 'attendance_log_id');
+    }
+}
+
+// ==============================================================================
+// 8. SECTION (SectionController.php)
+// ==============================================================================
+
+namespace App\Http\Controllers\SchoolAdmin\Academic;
+
+use App\Http\Controllers\Controller;
+use App\Models\Section;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class SectionController extends Controller
+{
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:40',
+                Rule::unique('sections')->where(fn($q) => $q
+                    ->where('level', request('level'))
+                    ->where('grade_level', request('grade_level'))),
+            ],
+            'level' => ['required', 'in:elementary,highschool,senior_high_school'],
+            'grade_level' => [
+                'required',
+                'integer',
+                function ($attribute, $value, $fail) {
+                    $level = request('level');
+                    $isValid = match ($level) {
+                        'elementary' => $value >= 1 && $value <= 6,
+                        'highschool' => $value >= 7 && $value <= 10,
+                        'senior_high_school' => $value >= 11 && $value <= 12,
+                        default => false,
+                    };
+                    if (!$isValid) {
+                        $fail('The selected grade level is invalid for the chosen level.');
+                    }
+                }
+            ],
+            'session_type' => ['required', 'in:morning,afternoon,whole_day'],
+            'advisor_id'   => ['nullable', 'exists:teachers,id', Rule::unique('sections', 'advisor_id')->whereNotNull('advisor_id')],
+            'capacity'     => ['required', 'integer', 'min:1', 'max:100'],
+            'status'       => ['required', 'in:active,inactive'],
+        ]);
+
+        $section = Section::create($validatedData);
+
+        return response()->json([
+            'message' => 'Section created successfully',
+            'data'    => $section,
+        ]);
+    }
+}
+
+// ==============================================================================
+// 9. SCANCONTROLLER LOGIC (ScanController.php & QrScanService.php)
+// ==============================================================================
+
 namespace App\Http\Controllers\ScannerOperator\QrStation;
 
 use App\Http\Controllers\Controller;
@@ -39,18 +436,12 @@ class ScanController extends Controller
     }
 }
 
-
-================================================================================
-3. SERVICE: QR SCAN & STATE MACHINE ENGINE
-File: app/Services/QrSystem/QrScanService.php
---------------------------------------------------------------------------------
 namespace App\Services\QrSystem;
 
 use App\Events\AttendanceRecorded;
 use App\Jobs\SendGateScanNotification;
 use App\Models\AttendanceLog;
 use App\Models\Enrollment;
-use App\Models\FlaggedScan;
 use App\Models\QrAttendance;
 use App\Services\ScheduleResolver;
 use Illuminate\Support\Facades\DB;
@@ -62,43 +453,35 @@ class QrScanService
         $now = now();
         $currentTime = $now->format('H:i');
 
-        // Step 1: Identify student and active enrollment record
         $student = $this->resolveStudent($data);
         if (!$student) {
-            return response()->json(['message' => 'Invalid QR or student not found'], 404);
+            return response()->json(['message' => 'Student or QR code not found.'], 404);
         }
 
         $enrollment = Enrollment::query()
             ->leftJoin('sections', 'sections.id', '=', 'enrollments.section_id')
             ->where('enrollments.student_id', $student->id)
             ->where('enrollments.status', 'active')
-            ->first();
+            ->firstOrFail();
 
-        // Step 2: Validate schedule boundaries for current session
         $schedule = (new ScheduleResolver())->resolve(
             $enrollment->section_level,
             $enrollment->section_session_type,
             $currentTime
         );
 
-        // Step 3: Atomic State Machine - Cooldown Shield & IN/OUT transition
-        $result = DB::transaction(function () use ($enrollment, $now, $currentTime, $schedule, $data) {
-            $attendanceDate = $now->toDateString();
+        $log = DB::transaction(function () use ($enrollment, $now, $currentTime, $schedule, $data) {
             $qrAttendance = QrAttendance::firstOrCreate([
                 'enrollment_id'   => $enrollment->id,
-                'attendance_date' => $attendanceDate,
+                'attendance_date' => $now->toDateString(),
             ]);
 
-            // Check spam cooldown shield
             if ($qrAttendance->cooldown_expires_at && $qrAttendance->cooldown_expires_at->isFuture()) {
-                return response()->json(['message' => 'Too many scans. Cooldown active.'], 429);
+                return response()->json(['message' => 'Cooldown active. Please wait.'], 429);
             }
 
-            // Determine scan sequence (IN vs OUT)
             $scanType = ($qrAttendance->time_in_log_id === null) ? 'IN' : 'OUT';
-            $isLate = ($scanType === 'IN' && $currentTime > $schedule->late_threshold);
 
-            // Persist log entry
             $log = AttendanceLog::create([
                 'enrollment_id' => $enrollment->id,
                 'scan_type'     => $scanType,
@@ -107,7 +490,6 @@ class QrScanService
                 'device_id'     => $data['device_id'] ?? null,
             ]);
 
-            // Update daily kiosk state record
             if ($scanType === 'IN') {
                 $qrAttendance->time_in_log_id = $log->id;
             } else {
@@ -116,95 +498,12 @@ class QrScanService
             $qrAttendance->cooldown_expires_at = $now->copy()->addSeconds(15);
             $qrAttendance->save();
 
-            // Flag late arrivals
-            if ($isLate) {
-                FlaggedScan::create([
-                    'attendance_log_id' => $log->id,
-                    'flag_type'         => 'late_arrival',
-                    'description'       => 'Student arrived late',
-                ]);
-            }
-
             return $log;
         });
 
-        // Step 4: Real-time dashboard broadcast & Guardian alert
-        AttendanceRecorded::dispatch($result);
-        SendGateScanNotification::dispatch($result->id);
+        AttendanceRecorded::dispatch($log);
+        SendGateScanNotification::dispatch($log->id);
 
-        return response()->json(['success' => true, 'data' => $result]);
+        return response()->json(['success' => true, 'data' => $log]);
     }
 }
-
-
-================================================================================
-4. MODEL: ATTENDANCE LOG
-File: app/Models/AttendanceLog.php
---------------------------------------------------------------------------------
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class AttendanceLog extends Model
-{
-    protected $fillable = [
-        'enrollment_id',
-        'scan_type',        // 'IN' or 'OUT'
-        'session_type',     // 'Morning' or 'Afternoon'
-        'scan_time',
-        'scanned_by_user_id',
-        'device_id',
-    ];
-
-    protected $casts = [
-        'scan_time' => 'datetime',
-    ];
-
-    public function enrollment()
-    {
-        return $this->belongsTo(Enrollment::class, 'enrollment_id');
-    }
-
-    public function flagged_scans()
-    {
-        return $this->hasMany(FlaggedScan::class, 'attendance_log_id');
-    }
-}
-
-
-================================================================================
-5. JOB: ASYNCHRONOUS GUARDIAN EMAIL ALERT
-File: app/Jobs/SendGateScanNotification.php
---------------------------------------------------------------------------------
-namespace App\Jobs;
-
-use App\Mail\GateScanMail;
-use App\Models\EmailLog;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Support\Facades\Mail;
-
-class SendGateScanNotification implements ShouldQueue
-{
-    use Dispatchable, Queueable;
-
-    public function __construct(public int $emailLogId) {}
-
-    public function handle(): void
-    {
-        $emailLog = EmailLog::with('student', 'attendanceLog')->findOrFail($this->emailLogId);
-
-        Mail::to($emailLog->email)->send(
-            new GateScanMail(
-                $emailLog->student,
-                $emailLog->scan_type,
-                $emailLog->attendanceLog?->scan_time?->format('F d, Y - h:i A')
-            )
-        );
-
-        $emailLog->update(['status' => 'sent', 'sent_at' => now()]);
-    }
-}
-================================================================================
-

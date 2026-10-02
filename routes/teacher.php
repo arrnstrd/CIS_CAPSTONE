@@ -136,7 +136,12 @@ Route::middleware(['auth', 'role:teacher'])->group(function () {
     // ----------------------------------------------------
     Route::get('/teacher/grading-system/at-risk', [AtRiskController::class, 'index'])
         ->name('teacher.grading-system.at-risk');
+    Route::get('/teacher/grading-system/at-risk/intervention/prepare', [AtRiskController::class, 'prepareIntervention'])
+        ->name('teacher.grading-system.at-risk.intervention.prepare');
+    Route::post('/teacher/grading-system/at-risk/intervention/send', [AtRiskController::class, 'sendIntervention'])
+        ->name('teacher.grading-system.at-risk.intervention.send');
     Route::get('/teacher/grading-system/at-risk/{enrollmentId}', [AtRiskController::class, 'show'])
+        ->whereNumber('enrollmentId')
         ->name('teacher.grading-system.at-risk.show');
     Route::post('/teacher/grading-system/at-risk/{enrollmentId}/remarks', [AtRiskController::class, 'storeRemark'])
         ->name('teacher.grading-system.at-risk.remarks.store');

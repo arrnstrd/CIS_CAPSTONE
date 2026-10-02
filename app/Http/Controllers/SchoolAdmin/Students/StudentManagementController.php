@@ -40,17 +40,15 @@ class StudentManagementController extends Controller
             'Senior High School' => range(11, 12),
         ];
 
-        $activeSchoolYear = SchoolYear::query()->where('is_active', true)->first();
-
-        $gradeCounts = Enrollment::query()
-            ->when($activeSchoolYear, fn($q) => $q->where('school_year_id', $activeSchoolYear->id))
-            ->selectRaw('grade_level, COUNT(DISTINCT student_id) as total')
+        $sectionCounts = Section::query()
+            ->selectRaw('grade_level, COUNT(*) as total')
             ->groupBy('grade_level')
             ->pluck('total', 'grade_level');
+        $gradeCounts = $sectionCounts;
 
         \Illuminate\Support\Facades\Log::debug('[PROFILE-CTRL:student-management] ms=' . round((microtime(true) - $t0) * 1000, 1)); // TEMP
 
-        return view('pov.school-admin.students.students', compact('grades', 'gradeCounts'));
+        return view('pov.school-admin.students.students', compact('grades', 'sectionCounts', 'gradeCounts'));
     }
 
     public function byGrade(Request $request, string $grade)

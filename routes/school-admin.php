@@ -118,6 +118,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/active', [BulkImportController::class, 'active'])->name('active');
         Route::get('/history/list', [BulkImportController::class, 'history'])->name('history');
         Route::get('/template/download', [BulkImportController::class, 'downloadTemplate'])->name('template');
+        Route::get('/{import}/detail', [BulkImportController::class, 'detail'])->name('detail');
+        Route::get('/{import}/rows', [BulkImportController::class, 'rows'])->name('rows');
         Route::get('/{import}', [BulkImportController::class, 'show'])->name('show');
         Route::get('/{import}/status', [BulkImportController::class, 'status'])->name('status');
         Route::post('/{import}/validate', [BulkImportController::class, 'validate'])->name('validate');

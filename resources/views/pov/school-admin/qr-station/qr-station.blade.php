@@ -188,7 +188,7 @@
                                 HID QR Scanner Setup Guide
                             </h5>
                             <span class="text-white-50 small" id="qrGuideStepCounter" style="font-size: 0.78rem;">
-                                Step 1 of 4 &bull; Schedule Setup
+                                Step 1 of 4 &bull; System Prerequisites
                             </span>
                         </div>
                     </div>
@@ -238,34 +238,41 @@
                                     <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 mb-1" style="font-size: 0.72rem; font-weight: 700;">
                                         MANDATORY SYSTEM PREREQUISITES
                                     </span>
-                                    <h5 class="fw-bold text-dark mb-0 fs-6">Section & Schedule Configuration Rules</h5>
+                                    <h5 class="fw-bold text-dark mb-0 fs-6">Student Registration, Physical QR & Schedule Rules</h5>
                                 </div>
                             </div>
 
                             <p class="text-secondary small leading-relaxed mb-3">
-                                <strong>Why & How it Works:</strong> For QR attendance validation to succeed, student scan lookup relies on matching student section settings against configured schedule rules:
+                                <strong>Why & How it Works:</strong> For QR attendance validation to succeed, students must be registered in the system with active QR codes, and section settings must match configured schedule rules:
                             </p>
 
                             <div class="bg-white p-3 rounded-3 border mb-3">
-                                <div class="d-flex flex-column gap-2.5 text-dark small">
-                                    <div class="d-flex align-items-start gap-2 mb-2">
-                                        <i class="fas fa-user-check text-success mt-1"></i>
+                                <div class="d-flex flex-column gap-3 text-dark small">
+                                    <div class="d-flex align-items-start gap-2">
+                                        <i class="fas fa-user-plus text-success mt-1"></i>
                                         <div>
-                                            <strong>1. Student Enrolled in Section:</strong>
-                                            <span class="text-muted d-block">Student must be actively enrolled and assigned to a section roster.</span>
+                                            <strong>1. Student Registered in System (Correct Grade & Section):</strong>
+                                            <span class="text-muted d-block">Make sure that the student is on the system. If not, add them to that section via <a href="{{ route('student-management.index') }}" class="text-decoration-underline text-dark fw-bold">Student Management</a>. Make sure that the student is on the right grade level and section. The QR code will be generated right after creating/adding the student onto the system.</span>
                                         </div>
                                     </div>
-                                    <div class="d-flex align-items-start gap-2 mb-2">
-                                        <i class="fas fa-layer-group text-primary mt-1"></i>
+                                    <div class="d-flex align-items-start gap-2">
+                                        <i class="fas fa-qrcode text-primary mt-1"></i>
                                         <div>
-                                            <strong>2. Section Department & Session Type Configured:</strong>
-                                            <span class="text-muted d-block">The section must be configured with its <strong>Department Level</strong> (Elementary, High School, Senior High) and <strong>Session Type</strong> (Morning, Afternoon, Whole Day).</span>
+                                            <strong>2. Physical QR Code for Scanning:</strong>
+                                            <span class="text-muted d-block">If the student doesn't have a physical QR, download it on the <a href="{{ route('qr.index') }}" class="text-decoration-underline text-dark fw-bold">QR Generation Page</a>. The QR code can be generated and downloaded either on the <strong>Student Profile page QR tab</strong> or on the <strong>QR Generation page</strong>.</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-start gap-2">
+                                        <i class="fas fa-layer-group text-info mt-1"></i>
+                                        <div>
+                                            <strong>3. Section Department & Session Type Configured:</strong>
+                                            <span class="text-muted d-block">The section can be configured on the <a href="{{ route('academic.index', ['tab' => 'sections']) }}" class="text-decoration-underline text-dark fw-bold">Academic Setup page (Sections tab)</a> with its <strong>Department Level</strong> (Elementary, High School, Senior High) and <strong>Session Type</strong> (Morning, Afternoon, Whole Day).</span>
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-start gap-2">
                                         <i class="fas fa-clock text-warning mt-1"></i>
                                         <div>
-                                            <strong>3. Schedule Rules Active for Level & Session:</strong>
+                                            <strong>4. Schedule Rules Active for Level & Session:</strong>
                                             <span class="text-muted d-block">An active <a href="{{ route('schedule-configuration.index') }}" class="text-decoration-underline text-dark fw-bold">Schedule Configuration</a> rule must exist for each department level & session type to validate Time-In, Late Cutoff, and Time-Out.</span>
                                         </div>
                                     </div>
@@ -273,12 +280,21 @@
                             </div>
 
                             <p class="text-muted small mb-3">
-                                Scans for unassigned students or sections without matching schedule rules cannot be validated by the scanner station.
+                                Scans for unregistered/unassigned students or sections without matching schedule rules cannot be validated by the scanner station.
                             </p>
 
-                            <div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ route('qr.index') }}" class="btn btn-dark btn-sm fw-bold px-3">
+                                    <i class="fas fa-qrcode me-1"></i> QR Generation Page <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                                <a href="{{ route('student-management.index') }}" class="btn btn-outline-dark btn-sm fw-bold px-3">
+                                    <i class="fas fa-users me-1"></i> Student Management
+                                </a>
+                                <a href="{{ route('academic.index', ['tab' => 'sections']) }}" class="btn btn-outline-secondary btn-sm fw-bold px-3">
+                                    <i class="fas fa-layer-group me-1"></i> Academic Setup (Sections)
+                                </a>
                                 <a href="{{ route('schedule-configuration.index') }}" class="btn btn-warning btn-sm fw-bold px-3">
-                                    <i class="fas fa-gear me-1"></i> Manage Schedule Configuration <i class="fas fa-arrow-right ms-1"></i>
+                                    <i class="fas fa-gear me-1"></i> Manage Schedules
                                 </a>
                             </div>
                         </div>
@@ -415,7 +431,7 @@
             let currentStep = 1;
             const totalSteps = 4;
             const stepTitles = [
-                'Step 1 of 4 • Schedule Setup',
+                'Step 1 of 4 • System Prerequisites',
                 'Step 2 of 4 • Connect Scanner',
                 'Step 3 of 4 • Keep Station Active',
                 'Step 4 of 4 • Live Roster Feed'

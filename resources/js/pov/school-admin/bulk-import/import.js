@@ -797,9 +797,9 @@ export async function loadHistory(page = 1) {
                         <small class="text-muted font-monospace">${duration(h.created_at, h.updated_at)}</small>
                     </td>
                     <td class="text-end">
-                        <button type="button" class="btn btn-sm btn-outline-primary px-2.5 py-1" onclick="viewImportTransaction(${h.id})" title="View Transaction Issues">
+                        <a href="${importUrl(`/${h.id}/detail`)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary px-2.5 py-1" title="View Transaction Detail">
                             <i class="fas fa-eye"></i>
-                        </button>
+                        </a>
                     </td>
                 </tr>`;
             })
@@ -830,17 +830,8 @@ window.historyPageClick = function (p) {
 };
 
 // ── View Transaction & Open Inspector ────────────────────────────────────
-window.viewImportTransaction = async function (id) {
-    try {
-        const r = await fetch(importUrl(`/${id}`), {
-            headers: { Accept: "application/json" },
-        });
-        const d = await r.json();
-        state.set(id, d.data.original_filename);
-        openIssueInspector();
-    } catch (e) {
-        showError("Unable to Load", "Could not load transaction details.");
-    }
+window.viewImportTransaction = function (id) {
+    window.open(importUrl(`/${id}/detail`), "_blank");
 };
 
 // ── Issues Inspector & Modal ─────────────────────────────────────────────

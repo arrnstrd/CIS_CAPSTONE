@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Under Maintenance — Concepcion Integrated School</title>
+    <title>{{ $title ?? 'Under Maintenance' }} — Concepcion Integrated School</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
@@ -87,17 +87,17 @@
 <body>
     <div class="error-card">
         <div class="error-icon-wrapper">
-            <i class="fa-solid fa-screwdriver-wrench"></i>
+            <i class="fa-solid {{ $icon ?? 'fa-screwdriver-wrench' }}"></i>
         </div>
         <div>
-            <span class="error-badge">System Maintenance</span>
+            <span class="error-badge">{{ $badge ?? 'System Maintenance' }}</span>
         </div>
-        <h1 class="error-title">Scheduled Maintenance</h1>
+        <h1 class="error-title">{{ $title ?? 'Scheduled Maintenance' }}</h1>
         <p class="error-description">
-            The CIS Management System is currently undergoing routine maintenance to keep the service running smoothly and securely. Please check back shortly.
+            {{ $message ?? 'The CIS Management System is currently undergoing routine maintenance to keep the service running smoothly and securely. Please check back shortly.' }}
         </p>
         <button type="button" onclick="window.location.reload()" class="btn-primary-action">
-            <i class="fa-solid fa-rotate-right"></i> Check Again
+            <i class="fa-solid fa-rotate-right"></i> Try Again
         </button>
     </div>
 </body>

@@ -47,6 +47,60 @@ return Application::configure(basePath: dirname(__DIR__))
                 return redirect()->route('login')->with('warning', 'Your session has expired. Please log in again to continue.');
             }
 
+            // Handle cloud database / DNS connectivity drop
+            $isDbConnectionError = false;
+            $checkExceptions = [$e];
+            if ($e->getPrevious()) {
+                $checkExceptions[] = $e->getPrevious();
+            }
+
+            foreach ($checkExceptions as $candidate) {
+                if ($candidate instanceof \Illuminate\Database\QueryException || $candidate instanceof \PDOException) {
+                    $code = (string) $candidate->getCode();
+                    $msg = strtolower($candidate->getMessage());
+
+                    if (
+                        $code === '08006' ||
+                        $code === '7' ||
+                        str_starts_with($code, '08') ||
+                        str_contains($msg, 'could not translate host name') ||
+                        str_contains($msg, 'temporary failure in name resolution') ||
+                        str_contains($msg, 'connection refused') ||
+                        str_contains($msg, 'connection to server at') ||
+                        str_contains($msg, 'server closed the connection unexpectedly') ||
+                        str_contains($msg, 'network is unreachable') ||
+                        str_contains($msg, 'ssl connection has been closed unexpectedly')
+                    ) {
+                        $isDbConnectionError = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($isDbConnectionError) {
+                \Illuminate\Support\Facades\Log::error('Cloud Database Connection Error: ' . $e->getMessage(), [
+                    'exception' => $e,
+                    'url' => $request->fullUrl(),
+                ]);
+
+                $userTitle = 'Cloud Database Service Temporarily Unavailable';
+                $userMessage = 'The application is temporarily unable to connect to the cloud data service due to a network resolution delay. No data was lost. Please wait a moment and refresh the page.';
+
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'title' => $userTitle,
+                        'message' => $userMessage,
+                    ], 503);
+                }
+
+                return response()->view('errors.503', [
+                    'title' => $userTitle,
+                    'message' => $userMessage,
+                    'badge' => 'Service Notice',
+                    'icon' => 'fa-cloud-slash',
+                ], 503);
+            }
+
             if ($request->expectsJson() || $request->ajax()) {
                 if ($e instanceof \Illuminate\Validation\ValidationException) {
                     return null; // Keep standard Laravel validation response
