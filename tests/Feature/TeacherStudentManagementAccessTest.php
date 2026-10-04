@@ -11,12 +11,10 @@ use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TeachingAssignment;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class TeacherStudentManagementAccessTest extends TestCase
 {
-    use RefreshDatabase;
 
     private User $teacherUser;
     private Teacher $teacher;

@@ -529,6 +529,7 @@
 
                     @include('pov.school-admin.students.components.attendance-tab', [
                         'student' => $student,
+                        'attendance' => $attendance ?? [],
                     ])
 
                     @include('pov.school-admin.students.components.qr-tab', [

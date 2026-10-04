@@ -53,7 +53,7 @@ class GradingDashboardController extends Controller
             ]);
         }
 
-        $validPeriodIds = GradingPeriod::where('sequence', '<=', 3)->pluck('id');
+        $validPeriodIds = GradingPeriod::trimester()->pluck('id');
 
         // Determine current period by request, teacher preference, or dynamic progression
         $currentPeriod = $this->gradingPeriodService->resolveSelectedPeriod(
@@ -62,9 +62,21 @@ class GradingDashboardController extends Controller
             $dashboardPreferences
         );
 
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+
         $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
             ->with(['section', 'subject']);
+
+        if ($activeSchoolYear) {
+            $hasActiveYearAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('status', 'active')
+                ->where('school_year_id', $activeSchoolYear->id)
+                ->exists();
+            if ($hasActiveYearAssignments) {
+                $teachingAssignmentsQuery->where('school_year_id', $activeSchoolYear->id);
+            }
+        }
 
         // Default class filtering if requested or configured in teacher dashboard preferences
         $selectedClassId = $request->input('teaching_assignment_id', $dashboardPreferences?->default_class_id);
@@ -80,14 +92,16 @@ class GradingDashboardController extends Controller
 
         $teachingAssignments = $teachingAssignmentsQuery->get();
 
-        $classes = $teachingAssignments->map(function ($ta) use ($validPeriodIds, $currentPeriod) {
+        $classes = $teachingAssignments->map(function ($ta) use ($validPeriodIds, $currentPeriod, $activeSchoolYear) {
             if (! $ta->section || ! $ta->subject) {
                 return null;
             }
 
             $activeEnrollmentIds = Enrollment::where('section_id', $ta->section_id)
-                ->where('school_year_id', $ta->school_year_id)
                 ->where('status', 'active')
+                ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+                    $q->where('school_year_id', $activeSchoolYear->id);
+                })
                 ->pluck('id');
 
             $learnerCount = $activeEnrollmentIds->count();
@@ -99,34 +113,33 @@ class GradingDashboardController extends Controller
             $totalAssessments = $assessmentIds->count();
             $expectedScores = $totalAssessments * $learnerCount;
 
-            $actualScores = $expectedScores > 0
-                ? StudentAssessmentScore::whereIn('assessment_id', $assessmentIds)
+            $actualScores = 0;
+            $encodedCount = 0;
+
+            if ($expectedScores > 0) {
+                $studentScores = StudentAssessmentScore::whereIn('assessment_id', $assessmentIds)
                     ->whereIn('enrollment_id', $activeEnrollmentIds)
                     ->whereNotNull('score')
-                    ->count()
-                : 0;
+                    ->select('enrollment_id')
+                    ->get()
+                    ->groupBy('enrollment_id');
+
+                $actualScores = $studentScores->sum(fn($scores) => $scores->count());
+
+                foreach ($studentScores as $enrollmentId => $scores) {
+                    if ($scores->count() >= $totalAssessments) {
+                        $encodedCount++;
+                    }
+                }
+            }
 
             $completionPercent = $expectedScores > 0
                 ? round(($actualScores / $expectedScores) * 100, 1)
                 : null;
 
-            // Calculate encoded count (students with all assessments graded)
-            $encodedCount = 0;
-            $studentScores = StudentAssessmentScore::whereIn('assessment_id', $assessmentIds)
-                ->whereIn('enrollment_id', $activeEnrollmentIds)
-                ->whereNotNull('score')
-                ->get()
-                ->groupBy('enrollment_id');
-            
-            foreach ($studentScores as $enrollmentId => $scores) {
-                if ($scores->count() >= $totalAssessments) {
-                    $encodedCount++;
-                }
-            }
-
             // Get current grades for the period
             $currentGrades = $currentPeriod 
-                ? \App\Models\QuarterlyGrade::where('teaching_assignment_id', $ta->id)
+                ? \App\Models\TermGrade::where('teaching_assignment_id', $ta->id)
                     ->where('grading_period_id', $currentPeriod->id)
                     ->whereNotNull('transmuted_grade')
                     ->get()
@@ -171,7 +184,8 @@ class GradingDashboardController extends Controller
         $classAtRiskCounts = [];
         $classRiskReasons = [];
         
-        if ($currentPeriod) {
+        $shouldCalculateRisk = ($dashboardPreferences?->show_at_risk ?? true);
+        if ($currentPeriod && $shouldCalculateRisk) {
             foreach ($teachingAssignments as $ta) {
                 if ($ta->section && $ta->subject) {
                     $riskData = $this->riskScoreService->calculateRiskScoresForClass($ta, $currentPeriod);
@@ -216,7 +230,7 @@ class GradingDashboardController extends Controller
         // Get current period (this is the first issue to investigate)
         // TODO: Once "Finalize Term" is implemented, this should pick the lowest sequence <=3 
         // whose status is NOT "Finalized" (so it naturally advances as terms get locked)
-        $currentPeriod = GradingPeriod::where('is_active', true)->where('sequence', '<=', 3)->orderBy('sequence')->first() ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+        $currentPeriod = GradingPeriod::where('is_active', true)->trimester()->orderBy('sequence')->first() ?? GradingPeriod::trimester()->orderBy('sequence')->first();
         $allPeriods = GradingPeriod::orderBy('sequence')->get();
         
         $debugInfo = [
@@ -234,7 +248,7 @@ class GradingDashboardController extends Controller
                     'is_active' => $period->is_active,
                 ];
             })->values(),
-            'periods_with_sequence_le_3' => GradingPeriod::where('sequence', '<=', 3)->count(),
+            'periods_with_sequence_le_3' => GradingPeriod::trimester()->count(),
         ];
 
         // Get teaching assignments
@@ -372,16 +386,13 @@ class GradingDashboardController extends Controller
             ->where('status', 'active')
             ->get();
 
-        $term1 = GradingPeriod::where('sequence', 1)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 1)->first();
-        $term2 = GradingPeriod::where('sequence', 2)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 2)->first();
-        $term3 = GradingPeriod::where('sequence', 3)->where('period_type', 'trimester')->first()
-            ?? GradingPeriod::where('sequence', 3)->first();
+        $term1 = GradingPeriod::trimester()->where('sequence', 1)->first();
+        $term2 = GradingPeriod::trimester()->where('sequence', 2)->first();
+        $term3 = GradingPeriod::trimester()->where('sequence', 3)->first();
 
         // If teacher has no active assignments or Term 1 not found, return safest fallback
         if ($activeAssignments->isEmpty() || ! $term1) {
-            return $term1 ?? GradingPeriod::where('sequence', '<=', 3)->orderBy('sequence')->first();
+            return $term1 ?? GradingPeriod::trimester()->orderBy('sequence')->first();
         }
 
         // 1. Check if Term 1 is 100% complete across ALL active assignments
@@ -414,7 +425,7 @@ class GradingDashboardController extends Controller
      * Check whether a grading period has started for the teacher's active assignments.
      *
      * A term counts as started if there is at least one assessment created OR
-     * at least one quarterly grade record with non-null component or transmuted scores
+     * at least one term grade record with non-null component or transmuted scores
      * for the teacher's active assignments.
      *
      * @param \Illuminate\Support\Collection $activeAssignments
@@ -437,15 +448,15 @@ class GradingDashboardController extends Controller
             return true;
         }
 
-        // 2. Check if any quarterly grade record exists for this period
-        $hasGrades = \App\Models\QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        // 2. Check if any term grade record exists for this period
+        $hasGrades = \App\Models\TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->where('grading_period_id', $period->id)
             ->where(function ($query) {
                 $query->whereNotNull('transmuted_grade')
                     ->orWhereNotNull('initial_grade')
                     ->orWhereNotNull('written_work_grade')
                     ->orWhereNotNull('performance_task_grade')
-                    ->orWhereNotNull('quarterly_assessment_grade');
+                    ->orWhereNotNull('term_assessment_grade');
             })
             ->exists();
 
@@ -472,7 +483,7 @@ class GradingDashboardController extends Controller
 
             // If the section has active enrolled students
             if ($totalStudents > 0) {
-                $finalizedCount = \App\Models\QuarterlyGrade::where('teaching_assignment_id', $ta->id)
+                $finalizedCount = \App\Models\TermGrade::where('teaching_assignment_id', $ta->id)
                     ->where('grading_period_id', $period->id)
                     ->whereIn('enrollment_id', $activeEnrollmentIds)
                     ->whereNotNull('transmuted_grade')

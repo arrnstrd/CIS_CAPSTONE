@@ -287,7 +287,7 @@ COPY auth.webauthn_credentials (id, user_id, credential_id, public_key, attestat
 COPY public.assessment_categories (id, name, created_at, updated_at) FROM stdin;
 1	Written Work	2026-08-17 18:41:35	2026-08-17 18:41:35
 2	Performance Task	2026-08-17 18:41:38	2026-08-17 18:41:38
-3	Quarterly Assessment	2026-08-17 18:41:38	2026-08-17 18:41:38
+3	Term Assessment	2026-08-17 18:41:38	2026-08-17 18:41:38
 \.
 
 
@@ -296,10 +296,10 @@ COPY public.assessment_categories (id, name, created_at, updated_at) FROM stdin;
 --
 
 COPY public.grading_periods (id, name, sequence, is_active, created_at, updated_at, period_type) FROM stdin;
-1	1st Quarter	1	t	2026-08-07 17:29:30	2026-08-07 17:29:30	trimester
-2	2nd Quarter	2	t	2026-08-07 17:29:30	2026-08-07 17:29:30	trimester
-3	3rd Quarter	3	t	2026-08-07 17:29:30	2026-08-07 17:29:30	trimester
-4	4th Quarter	4	t	2026-08-07 17:29:30	2026-08-07 17:29:30	trimester
+1	Term 1	1	t	2026-08-07 17:29:30	2026-08-07 17:29:30	trimester
+2	Term 2	2	t	2026-08-07 17:29:30	2026-08-07 17:29:30	trimester
+3	Term 3	3	t	2026-08-07 17:29:30	2026-08-07 17:29:30	trimester
+4	Term 4	4	t	2026-08-07 17:29:30	2026-08-07 17:29:30	trimester
 \.
 
 
@@ -966,7 +966,7 @@ COPY public.migrations (id, migration, batch) FROM stdin;
 60	2026_07_12_201351_create_room_attendance_table	12
 61	2026_07_12_201352_create_assessments_table	12
 62	2026_07_12_201353_create_student_assessment_scores_table	12
-63	2026_07_12_201354_create_quarterly_grades_table	12
+63	2026_07_12_201354_create_term_grades_table	12
 64	2026_07_13_201540_create_login_logs_table	12
 65	2026_07_29_000001_create_bulk_imports_table	12
 66	2026_07_29_000002_create_bulk_import_issues_table	12
@@ -1049,10 +1049,10 @@ COPY public.qr_codes (id, student_id, code, is_active, created_at, updated_at, i
 
 
 --
--- Data for Name: quarterly_grades; Type: TABLE DATA; Schema: public; Owner: -
+-- Data for Name: term_grades; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.quarterly_grades (id, teaching_assignment_id, enrollment_id, grading_period_id, written_work_grade, performance_task_grade, quarterly_assessment_grade, initial_grade, transmuted_grade, created_at, updated_at) FROM stdin;
+COPY public.term_grades (id, teaching_assignment_id, enrollment_id, grading_period_id, written_work_grade, performance_task_grade, term_assessment_grade, initial_grade, transmuted_grade, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -1481,10 +1481,10 @@ SELECT pg_catalog.setval('public.qr_codes_id_seq', 18, true);
 
 
 --
--- Name: quarterly_grades_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+-- Name: term_grades_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.quarterly_grades_id_seq', 1, true);
+SELECT pg_catalog.setval('public.term_grades_id_seq', 1, true);
 
 
 --

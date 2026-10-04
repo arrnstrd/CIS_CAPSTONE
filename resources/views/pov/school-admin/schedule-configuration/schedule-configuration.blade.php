@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="pageName">
         Schedule Configuration
     </x-slot>
@@ -177,7 +177,7 @@
                 };
             @endphp
 
-            <div class="sched-level-card">
+            <div class="sched-level-card" @if($loop->first) data-tour="sched-level-card" @endif>
                 @if ($sessionCount === 1)
                     {{-- ================================================================= --}}
                     {{-- CASE A: SINGLE SESSION LEVEL (e.g. Elementary / 1 Schedule)       --}}
@@ -215,7 +215,7 @@
                             </div>
                         </div>
 
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2" @if($loop->first) data-tour="sched-actions" @endif>
                             <button type="button" class="btn btn-sm btn-outline-primary"
                                 data-bs-toggle="modal" data-bs-target="#addScheduleModal" data-level="{{ $levelKey }}">
                                 <i class="fa-solid fa-plus me-1"></i> Add Session
@@ -242,7 +242,7 @@
                         <div data-edit-view="sched-{{ $singleSched->id }}">
                             <div class="row g-3">
                                 <div class="col-12 col-md-4">
-                                    <div class="sched-time-box sched-time-box--entry">
+                                    <div class="sched-time-box sched-time-box--entry" @if($loop->first) data-tour="sched-entry-window" @endif>
                                         <div class="sched-time-label text-success">
                                             <i class="fa-solid fa-right-to-bracket me-1"></i> Entry Scan Window
                                         </div>
@@ -254,7 +254,7 @@
                                 </div>
 
                                 <div class="col-12 col-md-4">
-                                    <div class="sched-time-box sched-time-box--late">
+                                    <div class="sched-time-box sched-time-box--late" @if($loop->first) data-tour="sched-late-threshold" @endif>
                                         <div class="sched-time-label text-warning-emphasis">
                                             <i class="fa-solid fa-clock me-1 text-warning"></i> Late Threshold
                                         </div>
@@ -266,7 +266,7 @@
                                 </div>
 
                                 <div class="col-12 col-md-4">
-                                    <div class="sched-time-box sched-time-box--exit">
+                                    <div class="sched-time-box sched-time-box--exit" @if($loop->first) data-tour="sched-exit-window" @endif>
                                         <div class="sched-time-label text-danger">
                                             <i class="fa-solid fa-right-from-bracket me-1"></i> Exit Scan Window
                                         </div>
@@ -381,7 +381,7 @@
                             </div>
                         </div>
 
-                        <button type="button" class="btn btn-sm btn-outline-primary"
+                        <button type="button" class="btn btn-sm btn-outline-primary" @if($loop->first) data-tour="sched-actions" @endif
                             data-bs-toggle="modal" data-bs-target="#addScheduleModal" data-level="{{ $levelKey }}">
                             <i class="fa-solid fa-plus me-1"></i> Add Session
                         </button>
@@ -435,7 +435,7 @@
 
                                             <div class="row g-2">
                                                 <div class="col-12 col-sm-6">
-                                                    <div class="sched-time-box sched-time-box--entry">
+                                                    <div class="sched-time-box sched-time-box--entry" @if($loop->first && $loop->parent->first) data-tour="sched-entry-window" @endif>
                                                         <div class="sched-time-label text-success">
                                                             <i class="fa-solid fa-right-to-bracket me-1"></i> Entry Window
                                                         </div>
@@ -447,7 +447,7 @@
                                                 </div>
 
                                                 <div class="col-12 col-sm-6">
-                                                    <div class="sched-time-box sched-time-box--exit">
+                                                    <div class="sched-time-box sched-time-box--exit" @if($loop->first && $loop->parent->first) data-tour="sched-exit-window" @endif>
                                                         <div class="sched-time-label text-danger">
                                                             <i class="fa-solid fa-right-from-bracket me-1"></i> Exit Window
                                                         </div>
@@ -459,7 +459,7 @@
                                                 </div>
 
                                                 <div class="col-12 mt-2">
-                                                    <div class="sched-time-box sched-time-box--late d-flex align-items-center justify-content-between">
+                                                    <div class="sched-time-box sched-time-box--late d-flex align-items-center justify-content-between" @if($loop->first && $loop->parent->first) data-tour="sched-late-threshold" @endif>
                                                         <div>
                                                             <div class="sched-time-label text-warning-emphasis">
                                                                 <i class="fa-solid fa-clock me-1 text-warning"></i> Late Threshold
@@ -571,7 +571,7 @@
                             </div>
                         </div>
 
-                        <button type="button" class="btn btn-sm btn-outline-primary"
+                        <button type="button" class="btn btn-sm btn-outline-primary" @if($loop->first) data-tour="sched-actions" @endif
                             data-bs-toggle="modal" data-bs-target="#addScheduleModal" data-level="{{ $levelKey }}">
                             <i class="fa-solid fa-plus me-1"></i> Add Session
                         </button>
@@ -964,4 +964,4 @@
         });
     </script>
 
-</x-layouts.admin>
+</x-layouts.school-admin>

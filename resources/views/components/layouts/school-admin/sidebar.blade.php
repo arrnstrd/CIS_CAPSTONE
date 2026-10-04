@@ -11,12 +11,12 @@
     $roleName = $currentUser?->role_label ?? 'School Admin';
 @endphp
 
-<nav id="sidebar" class="sidebar-wrapper">
+<nav id="sidebar" class="sa-sidebar-wrapper">
 
-    <div class="sidebar-content">
+    <div class="sa-sidebar-content">
 
         <!-- Brand -->
-        <div class="sidebar-brand d-flex flex-column py-4 px-4">
+        <div class="sa-sidebar-brand d-flex flex-column justify-content-center px-4">
             <h5 class="text-white mb-0 fw-bold">
                 SCHOOL ADMIN PORTAL
             </h5>
@@ -26,7 +26,7 @@
         </div>
 
         <!-- Navigation Menu -->
-        <div class="sidebar-menu">
+        <div class="sa-sidebar-menu">
             <ul>
                 <li class="{{ request()->routeIs('admin.dashboard') || request()->is('dashboard') ? 'active' : '' }}">
                     <a href="{{ route('admin.dashboard') }}">
@@ -36,7 +36,7 @@
                 </li>
 
                 <!-- MONITORING SECTION -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>MONITORING</small>
                 </li>
                 <li class="{{ request()->routeIs('school_admin.qr-station.*') || request()->is('school-admin/qr-station*') ? 'active' : '' }}">
@@ -45,10 +45,10 @@
                         <span>QR Station</span>
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('school_admin.time-in-time-out-history.*') || request()->is('school-admin/time-in-time-out-history*') ? 'active' : '' }}">
+                <li class="{{ !request()->routeIs('school_admin.time-in-time-out-history.analytics*') && !request()->is('school-admin/time-in-time-out-history/analytics*') && (request()->routeIs('school_admin.time-in-time-out-history.*') || request()->is('school-admin/time-in-time-out-history*') || request()->routeIs('emails.*') || request()->routeIs('*.email') || request()->is('emails*')) ? 'active' : '' }}">
                     <a href="{{ route('school_admin.time-in-time-out-history.index') }}">
                         <i class="fas fa-exchange-alt"></i>
-                        <span>In/Out History</span>
+                        <span>In/Out Monitoring</span>
                     </a>
                 </li>
                 <li class="{{ request()->routeIs('attendance') || request()->routeIs('attendance.*') || request()->is('attendance*') || request()->is('school_admin/attendance*') ? 'active' : '' }}">
@@ -57,15 +57,15 @@
                         <span>Attendance</span>
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('emails.*') || request()->routeIs('*.email') || request()->is('emails*') ? 'active' : '' }}">
-                    <a href="{{ route('emails.index') }}">
-                        <i class="fas fa-envelope"></i>
-                        <span>Email Logs</span>
+                <li class="{{ request()->routeIs('school_admin.time-in-time-out-history.analytics*') || request()->is('school-admin/time-in-time-out-history/analytics*') ? 'active' : '' }}">
+                    <a href="{{ route('school_admin.time-in-time-out-history.analytics') }}">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>IN and OUT Analytics</span>
                     </a>
                 </li>
 
                 <!-- MANAGEMENT SECTION -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>MANAGEMENT</small>
                 </li>
                 <li class="{{ request()->routeIs('teachers.*') || request()->is('teachers*') ? 'active' : '' }}">
@@ -83,12 +83,12 @@
                 <li class="{{ request()->routeIs('bulk-import*') || request()->routeIs('import.*') || request()->is('bulk-import*') || request()->is('import*') ? 'active' : '' }}">
                     <a href="{{ route('bulk-import') }}">
                         <i class="fas fa-file-import"></i>
-                        <span>Bulk Import</span>
+                        <span>SF1 Import</span>
                     </a>
                 </li>
 
                 <!-- ACADEMIC SETUP -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>ACADEMIC SETUP</small>
                 </li>
                 <li class="{{ request()->routeIs('academic.*') || request()->routeIs('sections.*') || request()->routeIs('subjects.*') || request()->is('academic*') || request()->is('sections*') || request()->is('subjects*') ? 'active' : '' }}">
@@ -97,15 +97,9 @@
                         <span>Academic Setup</span>
                     </a>
                 </li>
-                <li class="{{ request()->routeIs('teaching-assignments.*') || request()->is('teaching-assignments*') ? 'active' : '' }}">
-                    <a href="{{ route('teaching-assignments.index') }}">
-                        <i class="fas fa-user-tag"></i>
-                        <span>Teaching Assignments</span>
-                    </a>
-                </li>
 
                 <!-- UTILITIES SECTION -->
-                <li class="sidebar-section-label">
+                <li class="sa-sidebar-section-label">
                     <small>UTILITIES</small>
                 </li>
                 <li class="{{ request()->routeIs('schedconfig.*') || request()->routeIs('schedule-configuration.*') || request()->is('schedule-configuration*') ? 'active' : '' }}">
@@ -121,33 +115,24 @@
                     </a>
                 </li>
 
-                <!-- SYSTEM SECTION -->
-                <li class="sidebar-section-label">
-                    <small>SYSTEM</small>
-                </li>
-                <li class="{{ request()->routeIs('settings.*') || request()->is('settings*') ? 'active' : '' }}">
-                    <a href="{{ route('settings.index') }}">
-                        <i class="fas fa-sliders-h"></i>
-                        <span>Settings</span>
-                    </a>
-                </li>
+
             </ul>
         </div>
 
     </div>
 
     <!-- User Profile Footer -->
-    <div class="sidebar-footer">
-        <div class="sidebar-user-block">
-            <div class="sidebar-user-avatar">
+    <div class="sa-sidebar-footer">
+        <div class="sa-sidebar-user-block">
+            <div class="sa-sidebar-user-avatar">
                 {{ $initials }}
             </div>
-            <div class="sidebar-user-info">
-                <span class="sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
-                <span class="sidebar-user-role">{{ $roleName }}</span>
+            <div class="sa-sidebar-user-info">
+                <span class="sa-sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
+                <span class="sa-sidebar-user-role">{{ $roleName }}</span>
             </div>
             <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
-                class="sidebar-logout-btn" title="Log Out" aria-label="Log Out">
+                class="sa-sidebar-logout-btn" title="Log Out" aria-label="Log Out">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
         </div>

@@ -43,7 +43,7 @@ Every incoming HTTP request traverses a clean layered architecture:
                   │
                   ▼
        [ Eloquent ORM Models ]
-   (Student, AttendanceLog, QuarterlyGrade, etc.)
+   (Student, AttendanceLog, TermGrade, etc.)
                   │
                   ▼
         [ Database (PostgreSQL) ]

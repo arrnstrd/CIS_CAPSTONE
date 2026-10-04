@@ -8,12 +8,10 @@ use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TeachingAssignment;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AcademicTabsTest extends TestCase
 {
-    use RefreshDatabase;
 
     private User $admin;
 

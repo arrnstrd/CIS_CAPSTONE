@@ -35,7 +35,7 @@ class UpdateSubjectRequest extends FormRequest
         $subjectId = $subjectId ?? $this->id;
 
         return [
-            'code' => ['required', 'string', 'max:255', Rule::unique('subjects', 'code')->ignore($subjectId)],
+            'code' => ['nullable', 'string', 'max:255', Rule::unique('subjects', 'code')->ignore($subjectId)],
             'name' => ['required', 'string', 'max:255'],
             'level' => ['required', 'string', Rule::in(array_keys(Subject::levelOptions()))],
         ];

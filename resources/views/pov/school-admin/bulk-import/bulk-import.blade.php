@@ -1,12 +1,12 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">Bulk Import Students</x-slot>
     <x-slot name="subtitle">Import and verify student records from DepEd SF-1 spreadsheets.</x-slot>
     <x-slot name="pageName">Bulk Import</x-slot>
 
-    <div class="bulk-import-page mx-2 mx-md-3 mb-4">
+    <div class="bulk-import-page mx-2 mx-md-3 mb-4" data-import-base-url="{{ url('/import') }}">
         {{-- Navigation Bar: Mode Toggle (Import Hub vs History) + Quick Actions --}}
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 pb-2 border-bottom">
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2" data-tour="import-mode-toggle">
                 <button type="button" class="view-switch-btn active" id="viewImportBtn">
                     <i class="fas fa-file-import me-1.5 text-primary"></i> Import Workspace
                 </button>
@@ -17,7 +17,10 @@
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <a href="{{ route('import.template') }}" class="bi-btn bi-btn--outline" id="downloadTemplateBtn">
+                <button type="button" class="bi-btn bi-btn--outline" id="openSetupWorkflowGuideBtn">
+                    <i class="fas fa-route me-1 text-primary"></i> Setup Workflow Guide
+                </button>
+                <a href="{{ route('import.template') }}" class="bi-btn bi-btn--outline" id="downloadTemplateBtn" data-tour="import-template">
                     <i class="fas fa-download me-1 text-primary"></i> Sample Template (.xlsx)
                 </a>
             </div>
@@ -31,7 +34,7 @@
             <div class="import-card-centered mx-auto">
 
                 {{-- Interactive Stepper / Breadcrumb Trail --}}
-                <div class="import-stepper mb-4">
+                <div class="import-stepper mb-4" data-tour="import-stepper">
                     <div class="step-node active" id="stepNode1">
                         <span class="step-circle"><i class="fas fa-file-upload"></i></span>
                         <span class="step-title">1. Upload File</span>
@@ -55,26 +58,32 @@
                             <i class="fas fa-file-excel fa-2x text-primary"></i>
                         </div>
                         <h4 class="fw-bold mb-1">Import DepEd SF-1 Spreadsheet</h4>
-                        <p class="text-muted small mb-0">Upload student records (.xlsx or .xls) to automatically validate rows and detect duplicates.</p>
+                        <p class="text-muted small mb-0">Upload student records (.xlsx or .xls) to automatically
+                            validate rows and detect duplicates.</p>
                     </div>
 
                     {{-- Client-side Error / Warning Banner --}}
-                    <div id="clientValidationAlert" class="alert alert-danger d-none align-items-center gap-2 py-2.5 px-3 mb-3 rounded-3" role="alert">
+                    <div id="clientValidationAlert"
+                        class="alert alert-danger d-none align-items-center gap-2 py-2.5 px-3 mb-3 rounded-3"
+                        role="alert">
                         <i class="fas fa-exclamation-circle text-danger fs-5 flex-shrink-0"></i>
                         <div class="small fw-medium flex-grow-1" id="clientValidationMessage"></div>
-                        <button type="button" class="btn-close btn-close-sm" id="dismissClientAlertBtn" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-sm" id="dismissClientAlertBtn"
+                            aria-label="Close"></button>
                     </div>
 
                     {{-- Drag & Drop Dropzone --}}
                     <form id="uploadForm" enctype="multipart/form-data">
-                        <div class="upload-dropzone p-4 p-md-5 text-center" id="dropzone">
+                        <div class="upload-dropzone p-4 p-md-5 text-center" id="dropzone" data-tour="import-dropzone">
                             <input type="file" class="d-none" id="file" name="file" accept=".xlsx,.xls" required>
                             <div class="dropzone-default-content" id="dropzonePrompt">
                                 <div class="dropzone-icon-circle mx-auto mb-3">
                                     <i class="fas fa-cloud-arrow-up fa-2x text-primary"></i>
                                 </div>
                                 <h6 class="fw-semibold mb-1">Drag and drop your spreadsheet here</h6>
-                                <p class="text-muted small mb-3">or <a href="#" id="browseLink" class="text-primary text-decoration-none fw-semibold">browse files</a> from your computer</p>
+                                <p class="text-muted small mb-3">or <a href="#" id="browseLink"
+                                        class="text-primary text-decoration-none fw-semibold">browse files</a> from your
+                                    computer</p>
                                 <div class="d-flex align-items-center justify-content-center gap-3 text-muted small">
                                     <span><i class="far fa-file-excel me-1 text-success"></i> .xlsx / .xls format</span>
                                     <span>&bull;</span>
@@ -91,16 +100,20 @@
                                         <i class="fas fa-file-excel fa-2x text-success"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-semibold text-dark text-truncate" id="selectedFileName" style="max-width: 320px;">filename.xlsx</div>
+                                        <div class="fw-semibold text-dark text-truncate" id="selectedFileName"
+                                            style="max-width: 320px;">filename.xlsx</div>
                                         <div class="text-muted small d-flex align-items-center gap-2">
                                             <span id="selectedFileSize">0 KB</span>
                                             <span>&bull;</span>
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Ready for Verification</span>
+                                            <span
+                                                class="badge bg-success-subtle text-success border border-success-subtle">Ready
+                                                for Verification</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-2.5" id="clearSelectedFileBtn" title="Remove File">
+                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-2.5"
+                                        id="clearSelectedFileBtn" title="Remove File">
                                         <i class="fas fa-trash-alt me-1"></i> Remove
                                     </button>
                                 </div>
@@ -110,7 +123,8 @@
                         {{-- Upload Action Footer --}}
                         <div class="d-flex justify-content-between align-items-center mt-4 pt-2">
                             <span class="text-muted small">
-                                <i class="fas fa-info-circle me-1"></i> Row duplicates and data integrity will be verified automatically.
+                                <i class="fas fa-info-circle me-1"></i> Row duplicates and data integrity will be
+                                verified automatically.
                             </span>
                             <button type="submit" class="bi-btn bi-btn--primary px-4 py-2" id="uploadBtn" disabled>
                                 <i class="fas fa-magnifying-glass-chart me-1.5"></i> Upload & Verify Rows
@@ -127,23 +141,27 @@
                         </div>
                     </div>
                     <h5 class="fw-bold mb-2" id="verificationStateTitle">Verifying Spreadsheet Rows...</h5>
-                    <p class="text-muted small mb-4" id="verificationStateSubtitle">Scanning records for duplicates, LRN validity, and section assignments.</p>
+                    <p class="text-muted small mb-4" id="verificationStateSubtitle">Scanning records for duplicates, LRN
+                        validity, and section assignments.</p>
 
                     <div class="progress progress-animated mx-auto mb-3" style="max-width: 380px; height: 8px;">
                         <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary w-100"></div>
                     </div>
-                    <div class="text-muted small font-monospace" id="verificationCurrentStatus">Checking row constraints & DepEd SF-1 structure...</div>
+                    <div class="text-muted small font-monospace" id="verificationCurrentStatus">Checking row constraints
+                        & DepEd SF-1 structure...</div>
                 </div>
 
                 {{-- STEP 3: VERIFICATION SUMMARY & ISSUES PROMPT --}}
                 <div id="stepValidationSummarySection" class="workspace-step-panel d-none">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+                    <div
+                        class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
                         <div>
                             <h5 class="fw-bold mb-0" id="summaryHeaderTitle">Row Verification Results</h5>
                             <small class="text-muted" id="summaryFilenameLabel">file.xlsx</small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" id="reuploadFileBtn">
+                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
+                                id="reuploadFileBtn">
                                 <i class="fas fa-arrow-rotate-left me-1"></i> Re-upload File
                             </button>
                         </div>
@@ -185,12 +203,16 @@
                     {{-- Top Issues Preview Box (if issues present) --}}
                     <div id="summaryIssuesPreviewBox" class="issues-preview-container d-none mb-4">
                         <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="fw-semibold small text-dark"><i class="fas fa-triangle-exclamation text-danger me-1"></i> Detected Issues Breakdown</span>
-                            <a href="#" id="viewAllIssuesLink" class="small text-primary fw-semibold text-decoration-none">
+                            <span class="fw-semibold small text-dark"><i
+                                    class="fas fa-triangle-exclamation text-danger me-1"></i> Detected Issues
+                                Breakdown</span>
+                            <a href="#" id="viewAllIssuesLink"
+                                class="small text-primary fw-semibold text-decoration-none">
                                 View Full Issues Table <i class="fas fa-chevron-right ms-1"></i>
                             </a>
                         </div>
-                        <div class="issues-preview-list border rounded-3 p-2 bg-light bg-opacity-50" id="summaryIssuesList">
+                        <div class="issues-preview-list border rounded-3 p-2 bg-light bg-opacity-50"
+                            id="summaryIssuesList">
                             {{-- Preview list items --}}
                         </div>
                     </div>
@@ -198,10 +220,12 @@
                     {{-- Validation Actions Bar --}}
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top">
                         <div class="d-flex align-items-center gap-2">
-                            <a href="#" id="downloadErrorReportBtn" class="btn btn-outline-danger btn-sm rounded-pill d-none">
+                            <a href="#" id="downloadErrorReportBtn"
+                                class="btn btn-outline-danger btn-sm rounded-pill d-none">
                                 <i class="fas fa-file-arrow-down me-1"></i> Download Error Report (.xlsx)
                             </a>
-                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill d-none" id="openIssueInspectorBtn">
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill d-none"
+                                id="openIssueInspectorBtn">
                                 <i class="fas fa-list-check me-1"></i> Inspect Issues
                             </button>
                         </div>
@@ -222,10 +246,12 @@
                         <span class="visually-hidden">Importing...</span>
                     </div>
                     <h5 class="fw-bold mb-1">Importing Student Records</h5>
-                    <p class="text-muted small mb-4" id="processingStatusText">Saving records and enrolling students to active sections...</p>
+                    <p class="text-muted small mb-4" id="processingStatusText">Saving records and enrolling students to
+                        active sections...</p>
 
                     <div class="progress mb-2 mx-auto" style="max-width: 420px; height: 10px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="processingProgressBar" style="width: 0%;"></div>
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                            id="processingProgressBar" style="width: 0%;"></div>
                     </div>
 
                     <div class="d-flex justify-content-between small text-muted mx-auto mb-4" style="max-width: 420px;">
@@ -255,7 +281,8 @@
                         <i class="fas fa-circle-check fa-3x text-success" id="resultIcon"></i>
                     </div>
                     <h4 class="fw-bold mb-1" id="resultCardTitle">Import Completed</h4>
-                    <p class="text-muted small mb-4" id="resultCardSubtitle">The student records have been processed successfully.</p>
+                    <p class="text-muted small mb-4" id="resultCardSubtitle">The student records have been processed
+                        successfully.</p>
 
                     <div class="row g-3 justify-content-center mb-4 mx-auto" style="max-width: 460px;">
                         <div class="col-4">
@@ -279,15 +306,158 @@
                     </div>
 
                     <div class="d-flex align-items-center justify-content-center flex-wrap gap-2">
-                        <button type="button" class="btn btn-outline-secondary px-3.5 py-2 rounded-pill" id="resultStartNewBtn">
+                        <button type="button" class="bi-btn bi-btn--primary px-4 py-2" id="resultRecommendedStepsBtn">
+                            <i class="fas fa-route me-1.5"></i> Recommended Next Steps
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary px-3.5 py-2 rounded-pill"
+                            id="resultStartNewBtn">
                             <i class="fas fa-plus me-1.5"></i> Import Another File
                         </button>
-                        <button type="button" class="btn btn-outline-primary px-3.5 py-2 rounded-pill d-none" id="resultViewIssuesBtn">
+                        <button type="button" class="btn btn-outline-primary px-3.5 py-2 rounded-pill d-none"
+                            id="resultViewIssuesBtn">
                             <i class="fas fa-triangle-exclamation me-1.5"></i> View Issues
                         </button>
-                        <button type="button" class="bi-btn bi-btn--primary px-4 py-2" id="resultGoHistoryBtn">
-                            <i class="fas fa-history me-1.5"></i> View in Transaction History
+                        <button type="button" class="btn btn-outline-secondary px-3.5 py-2 rounded-pill" id="resultGoHistoryBtn">
+                            <i class="fas fa-history me-1.5"></i> Transaction History
                         </button>
+                    </div>
+
+                    {{-- Recommended Post-SF1 Setup Flow Panel --}}
+                    <div class="recommended-flow-container mt-4 pt-4 border-top text-start">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-semibold">
+                                    <i class="fas fa-route me-1"></i> Recommended Next Steps
+                                </span>
+                                <h5 class="fw-bold mb-0 text-dark">Academic Setup Pipeline</h5>
+                            </div>
+                            <button type="button" class="btn btn-link btn-sm text-decoration-none text-primary p-0 fw-semibold" id="openSetupWorkflowGuideResultBtn">
+                                <i class="fas fa-circle-info me-1"></i> Why are these steps required?
+                            </button>
+                        </div>
+
+                        {{-- Educational Callout: SF-1 auto-creates sections without advisers or teaching assignments --}}
+                        <div class="alert alert-info border-info-subtle bg-info-subtle bg-opacity-15 rounded-3 py-3 px-3 mb-3 d-flex align-items-start gap-2.5">
+                            <i class="fas fa-circle-exclamation text-info fs-5 mt-0.5 flex-shrink-0"></i>
+                            <div class="small text-secondary">
+                                <strong class="text-dark d-block mb-1">Important System Notice:</strong>
+                                Uploading DepEd SF-1 automatically creates sections and enrolls students into them. However, <strong>sections are created without assigned Class Advisers or Teaching Assignments (subject teachers)</strong>. Until advisers and teaching assignments are configured, teachers will not be able to view their class rosters, record daily attendance, or submit trimester grades.
+                            </div>
+                        </div>
+
+                        {{-- Visual Dependency Roadmap / Pipeline --}}
+                        <div class="row g-3">
+                            {{-- Step 1: Sections & Class Advisers --}}
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border-1 border-secondary-subtle shadow-none rounded-3 p-3 post-import-flow-card">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="flow-step-icon-box bg-primary-subtle text-primary">
+                                            <i class="fas fa-layer-group"></i>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-primary-subtle text-primary small fw-semibold">Step 1</span>
+                                            <h6 class="fw-bold text-dark mb-0">Sections & Advisers</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        Review auto-created sections, confirm session types (Morning/Afternoon), and appoint a <strong>Class Adviser</strong> for each section.
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="{{ route('academic.index', ['tab' => 'sections']) }}" class="btn btn-outline-primary btn-sm rounded-pill w-100 fw-semibold">
+                                            <span>Configure Sections & Advisers</span>
+                                            <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Step 2: Student Management --}}
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border-1 border-secondary-subtle shadow-none rounded-3 p-3 post-import-flow-card">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="flow-step-icon-box bg-info-subtle text-info">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-info-subtle text-info small fw-semibold">Step 2</span>
+                                            <h6 class="fw-bold text-dark mb-0">Student Management</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        Verify imported learners by grade and section, check unassigned students, inspect LRNs, and confirm guardian contact information.
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="{{ route('student-management.index') }}" class="btn btn-outline-info btn-sm rounded-pill w-100 fw-semibold">
+                                            <span>Review Enrolled Students</span>
+                                            <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Step 3: Prerequisites (Subjects & Faculty) --}}
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border-1 border-secondary-subtle shadow-none rounded-3 p-3 post-import-flow-card">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="flow-step-icon-box bg-warning-subtle text-warning">
+                                            <i class="fas fa-book-open"></i>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-warning-subtle text-warning small fw-bold">Prerequisite</span>
+                                            <h6 class="fw-bold text-dark mb-0">Subjects & Teachers</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        <strong>Prerequisite rule:</strong> Both <strong>Subjects</strong> and <strong>Sections</strong> must be registered before faculty teaching loads can be assigned.
+                                    </p>
+                                    <div class="mt-auto d-flex gap-2">
+                                        <a href="{{ route('academic.index', ['tab' => 'subjects']) }}" class="btn btn-outline-warning btn-sm rounded-pill flex-grow-1 fw-semibold">
+                                            <i class="fas fa-book me-1"></i> Manage Subjects
+                                        </a>
+                                        <a href="{{ route('teachers.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill flex-grow-1 fw-semibold">
+                                            <i class="fas fa-chalkboard-teacher me-1"></i> Teachers
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Step 4: Teaching Assignments --}}
+                            <div class="col-12 col-md-6">
+                                <div class="card h-100 border-1 border-secondary-subtle shadow-none rounded-3 p-3 post-import-flow-card">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="flow-step-icon-box bg-success-subtle text-success">
+                                            <i class="fas fa-chalkboard-user"></i>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-success-subtle text-success small fw-semibold">Step 4 (Final)</span>
+                                            <h6 class="fw-bold text-dark mb-0">Teaching Assignments</h6>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-3">
+                                        Assign teachers to teach specific subjects in specific sections. This unlocks the teacher portal, attendance rosters, and grading sheets.
+                                    </p>
+                                    <div class="mt-auto">
+                                        <a href="{{ route('academic.index', ['tab' => 'assignments']) }}" class="btn btn-outline-success btn-sm rounded-pill w-100 fw-semibold">
+                                            <span>Assign Teachers to Classes</span>
+                                            <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Flow Summary Footer --}}
+                        <div class="mt-3 p-2.5 rounded-3 bg-light border border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-2 text-muted small">
+                            <div>
+                                <i class="fas fa-diagram-project me-1 text-primary"></i>
+                                <span class="fw-semibold text-dark">Setup Sequence:</span>
+                                SF-1 Upload <i class="fas fa-angle-right mx-1"></i>
+                                Sections & Advisers <i class="fas fa-angle-right mx-1"></i>
+                                Student Management <i class="fas fa-angle-right mx-1"></i>
+                                Subjects (Prerequisite) <i class="fas fa-angle-right mx-1"></i>
+                                Teaching Assignments
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -300,8 +470,10 @@
         <div id="historyView" class="history-view-container d-none">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 px-1">
                 <div>
-                    <h5 class="fw-bold mb-0"><i class="fas fa-clock-rotate-left me-1.5 text-primary"></i> Import Transaction History</h5>
-                    <p class="text-muted small mb-0">Record of all SF-1 bulk import runs, uploaded files, row outcomes, and duration.</p>
+                    <h5 class="fw-bold mb-0"><i class="fas fa-clock-rotate-left me-1.5 text-primary"></i> Import
+                        Transaction History</h5>
+                    <p class="text-muted small mb-0">Record of all SF-1 bulk import runs, uploaded files, row outcomes,
+                        and duration.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" id="refreshHistoryBtn">
@@ -344,21 +516,25 @@
     {{-- ==================================================================== --}}
 
     {{-- Issue Inspector Modal (Interactive Drawer/Modal) --}}
-    <div class="modal fade bulk-import-page" id="issueInspectorModal" tabindex="-1" aria-labelledby="issueInspectorModalLabel" aria-hidden="true">
+    <div class="modal fade bulk-import-page" id="issueInspectorModal" tabindex="-1"
+        aria-labelledby="issueInspectorModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header border-bottom py-3">
                     <div>
                         <h5 class="modal-title fw-bold" id="issueInspectorModalLabel">
-                            <i class="fas fa-triangle-exclamation text-warning me-2"></i> Import Issues & Duplicates Inspector
+                            <i class="fas fa-triangle-exclamation text-warning me-2"></i> Import Issues & Duplicates
+                            Inspector
                         </h5>
-                        <small class="text-muted" id="issueInspectorSubtitle">Reviewing validation errors, duplicates, and warning flags</small>
+                        <small class="text-muted" id="issueInspectorSubtitle">Reviewing validation errors, duplicates,
+                            and warning flags</small>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-3 p-md-4">
                     {{-- Filter & Search Controls --}}
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 bg-light p-2.5 rounded-3 border">
+                    <div
+                        class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 bg-light p-2.5 rounded-3 border">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <select class="form-select form-select-sm" id="severityFilter" style="width: 140px;">
                                 <option value="">All Severities</option>
@@ -370,13 +546,16 @@
                                 <option value="unresolved">Unresolved</option>
                                 <option value="acknowledged">Acknowledged</option>
                             </select>
-                            <input type="text" class="form-control form-control-sm" id="issuesSearch" placeholder="Search learner, LRN, error..." style="width: 220px;">
+                            <input type="text" class="form-control form-control-sm" id="issuesSearch"
+                                placeholder="Search learner, LRN, error..." style="width: 220px;">
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <a href="#" id="inspectorDownloadErrorsBtn" class="btn btn-sm btn-outline-secondary rounded-pill">
+                            <a href="#" id="inspectorDownloadErrorsBtn"
+                                class="btn btn-sm btn-outline-secondary rounded-pill">
                                 <i class="fas fa-file-arrow-down me-1"></i> Export Issues
                             </a>
-                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill" id="acknowledgeAllBtn">
+                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill"
+                                id="acknowledgeAllBtn">
                                 <i class="fas fa-check-double me-1"></i> Acknowledge All
                             </button>
                         </div>
@@ -387,11 +566,15 @@
                         <thead class="text-uppercase small">
                             <tr>
                                 <th style="width: 8%"><span class="fas fa-hashtag me-1"></span> Row</th>
-                                <th style="width: 22%"><span class="fas fa-user-graduate me-1"></span> Learner / Target</th>
+                                <th style="width: 22%"><span class="fas fa-user-graduate me-1"></span> Learner / Target
+                                </th>
                                 <th style="width: 22%"><span class="fas fa-tag me-1"></span> Issue Type</th>
-                                <th style="width: 26%"><span class="fas fa-comment-dots me-1"></span> Details & Message</th>
-                                <th style="width: 10%"><span class="fas fa-triangle-exclamation me-1"></span> Severity</th>
-                                <th style="width: 12%" class="text-end"><span class="fas fa-wrench me-1"></span> Action</th>
+                                <th style="width: 26%"><span class="fas fa-comment-dots me-1"></span> Details & Message
+                                </th>
+                                <th style="width: 10%"><span class="fas fa-triangle-exclamation me-1"></span> Severity
+                                </th>
+                                <th style="width: 12%" class="text-end"><span class="fas fa-wrench me-1"></span> Action
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="issuesBody">
@@ -470,4 +653,116 @@
         </div>
     </div>
 
-</x-layouts.admin>
+    {{-- Setup Workflow Guide Modal --}}
+    <div class="modal fade bulk-import-page" id="setupWorkflowModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-bottom pb-3">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-1">
+                            <i class="fas fa-route text-primary me-2"></i> Post-SF1 Academic Setup Workflow
+                        </h5>
+                        <p class="text-muted small mb-0">Understand what happens after importing DepEd SF-1 and why next steps are necessary.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    {{-- Key Insight Alert --}}
+                    <div class="alert alert-primary border-primary-subtle bg-primary-subtle bg-opacity-15 rounded-3 p-3 mb-4">
+                        <div class="d-flex align-items-start gap-2.5">
+                            <i class="fas fa-lightbulb text-primary fs-5 mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <h6 class="fw-bold text-primary mb-1">How DepEd SF-1 Import Works</h6>
+                                <p class="small text-secondary mb-0">
+                                    When you upload a DepEd SF-1 spreadsheet, the system parses the grade level and section names, <strong>automatically creates the sections</strong>, and creates active enrollment records for each student.
+                                    However, <strong>sections are created without Class Advisers and without Teaching Assignments (subject teachers)</strong>.
+                                    Completing the workflow below ensures teachers have access to their classroom rosters, attendance verification, and grading sheets.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Timeline / Steps --}}
+                    <div class="workflow-modal-steps d-flex flex-column gap-3">
+                        {{-- Step 1 --}}
+                        <div class="border rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary text-white rounded-pill px-2.5 py-1">Step 1</span>
+                                    <h6 class="fw-bold text-dark mb-0">Sections & Class Advisers</h6>
+                                </div>
+                                <a href="{{ route('academic.index', ['tab' => 'sections']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    Go to Sections <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                SF-1 import generates sections automatically, but does not assign class advisers. Go to <strong>Academic Setup &gt; Sections</strong> to review section details (grade level, morning/afternoon session type, capacity) and appoint a <strong>Class Adviser</strong> to oversee the cohort.
+                            </p>
+                        </div>
+
+                        {{-- Step 2 --}}
+                        <div class="border rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-info text-white rounded-pill px-2.5 py-1">Step 2</span>
+                                    <h6 class="fw-bold text-dark mb-0">Student Management Page</h6>
+                                </div>
+                                <a href="{{ route('student-management.index') }}" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                    Go to Students <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                Visit the <strong>Student Management</strong> page to verify imported rosters by grade and section. Confirm LRN uniqueness, review student profiles, check guardian emails for time in/out alerts, and assign any unallocated students.
+                            </p>
+                        </div>
+
+                        {{-- Step 3 --}}
+                        <div class="border rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1">Prerequisite</span>
+                                    <h6 class="fw-bold text-dark mb-0">Subjects & Faculty Setup</h6>
+                                </div>
+                                <div class="d-flex gap-1.5">
+                                    <a href="{{ route('academic.index', ['tab' => 'subjects']) }}" class="btn btn-sm btn-outline-warning rounded-pill px-2.5">
+                                        Subjects
+                                    </a>
+                                    <a href="{{ route('teachers.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5">
+                                        Teachers
+                                    </a>
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                <strong>System Prerequisite:</strong> A teaching assignment requires both a <strong>Subject</strong> and a <strong>Section</strong> to exist in the system, along with an active <strong>Teacher</strong> profile. Ensure curriculum subjects are defined for each grade level before attempting to assign faculty loads.
+                            </p>
+                        </div>
+
+                        {{-- Step 4 --}}
+                        <div class="border rounded-3 p-3 bg-white">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-success text-white rounded-pill px-2.5 py-1">Step 4 (Final)</span>
+                                    <h6 class="fw-bold text-dark mb-0">Teaching Assignments</h6>
+                                </div>
+                                <a href="{{ route('academic.index', ['tab' => 'assignments']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                    Go to Teaching Assignments <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                Connect subject teachers to their respective sections in <strong>Academic Setup &gt; Teaching Assignments</strong>. This enables teachers to access daily classroom verification, take subject attendance, and record trimester student grades.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top py-2.5 d-flex align-items-center justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">Close Guide</button>
+                    <a href="{{ route('academic.index', ['tab' => 'sections']) }}" class="bi-btn bi-btn--primary btn-sm px-3 py-1.5 text-decoration-none">
+                        <span>Start Step 1: Configure Sections & Advisers</span>
+                        <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</x-layouts.school-admin>

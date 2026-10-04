@@ -5,12 +5,10 @@ namespace Tests\Unit;
 use App\Models\InvitationToken;
 use App\Models\User;
 use App\Services\InvitationService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class InvitationServiceTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected InvitationService $service;
 
@@ -21,7 +19,7 @@ class InvitationServiceTest extends TestCase
     }
 
     /** @test */
-    public function generate_creates_invitation_with_72_hour_expiration(): void
+    public function generate_creates_invitation_with_7_day_expiration(): void
     {
         $user = User::factory()->create([
             'role' => User::ROLE_TEACHER,
@@ -42,11 +40,11 @@ class InvitationServiceTest extends TestCase
         $this->assertNotNull($invitation->expires_at);
         $this->assertNull($invitation->used_at);
 
-        // Check expiration is approximately 72 hours from now
-        $expectedExpiry = now()->addHours(72);
+        // Check expiration is approximately 7 days from now
+        $expectedExpiry = now()->addDays(7);
         $this->assertTrue(
             $invitation->expires_at->diffInSeconds($expectedExpiry) < 5,
-            'Expiration should be exactly 72 hours from creation'
+            'Expiration should be exactly 7 days from creation'
         );
     }
 
@@ -216,11 +214,11 @@ class InvitationServiceTest extends TestCase
         $this->assertNull($invitation2->used_at);
         $this->assertTrue($invitation2->isValid());
 
-        // New expiration should be fresh (approximately 72 hours from resend)
-        $expectedExpiry = now()->addHours(72);
+        // New expiration should be fresh (approximately 7 days from resend)
+        $expectedExpiry = now()->addDays(7);
         $this->assertTrue(
             $invitation2->expires_at->diffInSeconds($expectedExpiry) < 5,
-            'Resend should give fresh 72-hour expiration'
+            'Resend should give fresh 7-day expiration'
         );
     }
 

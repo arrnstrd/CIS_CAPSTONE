@@ -23,8 +23,30 @@
             'OUT' => 'Time Out',
         ];
         $flagTypeLabels = [
-            'late_arrival' => 'Late arrival',
-            'invalid_checkout' => 'Checkout issue',
+            'late_arrival' => 'Late Arrival',
+            'duplicate_scan' => 'Duplicate Scan',
+            'invalid_checkout' => 'Invalid Checkout',
+            'missing_in' => 'Missing IN',
+            'missing_out' => 'Missing OUT',
+            'excess_scan' => 'Excess Scan',
+            'invalid_qr' => 'Invalid QR',
+            'early_out' => 'Early Departure',
+            'early_timeout' => 'Early Timeout',
+            'too_early' => 'Early Scan',
+            'invalid_session' => 'Invalid Session',
+        ];
+        $flagTypeDotMap = [
+            'late_arrival' => 'warning',
+            'duplicate_scan' => 'danger',
+            'invalid_checkout' => 'danger',
+            'missing_in' => 'warning',
+            'missing_out' => 'warning',
+            'excess_scan' => 'danger',
+            'invalid_qr' => 'danger',
+            'early_out' => 'warning',
+            'early_timeout' => 'warning',
+            'too_early' => 'warning',
+            'invalid_session' => 'secondary',
         ];
 
         $filters = [
@@ -129,10 +151,13 @@
                         <label class="form-label text-muted text-uppercase small fw-bold">Remarks</label>
                         <select class="form-select form-select-sm" name="flag_type" onchange="this.form.submit()">
                             <option value="all" @selected($flagTypeValue === 'all')>All</option>
-                            <option value="late_arrival" @selected($flagTypeValue === 'late_arrival')>Late arrival
-                            </option>
-                            <option value="invalid_checkout" @selected($flagTypeValue === 'invalid_checkout')>Checkout
-                                issue</option>
+                            <option value="late_arrival" @selected($flagTypeValue === 'late_arrival')>Late Arrival</option>
+                            <option value="duplicate_scan" @selected($flagTypeValue === 'duplicate_scan')>Duplicate Scan</option>
+                            <option value="invalid_checkout" @selected($flagTypeValue === 'invalid_checkout')>Invalid Checkout</option>
+                            <option value="missing_in" @selected($flagTypeValue === 'missing_in')>Missing IN</option>
+                            <option value="missing_out" @selected($flagTypeValue === 'missing_out')>Missing OUT</option>
+                            <option value="excess_scan" @selected($flagTypeValue === 'excess_scan')>Excess Scan</option>
+                            <option value="invalid_qr" @selected($flagTypeValue === 'invalid_qr')>Invalid QR</option>
                         </select>
                     </div>
                 </div>
@@ -190,12 +215,12 @@
                 <th style="width: 16%">Grade & Section</th>
                 <th style="width: 12%">Scan Type</th>
                 <th style="width: 10%">Session</th>
-                <th style="width: 10%">Gate Time</th>
+                <th style="width: 10%">Attendance Time</th>
                 <th style="width: 10%">Remarks</th>
                 <th style="width: 6%">Action</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody data-history-tbody>
             @forelse ($attendance_logs as $attendance_log)
                 @php
                     $student = $attendance_log->enrollment?->student;
@@ -237,16 +262,13 @@
                     </td>
                     <td>{{ $attendance_log->scan_time?->format('h:i A') ?? '-' }}</td>
                     <td>
-                        @php
-                            $flagTypeDotMap = [
-                                'late_arrival' => 'warning',
-                                'invalid_checkout' => 'danger',
-                            ];
-                        @endphp
                         @if($flagTypes->isNotEmpty())
                             @foreach($flagTypes as $ftype)
-                                <span
-                                    class="badge-dot dot-{{ $flagTypeDotMap[$ftype] ?? 'secondary' }}">{{ $flagTypeLabels[$ftype] ?? 'Needs review' }}</span>
+                                @php
+                                    $dotColor = $flagTypeDotMap[$ftype] ?? 'secondary';
+                                    $label = $flagTypeLabels[$ftype] ?? (Str::headline(str_replace('_', ' ', $ftype)) ?: 'Needs Review');
+                                @endphp
+                                <span class="badge-dot dot-{{ $dotColor }}">{{ $label }}</span>
                             @endforeach
                         @else
                             <span class="text-muted">-</span>
@@ -268,7 +290,7 @@
                     <td colspan="8" class="text-center text-muted py-5">
                         <div class="d-flex flex-column align-items-center justify-content-center">
                             <i class="fas fa-history fa-2x mb-3 opacity-50"></i>
-                            <p class="mb-0">No gate scan logs found for the selected criteria</p>
+                            <p class="mb-0">No attendance logs found for the selected criteria</p>
                         </div>
                     </td>
                 </tr>
@@ -297,18 +319,33 @@
             ];
 
             $flagDescriptions = [
-                'late_arrival' => 'Student arrived later than expected.',
-                'invalid_checkout' => 'This entry needs review before it can be confirmed.',
+                'late_arrival' => 'Student arrived past the scheduled entry window.',
+                'duplicate_scan' => 'Repeated scan recorded within the cooldown window or session.',
+                'invalid_checkout' => 'Time-out attempted without a corresponding check-in.',
+                'missing_in' => 'No morning check-in scan was recorded.',
+                'missing_out' => 'No afternoon check-out scan was recorded.',
+                'excess_scan' => 'Daily maximum permitted scans reached.',
+                'invalid_qr' => 'Unrecognized or invalid QR code presented.',
+                'early_out' => 'Student checked out prior to the official dismissal window.',
+                'early_timeout' => 'Student checked out prior to the official dismissal window.',
+                'too_early' => 'Scan recorded prior to scheduled opening hours.',
+                'invalid_session' => 'Scan recorded outside of scheduled school hours.',
             ];
 
             $flagIcons = [
                 'late_arrival' => 'fas fa-clock',
-                'invalid_checkout' => 'fas fa-circle-exclamation',
+                'duplicate_scan' => 'fas fa-copy',
+                'invalid_checkout' => 'fas fa-circle-xmark',
+                'missing_in' => 'fas fa-arrow-right-to-bracket',
+                'missing_out' => 'fas fa-arrow-right-from-bracket',
+                'excess_scan' => 'fas fa-ban',
+                'invalid_qr' => 'fas fa-qrcode',
+                'early_out' => 'fas fa-person-walking-arrow-right',
+                'early_timeout' => 'fas fa-person-walking-arrow-right',
+                'too_early' => 'fas fa-hourglass-start',
+                'invalid_session' => 'fas fa-calendar-xmark',
             ];
-            $flagLabels = [
-                'late_arrival' => 'Late arrival',
-                'invalid_checkout' => 'Checkout issue',
-            ];
+            $flagLabels = $flagTypeLabels;
 
             $firstName = $student?->first_name ?? '';
             $lastName = $student?->last_name ?? '';
@@ -375,15 +412,20 @@
                             {{-- Remarks --}}
                             <div class="flags-title">Remarks</div>
                             <div class="flag-list">
-                                @foreach($flagTypes as $flagType)
-                                    <div class="flag-item {{ $flagType }}">
+                                @foreach($attendance_log->flagged_scans as $flaggedScan)
+                                    @php
+                                        $fType = $flaggedScan->flag_type;
+                                        $fLabel = $flagLabels[$fType] ?? (Str::headline(str_replace('_', ' ', $fType)) ?: 'Needs Review');
+                                        $fDesc = $flaggedScan->description ?: ($flagDescriptions[$fType] ?? 'This scan requires administrative review.');
+                                        $fIcon = $flagIcons[$fType] ?? 'fas fa-circle-exclamation';
+                                    @endphp
+                                    <div class="flag-item {{ $fType }}">
                                         <div class="flag-icon-box">
-                                            <i class="{{ $flagIcons[$flagType] ?? 'fas fa-exclamation' }}"></i>
+                                            <i class="{{ $fIcon }}"></i>
                                         </div>
                                         <div class="flag-content">
-                                            <span class="flag-name">{{ $flagLabels[$flagType] ?? 'Needs review' }}</span>
-                                            <span
-                                                class="flag-desc">{{ $flagDescriptions[$flagType] ?? 'This scan requires administrative review.' }}</span>
+                                            <span class="flag-name">{{ $fLabel }}</span>
+                                            <span class="flag-desc">{{ $fDesc }}</span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -450,5 +492,69 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof window.initEcho === 'function' || window.Echo) {
+                const echo = window.Echo || (window.initEcho ? window.initEcho() : null);
+                if (!echo) return;
+
+                echo.private('attendance.monitoring')
+                    .listen('.AttendanceRecorded', (e) => {
+                        const tbody = document.querySelector('[data-history-tbody]');
+                        if (!tbody) return;
+
+                        // Remove empty state placeholder row if present
+                        const emptyTd = tbody.querySelector('td[colspan]');
+                        if (emptyTd) {
+                            emptyTd.closest('tr')?.remove();
+                        }
+
+                        const student = e.student || {};
+                        const name = student.name || 'Unknown Student';
+                        const studentNumber = student.student_number || '-';
+                        const grade = student.grade ? `Grade ${student.grade}` : '-';
+                        const section = student.section || '-';
+                        const scanType = e.scan_type || 'IN';
+                        const scanTypeLabel = scanType === 'IN' ? 'Time In' : 'Time Out';
+                        const dotColor = scanType === 'IN' ? 'success' : 'primary';
+                        const timeStr = e.formatted_time || (e.scan_time ? new Date(e.scan_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-');
+                        const initials = name.split(/\s+/).map(n => n[0]).join('').substring(0, 2).toUpperCase() || '??';
+                        const todayDateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+
+                        const newRow = document.createElement('tr');
+                        newRow.className = 'table-success-subtle transition-all';
+                        newRow.style.backgroundColor = '#ecfdf5';
+                        newRow.innerHTML = `
+                            <td class="table-name-cell">
+                                <div class="table-name-wrap">
+                                    <div class="table-name-avatar">${initials}</div>
+                                    <div class="table-name-copy">
+                                        <span class="table-name-main">${name}</span>
+                                        <span class="table-name-sub">${studentNumber}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${todayDateStr}</td>
+                            <td>
+                                <span class="fw-semibold text-dark">${grade}</span>
+                                <span class="text-muted d-block small">${section}</span>
+                            </td>
+                            <td><span class="badge-dot dot-${dotColor}">${scanTypeLabel}</span></td>
+                            <td>Regular</td>
+                            <td>${timeStr}</td>
+                            <td>${e.late ? '<span class="badge-dot dot-warning">Late Arrival</span>' : '<span class="text-muted">-</span>'}</td>
+                            <td><span class="text-muted">-</span></td>
+                        `;
+
+                        tbody.insertBefore(newRow, tbody.firstChild);
+
+                        setTimeout(() => {
+                            newRow.style.backgroundColor = '';
+                        }, 2500);
+                    });
+            }
+        });
+    </script>
 
 </x-layouts.scanner-operator>

@@ -30,8 +30,8 @@ class InvitationService
             // Store only the SHA-256 hash
             $tokenHash = hash('sha256', $plainToken);
 
-            // Exactly 72 hours from now
-            $expiresAt = now()->addHours(72);
+            // Exactly 7 days (1 week) from now
+            $expiresAt = now()->addDays(7);
 
             $invitation = InvitationToken::create([
                 'user_id' => $user->id,
@@ -93,7 +93,7 @@ class InvitationService
      * Generate a replacement invitation for resend.
      *
      * Invalidates the previous invitation and creates a completely new one
-     * with a fresh token and fresh 72-hour expiration.
+     * with a fresh token and fresh 7-day (1-week) expiration.
      *
      * @return array{invitation: InvitationToken, plainToken: string}
      */

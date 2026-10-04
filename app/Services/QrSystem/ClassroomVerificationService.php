@@ -97,7 +97,7 @@ class ClassroomVerificationService
                 $teacher->user,
                 NotificationService::CATEGORY_ATTENDANCE,
                 'Attendance Record Updated',
-                "Attendance for {$studentName} in {$sectionName} was marked as {$statusLabel} for {$today}.",
+                "Attendance for {$studentName} in {$sectionName} was marked as {$statusLabel}.",
                 [
                     'enrollment_id' => $verification->enrollment_id,
                     'teaching_assignment_id' => $verification->teaching_assignment_id,

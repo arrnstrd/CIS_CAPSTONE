@@ -1,0 +1,21 @@
+services:
+    phase1-postgres:
+        image: 'postgres:18-alpine'
+        ports:
+            - '55432:5432'
+        environment:
+            POSTGRES_DB: 'cis_capstone_test'
+            POSTGRES_USER: 'cis_phase1_test'
+            POSTGRES_PASSWORD: 'cis_phase1_test_password'
+        volumes:
+            - 'cis-capstone-phase1-pgdata:/var/lib/postgresql'
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - 'pg_isready -U cis_phase1_test -d cis_capstone_test'
+            retries: 10
+            timeout: 5s
+
+volumes:
+    cis-capstone-phase1-pgdata:
+        driver: local

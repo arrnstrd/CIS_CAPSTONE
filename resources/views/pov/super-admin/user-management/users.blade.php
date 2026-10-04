@@ -234,7 +234,7 @@
 
                 <!-- Table Panel -->
                 @if($users->isEmpty())
-                    <div class="bg-white rounded-3 p-5 text-center border shadow-sm">
+                    <div class="table-panel bg-white rounded-3 p-5 text-center border shadow-sm">
                         <i class="fas fa-users-slash fa-3x text-muted mb-3 opacity-50"></i>
                         <h5 class="fw-semibold text-dark mb-1">No Matching User Records</h5>
                         <p class="text-muted small mb-3">No registered users matched the current search or filter criteria.</p>
@@ -360,7 +360,7 @@
                                                         @if($user->status === 'pending')
                                                             <li><hr class="dropdown-divider"></li>
                                                             <li>
-                                                                <form method="POST" action="{{ route('api.users.resend-invitation', $user->id) }}" data-ajax-form="resend">
+                                                                <form method="POST" action="/api/users/{{ $user->id }}/resend-invitation" data-ajax-form="resend">
                                                                     @csrf
                                                                     <button type="submit" class="dropdown-item py-2 text-primary">
                                                                         <i class="fas fa-paper-plane me-2"></i> Resend Setup Invitation

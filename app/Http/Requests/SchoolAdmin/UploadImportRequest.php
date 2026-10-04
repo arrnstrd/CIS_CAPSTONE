@@ -18,7 +18,7 @@ class UploadImportRequest extends FormRequest
                 'required',
                 'file',
                 'extensions:xlsx,xls',
-                'mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+                'mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/zip,application/octet-stream,application/x-zip',
                 'max:10240', // 10 MB
             ],
         ];

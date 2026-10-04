@@ -17,7 +17,7 @@ When a Super Admin creates a new teacher or administrator account, the account i
                  ├─ Invalidate previous active tokens for user
                  ├─ Generate random 64-char plain token
                  ├─ Store SHA-256 hash in `invitation_tokens` table
-                 └─ Set expiration (now + 72 hours)
+                 └─ Set expiration (now + 7 days / 1 week)
                  │
                  ▼
        [ Send Invitation Email ]
@@ -51,6 +51,6 @@ When a Super Admin creates a new teacher or administrator account, the account i
 ## 2. Security Guarantees
 
 1. **Hash Storage:** The plaintext token is never stored in the database. Only its `SHA-256` digest is persisted in `invitation_tokens.token_hash`.
-2. **72-Hour Expiration:** Tokens are strictly valid for 72 hours from generation.
+2. **7-Day (1-Week) Expiration:** Tokens are strictly valid for 7 days (168 hours) from generation.
 3. **Single Use Invalidation:** Once used via `SetupController`, `used_at` timestamp is set, immediately invalidating the token for any subsequent attempts.
 4. **Token Revocation:** Generating a new invitation token automatically invalidates any prior unused tokens for that user ID.

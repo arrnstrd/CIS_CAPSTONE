@@ -109,6 +109,14 @@ class SpreadsheetParser
             }
         }
 
+        // 4) Any sheet where cell A1 contains "School Form 1"
+        foreach ($spreadsheet->getWorksheetIterator() as $ws) {
+            $val = (string) $ws->getCell('A1')->getValue();
+            if (str_contains(strtolower($val), strtolower(self::SF1_A1_ANCHOR))) {
+                return $ws;
+            }
+        }
+
         return null;
     }
 

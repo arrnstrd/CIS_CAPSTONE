@@ -1,0 +1,326 @@
+.modern-tabs {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 4px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modern-tabs__item {
+  margin: 0;
+}
+
+.modern-tabs__link {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modern-tabs__link:hover {
+  color: #1f2937;
+}
+
+.modern-tabs__link::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: -1px;
+  height: 2px;
+  background-color: #3b82f6;
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.modern-tabs__link.active {
+  color: #1e3a8a;
+}
+
+.modern-tabs__link.active::after {
+  transform: scaleX(1);
+}
+
+/* ===================================================================
+   Modal animation: subtle fade + scale instead of Bootstrap's
+   default slide-from-top.
+   =================================================================== */
+.modal-anim-slide .modal-dialog {
+  transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+  transform: scale(0.96);
+  opacity: 0;
+}
+
+.modal-anim-slide.show .modal-dialog {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* ===================================================================
+   Bulk selection: checkbox styling, selected-row highlight, and the
+   contextual bulk action bar shared across the Academic tabs.
+   =================================================================== */
+.academic-check-input {
+  width: 1.15rem;
+  height: 1.15rem;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1.5px solid #cbd5e1;
+}
+
+.academic-check-input:checked {
+  background-color: #2438b9;
+  border-color: #2438b9;
+}
+
+tr.academic-selected-row {
+  background-color: #eef2ff !important;
+}
+
+.academic-bulk-bar {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.875rem 1.5rem;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  margin-bottom: 1.25rem;
+}
+
+.academic-bulk-bar.d-none {
+  display: none !important;
+}
+
+/* ===================================================================
+   Excel-Style Table Filtering & Header Controls
+   =================================================================== */
+.excel-th {
+  position: relative;
+  vertical-align: middle !important;
+  color: #ffffff !important;
+}
+
+.excel-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.excel-header-title {
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.4px;
+  color: #ffffff !important;
+  user-select: none;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.excel-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.55rem;
+  min-height: 28px;
+  min-width: 28px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  line-height: 1;
+}
+
+.excel-filter-trigger:hover,
+.excel-filter-trigger:focus-visible {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.55);
+  outline: none;
+}
+
+.excel-filter-trigger.is-active {
+  background-color: #ffffff !important;
+  color: #1e3a8a !important;
+  border-color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.excel-filter-trigger.is-sorted {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.excel-filter-trigger.is-active.is-sorted {
+  background-color: #ffffff !important;
+  color: #1e3a8a !important;
+  border-color: #ffffff !important;
+}
+
+.excel-active-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  display: inline-block;
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.1);
+}
+
+/* ===================================================================
+   Subtle Vertical Grid Dividers
+   =================================================================== */
+#subject-table-pane .table th:not(:last-child),
+#subject-table-pane .table td:not(:last-child),
+#section-table-pane .table th:not(:last-child),
+#section-table-pane .table td:not(:last-child),
+#assignment-table-pane .table th:not(:last-child),
+#assignment-table-pane .table td:not(:last-child) {
+  border-right: 1px solid #e5e7eb !important;
+}
+
+#subject-table-pane .table thead th:not(:last-child),
+#section-table-pane .table thead th:not(:last-child),
+#assignment-table-pane .table thead th:not(:last-child) {
+  border-right: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Popover overlay container */
+.excel-popover-panel {
+  position: absolute;
+  z-index: 1060;
+  width: 295px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  font-size: 0.8125rem;
+  color: #1e293b;
+  overflow: hidden;
+  animation: excelPopoverFadeIn 0.12s ease-out;
+}
+
+@keyframes excelPopoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.excel-popover-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  text-align: left;
+  font-size: 0.8rem;
+  color: #334155;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+.excel-popover-item:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.excel-popover-item.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.excel-popover-divider {
+  border: none;
+  border-top: 1px solid #f1f5f9;
+  margin: 0.3rem 0;
+}
+
+.excel-checklist-scroll {
+  max-height: 180px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+.excel-checklist-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.excel-checklist-scroll::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.excel-checklist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background 0.1s ease;
+}
+
+.excel-checklist-item:hover {
+  background-color: #f8fafc;
+}
+
+.excel-count-pill {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.4rem;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.excel-empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+/* Zero-click row action styling */
+.action-btn-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.action-btn-group .btn {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.55rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  line-height: 1.25;
+}

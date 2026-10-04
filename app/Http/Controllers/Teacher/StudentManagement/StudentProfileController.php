@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher\StudentManagement;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttendanceLog;
 use App\Models\SchoolYear;
 use App\Models\Student;
 use App\Models\TeachingAssignment;
@@ -189,6 +190,23 @@ class StudentProfileController extends Controller
             ->latest('id')
             ->get();
 
+        $attendanceQuery = AttendanceLog::with('flagged_scans')
+            ->where('enrollment_id', $currentEnrollment?->id)
+            ->where('scan_type', 'IN')
+            ->orderBy('scan_time', 'desc');
+
+        if (request()->filled('from') && request()->filled('to')) {
+            $attendanceQuery->filterByDateRange(request('from'), request('to'));
+        } elseif (request('date_filter') === 'today') {
+            $attendanceQuery->todayOnly();
+        } elseif (request('date_filter') === 'yesterday') {
+            $attendanceQuery->yesterdayOnly();
+        } elseif (request('date_filter') === 'week') {
+            $attendanceQuery->thisWeekOnly();
+        }
+
+        $attendance = $attendanceQuery->get();
+
         if ($student->qrCode) {
             $this->qrCodeService->ensureImage($student->qrCode);
             $student->load('qrCode');
@@ -202,7 +220,8 @@ class StudentProfileController extends Controller
             'student',
             'currentEnrollment',
             'enrollmentHistory',
-            'qrCodeUrl'
+            'qrCodeUrl',
+            'attendance'
         );
     }
 }

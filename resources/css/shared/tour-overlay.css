@@ -1,0 +1,253 @@
+/* ===================================================================
+   CIS Interactive Product Tour System
+   Visual Masking, Highlight Ring & Popover Positioning Styles
+   =================================================================== */
+
+/* 1. Backdrop Overlay (SVG Container) */
+.cis-tour-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100000;
+    pointer-events: auto;
+    transition: opacity 0.25s ease;
+    overflow: hidden;
+}
+
+.cis-tour-overlay svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* 2. Highlight Accent Frame */
+.cis-tour-highlight-box {
+    position: fixed;
+    z-index: 100001;
+    pointer-events: none;
+    border-radius: 8px;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.8), 0 0 16px rgba(37, 99, 235, 0.45);
+    transition: top 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. Popover Card */
+.cis-tour-popover {
+    position: fixed;
+    z-index: 100002;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.18), 0 6px 14px -3px rgba(15, 23, 42, 0.1);
+    padding: 18px 20px;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.96);
+    transition: opacity 0.22s ease, transform 0.22s ease, top 0.25s ease, left 0.25s ease;
+    pointer-events: auto;
+}
+
+.cis-tour-popover.cis-tour-popover--visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+/* 4. Popover Header & Badge */
+.cis-tour-popover__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.cis-tour-popover__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: #2563eb;
+    background-color: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 9999px;
+}
+
+.cis-tour-popover__close-btn {
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    margin: -4px -4px 0 0;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    border-radius: 4px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.cis-tour-popover__close-btn:hover {
+    color: #475569;
+    background-color: #f1f5f9;
+}
+
+/* 5. Content Typography */
+.cis-tour-popover__title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+}
+
+.cis-tour-popover__body {
+    color: #475569;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+}
+
+/* 6. Footer & Navigation Controls */
+.cis-tour-popover__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.cis-tour-popover__skip-btn {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.cis-tour-popover__skip-btn:hover {
+    color: #0f172a;
+    background-color: #f8fafc;
+}
+
+.cis-tour-popover__nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cis-tour-popover__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.cis-tour-popover__btn--back {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+}
+
+.cis-tour-popover__btn--back:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.cis-tour-popover__btn--back:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.cis-tour-popover__btn--primary {
+    background: #2563eb;
+    border: 1px solid #2563eb;
+    color: #ffffff;
+}
+
+.cis-tour-popover__btn--primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+/* 7. Directional Arrows */
+.cis-tour-popover__arrow {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+
+.cis-tour-popover[data-placement="bottom"] .cis-tour-popover__arrow {
+    top: -6px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.cis-tour-popover[data-placement="top"] .cis-tour-popover__arrow {
+    bottom: -6px;
+    border-left: none;
+    border-top: none;
+}
+
+.cis-tour-popover[data-placement="right"] .cis-tour-popover__arrow {
+    left: -6px;
+    border-top: none;
+    border-right: none;
+}
+
+.cis-tour-popover[data-placement="left"] .cis-tour-popover__arrow {
+    right: -6px;
+    border-bottom: none;
+    border-left: none;
+}
+
+/* 8. Top Nav Guide Trigger */
+.sa-topbar__guide-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.sa-topbar__guide-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+}
+
+.sa-topbar__guide-btn i {
+    font-size: 0.85rem;
+}

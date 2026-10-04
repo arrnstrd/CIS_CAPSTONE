@@ -3,12 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AuthRoleRedirectTest extends TestCase
 {
-    use RefreshDatabase; // <--- Napakahalaga nito para malinis ang database bawat test
 
     public function test_authenticated_admin_can_view_the_login_page_without_redirecting(): void
     {
@@ -44,7 +42,6 @@ class AuthRoleRedirectTest extends TestCase
 
     public function test_non_teacher_users_cannot_access_teacher_dashboard(): void
     {
-        // Gumamit ng ibang role (halimbawa: student o staff kung meron, o admin kung bawal talaga ang admin)
         $admin = User::create([
             'first_name' => 'Admin',
             'last_name' => 'User',

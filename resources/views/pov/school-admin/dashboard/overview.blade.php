@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">Dashboard</x-slot>
 
     <x-slot name="subtitle">Today’s attendance and school activity at a glance.</x-slot>
@@ -32,33 +32,45 @@
             return $d;
         };
 
-        // Per-department-level line data for daily attendance
-        $dailyLevelLines = collect($departmentLevels ?? [])
-            ->filter(fn($meta, $level) => $level !== 'unknown')
-            ->map(function ($meta, $level) use ($scanBuckets, $chartBucketCount, $maxBucketTotal, $toSmoothPath) {
-                $span = max($chartBucketCount - 1, 1);
-                $points = [];
-                $totalForLevel = 0;
-                foreach (($scanBuckets ?? []) as $i => $b) {
-                    $x = 3 + ($i / $span) * 94;
-                    $count = $b['levels'][$level] ?? 0;
-                    $totalForLevel += $count;
-                    $ratio = $maxBucketTotal > 0 ? ($count / $maxBucketTotal) : 0;
-                    $y = 8 + (1 - $ratio) * 84;
-                    $points[] = ['x' => round($x, 2), 'y' => round($y, 2)];
-                }
-                $path = $toSmoothPath($points);
-                $area = $path !== '' ? $path . ' L 97 92 L 3 92 Z' : '';
-                return [
-                    'level' => $level,
-                    'label' => $meta['label'],
-                    'color' => $meta['color'],
-                    'path' => $path,
-                    'area' => $area,
-                    'total' => $totalForLevel,
-                ];
-            })
-            ->values();
+        // Time-In and Time-Out lines for daily attendance
+        $timelineSeries = [
+            'in' => [
+                'key' => 'in',
+                'label' => 'Time-In',
+                'color' => '#10b981',
+                'field' => 'time_in',
+                'total' => $timeInToday,
+            ],
+            'out' => [
+                'key' => 'out',
+                'label' => 'Time-Out',
+                'color' => '#3b82f6',
+                'field' => 'time_out',
+                'total' => $timeOutToday,
+            ],
+        ];
+
+        $dailyTimelineLines = collect($timelineSeries)->map(function ($series) use ($scanBuckets, $chartBucketCount, $maxBucketTotal, $toSmoothPath) {
+            $span = max($chartBucketCount - 1, 1);
+            $points = [];
+            foreach (($scanBuckets ?? []) as $i => $b) {
+                $x = 3 + ($i / $span) * 94;
+                $count = $b[$series['field']] ?? 0;
+                $ratio = $maxBucketTotal > 0 ? ($count / $maxBucketTotal) : 0;
+                $y = 8 + (1 - $ratio) * 84;
+                $points[] = ['x' => round($x, 2), 'y' => round($y, 2)];
+            }
+            $path = $toSmoothPath($points);
+            $area = $path !== '' ? $path . ' L 97 92 L 3 92 Z' : '';
+            return [
+                'key' => $series['key'],
+                'label' => $series['label'],
+                'color' => $series['color'],
+                'path' => $path,
+                'area' => $area,
+                'total' => $series['total'],
+            ];
+        })->values();
 
         $weeklyChartBuckets = collect($weeklyScanBuckets ?? [])->values();
         $weeklyChartBucketCount = max($weeklyChartBuckets->count(), 1);
@@ -840,15 +852,17 @@
         }
     </style>
 
-    <div class="dashboard-shell mx-2 mb-3">
+    <div class="dashboard-shell mx-2 mb-3" data-attendance-realtime
+        data-resync-url="{{ route('school_admin.attendance.monitoring.resync') }}">
         {{-- Top KPI Cards --}}
-        <section class="dashboard-cards">
+        <section class="dashboard-cards" data-tour="dashboard-kpis">
             @foreach ($dashboardCards as $card)
                 <a href="{{ $card['href'] }}" class="dashboard-card card-tone-{{ $card['tone'] }}">
                     <div class="dashboard-card__top">
                         <div>
                             <div class="dashboard-card__label">{{ $card['label'] }}</div>
-                            <div class="dashboard-card__value">{{ $card['value'] }}</div>
+                            <div class="dashboard-card__value"
+                                data-realtime-card="{{ strtolower(str_replace(' ', '-', $card['label'])) }}">{{ $card['value'] }}</div>
                         </div>
                         <div class="dashboard-card__icon">
                             <i class="{{ $card['icon'] }}"></i>
@@ -857,35 +871,43 @@
                     <div class="dashboard-card__hint">{{ $card['hint'] }}</div>
                 </a>
             @endforeach
-        </section>
-
-        {{-- Main Attendance Analytics Grid --}}
+        </section>        {{-- Main Attendance Analytics Grid --}}
         <section class="dashboard-analytics-grid">
-            {{-- Panel 1: Today's Attendance by Department --}}
-            <div class="panel">
+            {{-- Panel 1: Today's IN & OUT Timeline --}}
+            <div class="panel" data-tour="dashboard-timeline" data-chart-timeline data-timeline-buckets='@json($scanBuckets)'
+                data-timeline-interval="{{ $intervalMinutes ?? 15 }}"
+                data-timeline-start="{{ isset($chartStart) ? $chartStart->format('H:i') : '06:00' }}"
+                data-max-total="{{ $maxBucketTotal }}">
                 <div class="panel__header">
                     <div>
-                        <h2 class="panel__title">Attendance timeline today</h2>
-                        <p class="panel__meta">Today's scan distribution across department levels.</p>
+                        <h2 class="panel__title">Today's Attendance Timeline
+                            <span data-realtime-live-dot class="realtime-live-dot" title="Realtime updates active">&#9679; LIVE</span>
+                        </h2>
+                        <p class="panel__meta">Today's check-in and check-out activity grouped by time.</p>
                     </div>
-                    <div class="chart-view-toggle" data-chart-toggle="daily" role="group" aria-label="Chart style">
-                        <button type="button" class="chart-view-toggle__btn active" data-chart-view="line">Line</button>
-                        <button type="button" class="chart-view-toggle__btn" data-chart-view="bars">Bars</button>
-                        <button type="button" class="chart-view-toggle__btn" data-chart-view="table">Table</button>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" style="font-size: 0.72rem; border-radius: 999px;" data-bs-toggle="modal" data-bs-target="#timelineScannedStudentsModal">
+                            <i class="fas fa-list-check me-1"></i> View Scanned Students
+                        </button>
+                        <div class="chart-view-toggle" data-chart-toggle="daily" role="group" aria-label="Chart style">
+                            <button type="button" class="chart-view-toggle__btn active" data-chart-view="line">Line</button>
+                            <button type="button" class="chart-view-toggle__btn" data-chart-view="bars">Bars</button>
+                            <button type="button" class="chart-view-toggle__btn" data-chart-view="table">Table</button>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Key Quick Insights --}}
                 <div class="chart-stat-strip">
                     <span class="stat-pill stat-pill--info">
-                        Today: <strong>{{ number_format($totalScansToday) }} scans</strong>
+                        Today: <strong data-realtime-card="scans-today">{{ number_format($totalScansToday) }} scans</strong>
                     </span>
                     <span class="stat-pill stat-pill--success">
-                        In: <strong>{{ number_format($timeInToday) }}</strong> · Out: <strong>{{ number_format($timeOutToday) }}</strong>
+                        In: <strong data-realtime-card="time-in">{{ number_format($timeInToday) }}</strong> · Out: <strong data-realtime-card="time-out">{{ number_format($timeOutToday) }}</strong>
                     </span>
                     @if ($lateArrivalsToday > 0)
                         <span class="stat-pill stat-pill--warning">
-                            Late: <strong>{{ $lateArrivalsToday }}</strong> ({{ round(100 - $onTimePercentage, 1) }}%)
+                            Late: <strong data-realtime-card="late">{{ $lateArrivalsToday }}</strong> ({{ round(100 - $onTimePercentage, 1) }}%)
                         </span>
                     @else
                         <span class="stat-pill stat-pill--success">
@@ -893,7 +915,7 @@
                         </span>
                     @endif
                     <span class="stat-pill">
-                        Peak: <strong>{{ $peakLabel }}</strong> ({{ $peakTotal }})
+                        Peak: <strong data-timeline-peak>{{ $peakLabel }} ({{ $peakTotal }})</strong>
                     </span>
                 </div>
 
@@ -902,37 +924,37 @@
                     {{-- Line View (Default) --}}
                     <div class="chart-view" data-view="line">
                         <div class="chart-legend">
-                            @foreach ($dailyLevelLines as $ll)
+                            @foreach ($dailyTimelineLines as $ll)
                                 <div class="chart-legend__item">
                                     <span class="chart-legend__swatch" style="background: {{ $ll['color'] }}"></span>
                                     <span>{{ $ll['label'] }}:</span>
-                                    <span class="chart-legend__value">{{ $levelTotals[$ll['level']] ?? $ll['total'] }}</span>
+                                    <span class="chart-legend__value" data-timeline-legend="{{ $ll['key'] }}">{{ $ll['total'] }}</span>
                                 </div>
                             @endforeach
                         </div>
 
                         <div class="line-chart__frame">
                             <svg class="line-chart__svg" viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
-                                aria-label="Scan volume trend by department level">
+                                aria-label="Today's scan volume trend by Time-In and Time-Out">
                                 {{-- Subtle Horizontal Grid Guides --}}
                                 <line x1="0" y1="29" x2="100" y2="29" class="line-chart__grid-line" />
                                 <line x1="0" y1="50" x2="100" y2="50" class="line-chart__grid-line" />
                                 <line x1="0" y1="71" x2="100" y2="71" class="line-chart__grid-line" />
                                 <line x1="0" y1="92" x2="100" y2="92" stroke="#e2e8f0" stroke-width="1" />
 
-                                <text x="1" y="27" class="line-chart__guide-text">{{ (int) round($maxBucketTotal * 0.75) }}</text>
-                                <text x="1" y="48" class="line-chart__guide-text">{{ (int) round($maxBucketTotal * 0.5) }}</text>
-                                <text x="1" y="69" class="line-chart__guide-text">{{ (int) round($maxBucketTotal * 0.25) }}</text>
+                                <text x="1" y="27" class="line-chart__guide-text" data-timeline-guide="75">{{ (int) round($maxBucketTotal * 0.75) }}</text>
+                                <text x="1" y="48" class="line-chart__guide-text" data-timeline-guide="50">{{ (int) round($maxBucketTotal * 0.5) }}</text>
+                                <text x="1" y="69" class="line-chart__guide-text" data-timeline-guide="25">{{ (int) round($maxBucketTotal * 0.25) }}</text>
 
                                 {{-- Render line paths --}}
-                                @foreach ($dailyLevelLines as $ll)
+                                @foreach ($dailyTimelineLines as $ll)
                                     @if (!empty($ll['area']))
-                                        <path d="{{ $ll['area'] }}" class="sp-line__area"
+                                        <path d="{{ $ll['area'] }}" class="sp-line__area" data-timeline-area="{{ $ll['key'] }}"
                                             style="fill: {{ $ll['color'] }}"></path>
                                     @endif
-                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke"
+                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke" data-timeline-stroke="{{ $ll['key'] }}"
                                         style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke">
-                                        <title>{{ $ll['label'] }} ({{ $levelTotals[$ll['level']] ?? $ll['total'] }} total)</title>
+                                        <title>{{ $ll['label'] }} ({{ $ll['total'] }} total)</title>
                                     </path>
                                 @endforeach
                             </svg>
@@ -951,63 +973,64 @@
                     {{-- Bars View --}}
                     <div class="chart-view d-none" data-view="bars">
                         <div class="chart-legend">
-                            @foreach ($departmentLevels as $levelKey => $levelMeta)
-                                @if ($levelKey !== 'unknown')
-                                    <div class="chart-legend__item">
-                                        <span class="chart-legend__swatch" style="background: {{ $levelMeta['color'] }}"></span>
-                                        <span>{{ $levelMeta['label'] }}</span>
-                                        <span class="chart-legend__value">{{ $levelTotals[$levelKey] ?? 0 }}</span>
-                                    </div>
-                                @endif
-                            @endforeach
+                            <div class="chart-legend__item">
+                                <span class="chart-legend__swatch" style="background: #10b981"></span>
+                                <span>Time-In:</span>
+                                <span class="chart-legend__value" data-timeline-legend="in">{{ $timeInToday }}</span>
+                            </div>
+                            <div class="chart-legend__item">
+                                <span class="chart-legend__swatch" style="background: #3b82f6"></span>
+                                <span>Time-Out:</span>
+                                <span class="chart-legend__value" data-timeline-legend="out">{{ $timeOutToday }}</span>
+                            </div>
                         </div>
 
                         <div class="scan-chart">
                             <div class="scan-chart__inner"
                                 style="grid-template-columns: repeat({{ $chartBucketCount }}, minmax(0, 1fr));">
-                                @foreach ($scanBuckets as $bucket)
+                                @foreach ($scanBuckets as $i => $bucket)
                                     @php
                                         $bucketTotal = $bucket['total'] ?? 0;
-                                        $bucketLevels = $bucket['levels'] ?? [];
+                                        $bucketIn = $bucket['time_in'] ?? 0;
+                                        $bucketOut = $bucket['time_out'] ?? 0;
                                         $bucketHeight = $bucketTotal > 0
                                             ? max((int) round(($bucketTotal / $maxBucketTotal) * 145), 4)
                                             : 2;
+                                        $inHeight = $bucketTotal > 0 ? max((int) round(($bucketIn / $bucketTotal) * $bucketHeight), $bucketIn > 0 ? 2 : 0) : 0;
+                                        $outHeight = $bucketTotal > 0 ? max((int) round(($bucketOut / $bucketTotal) * $bucketHeight), $bucketOut > 0 ? 2 : 0) : 0;
                                     @endphp
-                                    <div class="scan-chart__col">
+                                    <div class="scan-chart__col" data-bucket-idx="{{ $i }}">
                                         <div class="scan-chart__bar-wrap" tabindex="0" aria-label="{{ $bucket['range'] }}">
                                             <div class="scan-chart__tooltip">
                                                 <div class="scan-chart__tooltip-title">{{ $bucket['range'] }}</div>
-                                                <div class="scan-chart__tooltip-total">{{ $bucketTotal }} scans</div>
-                                                @foreach ($departmentLevels as $levelKey => $levelMeta)
-                                                    @if ($levelKey !== 'unknown')
-                                                        <div class="scan-chart__tooltip-row">
-                                                            <span class="scan-chart__tooltip-key">
-                                                                <span class="scan-chart__tooltip-swatch"
-                                                                    style="background: {{ $levelMeta['color'] }}"></span>
-                                                                <span>{{ $levelMeta['label'] }}</span>
-                                                            </span>
-                                                            <strong>{{ $bucketLevels[$levelKey] ?? 0 }}</strong>
-                                                        </div>
-                                                    @endif
-                                                @endforeach
+                                                <div class="scan-chart__tooltip-total" data-tooltip-total>{{ $bucketTotal }} scans</div>
+                                                <div class="scan-chart__tooltip-row">
+                                                    <span class="scan-chart__tooltip-key">
+                                                        <span class="scan-chart__tooltip-swatch" style="background: #10b981"></span>
+                                                        <span>Time-In</span>
+                                                    </span>
+                                                    <strong data-tooltip-in>{{ $bucketIn }}</strong>
+                                                </div>
+                                                <div class="scan-chart__tooltip-row">
+                                                    <span class="scan-chart__tooltip-key">
+                                                        <span class="scan-chart__tooltip-swatch" style="background: #3b82f6"></span>
+                                                        <span>Time-Out</span>
+                                                    </span>
+                                                    <strong data-tooltip-out>{{ $bucketOut }}</strong>
+                                                </div>
                                             </div>
 
-                                            <div class="scan-chart__bar" style="height: {{ $bucketHeight }}px;">
-                                                @foreach ($departmentLevels as $levelKey => $levelMeta)
-                                                    @if ($levelKey !== 'unknown')
-                                                        @php
-                                                            $levelCount = $bucketLevels[$levelKey] ?? 0;
-                                                            $levelHeight = $bucketTotal > 0
-                                                                ? max((int) round(($levelCount / $bucketTotal) * $bucketHeight), $levelCount > 0 ? 2 : 0)
-                                                                : 0;
-                                                        @endphp
-                                                        @if ($levelHeight > 0)
-                                                            <div class="scan-chart__segment"
-                                                                style="height: {{ $levelHeight }}px; background: {{ $levelMeta['color'] }};"
-                                                                title="{{ $levelMeta['label'] }}: {{ $levelCount }}"></div>
-                                                        @endif
-                                                    @endif
-                                                @endforeach
+                                            <div class="scan-chart__bar" style="height: {{ $bucketHeight }}px;" data-bar-wrap>
+                                                @if ($inHeight > 0)
+                                                    <div class="scan-chart__segment" data-segment-in
+                                                        style="height: {{ $inHeight }}px; background: #10b981;"
+                                                        title="Time-In: {{ $bucketIn }}"></div>
+                                                @endif
+                                                @if ($outHeight > 0)
+                                                    <div class="scan-chart__segment" data-segment-out
+                                                        style="height: {{ $outHeight }}px; background: #3b82f6;"
+                                                        title="Time-Out: {{ $bucketOut }}"></div>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -1038,12 +1061,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($scanBuckets as $bucket)
-                                        <tr>
+                                    @foreach ($scanBuckets as $i => $bucket)
+                                        <tr data-bucket-idx="{{ $i }}">
                                             <td>{{ $bucket['label'] }}</td>
-                                            <td>{{ $bucket['time_in'] }}</td>
-                                            <td>{{ $bucket['time_out'] }}</td>
-                                            <td class="chart-table__total">{{ $bucket['total'] }}</td>
+                                            <td data-table-in>{{ $bucket['time_in'] }}</td>
+                                            <td data-table-out>{{ $bucket['time_out'] }}</td>
+                                            <td class="chart-table__total" data-table-total>{{ $bucket['total'] }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -1054,7 +1077,7 @@
             </div>
 
             {{-- Panel 2: Weekly Attendance Trend --}}
-            <div class="panel">
+            <div class="panel" data-chart-weekly data-weekly-buckets='@json($weeklyScanBuckets)' data-weekly-max="{{ $weeklyMaxBucketTotal }}">
                 <div class="panel__header">
                     <div>
                         <h2 class="panel__title">Attendance by week</h2>
@@ -1070,13 +1093,13 @@
                 {{-- Key Weekly Stats --}}
                 <div class="chart-stat-strip">
                     <span class="stat-pill stat-pill--info">
-                        6-Wk Total: <strong>{{ number_format($weeklyChartTotal) }}</strong>
+                        6-Wk Total: <strong data-weekly-stat-total>{{ number_format($weeklyChartTotal) }}</strong>
                     </span>
                     <span class="stat-pill">
-                        Avg: <strong>{{ $weeklyChartAverage }}/wk</strong>
+                        Avg: <strong data-weekly-stat-avg>{{ $weeklyChartAverage }}/wk</strong>
                     </span>
                     <span class="stat-pill stat-pill--success">
-                        Peak: <strong>{{ $weeklyChartPeakLabel }}</strong> ({{ $weeklyChartPeakTotal }})
+                        Peak: <strong>{{ $weeklyChartPeakLabel }}</strong> (<span data-weekly-stat-peak>{{ $weeklyChartPeakTotal }}</span>)
                     </span>
                     @if ($weeklyTrend !== null)
                         <span class="stat-pill {{ $weeklyTrend >= 0 ? 'stat-pill--success' : 'stat-pill--warning' }}">
@@ -1106,17 +1129,17 @@
                                 <line x1="0" y1="71" x2="100" y2="71" class="line-chart__grid-line" />
                                 <line x1="0" y1="92" x2="100" y2="92" stroke="#e2e8f0" stroke-width="1" />
 
-                                <text x="1" y="27" class="line-chart__guide-text">{{ (int) round($weeklyMaxBucketTotal * 0.75) }}</text>
-                                <text x="1" y="48" class="line-chart__guide-text">{{ (int) round($weeklyMaxBucketTotal * 0.5) }}</text>
-                                <text x="1" y="69" class="line-chart__guide-text">{{ (int) round($weeklyMaxBucketTotal * 0.25) }}</text>
+                                <text x="1" y="27" class="line-chart__guide-text" data-weekly-guide="75">{{ (int) round($weeklyMaxBucketTotal * 0.75) }}</text>
+                                <text x="1" y="48" class="line-chart__guide-text" data-weekly-guide="50">{{ (int) round($weeklyMaxBucketTotal * 0.5) }}</text>
+                                <text x="1" y="69" class="line-chart__guide-text" data-weekly-guide="25">{{ (int) round($weeklyMaxBucketTotal * 0.25) }}</text>
 
                                 {{-- Render line paths --}}
                                 @foreach ($weeklyLevelLines as $ll)
                                     @if (!empty($ll['area']))
-                                        <path d="{{ $ll['area'] }}" class="sp-line__area"
+                                        <path d="{{ $ll['area'] }}" class="sp-line__area" data-weekly-area="{{ $ll['level'] }}"
                                             style="fill: {{ $ll['color'] }}"></path>
                                     @endif
-                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke"
+                                    <path d="{{ $ll['path'] }}" class="sp-line__stroke" data-weekly-stroke="{{ $ll['level'] }}"
                                         style="stroke: {{ $ll['color'] }}" vector-effect="non-scaling-stroke">
                                         <title>{{ $ll['label'] }}</title>
                                     </path>
@@ -1148,7 +1171,7 @@
                         <div class="scan-chart">
                             <div class="scan-chart__inner"
                                 style="grid-template-columns: repeat({{ $weeklyChartBucketCount }}, minmax(0, 1fr));">
-                                @foreach ($weeklyChartBuckets as $week)
+                                @foreach ($weeklyChartBuckets as $i => $week)
                                     @php
                                         $weekTotal = $week['total'] ?? 0;
                                         $weekGrades = $week['grades'] ?? [];
@@ -1156,11 +1179,11 @@
                                             ? max((int) round(($weekTotal / $weeklyMaxBucketTotal) * 145), 4)
                                             : 2;
                                     @endphp
-                                    <div class="scan-chart__col">
+                                    <div class="scan-chart__col" data-weekly-idx="{{ $i }}">
                                         <div class="scan-chart__bar-wrap" tabindex="0" aria-label="{{ $week['range'] }}">
                                             <div class="scan-chart__tooltip">
                                                 <div class="scan-chart__tooltip-title">{{ $week['range'] }}</div>
-                                                <div class="scan-chart__tooltip-total">{{ $weekTotal }} scans</div>
+                                                <div class="scan-chart__tooltip-total" data-weekly-tooltip-total>{{ $weekTotal }} scans</div>
                                                 @foreach ($weeklyGradeLevels as $gradeKey => $gradeMeta)
                                                     @if (($weekGrades[$gradeKey] ?? 0) > 0)
                                                         <div class="scan-chart__tooltip-row">
@@ -1175,7 +1198,7 @@
                                                 @endforeach
                                             </div>
 
-                                            <div class="scan-chart__bar" style="height: {{ $weekHeight }}px;">
+                                            <div class="scan-chart__bar" style="height: {{ $weekHeight }}px;" data-weekly-bar>
                                                 @foreach ($weeklyGradeLevels as $gradeKey => $gradeMeta)
                                                     @php
                                                         $gradeCount = $weekGrades[$gradeKey] ?? 0;
@@ -1214,10 +1237,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($weeklyChartBuckets as $week)
-                                        <tr>
+                                    @foreach ($weeklyChartBuckets as $i => $week)
+                                        <tr data-weekly-idx="{{ $i }}">
                                             <td>{{ $week['range'] }}</td>
-                                            <td class="chart-table__total">{{ number_format($week['total']) }}</td>
+                                            <td class="chart-table__total" data-weekly-table-total>{{ number_format($week['total']) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -1253,7 +1276,7 @@
                                     <th scope="col" style="width: 24%">Time & Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody data-realtime-recent-scans>
                                 @foreach ($latestScans as $scan)
                                     @php
                                         $dotScanType = ['IN' => 'success', 'OUT' => 'primary'][$scan['scan_type']] ?? 'secondary';
@@ -1386,9 +1409,128 @@
                 });
             });
 
-            setInterval(function () {
-                window.location.reload();
-            }, 60000);
+            // Echo listener for Today's Scanned Students modal
+            window.addEventListener('attendance:recorded', (e) => {
+                const payload = e.detail;
+                const tbody = document.querySelector('[data-timeline-modal-tbody]');
+                if (!tbody) return;
+
+                const emptyTd = tbody.querySelector('td[colspan]');
+                if (emptyTd) {
+                    emptyTd.closest('tr')?.remove();
+                }
+
+                const student = payload.student || {};
+                const name = student.name || 'Unknown';
+                const nameParts = name.split(/\s+/).filter(Boolean);
+                const firstPart = nameParts[0] || 'U';
+                const lastPart = nameParts.length > 1 ? nameParts[nameParts.length - 1] : 'K';
+                const initials = (firstPart[0] + lastPart[0]).toUpperCase();
+                const dotType = payload.scan_type === 'IN' ? 'success' : 'primary';
+                const scanLabel = payload.scan_type === 'IN' ? 'Time In' : 'Time Out';
+                const timeStr = payload.formatted_time || (payload.scan_time ? new Date(payload.scan_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-');
+
+                const tr = document.createElement('tr');
+                tr.className = 'table-success-subtle transition-all';
+                tr.style.backgroundColor = '#ecfdf5';
+                tr.innerHTML = `
+                    <td>
+                        <div class="table-name-wrap">
+                            <div class="table-name-avatar">${initials}</div>
+                            <div>
+                                <span class="table-name-main">${name}</span>
+                                <span class="table-name-sub">${student.student_number || '-'}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark">Grade ${student.grade || '-'}</span>
+                        <span class="text-muted d-block small">${student.section || '-'}</span>
+                    </td>
+                    <td><span class="badge-dot dot-${dotType}">${scanLabel}</span></td>
+                    <td><div class="fw-semibold text-dark">${timeStr}</div></td>
+                `;
+
+                tbody.insertBefore(tr, tbody.firstChild);
+
+                setTimeout(() => {
+                    tr.style.backgroundColor = '';
+                }, 2500);
+            });
         </script>
+
+        <!-- Today Attendance Timeline Scanned Students Modal -->
+        <div class="modal fade" id="timelineScannedStudentsModal" tabindex="-1" aria-labelledby="timelineScannedStudentsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-header border-bottom px-4 py-3 bg-light">
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark mb-0" id="timelineScannedStudentsModalLabel">
+                                <i class="fas fa-user-clock me-2 text-primary"></i>Today's Scanned Students
+                                <span class="badge bg-success-subtle text-success border border-success-subtle ms-2" style="font-size: 0.68rem;">LIVE</span>
+                            </h5>
+                            <p class="text-muted small mb-0 mt-1">Chronological roster of students scanned today.</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th style="width: 32%">Student</th>
+                                        <th style="width: 25%">Grade & Section</th>
+                                        <th style="width: 18%">Scan Type</th>
+                                        <th style="width: 25%">Scan Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-timeline-modal-tbody>
+                                    @forelse($latestScans as $scan)
+                                        @php
+                                            $studentName = $scan['student_name'] ?? 'Unknown';
+                                            $nameParts = array_values(array_filter(explode(' ', $studentName)));
+                                            $firstPart = $nameParts[0] ?? 'U';
+                                            $lastPart = $nameParts ? $nameParts[count($nameParts) - 1] : 'K';
+                                            $initials = strtoupper(substr($firstPart, 0, 1) . substr($lastPart, 0, 1));
+                                            $dotScanType = ['IN' => 'success', 'OUT' => 'primary'][$scan['scan_type']] ?? 'secondary';
+                                        @endphp
+                                        <tr>
+                                            <td>
+                                                <div class="table-name-wrap">
+                                                    <div class="table-name-avatar">{{ $initials }}</div>
+                                                    <div>
+                                                        <span class="table-name-main">{{ $studentName }}</span>
+                                                        <span class="table-name-sub">{{ $scan['student_number'] ?? '-' }}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-semibold text-dark">Grade {{ $scan['grade_level'] ?? '-' }}</span>
+                                                <span class="text-muted d-block small">{{ $scan['section_name'] ?? '-' }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge-dot dot-{{ $dotScanType }}">
+                                                    {{ ['IN' => 'Time In', 'OUT' => 'Time Out'][$scan['scan_type']] ?? 'Unknown' }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold text-dark">{{ $scan['scan_time'] ?? '-' }}</div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-4">No scans recorded yet today.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top px-4 py-2 bg-light">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     @endpush
-</x-layouts.admin>
+</x-layouts.school-admin>

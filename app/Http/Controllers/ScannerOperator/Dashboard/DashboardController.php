@@ -65,6 +65,9 @@ class DashboardController extends Controller
         $lateArrivalsToday = $todayLogs->filter(function (AttendanceLog $log) {
             return $log->flagged_scans->contains('flag_type', 'late_arrival');
         })->count();
+        $onTimePercentage = $timeInToday > 0
+            ? round((($timeInToday - $lateArrivalsToday) / $timeInToday) * 100, 1)
+            : 100;
 
         $gradePalette = [
             '#2563eb',
@@ -318,11 +321,14 @@ class DashboardController extends Controller
             'timeInToday',
             'timeOutToday',
             'lateArrivalsToday',
+            'onTimePercentage',
             'departmentLevels',
             'levelTotals',
             'weeklyGradeLevels',
             'gradeDistribution',
-            'gradeDistributionTotal'
+            'gradeDistributionTotal',
+            'intervalMinutes',
+            'chartStart'
         ));
     }
 }

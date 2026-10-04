@@ -408,6 +408,7 @@
 
                     @include('pov.teacher.student-management.components.attendance-tab', [
                         'student' => $student,
+                        'attendance' => $attendance ?? [],
                     ])
 
                     @include('pov.teacher.student-management.components.qr-tab', [

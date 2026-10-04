@@ -7,7 +7,9 @@ use App\Http\Controllers\SchoolAdmin\Academic\SubjectController;
 use App\Http\Controllers\SchoolAdmin\Attendance\ClassAttendanceController;
 use App\Http\Controllers\SchoolAdmin\BulkImport\BulkImportController;
 use App\Http\Controllers\SchoolAdmin\Dashboard\DashboardController;
-use App\Http\Controllers\SchoolAdmin\Emails\EmailLogController;
+use App\Http\Controllers\SchoolAdmin\AttendanceAnalytics\AttendanceAnalyticsController;
+use App\Http\Controllers\SchoolAdmin\InOutMonitoring\AttendanceLogController;
+use App\Http\Controllers\SchoolAdmin\InOutMonitoring\EmailLogController;
 use App\Http\Controllers\SchoolAdmin\QrGeneration\QrCodeController;
 use App\Http\Controllers\SchoolAdmin\QrStation\QrStationController;
 use App\Http\Controllers\SchoolAdmin\QrStation\ScanController;
@@ -17,7 +19,7 @@ use App\Http\Controllers\SchoolAdmin\Students\StudentManagementController;
 use App\Http\Controllers\SchoolAdmin\Students\StudentProfileController;
 use App\Http\Controllers\SchoolAdmin\Teachers\TeacherManagementController;
 use App\Http\Controllers\SchoolAdmin\TeachingAssignments\TeachingAssignmentController;
-use App\Http\Controllers\SchoolAdmin\TimeInTimeOutHistory\AttendanceLogController;
+use App\Http\Controllers\Shared\AttendanceMonitoringController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -30,19 +32,28 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/school-admin/qr-station', [QrStationController::class, 'index'])
         ->name('school_admin.qr-station.index');
     Route::post('/school-admin/qr-station/scan', [ScanController::class, 'scan'])
+        ->middleware('throttle:qr-scan')
         ->name('school_admin.qr-station.scan');
+    Route::get('/school-admin/attendance/monitoring/resync', [AttendanceMonitoringController::class, 'resync'])
+        ->name('school_admin.attendance.monitoring.resync');
 
-    // Monitoring: In/Out History
+    // Monitoring: In/Out Monitoring
     Route::get('/school-admin/time-in-time-out-history', [AttendanceLogController::class, 'index'])
         ->name('school_admin.time-in-time-out-history.index');
-    Route::get('/school-admin/time-in-time-out-history/analytics', [AttendanceLogController::class, 'analytics'])
-        ->name('school_admin.time-in-time-out-history.analytics');
-    Route::get('/school-admin/time-in-time-out-history/analytics/download-pdf', [AttendanceLogController::class, 'downloadAnalyticsPdf'])
-        ->name('school_admin.time-in-time-out-history.analytics-pdf');
     Route::get('/school-admin/time-in-time-out-history/download', [AttendanceLogController::class, 'download'])
         ->name('school_admin.time-in-time-out-history.download');
     Route::get('/school-admin/time-in-time-out-history/download-pdf', [AttendanceLogController::class, 'downloadPdf'])
         ->name('school_admin.time-in-time-out-history.download-pdf');
+
+    // Monitoring: Attendance Analytics
+    Route::get('/school-admin/time-in-time-out-history/analytics', [AttendanceAnalyticsController::class, 'analytics'])
+        ->name('school_admin.time-in-time-out-history.analytics');
+    Route::get('/school-admin/time-in-time-out-history/analytics/download-pdf', [AttendanceAnalyticsController::class, 'downloadAnalyticsPdf'])
+        ->name('school_admin.time-in-time-out-history.analytics-pdf');
+    Route::get('/school-admin/time-in-time-out-history/intervention/prepare', [AttendanceAnalyticsController::class, 'prepareIntervention'])
+        ->name('school_admin.in-out-intervention.prepare');
+    Route::post('/school-admin/time-in-time-out-history/intervention/send', [AttendanceAnalyticsController::class, 'sendIntervention'])
+        ->name('school_admin.in-out-intervention.send');
 
     // Monitoring: Attendance
     Route::get('/attendance', [ClassAttendanceController::class, 'index'])
@@ -51,6 +62,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('attendance.grade-level');
     Route::get('/school_admin/attendance/section/{grade}', [ClassAttendanceController::class, 'section'])
         ->name('attendance.section');
+    Route::get('/school_admin/attendance/grade/{grade}/section/{section}', [ClassAttendanceController::class, 'show'])
+        ->name('attendance.section.show');
+    Route::get('/school_admin/attendance/grade/{grade}/section/{section}/enrollment/{enrollment}/history', [ClassAttendanceController::class, 'studentHistory'])
+        ->name('attendance.section.student-history');
 
     // Monitoring: Email Logs
     Route::get('/emails', [EmailLogController::class, 'index'])
@@ -81,6 +96,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('student-management.grade');
     Route::get('/student-management/grade/{grade}/section/{section}', [StudentManagementController::class, 'bySection'])
         ->name('student-management.section');
+    Route::get('/student-management/grade/{grade}/section/{section}/export', [StudentManagementController::class, 'export'])
+        ->name('student-management.section.export');
     Route::post('/students', [StudentManagementController::class, 'store'])
         ->name('student.store');
     Route::get('/students/search', [StudentManagementController::class, 'search'])
@@ -90,7 +107,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('/students/{id}', [StudentManagementController::class, 'destroy'])
         ->name('students.destroy');
 
-    Route::get('/student-profile', fn() => view('pov.school-admin.students.student-profile'));
+    Route::get('/student-profile', fn() => redirect()->route('student-management.index'));
     Route::get('/student-profile/{student}', [StudentProfileController::class, 'show'])
         ->name('student.profile');
     Route::put('/student-profile/{student}/info', [StudentProfileController::class, 'updateInfo'])
@@ -105,6 +122,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/active', [BulkImportController::class, 'active'])->name('active');
         Route::get('/history/list', [BulkImportController::class, 'history'])->name('history');
         Route::get('/template/download', [BulkImportController::class, 'downloadTemplate'])->name('template');
+        Route::get('/{import}/detail', [BulkImportController::class, 'detail'])->name('detail');
+        Route::get('/{import}/rows', [BulkImportController::class, 'rows'])->name('rows');
         Route::get('/{import}', [BulkImportController::class, 'show'])->name('show');
         Route::get('/{import}/status', [BulkImportController::class, 'status'])->name('status');
         Route::post('/{import}/validate', [BulkImportController::class, 'validate'])->name('validate');
@@ -128,12 +147,18 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('sections.store');
     Route::put('/sections/{id}', [SectionController::class, 'update'])
         ->name('sections.update');
+    Route::put('/sections/{section}/advisor', [SectionController::class, 'updateAdvisor'])
+        ->name('sections.update-advisor');
     Route::delete('/sections/{id}', [SectionController::class, 'destroy'])
         ->name('sections.destroy');
     Route::delete('/sections/{id}/force-delete', [SectionController::class, 'forceDelete'])
         ->name('sections.force-delete');
     Route::patch('/sections/{section}/restore', [SectionController::class, 'restore'])
         ->name('sections.restore');
+    Route::post('/sections/bulk-destroy', [SectionController::class, 'bulkDestroy'])
+        ->name('sections.bulk-destroy');
+    Route::post('/sections/bulk-restore', [SectionController::class, 'bulkRestore'])
+        ->name('sections.bulk-restore');
 
     // Academic: Subjects
     Route::get('/subjects', [SubjectController::class, 'index'])
@@ -150,6 +175,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('subjects.update');
     Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy'])
         ->name('subjects.destroy');
+    Route::post('/subjects/bulk-destroy', [SubjectController::class, 'bulkDestroy'])
+        ->name('subjects.bulk-destroy');
 
     // Academic: School Years
     Route::post('/school-years', [SchoolYearController::class, 'store'])
@@ -164,6 +191,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Setup: Teaching Assignments
     Route::get('/teaching-assignments', [TeachingAssignmentController::class, 'index'])
         ->name('teaching-assignments.index');
+    Route::get('/teaching-assignments/section-context', [TeachingAssignmentController::class, 'sectionContext'])
+        ->name('teaching-assignments.section-context');
     Route::get('/teaching-assignments/create', [TeachingAssignmentController::class, 'create'])
         ->name('teaching-assignments.create');
     Route::post('/teaching-assignments', [TeachingAssignmentController::class, 'store'])
@@ -176,6 +205,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('teaching-assignments.update');
     Route::delete('/teaching-assignments/{teachingAssignment}', [TeachingAssignmentController::class, 'destroy'])
         ->name('teaching-assignments.destroy');
+    Route::post('/teaching-assignments/bulk-destroy', [TeachingAssignmentController::class, 'bulkDestroy'])
+        ->name('teaching-assignments.bulk-destroy');
     Route::get('/teachers/{teacher}/teaching-assignments', [TeachingAssignmentController::class, 'byTeacher'])
         ->name('teachers.teaching-assignments');
     Route::get('/sections/{section}/teaching-assignments', [TeachingAssignmentController::class, 'bySection'])
@@ -200,8 +231,24 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('students.qr.download');
     Route::get('/sections/{section}/qr/download', [QrCodeController::class, 'downloadSection'])
         ->name('sections.qr.download');
+    Route::post('/qr-generation/download-batch', [QrCodeController::class, 'downloadBatch'])
+        ->name('sections.qr.download-batch');
+    Route::get('/sections/{section}/students/json', [QrCodeController::class, 'getSectionStudents'])
+        ->name('sections.students.json');
+
+    // QR Basket (session-backed)
+    Route::post('/qr-generation/basket/add', [QrCodeController::class, 'basketAdd'])
+        ->name('qr.basket.add');
+    Route::post('/qr-generation/basket/remove', [QrCodeController::class, 'basketRemove'])
+        ->name('qr.basket.remove');
+    Route::post('/qr-generation/basket/clear', [QrCodeController::class, 'basketClear'])
+        ->name('qr.basket.clear');
 
     // System: Settings
     Route::get('/settings', [SettingsController::class, 'index'])
         ->name('settings.index');
+    Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])
+        ->name('settings.profile.update');
+    Route::put('/settings/password', [SettingsController::class, 'updatePassword'])
+        ->name('settings.password.update');
 });

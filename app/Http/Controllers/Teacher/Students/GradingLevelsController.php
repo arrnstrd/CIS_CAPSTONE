@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Teacher\Students;
 
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\SchoolYear;
 use App\Models\TeachingAssignment;
 use Illuminate\Http\Request;
@@ -19,14 +19,20 @@ class GradingLevelsController extends Controller
             return view('pov.teacher.students.grading-levels-index', ['gradeLevels' => collect()]);
         }
 
-        $selectedSchoolYearId = $request->input('school_year_id') ?: null;
+        $selectedSchoolYearId = $request->input('school_year_id') ?: SchoolYear::active()->value('id');
 
         $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
             ->with('section');
 
         if ($selectedSchoolYearId) {
-            $teachingAssignmentsQuery->where('school_year_id', $selectedSchoolYearId);
+            $hasActiveYearAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('status', 'active')
+                ->where('school_year_id', $selectedSchoolYearId)
+                ->exists();
+            if ($hasActiveYearAssignments) {
+                $teachingAssignmentsQuery->where('school_year_id', $selectedSchoolYearId);
+            }
         }
 
         $teachingAssignments = $teachingAssignmentsQuery->get();
@@ -44,9 +50,11 @@ class GradingLevelsController extends Controller
                 }
 
                 $totalStudents = $enrollmentsQuery->count();
+                $enrollmentIds = $enrollmentsQuery->pluck('id');
 
                 $taIds = $assignments->pluck('id');
-                $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+                $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
+                    ->whereIn('enrollment_id', $enrollmentIds)
                     ->whereNotNull('transmuted_grade')
                     ->get();
 
@@ -71,7 +79,7 @@ class GradingLevelsController extends Controller
 
         abort_unless($teacher, 403);
 
-        $selectedSchoolYearId = $request->input('school_year_id') ?: null;
+        $selectedSchoolYearId = $request->input('school_year_id') ?: SchoolYear::active()->value('id');
 
         $teachingAssignmentsQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
@@ -79,7 +87,13 @@ class GradingLevelsController extends Controller
             ->with(['section', 'subject']);
 
         if ($selectedSchoolYearId) {
-            $teachingAssignmentsQuery->where('school_year_id', $selectedSchoolYearId);
+            $hasActiveYearAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
+                ->where('status', 'active')
+                ->where('school_year_id', $selectedSchoolYearId)
+                ->exists();
+            if ($hasActiveYearAssignments) {
+                $teachingAssignmentsQuery->where('school_year_id', $selectedSchoolYearId);
+            }
         }
 
         $teachingAssignments = $teachingAssignmentsQuery->get();
@@ -98,9 +112,11 @@ class GradingLevelsController extends Controller
             }
 
             $totalStudents = $enrollmentsQuery->count();
+            $enrollmentIds = $enrollmentsQuery->pluck('id');
 
             $taIds = $assignments->pluck('id');
-            $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
+                ->whereIn('enrollment_id', $enrollmentIds)
                 ->whereNotNull('transmuted_grade')
                 ->get();
 
@@ -127,6 +143,8 @@ class GradingLevelsController extends Controller
 
         abort_unless($teacher, 403);
 
+        $selectedSchoolYearId = $request->input('school_year_id') ?: SchoolYear::active()->value('id');
+
         $section = \App\Models\Section::findOrFail($sectionId);
 
         $teachingAssignments = TeachingAssignment::where('teacher_id', $teacher->id)
@@ -139,13 +157,15 @@ class GradingLevelsController extends Controller
 
         $enrollments = Enrollment::where('section_id', $sectionId)
             ->where('status', 'active')
+            ->when($selectedSchoolYearId, fn ($q) => $q->where('school_year_id', $selectedSchoolYearId))
             ->with('student')
             ->get();
 
         $taIds = $teachingAssignments->pluck('id');
         $enrollmentIds = $enrollments->pluck('id');
 
-        $gradesByEnrollment = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $gradesByEnrollment = TermGrade::whereIn('teaching_assignment_id', $taIds)
+            ->whereIn('enrollment_id', $enrollmentIds)
             ->whereNotNull('transmuted_grade')
             ->get()
             ->groupBy('enrollment_id');
@@ -196,7 +216,7 @@ class GradingLevelsController extends Controller
 
         $taIds = $teachingAssignments->pluck('id');
 
-        $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
             ->where('enrollment_id', $enrollmentId)
             ->with('gradingPeriod')
             ->get()

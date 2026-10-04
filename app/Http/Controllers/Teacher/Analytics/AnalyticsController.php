@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\SchoolYear;
+use App\Models\TermGrade;
 use App\Models\Section;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
@@ -23,6 +24,9 @@ class AnalyticsController extends Controller
                 'gradeLevels' => collect(),
                 'sections' => collect(),
                 'subjects' => collect(),
+                'schoolYears' => collect(),
+                'students' => collect(),
+                'selectedSchoolYearId' => null,
                 'overview' => null,
                 'gradeDistribution' => null,
                 'termTrend' => null,
@@ -38,7 +42,7 @@ class AnalyticsController extends Controller
 
         $baseQuery = TeachingAssignment::where('teacher_id', $teacher->id)
             ->where('status', 'active')
-            ->with('section', 'subject');
+            ->with('section', 'subject', 'schoolYear');
 
         $allAssignments = $baseQuery->get();
 
@@ -46,10 +50,26 @@ class AnalyticsController extends Controller
         $sections = $allAssignments->pluck('section')->unique('id')->sortBy('name')->values();
         $subjects = $allAssignments->pluck('subject')->unique('id')->sortBy('name')->values();
 
+        $schoolYears = SchoolYear::orderByDesc('school_year')->get();
+
+        $selectedSchoolYearId = $request->input('school_year_id');
+        if (! $selectedSchoolYearId) {
+            $selectedSchoolYearId = SchoolYear::active()->value('id');
+        }
+
         $filtered = $allAssignments;
 
+        if ($selectedSchoolYearId) {
+            $hasMatchingAssignments = $allAssignments->contains(
+                fn ($ta) => (int) $ta->school_year_id === (int) $selectedSchoolYearId
+            );
+            if ($hasMatchingAssignments) {
+                $filtered = $filtered->filter(fn ($ta) => (int) $ta->school_year_id === (int) $selectedSchoolYearId);
+            }
+        }
+
         if ($request->filled('grade_level')) {
-            $filtered = $filtered->filter(fn ($ta) => $ta->section->grade_level == $request->grade_level);
+            $filtered = $filtered->filter(fn ($ta) => $ta->section && $ta->section->grade_level == $request->grade_level);
         }
 
         if ($request->filled('section_id')) {
@@ -60,13 +80,42 @@ class AnalyticsController extends Controller
             $filtered = $filtered->filter(fn ($ta) => $ta->subject_id == $request->subject_id);
         }
 
+        $availableSectionIds = $filtered
+            ->pluck('section_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $selectedEnrollmentIds = Enrollment::whereIn('section_id', $availableSectionIds)
+            ->where('status', 'active')
+            ->when($selectedSchoolYearId, fn ($q) => $q->where('school_year_id', $selectedSchoolYearId))
+            ->pluck('id');
+
+        $students = Enrollment::whereIn('id', $selectedEnrollmentIds)
+            ->with('student')
+            ->get()
+            ->pluck('student')
+            ->filter()
+            ->unique('id')
+            ->sortBy('full_name')
+            ->values();
+
         $taIds = $filtered->pluck('id');
 
-        $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
+            ->whereIn('enrollment_id', $selectedEnrollmentIds)
             ->whereNotNull('transmuted_grade');
 
         if ($request->filled('term')) {
             $gradesQuery->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', $request->term));
+        }
+
+        if ($request->filled('student_id')) {
+            $studentEnrollmentIds = Enrollment::where('student_id', $request->student_id)
+                ->whereIn('id', $selectedEnrollmentIds)
+                ->pluck('id');
+
+            $gradesQuery->whereIn('enrollment_id', $studentEnrollmentIds);
         }
 
         $grades = $gradesQuery->get();
@@ -78,20 +127,20 @@ class AnalyticsController extends Controller
             'lowest' => $grades->count() ? round($grades->min('transmuted_grade'), 1) : null,
             'students_assessed' => $grades->pluck('enrollment_id')->unique()->count(),
         ];
-        $overview['completion_rate'] = $this->getCompletionRate($filtered, $overview);
+        $overview['completion_rate'] = $this->getCompletionRate($filtered, $selectedSchoolYearId, $overview);
         $studentSnapshot = $this->getStudentSnapshot($grades, $overview);
 
         $performanceStatus = $this->getPerformanceStatus($overview['class_average'] !== null ? (float) $overview['class_average'] : null);
         $gradeDistribution = $this->getGradeDistribution($grades);
-        $termTrend = $this->getTermTrend($taIds);
-        $assessmentPerformance = $this->getAssessmentPerformance($taIds, $request->input('term'));
-        $classHealth = $this->getClassHealthIndicators($taIds, $request->input('term'));
-        $topPerformers = $this->getTopPerformers($filtered, $request->input('term'));
-        $sectionComparison = $this->getSectionComparison($filtered, $request->input('term'));
+        $termTrend = $this->getTermTrend($taIds, $selectedEnrollmentIds);
+        $assessmentPerformance = $this->getAssessmentPerformance($taIds, $selectedEnrollmentIds, $request->input('term'));
+        $classHealth = $this->getClassHealthIndicators($taIds, $selectedEnrollmentIds, $request->input('term'));
+        $topPerformers = $this->getTopPerformers($filtered, $selectedEnrollmentIds, $request->input('term'));
+        $sectionComparison = $this->getSectionComparison($filtered, $selectedEnrollmentIds, $request->input('term'));
         $performanceInsights = $this->getPerformanceInsights($overview, $gradeDistribution, $termTrend, $assessmentPerformance);
 
         return view('pov.teacher.analytics.analytics-index', compact(
-            'gradeLevels', 'sections', 'subjects', 'overview', 'performanceStatus', 'gradeDistribution', 'termTrend', 'assessmentPerformance', 'classHealth', 'studentSnapshot', 'topPerformers', 'sectionComparison', 'performanceInsights'
+            'gradeLevels', 'sections', 'subjects', 'schoolYears', 'selectedSchoolYearId', 'students', 'overview', 'performanceStatus', 'gradeDistribution', 'termTrend', 'assessmentPerformance', 'classHealth', 'studentSnapshot', 'topPerformers', 'sectionComparison', 'performanceInsights'
         ));
     }
 
@@ -124,9 +173,10 @@ class AnalyticsController extends Controller
         return $buckets;
     }
 
-    private function getTermTrend($taIds): array
+    private function getTermTrend($taIds, $selectedEnrollmentIds): array
     {
-        $allGrades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $allGrades = TermGrade::whereIn('teaching_assignment_id', $taIds)
+            ->whereIn('enrollment_id', $selectedEnrollmentIds)
             ->whereNotNull('transmuted_grade')
             ->with('gradingPeriod')
             ->get()
@@ -144,10 +194,12 @@ class AnalyticsController extends Controller
         return $trend;
     }
 
-    private function getAssessmentPerformance($taIds, $term = null): array
+    private function getAssessmentPerformance($taIds, $selectedEnrollmentIds, $term = null): array
     {
         $assessmentsQuery = Assessment::whereIn('teaching_assignment_id', $taIds)
-            ->with('assessmentCategory', 'studentAssessmentScores');
+            ->with(['assessmentCategory', 'studentAssessmentScores' => function ($q) use ($selectedEnrollmentIds) {
+                $q->whereIn('enrollment_id', $selectedEnrollmentIds);
+            }]);
 
         if ($term) {
             $assessmentsQuery->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', $term));
@@ -155,7 +207,7 @@ class AnalyticsController extends Controller
 
         $assessments = $assessmentsQuery->get();
 
-        $categoryLabels = ['Written Work', 'Performance Task', 'Quarterly Assessment'];
+        $categoryLabels = ['Written Work', 'Performance Task', 'Term Assessment'];
         $percentagesByCategory = array_fill_keys($categoryLabels, []);
 
         foreach ($assessments as $assessment) {
@@ -184,7 +236,7 @@ class AnalyticsController extends Controller
         return $result;
     }
 
-    private function getTopPerformers($teachingAssignments, $term = null): \Illuminate\Support\Collection
+    private function getTopPerformers($teachingAssignments, $selectedEnrollmentIds, $term = null): \Illuminate\Support\Collection
     {
         $taIds = $teachingAssignments instanceof \Illuminate\Support\Collection && $teachingAssignments->first() instanceof TeachingAssignment
             ? $teachingAssignments->pluck('id')
@@ -194,16 +246,17 @@ class AnalyticsController extends Controller
             $termSequence = $term;
         } else {
             $currentPeriod = GradingPeriod::where('is_active', true)
-                ->where('sequence', '<=', 3)
+                ->trimester()
                 ->orderBy('sequence')
                 ->first()
-                ?? GradingPeriod::where('sequence', '<=', 3)
+                ?? GradingPeriod::trimester()
                     ->orderBy('sequence')
                     ->first();
             $termSequence = $currentPeriod?->sequence ?? 1;
         }
 
-        $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
+            ->whereIn('enrollment_id', $selectedEnrollmentIds)
             ->whereNotNull('transmuted_grade')
             ->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', $termSequence))
             ->with(['enrollment.student', 'enrollment.section']);
@@ -257,7 +310,7 @@ class AnalyticsController extends Controller
         return $result;
     }
 
-    private function getSectionComparison($teachingAssignments, $term = null): \Illuminate\Support\Collection
+    private function getSectionComparison($teachingAssignments, $selectedEnrollmentIds, $term = null): \Illuminate\Support\Collection
     {
         $assignments = $teachingAssignments instanceof \Illuminate\Support\Collection && $teachingAssignments->first() instanceof TeachingAssignment
             ? $teachingAssignments
@@ -273,10 +326,10 @@ class AnalyticsController extends Controller
             $termSequence = $term;
         } else {
             $currentPeriod = GradingPeriod::where('is_active', true)
-                ->where('sequence', '<=', 3)
+                ->trimester()
                 ->orderBy('sequence')
                 ->first()
-                ?? GradingPeriod::where('sequence', '<=', 3)
+                ?? GradingPeriod::trimester()
                     ->orderBy('sequence')
                     ->first();
             $termSequence = $currentPeriod?->sequence ?? 1;
@@ -288,7 +341,8 @@ class AnalyticsController extends Controller
             $section = $sectionAssignments->first()->section;
             $taIds = $sectionAssignments->pluck('id');
 
-            $gradesQuery = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $gradesQuery = TermGrade::whereIn('teaching_assignment_id', $taIds)
+                ->whereIn('enrollment_id', $selectedEnrollmentIds)
                 ->whereNotNull('transmuted_grade')
                 ->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', $termSequence));
 
@@ -441,22 +495,14 @@ class AnalyticsController extends Controller
         };
     }
 
-    private function getCompletionRate($filtered, array $overview): ?float
+    private function getCompletionRate($filtered, $selectedSchoolYearId, array $overview): ?float
     {
-        $classPairs = $filtered
-            ->map(fn ($ta) => $ta->section_id . '-' . $ta->school_year_id)
-            ->unique();
+        $sectionIds = $filtered->pluck('section_id')->unique();
 
-        $totalStudents = 0;
-
-        foreach ($classPairs as $pair) {
-            [$sectionId, $schoolYearId] = explode('-', $pair);
-
-            $totalStudents += Enrollment::where('section_id', $sectionId)
-                ->where('school_year_id', $schoolYearId)
-                ->where('status', 'active')
-                ->count();
-        }
+        $totalStudents = Enrollment::whereIn('section_id', $sectionIds)
+            ->where('status', 'active')
+            ->when($selectedSchoolYearId, fn ($q) => $q->where('school_year_id', $selectedSchoolYearId))
+            ->count();
 
         if ($totalStudents === 0) {
             return null;
@@ -490,16 +536,16 @@ class AnalyticsController extends Controller
         ];
     }
 
-    private function getClassHealthIndicators($taIds, $term = null): array
+    private function getClassHealthIndicators($taIds, $selectedEnrollmentIds, $term = null): array
     {
         if ($term) {
             $currentSequence = (int) $term;
         } else {
             $currentPeriod = GradingPeriod::where('is_active', true)
-                ->where('sequence', '<=', 3)
+                ->trimester()
                 ->orderBy('sequence')
                 ->first()
-                ?? GradingPeriod::where('sequence', '<=', 3)
+                ?? GradingPeriod::trimester()
                     ->orderBy('sequence')
                     ->first();
             $currentSequence = $currentPeriod?->sequence ?? 1;
@@ -516,7 +562,8 @@ class AnalyticsController extends Controller
         ];
 
         if ($currentSequence <= 1) {
-            $term1Count = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $term1Count = TermGrade::whereIn('teaching_assignment_id', $taIds)
+                ->whereIn('enrollment_id', $selectedEnrollmentIds)
                 ->whereNotNull('transmuted_grade')
                 ->whereHas('gradingPeriod', fn ($q) => $q->where('sequence', 1))
                 ->pluck('enrollment_id')
@@ -529,7 +576,8 @@ class AnalyticsController extends Controller
 
         $prevSequence = $currentSequence - 1;
 
-        $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+        $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
+            ->whereIn('enrollment_id', $selectedEnrollmentIds)
             ->whereNotNull('transmuted_grade')
             ->whereHas('gradingPeriod', fn ($q) => $q->whereIn('sequence', [$prevSequence, $currentSequence]))
             ->with('gradingPeriod')

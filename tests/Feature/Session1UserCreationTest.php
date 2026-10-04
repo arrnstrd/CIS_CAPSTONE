@@ -5,12 +5,10 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\InvitationToken;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class Session1UserCreationTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected function setUp(): void
     {

@@ -4,6 +4,7 @@ use App\Http\Controllers\ScannerOperator\Dashboard\DashboardController;
 use App\Http\Controllers\ScannerOperator\QrStation\QrStationController;
 use App\Http\Controllers\ScannerOperator\QrStation\ScanController;
 use App\Http\Controllers\ScannerOperator\TimeInTimeOutHistory\AttendanceLogController;
+use App\Http\Controllers\Shared\AttendanceMonitoringController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:scanner_operator'])->group(function () {
@@ -15,9 +16,13 @@ Route::middleware(['auth', 'role:scanner_operator'])->group(function () {
     Route::get('/qr-station', [QrStationController::class, 'index'])
         ->name('qr-station.index');
     Route::post('/qr-station/scan', [ScanController::class, 'scan'])
+        ->middleware('throttle:qr-scan')
         ->name('qr-station.scan');
     Route::post('/scan', [ScanController::class, 'scan'])
+        ->middleware('throttle:qr-scan')
         ->name('scan');
+    Route::get('/scanner/attendance/monitoring/resync', [AttendanceMonitoringController::class, 'resync'])
+        ->name('scanner.attendance.monitoring.resync');
 
     // Attendance Log & In/Out History
     Route::get('/entry-exit', [AttendanceLogController::class, 'index'])

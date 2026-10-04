@@ -1,0 +1,717 @@
+School Admin — Settings & Account UX/UI Revision Prompt
+
+This is the consolidated revision based on the previous implementation and the adjustments discussed afterward.
+
+The main correction is important: do not treat this as another visual cleanup of the existing Settings page. The previous implementation was too close to simply rearranging the old Settings UI. This revision needs to correct the application shell, account entry point, information architecture, and user flow.
+
+1. Core Direction
+
+The intended experience is:
+
+School Admin Dashboard → Profile Account Menu → Settings → Dedicated Settings Experience
+
+Settings should no longer feel like another module inside the School Admin sidebar.
+
+The overall concept is inspired by the account/settings experience of platforms such as YouTube, Google, Facebook, and GitHub, but do not copy their UI literally. Use them only as references for the underlying UX patterns.
+
+The priorities are:
+
+Keep the existing School Admin sidebar structure.
+Add a thin top navigation beside/above the main content area only.
+Move the School Administrator account controls from the sidebar footer to that top navigation.
+Remove Settings from the sidebar.
+Open Settings as a dedicated account/settings experience.
+Combine Account and Security into one section.
+Require re-authentication before saving sensitive account changes.
+Keep the current password-change flow, with minor visual improvements.
+Fix the School Year layout and centered modal behavior.
+Keep the implementation clean and avoid unnecessary redesign of unrelated areas.
+2. VERY IMPORTANT — Application Shell
+
+The intended shell is represented by the provided reference image.
+
+The structure should be:
+
+┌───────────────┬──────────────────────────────────────────────┐
+│               │               THIN TOP NAV                  │
+│               │                         [SA] Admin ▼       │
+│               ├──────────────────────────────────────────────┤
+│               │                                              │
+│               │                                              │
+│    SIDEBAR    │                  MAIN CONTENT                 │
+│               │                                              │
+│               │                                              │
+│               │                                              │
+│               │                                              │
+│               │                                              │
+│               │                                              │
+└───────────────┴──────────────────────────────────────────────┘
+This distinction is critical.
+
+The sidebar remains a separate, full-height vertical shell.
+
+The top navigation is an additional horizontal layer occupying only the main/content area.
+
+Do NOT:
+put the top nav above the sidebar,
+push the sidebar downward,
+make the sidebar a child of the top nav,
+resize the sidebar because of the top nav,
+make the sidebar scroll underneath the top nav,
+merge the sidebar and top nav into one container,
+turn the sidebar into a section beneath the top nav.
+
+The sidebar should remain structurally similar to what already exists.
+
+The top nav is simply added beside it.
+
+Use the provided reference image as the structural reference for this shell.
+
+3. Existing Sidebar
+
+The existing sidebar should remain essentially unchanged.
+
+Its:
+
+width,
+vertical structure,
+navigation behavior,
+positioning,
+overall appearance
+
+should not be unnecessarily redesigned.
+
+Remove from the sidebar:
+
+Settings / System Settings
+
+Settings should no longer be a sidebar destination.
+
+The sidebar should continue to contain the actual School Admin application modules.
+
+4. Move the Administrator Account Area
+
+Currently, the School Administrator account information and Logout functionality are located at the bottom/footer of the sidebar.
+
+Move this account functionality to the right side of the new thin top navigation.
+
+The sidebar footer should no longer contain the duplicated administrator profile/account section.
+
+Top navigation account area
+
+Use the same basic information that previously existed in the sidebar footer, but adapt it to the top nav.
+
+Display:
+
+[SA]  School Administrator
+      admin@example.com       ▼
+
+Where:
+
+[SA] = initials/avatar
+School Administrator = user's name
+admin@example.com = user's email
+▼ = dropdown indicator
+
+Use the email as the secondary information rather than the role.
+
+The exact typography and spacing can be adjusted to fit the design.
+
+5. Top Navigation Visual Direction
+
+The top navigation should be:
+
+thin,
+compact,
+clean,
+unobtrusive,
+aligned with the existing application shell.
+
+Use the existing CIS blue theme instead of a plain white header.
+
+The blue should match the application's existing visual language.
+
+Do not introduce a completely new color palette.
+
+The same general visual language should carry over to the dedicated Settings experience.
+
+6. Profile Dropdown
+
+Clicking the administrator's initials/name/email area should retain the same basic functionality as the previous sidebar account section.
+
+The interaction should open a compact dropdown.
+
+Conceptually:
+
+[SA] School Administrator
+     admin@example.com
+             ▼
+
+┌─────────────────────────┐
+│ Settings / Account      │
+│                         │
+│ Other appropriate       │
+│ account action(s)       │
+│                         │
+│ ─────────────────────── │
+│ Logout                  │
+└─────────────────────────┘
+
+The exact menu items can be determined based on the existing application.
+
+Do not create unnecessary options merely to fill the menu.
+
+The important actions are:
+
+access Settings/Account,
+Logout,
+any existing account functionality that should remain.
+7. Settings Is No Longer a Sidebar Page
+
+When the School Administrator selects Settings from the profile menu, they should enter the dedicated Settings experience.
+
+The conceptual flow is:
+
+School Admin Dashboard
+        ↓
+Profile / Initials
+        ↓
+Profile Dropdown
+        ↓
+Settings
+        ↓
+Dedicated Settings Experience
+
+This should feel like transitioning from the main application into an account/settings area.
+
+It should not feel like clicking another item in the administrative sidebar.
+
+8. Dedicated Settings Experience
+
+The Settings page should have its own lightweight context/layout.
+
+It should retain the CIS visual identity, particularly the blue theme, but it should feel distinct from the normal School Admin dashboard.
+
+The goal is:
+
+Same application identity, different context.
+
+Do not simply place the old Settings content inside another large x-layouts.admin dashboard page and call it a dedicated settings experience.
+
+The implementation should reflect the conceptual separation between:
+
+Application / Administration
+
+and
+
+Account / Settings
+
+9. Settings Navigation
+
+There should be only three main Settings sections:
+
+1. Account & Security
+2. School Year
+3. Preferences
+
+Do not split Account and Security into separate tabs.
+
+Account information and security should belong to one combined section.
+
+The navigation can be implemented using:
+
+compact pills,
+tabs,
+horizontal navigation,
+compact side navigation,
+
+depending on what best fits the dedicated Settings experience.
+
+Do not create oversized navigation containers.
+
+10. Account & Security
+
+This becomes the primary Settings section.
+
+Use a clean list-based layout.
+
+Do not expose a giant form immediately.
+
+Example:
+
+Account & Security
+
+Manage your account information and security.
+
+ACCOUNT INFORMATION
+────────────────────────────────────────
+
+Full Name
+School Administrator
+                                  Edit →
+
+Email Address
+admin@example.com
+                                  Edit →
+
+
+SECURITY
+────────────────────────────────────────
+
+Password
+Manage your account password
+                         Change Password →
+
+The exact layout is flexible.
+
+The principle is:
+
+Section → Setting → Current Value → Action
+
+rather than:
+
+Large container → multiple exposed form fields
+
+11. Name Editing
+
+When the administrator chooses to edit their Full Name:
+
+Account & Security
+        ↓
+Full Name
+        ↓
+Edit
+        ↓
+Edit Name
+        ↓
+Enter new name
+        ↓
+Continue / Save
+        ↓
+Re-authenticate
+        ↓
+Enter current password
+        ↓
+Confirm
+        ↓
+Save
+        ↓
+Success
+
+The important requirement is:
+
+The account must be authenticated before the name change is committed.
+
+Do not simply show the password field after the name has already been saved.
+
+The actual backend update should only happen after successful authentication.
+
+12. Email Editing
+
+The same security principle applies to email changes.
+
+Flow:
+
+Email Address
+        ↓
+Edit
+        ↓
+Enter new email
+        ↓
+Continue / Save
+        ↓
+Re-authenticate
+        ↓
+Enter current password
+        ↓
+Confirm
+        ↓
+Save
+        ↓
+Success
+
+Again:
+
+Do not save the new email before authentication.
+
+The exact modal/page implementation is flexible.
+
+The important part is the user journey and security behavior.
+
+13. Change Password
+
+The current password-change implementation is already good.
+
+Keep the existing progressive multi-step password flow.
+
+Do not replace it with a single large form.
+
+The intended flow remains:
+
+Change Password
+       ↓
+Step 1
+Current Password
+       ↓
+Step 2
+New Password
+Confirm Password
+Password Requirements
+Strength Indicator
+Show / Hide
+       ↓
+Step 3
+Success
+       ↓
+Done
+Minor visual improvements only:
+
+Make the Security heading slightly more prominent.
+
+For example:
+
+slightly bolder,
+slightly larger,
+better spacing.
+
+Also slightly increase the overall Settings typography where needed for readability.
+
+Do not make the text excessively large.
+
+14. School Year — Rework the Actual Layout
+
+The School Year section currently has a structural problem.
+
+The content appears to be trapped inside a specific small container/div, resulting in:
+
+unnecessary internal scrolling,
+content being cut off,
+lower content being hidden,
+large unused space underneath,
+the School Year section feeling isolated from the rest of the page.
+
+This needs to be investigated at the layout/container level.
+
+Do not simply make the container taller.
+
+Inspect for:
+
+fixed height,
+max-height,
+overflow,
+nested scrolling,
+flex/grid constraints,
+isolated containers,
+incorrect positioning,
+height calculations.
+
+The School Year section should naturally expand based on its content.
+
+15. School Year Should Not Have Unnecessary Nested Scrolling
+
+The intended behavior is closer to:
+
+School Year
+
+Current / Active School Year
+────────────────────────────────
+
+School Year Entry
+School Year Entry
+School Year Entry
+School Year Entry
+
+Add New School Year
+
+The content should occupy the available Settings content area naturally.
+
+Avoid:
+
+Small fixed container
+      ↓
+Content
+      ↓
+Tiny internal scrollbar
+      ↓
+Unused space outside container
+
+The user should not have to scroll inside a tiny isolated School Year component while the rest of the page has significant empty space.
+
+16. School Year Modal Position
+
+The current Add/Edit School Year interaction is positioned too high.
+
+Change it so the modal is properly centered in the viewport.
+
+Conceptually:
+
+┌──────────────────────────────────────┐
+│                                      │
+│                                      │
+│          ┌──────────────────┐        │
+│          │  Add School Year │        │
+│          │                  │        │
+│          │      Form        │        │
+│          │                  │        │
+│          └──────────────────┘        │
+│                                      │
+│                                      │
+└──────────────────────────────────────┘
+
+The modal should be:
+
+horizontally centered,
+vertically centered,
+visually balanced.
+
+Its opening animation should also feel natural from the centered position.
+
+Do not anchor the modal toward the top merely because of the existing container structure.
+
+17. School Year Interaction
+
+Do not assume that the existing table/card structure must be preserved.
+
+The previous implementation's mistake was treating the School Year problem mostly as a visual adjustment.
+
+Reconsider the component if necessary.
+
+The developer may choose an appropriate pattern such as:
+
+centered modal,
+drawer,
+focused form state,
+inline expansion,
+dedicated interaction state.
+
+The requirement is that it should feel like a proper settings interaction, not a redesigned version of the old table.
+
+18. Preferences
+
+Keep Preferences lightweight and list-based.
+
+For example:
+
+Preferences
+
+Default Landing Section
+Current value
+                              →
+
+Academic Workflow
+Enabled
+                              →
+
+Do not create a large card for every preference.
+
+Avoid unnecessary containers.
+
+19. Back to Dashboard CTA
+
+The dedicated Settings experience must have a clear CTA for returning to the School Admin Dashboard.
+
+Use something like:
+
+← Back to Dashboard
+
+This should be an actual navigation action to the dashboard.
+
+It should not rely on browser-back behavior.
+
+It can be subtle and compact, but it should be clearly discoverable.
+
+Conceptually:
+
+Dedicated Settings
+
+Account & Security | School Year | Preferences
+
+────────────────────────────────────
+
+Settings Content
+
+────────────────────────────────────
+
+← Back to Dashboard
+
+The exact placement is flexible as long as it feels intentional.
+
+20. UX Frameworks to Apply
+
+Use the following principles when implementing the revision.
+
+Information Architecture
+
+Separate:
+
+Administrative application navigation
+
+from:
+
+Personal account/settings navigation
+
+Progressive Disclosure
+
+Do not expose every form immediately.
+
+Use:
+
+View → Select → Edit → Authenticate → Confirm → Success
+
+Recognition Over Recall
+
+Show the current value of each setting.
+
+For example:
+
+Full Name
+School Administrator
+
+rather than forcing the user to open the setting just to discover its current value.
+
+User Control and Freedom
+
+Provide appropriate:
+
+Cancel,
+Back,
+Continue,
+Confirm,
+Done
+
+actions during multi-step flows.
+
+Error Prevention
+
+Sensitive account changes should require authentication before the actual update.
+
+Consistency
+
+The top nav, profile menu, Settings page, buttons, typography, and interactions should feel like parts of the same CIS application.
+
+Minimalism
+
+Avoid excessive:
+
+cards,
+borders,
+shadows,
+containers,
+decorative components,
+unnecessary animations.
+21. Implementation Instructions
+
+Before changing the implementation:
+
+Inspect the current School Admin layout.
+Inspect the current sidebar structure.
+Inspect the existing sidebar footer account controls.
+Inspect the current Settings Blade and JS.
+Inspect the existing Settings routes/controllers.
+Inspect how profile/logout functionality currently works.
+Inspect the School Year component and determine why its content is constrained.
+Check whether the existing backend can safely support re-authentication before profile changes.
+
+Do not immediately rewrite everything.
+
+First understand the existing implementation and then make the required structural changes.
+
+22. Preserve Existing Functionality
+
+Do not unnecessarily change:
+
+existing backend functionality,
+existing School Year CRUD behavior,
+existing password functionality,
+existing authentication behavior,
+unrelated School Admin modules.
+
+If the frontend flow requires a backend adjustment for proper authentication, identify that requirement and implement it safely.
+
+Do not weaken security simply to preserve an existing frontend endpoint.
+
+23. What NOT to Do
+
+Do not repeat the approach from the previous implementation.
+
+Specifically:
+
+Do not merely make the old Settings page prettier.
+Do not keep Settings in the sidebar.
+Do not keep the School Administrator account area in the sidebar footer.
+Do not duplicate the profile controls in both sidebar and top nav.
+Do not place the top nav above the sidebar.
+Do not push the sidebar downward.
+Do not resize/restructure the sidebar around the top nav.
+Do not create four Settings tabs.
+Do not expose huge forms immediately.
+Do not save name/email changes before authentication.
+Do not simply restyle the existing School Year table.
+Do not keep the broken School Year nested scroll container.
+Do not use a top-anchored School Year modal.
+Do not redesign unrelated School Admin pages.
+24. Final Intended Architecture
+┌──────────────────────────────────────────────────────────────┐
+│                        MAIN APPLICATION                      │
+│                                                              │
+│ ┌──────────────┐ ┌─────────────────────────────────────────┐ │
+│ │              │ │             THIN TOP NAV                │ │
+│ │              │ │                         [SA] Admin ▼   │ │
+│ │              │ ├─────────────────────────────────────────┤ │
+│ │   SIDEBAR    │ │                                         │ │
+│ │              │ │              MAIN CONTENT                │ │
+│ │              │ │                                         │ │
+│ │              │ │                                         │ │
+│ │              │ │                                         │ │
+│ │              │ │                                         │ │
+│ └──────────────┘ └─────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+                         │
+                         │ Profile menu
+                         ▼
+                  ┌───────────────┐
+                  │ Settings      │
+                  │ Logout        │
+                  └───────┬───────┘
+                          │
+                          ▼
+              DEDICATED SETTINGS EXPERIENCE
+                          │
+              ┌───────────┼────────────┐
+              │           │            │
+              ▼           ▼            ▼
+        Account &     School Year   Preferences
+         Security
+              │
+       ┌──────┼───────────┐
+       │      │           │
+      Name   Email     Password
+       │      │           │
+       ▼      ▼           ▼
+   Re-auth  Re-auth   Multi-step
+       │      │        password flow
+       └──────┴───────────┘
+
+                    ← Back to Dashboard
+Definition of Done
+
+The redesign is successful when this feels natural:
+
+School Admin Dashboard
+
+→ sees the existing sidebar unchanged
+→ sees a thin blue top nav beside the sidebar
+→ sees [Initials] School Administrator / email on the right
+→ clicks the profile area
+→ selects Settings
+→ enters a dedicated Settings experience
+→ sees only Account & Security / School Year / Preferences
+→ edits account information through a proper authenticated flow
+→ changes password through the existing progressive flow
+→ manages School Year without the broken constrained container
+→ sees School Year modals centered properly
+→ can return through ← Back to Dashboard
+
+The key requirement is that this should feel like a proper account/settings experience, not another redesigned sidebar page.
+
+Prioritize the shell and user flow first. Visual polish comes after the structure is correct.

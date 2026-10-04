@@ -105,11 +105,11 @@
             </div>
 
 
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2" data-tour="gradesheet-actions">
 
                 {{-- IMPORT READY-MADE EXCEL GRADES --}}
                 <a href="{{ route('teacher.grading-system.import-data', [
-                    'teaching_assignment_id' => $ta->id,
+                    'teachingAssignmentId' => $ta->id,
                     'grading_period_id' => $selectedPeriodId
                 ]) }}"
                    class="btn btn-primary btn-sm">
@@ -138,7 +138,7 @@
         {{-- =========================================================
              TERM TABS
              ========================================================= --}}
-        <div class="gs-tab-bar mb-3">
+        <div class="gs-tab-bar mb-3" data-tour="gradesheet-terms">
 
             @foreach ($gradingPeriods as $gp)
 
@@ -315,6 +315,16 @@
 
             <div class="table-responsive">
 
+                @php
+                    $wwWeight = (float) ($resolvedWeights['written_work'] ?? 0.20);
+                    $ptWeight = (float) ($resolvedWeights['performance_task'] ?? 0.50);
+                    $exWeight = (float) ($resolvedWeights['term_assessment'] ?? 0.30);
+
+                    $wwWeightPercent = (int) round($wwWeight * 100);
+                    $ptWeightPercent = (int) round($ptWeight * 100);
+                    $exWeightPercent = (int) round($exWeight * 100);
+                @endphp
+
                 <table class="table table-bordered table-sm align-middle mb-0"
                        id="gradeSheetTable">
 
@@ -336,10 +346,11 @@
 
                             {{-- WRITTEN WORKS --}}
                             <th colspan="{{ $fixedSlots['written'] + 3 }}"
-                                class="text-center gs-group-written gs-divider-written py-2">
+                                class="text-center gs-group-written gs-divider-written py-2"
+                                data-tour="gradesheet-components">
 
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="fw-bold">{{ $categoryLabels['written'] }}</span>
+                                    <span class="fw-bold">{{ $categoryLabels['written'] }} ({{ $wwWeightPercent }}%)</span>
                                     <button type="button"
                                             class="gs-add-col-btn gs-add-col"
                                             data-category="written"
@@ -360,7 +371,7 @@
                                 class="text-center gs-group-performance gs-divider-performance py-2">
 
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="fw-bold">{{ $categoryLabels['performance'] }}</span>
+                                    <span class="fw-bold">{{ $categoryLabels['performance'] }} ({{ $ptWeightPercent }}%)</span>
                                     <button type="button"
                                             class="gs-add-col-btn gs-add-col"
                                             data-category="performance"
@@ -381,7 +392,7 @@
                                 class="text-center gs-group-exam gs-divider-exam py-2">
 
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <span class="fw-bold">{{ $categoryLabels[$assessmentComponentKey] ?? 'Examinations' }}</span>
+                                    <span class="fw-bold">{{ $categoryLabels[$assessmentComponentKey] ?? 'Examinations' }} ({{ $exWeightPercent }}%)</span>
                                     <button type="button"
                                             class="gs-add-col-btn gs-add-col"
                                             data-category="{{ $assessmentComponentKey }}"
@@ -400,19 +411,20 @@
                             {{-- INITIAL --}}
                             <th rowspan="3"
                                 class="align-middle text-center gs-divider-initial fw-semibold"
-                                style="min-width: 90px;">
+                                style="min-width: 90px;"
+                                data-tour="gradesheet-computed">
 
                                 Initial Grade
 
                             </th>
 
 
-                            {{-- TRANSMUTED --}}
+                            {{-- TERM GRADE (TRANSMUTED) --}}
                             <th rowspan="3"
                                 class="align-middle text-center gs-divider-transmuted fw-semibold"
                                 style="min-width: 90px;">
 
-                                Transmuted
+                                Term Grade
 
                             </th>
 
@@ -496,8 +508,8 @@
                                 PS
                             </th>
 
-                            <th class="text-center small gs-group-written gs-divider-written fw-semibold">
-                                WS
+                            <th class="text-center small gs-group-written gs-divider-written fw-semibold" title="Weighted Score ({{ $wwWeightPercent }}%)">
+                                WS ({{ $wwWeightPercent }}%)
                             </th>
 
 
@@ -563,8 +575,8 @@
                                 PS
                             </th>
 
-                            <th class="text-center small gs-group-performance gs-divider-performance fw-semibold">
-                                WS
+                            <th class="text-center small gs-group-performance gs-divider-performance fw-semibold" title="Weighted Score ({{ $ptWeightPercent }}%)">
+                                WS ({{ $ptWeightPercent }}%)
                             </th>
 
 
@@ -630,8 +642,8 @@
                                 PS
                             </th>
 
-                            <th class="text-center small gs-group-exam gs-divider-exam fw-semibold">
-                                WS
+                            <th class="text-center small gs-group-exam gs-divider-exam fw-semibold" title="Weighted Score ({{ $exWeightPercent }}%)">
+                                WS ({{ $exWeightPercent }}%)
                             </th>
 
                         </tr>
@@ -659,15 +671,15 @@
 
 
                             <td class="text-center small gs-group-written fw-semibold">
-                                HPS: {{ $assessmentsByCategory['written']->sum('total_items') }}
+                                {{ $assessmentsByCategory['written']->sum('total_items') }}
                             </td>
 
-                            <td class="text-center small gs-group-written text-muted">
-                                &mdash;
+                            <td class="text-center small gs-group-written fw-semibold">
+                                100
                             </td>
 
-                            <td class="text-center small gs-group-written gs-divider-written text-muted">
-                                &mdash;
+                            <td class="text-center small gs-group-written gs-divider-written fw-semibold">
+                                {{ $wwWeightPercent }}%
                             </td>
 
 
@@ -688,15 +700,15 @@
 
 
                             <td class="text-center small gs-group-performance fw-semibold">
-                                HPS: {{ $assessmentsByCategory['performance']->sum('total_items') }}
+                                {{ $assessmentsByCategory['performance']->sum('total_items') }}
                             </td>
 
-                            <td class="text-center small gs-group-performance text-muted">
-                                &mdash;
+                            <td class="text-center small gs-group-performance fw-semibold">
+                                100
                             </td>
 
-                            <td class="text-center small gs-group-performance gs-divider-performance text-muted">
-                                &mdash;
+                            <td class="text-center small gs-group-performance gs-divider-performance fw-semibold">
+                                {{ $ptWeightPercent }}%
                             </td>
 
 
@@ -717,15 +729,15 @@
 
 
                             <td class="text-center small gs-group-exam fw-semibold">
-                                HPS: {{ $assessmentsByCategory[$assessmentComponentKey]->sum('total_items') }}
+                                {{ $assessmentsByCategory[$assessmentComponentKey]->sum('total_items') }}
                             </td>
 
-                            <td class="text-center small gs-group-exam text-muted">
-                                &mdash;
+                            <td class="text-center small gs-group-exam fw-semibold">
+                                100
                             </td>
 
-                            <td class="text-center small gs-group-exam gs-divider-exam text-muted">
-                                &mdash;
+                            <td class="text-center small gs-group-exam gs-divider-exam fw-semibold">
+                                {{ $exWeightPercent }}%
                             </td>
 
                         </tr>
@@ -733,7 +745,7 @@
                     </thead>
 
 
-                    <tbody>
+                    <tbody data-tour="gradesheet-grid">
 
                         @php
                             $currentGroup = null;
@@ -756,7 +768,7 @@
                                     <td colspan="{{ $fixedSlots['written']
                                         + $fixedSlots['performance']
                                         + $fixedSlots[$assessmentComponentKey]
-                                        + 12 }}"
+                                        + 13 }}"
                                         class="learner-group-label">
 
                                         <span class="learner-group-label-inner">
@@ -866,7 +878,7 @@
                                     data-component="written"
                                     data-field="ps">
 
-                                    {{ $row->component_summaries['written']['ps'] ?? '—' }}
+                                    {{ isset($row->component_summaries['written']['ps']) && is_numeric($row->component_summaries['written']['ps']) ? number_format((float) $row->component_summaries['written']['ps'], 2) : '—' }}
 
                                 </td>
 
@@ -875,7 +887,7 @@
                                     data-component="written"
                                     data-field="ws">
 
-                                    {{ $row->component_summaries['written']['ws'] ?? '—' }}
+                                    {{ isset($row->component_summaries['written']['ws']) && is_numeric($row->component_summaries['written']['ws']) ? number_format((float) $row->component_summaries['written']['ws'], 2) : '—' }}
 
                                 </td>
 
@@ -931,7 +943,7 @@
                                     data-component="performance"
                                     data-field="ps">
 
-                                    {{ $row->component_summaries['performance']['ps'] ?? '—' }}
+                                    {{ isset($row->component_summaries['performance']['ps']) && is_numeric($row->component_summaries['performance']['ps']) ? number_format((float) $row->component_summaries['performance']['ps'], 2) : '—' }}
 
                                 </td>
 
@@ -940,7 +952,7 @@
                                     data-component="performance"
                                     data-field="ws">
 
-                                    {{ $row->component_summaries['performance']['ws'] ?? '—' }}
+                                    {{ isset($row->component_summaries['performance']['ws']) && is_numeric($row->component_summaries['performance']['ws']) ? number_format((float) $row->component_summaries['performance']['ws'], 2) : '—' }}
 
                                 </td>
 
@@ -985,7 +997,7 @@
                                     data-component="{{ $assessmentComponentKey }}"
                                     data-field="total">
 
-                                    {{ $row->component_summaries[$assessmentComponentKey]['total'] ?? ($row->component_summaries['exam']['total'] ?? ($row->component_summaries['quarterly']['total'] ?? '—')) }}
+                                    {{ $row->component_summaries[$assessmentComponentKey]['total'] ?? ($row->component_summaries['exam']['total'] ?? ($row->component_summaries['term_assessment']['total'] ?? '—')) }}
 
                                 </td>
 
@@ -994,7 +1006,10 @@
                                     data-component="{{ $assessmentComponentKey }}"
                                     data-field="ps">
 
-                                    {{ $row->component_summaries[$assessmentComponentKey]['ps'] ?? ($row->component_summaries['exam']['ps'] ?? ($row->component_summaries['quarterly']['ps'] ?? '—')) }}
+                                    @php
+                                        $exPs = $row->component_summaries[$assessmentComponentKey]['ps'] ?? ($row->component_summaries['exam']['ps'] ?? ($row->component_summaries['term_assessment']['ps'] ?? null));
+                                    @endphp
+                                    {{ $exPs !== null && is_numeric($exPs) ? number_format((float) $exPs, 2) : '—' }}
 
                                 </td>
 
@@ -1003,7 +1018,10 @@
                                     data-component="{{ $assessmentComponentKey }}"
                                     data-field="ws">
 
-                                    {{ $row->component_summaries[$assessmentComponentKey]['ws'] ?? ($row->component_summaries['exam']['ws'] ?? ($row->component_summaries['quarterly']['ws'] ?? '—')) }}
+                                    @php
+                                        $exWs = $row->component_summaries[$assessmentComponentKey]['ws'] ?? ($row->component_summaries['exam']['ws'] ?? ($row->component_summaries['term_assessment']['ws'] ?? null));
+                                    @endphp
+                                    {{ $exWs !== null && is_numeric($exWs) ? number_format((float) $exWs, 2) : '—' }}
 
                                 </td>
 
@@ -1011,7 +1029,7 @@
                                 {{-- INITIAL --}}
                                 <td class="text-center gs-divider-initial gs-initial-cell">
 
-                                    {{ $row->initial_grade ?? '—' }}
+                                    {{ isset($row->initial_grade) && is_numeric($row->initial_grade) ? number_format((float) $row->initial_grade, 2) : ($row->initial_grade ?? '—') }}
 
                                 </td>
 
@@ -1040,7 +1058,7 @@
                                 <td colspan="{{ $fixedSlots['written']
                                     + $fixedSlots['performance']
                                     + $fixedSlots[$assessmentComponentKey]
-                                    + 12 }}"
+                                    + 13 }}"
                                     class="text-center text-muted py-4">
 
                                     No learners found.
@@ -1162,11 +1180,11 @@
     #gradeSheetTable thead tr:first-child th.gs-group-written,
     #gradeSheetTable thead tr:first-child th.gs-group-performance,
     #gradeSheetTable thead tr:first-child th.gs-group-exam,
-    #gradeSheetTable thead tr:first-child th.gs-group-quarterly,
+    #gradeSheetTable thead tr:first-child th.gs-group-term-assessment,
     #gradeSheetTable thead tr:nth-child(2) th.gs-group-written,
     #gradeSheetTable thead tr:nth-child(2) th.gs-group-performance,
     #gradeSheetTable thead tr:nth-child(2) th.gs-group-exam,
-    #gradeSheetTable thead tr:nth-child(2) th.gs-group-quarterly,
+    #gradeSheetTable thead tr:nth-child(2) th.gs-group-term-assessment,
     #gradeSheetTable thead .gs-assessment-header {
         background: #3b56c4 !important;
         background-color: #3b56c4 !important;
@@ -1193,14 +1211,14 @@
     #gradeSheetTable thead th.gs-divider-written,
     #gradeSheetTable thead th.gs-divider-performance,
     #gradeSheetTable thead th.gs-divider-exam,
-    #gradeSheetTable thead th.gs-divider-quarterly,
+    #gradeSheetTable thead th.gs-divider-term-assessment,
     #gradeSheetTable thead th.gs-divider-initial,
     #gradeSheetTable thead th.gs-divider-transmuted,
     #gradeSheetTable tbody td:first-child,
     #gradeSheetTable tbody td.gs-divider-written,
     #gradeSheetTable tbody td.gs-divider-performance,
     #gradeSheetTable tbody td.gs-divider-exam,
-    #gradeSheetTable tbody td.gs-divider-quarterly,
+    #gradeSheetTable tbody td.gs-divider-term-assessment,
     #gradeSheetTable tbody td.gs-divider-initial,
     #gradeSheetTable tbody td.gs-divider-transmuted {
         box-shadow: inset -3px 0 0 #b5c2ea !important;
@@ -1415,7 +1433,7 @@
                 <div class="text-center text-muted py-5 border rounded bg-light">
                     <i class="fa-solid fa-circle-check fa-2x mb-2 d-block text-success"></i>
                     <strong class="d-block mb-1 text-dark">No Additional Assessments</strong>
-                    <span>All assessments for this term are within the visible Grade Sheet columns (WW1–WW5, PT1–PT5, EX1–EX3).</span>
+                    <span>All assessments for this term are within the visible Grade Sheet columns (WW1–WW5, PT1–PT3, EX1–EX3).</span>
                 </div>
             `;
 
@@ -2150,7 +2168,10 @@
                                     const row = document.querySelector(`tr[data-enrollment-id="${enrollmentId}"]`);
                                     if (row) {
                                         const initialCell = row.querySelector('.gs-initial-cell');
-                                        if (initialCell) initialCell.textContent = data.initial_grade ?? '—';
+                                        if (initialCell) {
+                                            const initVal = data.initial_grade;
+                                            initialCell.textContent = (initVal !== null && initVal !== undefined && initVal !== '' && !isNaN(initVal)) ? Number(initVal).toFixed(2) : (initVal ?? '—');
+                                        }
                                         const transmutedCell = row.querySelector('.gs-transmuted-cell');
                                         if (transmutedCell) transmutedCell.textContent = data.transmuted_grade ?? '—';
                                         const descriptorCell = row.querySelector('.gs-descriptor-cell');
@@ -2302,15 +2323,13 @@
                                 '.gs-initial-cell'
                             );
 
-
                         if (initialCell) {
-
+                            const initVal = data.initial_grade;
                             initialCell.textContent =
-                                data.initial_grade ??
-                                '—';
-
+                                (initVal !== null && initVal !== undefined && initVal !== '' && !isNaN(initVal))
+                                    ? Number(initVal).toFixed(2)
+                                    : (initVal ?? '—');
                         }
-
 
                         // Transmuted Grade
                         const transmutedCell =
@@ -2318,15 +2337,11 @@
                                 '.gs-transmuted-cell'
                             );
 
-
                         if (transmutedCell) {
-
                             transmutedCell.textContent =
                                 data.transmuted_grade ??
                                 '—';
-
                         }
-
 
                         // Descriptor
                         const descriptorCell =
@@ -2334,21 +2349,16 @@
                                 '.gs-descriptor-cell'
                             );
 
-
                         if (descriptorCell) {
-
                             descriptorCell.textContent =
                                 data.descriptor ??
                                 '—';
-
                         }
-
 
                         // Component summaries
                         if (
                             data.component_summaries
                         ) {
-
                             Object.entries(
                                 data.component_summaries
                             )
@@ -2359,34 +2369,31 @@
                                         summary
                                     ]
                                 ) => {
-
                                     [
                                         'total',
                                         'ps',
                                         'ws'
                                     ].forEach(
                                         field => {
-
                                             const cell =
                                                 row.querySelector(
                                                     `.gs-summary-cell[data-component="${component}"][data-field="${field}"]`
                                                 );
 
-
                                             if (cell) {
-
-                                                cell.textContent =
-                                                    summary[field] ??
-                                                    '—';
-
+                                                const val = summary[field];
+                                                if (val !== null && val !== undefined && val !== '' && !isNaN(val)) {
+                                                    cell.textContent = (field === 'ps' || field === 'ws')
+                                                        ? Number(val).toFixed(2)
+                                                        : val;
+                                                } else {
+                                                    cell.textContent = '—';
+                                                }
                                             }
-
                                         }
                                     );
-
                                 }
                             );
-
                         }
 
 

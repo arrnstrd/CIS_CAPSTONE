@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SchoolAdmin\Academic;
 
+use App\Events\SectionUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Section;
 use App\Models\Teacher;
@@ -14,11 +15,17 @@ class SectionController extends Controller
 {
     public static function sectionIndexQuery(?string $search = null, ?string $status = null, $gradeLevel = null): Builder
     {
+        $activeSchoolYear = \App\Models\SchoolYear::query()->active()->first();
+        
         return Section::with('advisor.user')
             ->filterGradeLevel($gradeLevel)
             ->filterStatus($status)
             ->search($search)
-            ->withCount('students')
+            ->withCount(['students' => function ($query) use ($activeSchoolYear) {
+                if ($activeSchoolYear) {
+                    $query->where('enrollments.school_year_id', $activeSchoolYear->id);
+                }
+            }])
             ->orderBy('grade_level')
             ->orderBy('name');
     }
@@ -106,13 +113,19 @@ class SectionController extends Controller
         try {
             $section = Section::create($validatedData);
 
+            try {
+                SectionUpdated::dispatch('created', $section->toArray());
+            } catch (\Throwable $e) {
+            }
+
             return response()->json([
                 'message' => 'Section created successfully',
                 'data' => $section
             ]);
         } catch (QueryException $e) {
+            \Illuminate\Support\Facades\Log::error('Section store error: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json([
-                'message' => 'Unable to create section.',
+                'message' => 'Unable to create section due to a database constraint or duplicate entry. Please verify inputs.',
             ], 422);
         }
     }
@@ -129,13 +142,57 @@ class SectionController extends Controller
         try {
             $section->update($validatedData);
 
+            try {
+                SectionUpdated::dispatch('updated', $section->toArray());
+            } catch (\Throwable $e) {
+            }
+
             return response()->json([
                 'message' => 'Section updated successfully',
                 'data' => $section->fresh()->load('advisor')
             ]);
         } catch (QueryException $e) {
+            \Illuminate\Support\Facades\Log::error('Section update error: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json([
-                'message' => 'Unable to update section.',
+                'message' => 'Unable to update section due to a database constraint or duplicate entry. Please verify inputs.',
+            ], 422);
+        }
+    }
+
+    public function updateAdvisor(Request $request, Section $section)
+    {
+        $validatedData = $request->validate([
+            'advisor_id' => [
+                'nullable',
+                'exists:teachers,id',
+                Rule::unique('sections', 'advisor_id')
+                    ->ignore($section->id)
+                    ->whereNotNull('advisor_id'),
+            ],
+        ], [
+            'advisor_id.unique' => 'The selected teacher is already assigned as an adviser to another section.',
+        ]);
+
+        try {
+            $section->update([
+                'advisor_id' => $validatedData['advisor_id'] ?? null,
+            ]);
+
+            $section->load(['advisor.user']);
+
+            try {
+                SectionUpdated::dispatch('updated', $section->toArray());
+            } catch (\Throwable $e) {
+            }
+
+            return response()->json([
+                'message' => $section->advisor_id ? 'Section adviser assigned successfully.' : 'Section adviser unassigned successfully.',
+                'data' => $section,
+            ]);
+        } catch (QueryException $e) {
+            \Illuminate\Support\Facades\Log::error('Section adviser update error: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'message' => 'Unable to update section adviser.',
             ], 422);
         }
     }
@@ -155,13 +212,19 @@ class SectionController extends Controller
                 'status' => 'inactive'
             ]);
 
+            try {
+                SectionUpdated::dispatch('deleted', $section->toArray());
+            } catch (\Throwable $e) {
+            }
+
             return response()->json([
                 'message' => 'Section archived successfully',
                 'data' => $section->fresh()
             ]);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Section archive error: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json([
-                'message' => 'Failed to archive the section',
+                'message' => 'Failed to archive the section. Please try again.',
             ], 500);
         }
     }
@@ -186,8 +249,9 @@ class SectionController extends Controller
                 'data' => $section->fresh()
             ]);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Section restore error: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json([
-                'message' => 'Failed to restore the section',
+                'message' => 'Failed to restore the section. Please try again.',
             ], 500);
         }
     }
@@ -216,9 +280,74 @@ class SectionController extends Controller
                 'message' => 'Section permanently deleted successfully.'
             ]);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Section force delete error: ' . $e->getMessage(), ['exception' => $e]);
             return response()->json([
                 'message' => 'Failed to permanently delete section. It may have associated records (e.g. enrollments or teaching assignments).',
             ], 500);
         }
+    }
+
+    /**
+     * Bulk archive (soft delete) multiple sections.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'integer', 'exists:sections,id'],
+        ]);
+
+        $ids = $request->input('ids', []);
+
+        $sections = Section::whereIn('id', $ids)
+            ->where('status', 'active')
+            ->get();
+
+        $count = 0;
+        foreach ($sections as $section) {
+            $section->update(['status' => 'inactive']);
+            try {
+                SectionUpdated::dispatch('deleted', $section->toArray());
+            } catch (\Throwable $e) {
+            }
+            $count++;
+        }
+
+        return response()->json([
+            'message' => $count . ' section(s) archived successfully.',
+            'affected' => $count,
+        ]);
+    }
+
+    /**
+     * Bulk restore multiple sections.
+     */
+    public function bulkRestore(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'integer', 'exists:sections,id'],
+        ]);
+
+        $ids = $request->input('ids', []);
+
+        $sections = Section::whereIn('id', $ids)
+            ->where('status', 'inactive')
+            ->get();
+
+        $count = 0;
+        foreach ($sections as $section) {
+            $section->update(['status' => 'active']);
+            try {
+                SectionUpdated::dispatch('restored', $section->toArray());
+            } catch (\Throwable $e) {
+            }
+            $count++;
+        }
+
+        return response()->json([
+            'message' => $count . ' section(s) restored successfully.',
+            'affected' => $count,
+        ]);
     }
 }

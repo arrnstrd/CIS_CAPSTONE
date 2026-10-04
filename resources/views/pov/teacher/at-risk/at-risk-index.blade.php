@@ -90,10 +90,20 @@
 
         </div>
 
+        <div>
+            <button type="button" 
+                    id="bulkInterveneBtn" 
+                    class="btn btn-sm btn-primary d-none" 
+                    style="font-weight: 500;">
+                <i class="fa-solid fa-paper-plane me-1"></i>
+                <span id="bulkInterveneText">Intervene (0 selected)</span>
+            </button>
+        </div>
+
     </div>
 
 
-    <div class="table-panel">
+    <div class="table-panel" data-tour="teacher-at-risk-table">
 
         <div class="table-responsive">
 
@@ -102,6 +112,9 @@
                 <thead>
 
                     <tr>
+                        <th style="width: 38px;" class="text-center">
+                            <input type="checkbox" id="selectAllStudents" class="form-check-input" style="cursor: pointer;" title="Select all students">
+                        </th>
                         <th>Student</th>
                         <th>Class</th>
                         <th>Average</th>
@@ -170,6 +183,15 @@
 
 
                         <tr>
+
+                            {{-- Checkbox --}}
+                            <td class="text-center">
+                                <input type="checkbox" 
+                                       class="form-check-input student-row-chk" 
+                                       value="{{ $s->enrollment_id }}" 
+                                       style="cursor: pointer;"
+                                       data-name="{{ $s->name }}">
+                            </td>
 
                             {{-- Student --}}
                             <td>
@@ -302,7 +324,7 @@
 
                         <tr>
 
-                            <td colspan="8"
+                            <td colspan="9"
                                 class="text-center text-muted py-5">
 
                                 <div class="mb-2">
@@ -334,6 +356,75 @@
     </div>
 
 </div>
-```
+
+@include('pov.teacher.at-risk.partials.intervention-modal')
+
+{{-- Selection management script for bulk intervention --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAllStudents');
+    const rowCheckboxes = document.querySelectorAll('.student-row-chk');
+    const bulkBtn = document.getElementById('bulkInterveneBtn');
+    const bulkText = document.getElementById('bulkInterveneText');
+
+    function updateBulkButton() {
+        const checked = Array.from(rowCheckboxes).filter(cb => cb.checked);
+        const count = checked.length;
+        if (count > 0) {
+            bulkBtn.classList.remove('d-none');
+            bulkText.textContent = `Intervene (${count} selected)`;
+            bulkBtn.disabled = false;
+        } else {
+            bulkBtn.classList.add('d-none');
+            bulkText.textContent = `Intervene (0 selected)`;
+            bulkBtn.disabled = true;
+        }
+
+        if (selectAll) {
+            selectAll.checked = rowCheckboxes.length > 0 && checked.length === rowCheckboxes.length;
+            selectAll.indeterminate = checked.length > 0 && checked.length < rowCheckboxes.length;
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            rowCheckboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+            updateBulkButton();
+        });
+    }
+
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkButton);
+    });
+
+    if (bulkBtn) {
+        bulkBtn.addEventListener('click', function () {
+            const selectedIds = Array.from(rowCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            if (selectedIds.length === 0) return;
+
+            if (typeof window.openInterventionModal === 'function') {
+                window.openInterventionModal(selectedIds, true);
+            }
+        });
+    }
+
+    // Handle student deselection when removed from modal queue
+    window.addEventListener('intervention-student-removed', function (e) {
+        const enrollmentId = e.detail?.enrollment_id;
+        if (!enrollmentId) return;
+        rowCheckboxes.forEach(cb => {
+            if (cb.value == enrollmentId) {
+                cb.checked = false;
+            }
+        });
+        updateBulkButton();
+    });
+});
+</script>
 
 </x-layouts.teacher>

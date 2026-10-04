@@ -32,17 +32,6 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function appearance(Request $request)
-    {
-        $user = $request->user();
-        $dashboardPreferences = $user->getOrCreateDashboardPreference();
-
-        return view('pov.teacher.settings.appearance', [
-            'user' => $user,
-            'dashboardPreferences' => $dashboardPreferences,
-        ]);
-    }
-
     public function dashboard(Request $request)
     {
         $user = $request->user();
@@ -159,20 +148,4 @@ class SettingsController extends Controller
             ->with('success', 'Dashboard preferences updated successfully.');
     }
 
-    public function updateAppearance(Request $request)
-    {
-        $user = $request->user();
-
-        $request->validate([
-            'theme' => ['required', 'string', 'in:light,dark,system'],
-        ]);
-
-        $dashboardPreferences = $user->getOrCreateDashboardPreference();
-        $dashboardPreferences->update([
-            'theme' => $request->input('theme', 'system'),
-        ]);
-
-        return redirect()->route('teacher.settings.appearance')
-            ->with('success', 'Appearance preferences updated successfully.');
-    }
 }

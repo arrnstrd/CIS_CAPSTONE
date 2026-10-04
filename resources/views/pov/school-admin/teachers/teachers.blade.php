@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
 
     <x-slot name="title">Teachers</x-slot>
 
@@ -15,7 +15,7 @@
                 <h3 class="fw-semibold text-dark m-0 fs-5">Teacher Directory</h3>
             </div>
 
-            <form method="GET" id="teacherFilterForm">
+            <form method="GET" id="teacherFilterForm" data-tour="teachers-filter-bar">
                 <div class="row g-3 align-items-center">
 
                     <div class="col-lg-8 col-md-7">
@@ -55,6 +55,7 @@
         </div>
     </div>
 
+    <div data-tour="teachers-table">
     <x-ui.table>
         <x-slot>
 
@@ -113,10 +114,11 @@
 
         </x-slot>
     </x-ui.table>
+    </div>
 
     <!-- Pagination -->
     <div class="px-3 py-3">
         {{ $teachers->links() }}
     </div>
 
-</x-layouts.admin>
+</x-layouts.school-admin>

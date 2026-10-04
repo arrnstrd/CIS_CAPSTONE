@@ -42,7 +42,7 @@ The platform automates school operations across four foundational pillars:
 ### 3. Trimester Grading Engine
 * **Actors:** Subject Teachers, School Admin.
 * **Functionality:** Continuous assessment and periodic grading.
-* **Mechanism:** Strictly structured around three grading periods (Trimesters) compliant with DepEd standards. Teachers enter assessment scores across Written Works (WW), Performance Tasks (PT), and Quarterly/Term Assessments (QA). The `GradingService` dynamically calculates weighted initial grades and transmutes them using standard DepEd transmutation tables.
+* **Mechanism:** Strictly structured around three grading periods (Trimesters) compliant with DepEd standards. Teachers enter assessment scores across Written Works (WW), Performance Tasks (PT), and Term Assessments (QA). The `GradingService` dynamically calculates weighted initial grades and transmutes them using standard DepEd transmutation tables.
 
 ### 4. Student Profiling & DepEd Reporting
 * **Actors:** School Admin, Super Admin, Teachers.

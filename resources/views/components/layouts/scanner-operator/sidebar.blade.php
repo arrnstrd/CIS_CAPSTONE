@@ -11,12 +11,12 @@
     $roleName = $currentUser?->role_label ?? 'Scanner Operator';
 @endphp
 
-<nav id="sidebar" class="sidebar-wrapper">
+<nav id="sidebar" class="scanner-sidebar-wrapper">
 
-    <div class="sidebar-content">
+    <div class="scanner-sidebar-content">
 
         <!-- Brand -->
-        <div class="sidebar-brand d-flex flex-column py-4 px-4">
+        <div class="scanner-sidebar-brand d-flex flex-column py-4 px-4">
             <h5 class="text-white mb-0 fw-bold">
                 QR STATION OPERATOR
             </h5>
@@ -26,7 +26,7 @@
         </div>
 
         <!-- Navigation Menu -->
-        <div class="sidebar-menu">
+        <div class="scanner-sidebar-menu">
             <ul>
                 <!-- DASHBOARD -->
                 <li class="{{ request()->routeIs('scanner_operator.dashboard') || request()->is('scanner/dashboard') ? 'active' : '' }}">
@@ -37,7 +37,7 @@
                 </li>
 
                 <!-- SCANNER STATION -->
-                <li class="sidebar-section-label">
+                <li class="scanner-sidebar-section-label">
                     <small>ATTENDANCE TERMINAL</small>
                 </li>
                 <li class="{{ request()->routeIs('qr-station.*') || request()->is('qr-station*') ? 'active' : '' }}">
@@ -58,17 +58,17 @@
     </div>
 
     <!-- User Profile Footer -->
-    <div class="sidebar-footer">
-        <div class="sidebar-user-block">
-            <div class="sidebar-user-avatar">
+    <div class="scanner-sidebar-footer">
+        <div class="scanner-sidebar-user-block">
+            <div class="scanner-sidebar-user-avatar">
                 {{ $initials }}
             </div>
-            <div class="sidebar-user-info">
-                <span class="sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
-                <span class="sidebar-user-role">{{ $roleName }}</span>
+            <div class="scanner-sidebar-user-info">
+                <span class="scanner-sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
+                <span class="scanner-sidebar-user-role">{{ $roleName }}</span>
             </div>
             <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
-                class="sidebar-logout-btn" title="Log Out" aria-label="Log Out">
+                class="scanner-sidebar-logout-btn" title="Log Out" aria-label="Log Out">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
         </div>

@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">
         Grade {{ $grade }} — {{ $section->name }} Students
     </x-slot>
@@ -11,25 +11,26 @@
         Students · {{ $section->name }}
     </x-slot>
 
+    {{-- Top Section Navigation Bar --}}
     <div class="col mb-3 mx-2">
-        <div class="bg-white rounded p-4 border">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div class="bg-white rounded p-4 border shadow-sm">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <h3 class="fw-semibold text-dark m-0 fs-5">Section {{ $section->name }}</h3>
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill">
-                            <i class="fas fa-chalkboard-user me-1"></i> Adviser: {{ $section->advisor?->full_name ?? 'Not Assigned' }}
-                        </span>
+                        <h3 class="fw-semibold text-dark m-0 fs-5">Grade {{ $grade }} — Section {{ $section->name }}</h3>
                         <span class="badge bg-light text-secondary border px-2.5 py-1 rounded-pill">
                             Grade {{ $grade }}
                         </span>
+                        <span class="badge bg-light text-secondary border px-2.5 py-1 rounded-pill">
+                            Capacity: {{ $section->capacity }}
+                        </span>
                     </div>
                     <p class="text-muted small mb-0 mt-1">
-                        Students currently enrolled in Section {{ $section->name }}.
+                        Viewing class roster, faculty assignments, and section administration.
                     </p>
                 </div>
 
-                <div class="d-flex gap-2 align-items-center flex-wrap">
+                <div class="d-flex gap-2 align-items-center flex-wrap" data-tour="students-roster-actions">
                     <a href="{{ route('student-management.grade', $grade) }}" class="btn btn-outline-secondary px-3 py-2 rounded-3 d-inline-flex align-items-center gap-1.5">
                         <i class="fas fa-arrow-left fa-sm"></i>
                         <span>Back to Sections</span>
@@ -40,9 +41,89 @@
                         <span>Bulk Import</span>
                     </a>
 
-                    <button class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-inline-flex align-items-center gap-1.5"
-                        data-bs-toggle="modal" data-bs-target="#addStudentModal" data-grade="{{ $grade }}"
-                        data-default-section="{{ $section->id }}">
+                    <button type="button" class="btn btn-outline-success px-3 py-2 rounded-3 d-inline-flex align-items-center gap-1.5 fw-medium"
+                        data-bs-toggle="modal" data-bs-target="#exportFormatModal"
+                        title="Download XLSX file for this section">
+                        <i class="fas fa-file-excel fa-sm"></i>
+                        <span>Download XLSX</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Context Blocks: Advisor & Teacher Assignments --}}
+    <div class="col mb-3 mx-2">
+        <div class="row g-3" data-tour="students-roster-advisor">
+            {{-- Advisor Block --}}
+            <div class="col-12 col-md-6">
+                <div class="bg-white rounded p-3 border shadow-sm h-100 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Advisor</span>
+                        <span class="fw-semibold text-dark {{ $section->advisor ? '' : 'text-muted' }}">
+                            {{ $section->advisor?->full_name ?? 'No advisor assigned' }}
+                        </span>
+                    </div>
+
+                    @if ($section->advisor)
+                        <button type="button" class="btn btn-outline-dark btn-sm px-3 py-1.5 rounded-3 fw-medium"
+                            data-bs-toggle="offcanvas" data-bs-target="#viewAdvisorDrawer">
+                            View Advisor
+                        </button>
+                    @else
+                        <button type="button" class="btn btn-dark btn-sm px-3 py-1.5 rounded-3 fw-medium"
+                            data-bs-toggle="offcanvas" data-bs-target="#assignAdvisorDrawer"
+                            data-section-id="{{ $section->id }}" data-section-name="{{ $section->name }}" data-grade="{{ $grade }}">
+                            Assign Advisor
+                        </button>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Teacher Assignments Block --}}
+            <div class="col-12 col-md-6">
+                <div class="bg-white rounded p-3 border shadow-sm h-100 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small text-uppercase fw-semibold d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Teacher Assignments</span>
+                        <span class="fw-semibold text-dark {{ $teachingAssignments->isNotEmpty() ? '' : 'text-muted' }}">
+                            {{ $teachingAssignments->isNotEmpty() ? $teachingAssignments->count() . ' Allocated' : 'No teacher assignments' }}
+                        </span>
+                    </div>
+
+                    @if ($teachingAssignments->isNotEmpty())
+                        <button type="button" class="btn btn-outline-dark btn-sm px-3 py-1.5 rounded-3 fw-medium"
+                            data-bs-toggle="offcanvas" data-bs-target="#viewAssignmentsDrawer">
+                            View Assignments
+                        </button>
+                    @else
+                        <button type="button" class="btn btn-dark btn-sm px-3 py-1.5 rounded-3 fw-medium d-inline-flex align-items-center gap-1"
+                            data-bs-toggle="offcanvas" data-bs-target="#assignTeacherDrawer"
+                            data-section-id="{{ $section->id }}" data-section-name="{{ $section->name }}" data-grade="{{ $grade }}">
+                            <i class="fas fa-plus fa-xs"></i>
+                            <span>Assign Teacher</span>
+                        </button>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Students Area --}}
+    <div class="col mb-3 mx-2">
+        <div class="bg-white rounded p-4 border shadow-sm">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <div>
+                    <h3 class="fw-bold text-dark m-0 fs-5">Students</h3>
+                    <p class="text-muted small mb-0 mt-0.5">
+                        Enrolled class roster for Section {{ $section->name }} ({{ $students->total() }} total).
+                    </p>
+                </div>
+
+                {{-- Action: [+ Add Student] positioned locally within student list header --}}
+                <div>
+                    <button data-tour="students-roster-add" class="btn btn-dark px-3 py-2 rounded-3 fw-medium d-inline-flex align-items-center gap-1.5"
+                        data-bs-toggle="offcanvas" data-bs-target="#addStudentDrawer" data-grade="{{ $grade }}"
+                        data-section-id="{{ $section->id }}" data-section-name="{{ $section->name }}">
                         <i class="fas fa-plus fa-sm"></i>
                         <span>Add Student</span>
                     </button>
@@ -50,15 +131,14 @@
             </div>
 
             {{-- Icon-Driven Filter Toolbar --}}
-            <div class="row g-2.5 align-items-center">
-                
+            <div class="row g-2.5 align-items-center" data-tour="students-roster-search">
                 {{-- Search Box --}}
                 <div class="col-12 col-md-5 col-lg-4">
                     <form action="{{ route('student-management.section', ['grade' => $grade, 'section' => $section->id]) }}" method="GET" class="d-flex">
                         @if(request('sort')) <input type="hidden" name="sort" value="{{ request('sort') }}"> @endif
                         @if(request('school_year_id')) <input type="hidden" name="school_year_id" value="{{ request('school_year_id') }}"> @endif
                         @if(request('status')) <input type="hidden" name="status" value="{{ request('status') }}"> @endif
-                        
+
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted">
                                 <i class="fas fa-search fa-sm"></i>
@@ -72,7 +152,6 @@
                 {{-- Full Icon Filter Dropdowns --}}
                 <div class="col-12 col-md-7 col-lg-8">
                     <div class="d-flex align-items-center gap-2 flex-wrap justify-content-md-end">
-                        
                         {{-- Sort Icon Filter --}}
                         @php
                             $sort = request('sort', 'last_name_asc');
@@ -182,14 +261,14 @@
                                 <i class="fas fa-times"></i>
                             </a>
                         @endif
-
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
+    {{-- Students Table --}}
+    <div data-tour="students-roster-table">
     <x-ui.table>
         <x-slot>
             <thead class="text-uppercase">
@@ -252,11 +331,11 @@
                                     <i class="fas fa-eye fa-xs"></i>
                                 </a>
 
-                                {{-- Edit Action Icon --}}
+                                {{-- Edit Action Icon (Right-Side Sliding Drawer) --}}
                                 <button type="button"
                                     class="btn btn-sm btn-outline-secondary rounded-2 d-inline-flex align-items-center justify-content-center"
                                     style="width: 32px; height: 32px;"
-                                    data-bs-toggle="modal" data-bs-target="#editStudentModal"
+                                    data-bs-toggle="offcanvas" data-bs-target="#editStudentDrawer"
                                     data-id="{{ $student->id }}"
                                     data-lrn="{{ $student->lrn }}" data-first_name="{{ $student->first_name }}"
                                     data-middle_name="{{ $student->middle_name }}"
@@ -283,7 +362,6 @@
                                     <button type="submit"
                                         class="btn btn-sm btn-outline-danger rounded-2 d-inline-flex align-items-center justify-content-center"
                                         style="width: 32px; height: 32px;"
-                                        onclick="return confirm('Are you sure you want to delete this student?');"
                                         title="Delete Student">
                                         <i class="fas fa-trash fa-xs"></i>
                                     </button>
@@ -305,12 +383,24 @@
             </tbody>
         </x-slot>
     </x-ui.table>
+    </div>
 
     <div class="px-3 py-3">
         {{ $students->links() }}
     </div>
 
-    @include('pov.school-admin.students.partials.add-student-modal')
-    @include('pov.school-admin.students.partials.edit-student-modal')
+    {{-- Right-Side Sliding Drawers (~30% screen width, Zero Modals) --}}
+    {{-- Type A: View / Overview Panels --}}
+    @include('pov.school-admin.students.drawers.view-advisor-drawer', ['selectedGrade' => $grade, 'activeSection' => $section, 'students' => $students])
+    @include('pov.school-admin.students.drawers.view-assignments-drawer', ['selectedGrade' => $grade, 'activeSection' => $section, 'teachingAssignments' => $teachingAssignments])
 
-</x-layouts.admin>
+    {{-- Type B: Add / Assign Panels --}}
+    @include('pov.school-admin.students.drawers.add-student-drawer', ['selectedGrade' => $grade, 'activeSection' => $section])
+    @include('pov.school-admin.students.drawers.assign-advisor-drawer', ['selectedGrade' => $grade, 'activeSection' => $section, 'teachers' => $teachers, 'allSections' => $allSections])
+    @include('pov.school-admin.students.drawers.assign-teacher-drawer', ['selectedGrade' => $grade, 'activeSection' => $section, 'teachers' => $teachers, 'subjects' => $subjects, 'schoolYears' => $schoolYears, 'activeSchoolYear' => $activeSchoolYear])
+    @include('pov.school-admin.students.drawers.edit-student-drawer', ['allSections' => $allSections, 'schoolYears' => $schoolYears])
+
+    {{-- Export Modal Utility --}}
+    @include('pov.school-admin.students.partials.export-format-modal', ['exportRoute' => route('student-management.section.export', ['grade' => $grade, 'section' => $section->id])])
+
+</x-layouts.school-admin>

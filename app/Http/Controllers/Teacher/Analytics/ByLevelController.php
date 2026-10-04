@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\Enrollment;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\TeachingAssignment;
 use Illuminate\Http\Request;
 
@@ -45,7 +45,7 @@ class ByLevelController extends Controller
                 ->where('status', 'active')
                 ->get();
 
-            $gradesByEnrollment = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $gradesByEnrollment = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade')
                 ->get()
                 ->groupBy('enrollment_id');
@@ -87,7 +87,7 @@ class ByLevelController extends Controller
             $enrollmentIds = $enrollments->pluck('id');
             $totalStudents = $enrollmentIds->count();
 
-            $gradesByEnrollment = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $gradesByEnrollment = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade')
                 ->get()
                 ->groupBy('enrollment_id');
@@ -129,7 +129,7 @@ class ByLevelController extends Controller
         $subjectRows = collect();
         foreach ($teachingAssignments->groupBy(fn ($ta) => $ta->subject->name) as $subjectName => $assignments) {
             $taIds = $assignments->pluck('id');
-            $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade')
                 ->get();
 
@@ -147,13 +147,13 @@ class ByLevelController extends Controller
 
         // ----- TERM VIEW -----
         $taIds = $teachingAssignments->pluck('id');
-        $gradingPeriods = GradingPeriod::orderBy('sequence')->where('sequence', '<=', 3)->get();
+        $gradingPeriods = GradingPeriod::orderBy('sequence')->trimester()->get();
         $termLabels = [];
         $termAvg = [];
         $termPassing = [];
 
         foreach ($gradingPeriods as $period) {
-            $periodGrades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $periodGrades = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->where('grading_period_id', $period->id)
                 ->whereNotNull('transmuted_grade')
                 ->get();

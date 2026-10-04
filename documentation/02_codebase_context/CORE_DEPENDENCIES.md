@@ -46,6 +46,13 @@ This document catalogs third-party dependencies utilized in `CIS_CAPSTONE`, expl
 * **Purpose:** UI Component Library.
 * **Usage:** Powers responsive grid systems, modal dialogs, navigation bars, and dropdown menus across all administrative and teacher layouts.
 
+> [!IMPORTANT]
+> **Bootstrap 5 is the only CSS framework in use. Tailwind CSS is NOT installed and must NOT be used.**
+> Bootstrap 5 spacing utilities use integer steps only: `p-0` through `p-5`, `m-0` through `m-5`, `gap-0` through `gap-5`.
+> Fractional classes such as `p-2.5`, `gap-2.5`, `py-0.5`, `mt-1.5` are **Tailwind CSS syntax** and will silently produce zero styling in this project.
+> All custom spacing beyond Bootstrap's scale must be written as inline `style=""` attributes or in the appropriate `resources/css/pov/<role>/<page>/<page>.css` file.
+
 ### `@fortawesome/fontawesome-free` (`^7.2.0`)
 * **Purpose:** Iconography.
 * **Usage:** Unified iconography throughout the application sidebars, status badges, action buttons, and dashboard telemetry widgets.
+

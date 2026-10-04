@@ -1,6 +1,6 @@
-<div class="modal fade" id="{{ $id }}" tabindex="-1">
+<div class="modal fade {{ $animation ?? 'modal-anim-slide' }}" id="{{ $id }}" tabindex="-1">
 
-    <div class="modal-dialog {{ $size ?? 'modal-lg' }}">
+    <div class="modal-dialog {{ $size ?? 'modal-lg' }} {{ $centered ? 'modal-dialog-centered' : '' }}">
 
         <div class="modal-content">
 

@@ -1,0 +1,287 @@
+<svg width="860" height="760" viewBox="0 0 860 760" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        .tbl-bg { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5px; }
+        .tbl-hdr { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5px; }
+        .tbl-div { stroke: #000000; stroke-width: 0.75px; }
+        .tbl-title { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 800; fill: #000000; letter-spacing: 0.3px; }
+        .col-key { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 11px; font-weight: 800; fill: #000000; }
+        .col-name { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 12px; font-weight: 600; fill: #000000; }
+        .col-type { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 10.5px; font-style: italic; font-weight: 500; fill: #222222; }
+        .conn-line { fill: none; stroke: #000000; stroke-width: 1.5px; }
+    </style>
+    <rect width="860" height="760" fill="#FFFFFF"/>
+    <text x="35" y="26" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="14" font-weight="800" fill="#000000" letter-spacing="0.5px">Section 3: Hardware Scans, Gates &amp; Attendance Tracking</text>
+    <line x1="35" y1="34" x2="825" y2="34" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- ==================== TABLE: users ==================== -->
+    <rect x="50" y="50" width="340" height="118" class="tbl-bg"/>
+    <rect x="50" y="50" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="70" text-anchor="middle" class="tbl-title">users</text>
+    <!-- Row 0: id -->
+    <text x="58" y="95" class="col-key">[PK]</text>
+    <text x="96" y="95" class="col-name">id</text>
+    <text x="382" y="95" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="102" x2="390" y2="102" class="tbl-div"/>
+    <!-- Row 1: first_name -->
+    <text x="62" y="117" class="col-name">first_name</text>
+    <text x="382" y="117" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="50" y1="124" x2="390" y2="124" class="tbl-div"/>
+    <!-- Row 2: last_name -->
+    <text x="62" y="139" class="col-name">last_name</text>
+    <text x="382" y="139" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="50" y1="146" x2="390" y2="146" class="tbl-div"/>
+    <!-- Row 3: role -->
+    <text x="62" y="161" class="col-name">role</text>
+    <text x="382" y="161" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: schedule_configs ==================== -->
+    <rect x="50" y="190" width="340" height="206" class="tbl-bg"/>
+    <rect x="50" y="190" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="210" text-anchor="middle" class="tbl-title">schedule_configs</text>
+    <!-- Row 0: id -->
+    <text x="58" y="235" class="col-key">[PK]</text>
+    <text x="96" y="235" class="col-name">id</text>
+    <text x="382" y="235" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="242" x2="390" y2="242" class="tbl-div"/>
+    <text x="62" y="257" class="col-name">level</text>
+    <text x="382" y="257" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="264" x2="390" y2="264" class="tbl-div"/>
+    <text x="62" y="279" class="col-name">session_type</text>
+    <text x="382" y="279" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="286" x2="390" y2="286" class="tbl-div"/>
+    <text x="62" y="301" class="col-name">in_start</text>
+    <text x="382" y="301" text-anchor="end" class="col-type">TIME</text>
+    <line x1="50" y1="308" x2="390" y2="308" class="tbl-div"/>
+    <text x="62" y="323" class="col-name">in_end</text>
+    <text x="382" y="323" text-anchor="end" class="col-type">TIME</text>
+    <line x1="50" y1="330" x2="390" y2="330" class="tbl-div"/>
+    <text x="62" y="345" class="col-name">late_threshold</text>
+    <text x="382" y="345" text-anchor="end" class="col-type">TIME</text>
+    <line x1="50" y1="352" x2="390" y2="352" class="tbl-div"/>
+    <text x="62" y="367" class="col-name">out_start</text>
+    <text x="382" y="367" text-anchor="end" class="col-type">TIME</text>
+    <line x1="50" y1="374" x2="390" y2="374" class="tbl-div"/>
+    <text x="62" y="389" class="col-name">out_end</text>
+    <text x="382" y="389" text-anchor="end" class="col-type">TIME</text>
+
+    <!-- ==================== TABLE: attendance_logs ==================== -->
+    <rect x="50" y="415" width="340" height="184" class="tbl-bg"/>
+    <rect x="50" y="415" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="435" text-anchor="middle" class="tbl-title">attendance_logs</text>
+    <!-- Row 0: id -->
+    <text x="58" y="460" class="col-key">[PK]</text>
+    <text x="96" y="460" class="col-name">id</text>
+    <text x="382" y="460" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="467" x2="390" y2="467" class="tbl-div"/>
+    <!-- Row 1: enrollment_id -->
+    <text x="58" y="482" class="col-key">[FK]</text>
+    <text x="96" y="482" class="col-name">enrollment_id</text>
+    <text x="382" y="482" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="489" x2="390" y2="489" class="tbl-div"/>
+    <!-- Row 2: scanned_by_user_id -->
+    <text x="58" y="504" class="col-key">[FK]</text>
+    <text x="96" y="504" class="col-name">scanned_by_user_id</text>
+    <text x="382" y="504" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="511" x2="390" y2="511" class="tbl-div"/>
+    <text x="62" y="526" class="col-name">scan_type</text>
+    <text x="382" y="526" text-anchor="end" class="col-type">VARCHAR(10)</text>
+    <line x1="50" y1="533" x2="390" y2="533" class="tbl-div"/>
+    <text x="62" y="548" class="col-name">session_type</text>
+    <text x="382" y="548" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="555" x2="390" y2="555" class="tbl-div"/>
+    <text x="62" y="570" class="col-name">scan_time</text>
+    <text x="382" y="570" text-anchor="end" class="col-type">TIMESTAMP</text>
+    <line x1="50" y1="577" x2="390" y2="577" class="tbl-div"/>
+    <text x="62" y="592" class="col-name">device_id</text>
+    <text x="382" y="592" text-anchor="end" class="col-type">VARCHAR(100)</text>
+
+    <!-- ==================== TABLE: flagged_scans ==================== -->
+    <rect x="50" y="620" width="340" height="118" class="tbl-bg"/>
+    <rect x="50" y="620" width="340" height="30" class="tbl-hdr"/>
+    <text x="220" y="640" text-anchor="middle" class="tbl-title">flagged_scans</text>
+    <!-- Row 0: id -->
+    <text x="58" y="665" class="col-key">[PK]</text>
+    <text x="96" y="665" class="col-name">id</text>
+    <text x="382" y="665" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="672" x2="390" y2="672" class="tbl-div"/>
+    <!-- Row 1: attendance_log_id -->
+    <text x="58" y="687" class="col-key">[FK]</text>
+    <text x="96" y="687" class="col-name">attendance_log_id</text>
+    <text x="382" y="687" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="50" y1="694" x2="390" y2="694" class="tbl-div"/>
+    <text x="62" y="709" class="col-name">flag_type</text>
+    <text x="382" y="709" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="50" y1="716" x2="390" y2="716" class="tbl-div"/>
+    <text x="62" y="731" class="col-name">description</text>
+    <text x="382" y="731" text-anchor="end" class="col-type">TEXT</text>
+
+    <!-- ==================== TABLE: students ==================== -->
+    <rect x="470" y="50" width="340" height="118" class="tbl-bg"/>
+    <rect x="470" y="50" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="70" text-anchor="middle" class="tbl-title">students</text>
+    <!-- Row 0: id -->
+    <text x="478" y="95" class="col-key">[PK]</text>
+    <text x="516" y="95" class="col-name">id</text>
+    <text x="802" y="95" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="102" x2="810" y2="102" class="tbl-div"/>
+    <text x="478" y="117" class="col-key">[UK]</text>
+    <text x="516" y="117" class="col-name">student_number</text>
+    <text x="802" y="117" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="470" y1="124" x2="810" y2="124" class="tbl-div"/>
+    <text x="482" y="139" class="col-name">first_name</text>
+    <text x="802" y="139" text-anchor="end" class="col-type">VARCHAR(100)</text>
+    <line x1="470" y1="146" x2="810" y2="146" class="tbl-div"/>
+    <text x="482" y="161" class="col-name">last_name</text>
+    <text x="802" y="161" text-anchor="end" class="col-type">VARCHAR(100)</text>
+
+    <!-- ==================== TABLE: enrollments ==================== -->
+    <rect x="470" y="190" width="340" height="118" class="tbl-bg"/>
+    <rect x="470" y="190" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="210" text-anchor="middle" class="tbl-title">enrollments</text>
+    <!-- Row 0: id -->
+    <text x="478" y="235" class="col-key">[PK]</text>
+    <text x="516" y="235" class="col-name">id</text>
+    <text x="802" y="235" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="242" x2="810" y2="242" class="tbl-div"/>
+    <!-- Row 1: student_id -->
+    <text x="478" y="257" class="col-key">[FK]</text>
+    <text x="516" y="257" class="col-name">student_id</text>
+    <text x="802" y="257" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="264" x2="810" y2="264" class="tbl-div"/>
+    <text x="482" y="279" class="col-name">grade_level</text>
+    <text x="802" y="279" text-anchor="end" class="col-type">INT</text>
+    <line x1="470" y1="286" x2="810" y2="286" class="tbl-div"/>
+    <text x="482" y="301" class="col-name">status</text>
+    <text x="802" y="301" text-anchor="end" class="col-type">VARCHAR(50)</text>
+
+    <!-- ==================== TABLE: qr_attendances ==================== -->
+    <rect x="470" y="330" width="340" height="184" class="tbl-bg"/>
+    <rect x="470" y="330" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="350" text-anchor="middle" class="tbl-title">qr_attendances</text>
+    <!-- Row 0: id -->
+    <text x="478" y="375" class="col-key">[PK]</text>
+    <text x="516" y="375" class="col-name">id</text>
+    <text x="802" y="375" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="382" x2="810" y2="382" class="tbl-div"/>
+    <!-- Row 1: enrollment_id -->
+    <text x="478" y="397" class="col-key">[FK]</text>
+    <text x="516" y="397" class="col-name">enrollment_id</text>
+    <text x="802" y="397" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="404" x2="810" y2="404" class="tbl-div"/>
+    <!-- Row 2: time_in_log_id -->
+    <text x="478" y="419" class="col-key">[FK]</text>
+    <text x="516" y="419" class="col-name">time_in_log_id</text>
+    <text x="802" y="419" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="426" x2="810" y2="426" class="tbl-div"/>
+    <!-- Row 3: time_out_log_id -->
+    <text x="478" y="441" class="col-key">[FK]</text>
+    <text x="516" y="441" class="col-name">time_out_log_id</text>
+    <text x="802" y="441" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="448" x2="810" y2="448" class="tbl-div"/>
+    <text x="482" y="463" class="col-name">attendance_date</text>
+    <text x="802" y="463" text-anchor="end" class="col-type">DATE</text>
+    <line x1="470" y1="470" x2="810" y2="470" class="tbl-div"/>
+    <text x="482" y="485" class="col-name">spam_offense_count</text>
+    <text x="802" y="485" text-anchor="end" class="col-type">INT</text>
+    <line x1="470" y1="492" x2="810" y2="492" class="tbl-div"/>
+    <text x="482" y="507" class="col-name">cooldown_expires_at</text>
+    <text x="802" y="507" text-anchor="end" class="col-type">TIMESTAMP</text>
+
+    <!-- ==================== TABLE: email_logs ==================== -->
+    <rect x="470" y="535" width="340" height="184" class="tbl-bg"/>
+    <rect x="470" y="535" width="340" height="30" class="tbl-hdr"/>
+    <text x="640" y="555" text-anchor="middle" class="tbl-title">email_logs</text>
+    <!-- Row 0: id -->
+    <text x="478" y="580" class="col-key">[PK]</text>
+    <text x="516" y="580" class="col-name">id</text>
+    <text x="802" y="580" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="587" x2="810" y2="587" class="tbl-div"/>
+    <!-- Row 1: attendance_log_id -->
+    <text x="478" y="602" class="col-key">[FK]</text>
+    <text x="516" y="602" class="col-name">attendance_log_id</text>
+    <text x="802" y="602" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="609" x2="810" y2="609" class="tbl-div"/>
+    <!-- Row 2: student_id -->
+    <text x="478" y="624" class="col-key">[FK]</text>
+    <text x="516" y="624" class="col-name">student_id</text>
+    <text x="802" y="624" text-anchor="end" class="col-type">BIGINT</text>
+    <line x1="470" y1="631" x2="810" y2="631" class="tbl-div"/>
+    <text x="482" y="646" class="col-name">email</text>
+    <text x="802" y="646" text-anchor="end" class="col-type">VARCHAR(255)</text>
+    <line x1="470" y1="653" x2="810" y2="653" class="tbl-div"/>
+    <text x="482" y="668" class="col-name">scan_type</text>
+    <text x="802" y="668" text-anchor="end" class="col-type">VARCHAR(10)</text>
+    <line x1="470" y1="675" x2="810" y2="675" class="tbl-div"/>
+    <text x="482" y="690" class="col-name">status</text>
+    <text x="802" y="690" text-anchor="end" class="col-type">VARCHAR(50)</text>
+    <line x1="470" y1="697" x2="810" y2="697" class="tbl-div"/>
+    <text x="482" y="712" class="col-name">sent_at</text>
+    <text x="802" y="712" text-anchor="end" class="col-type">TIMESTAMP</text>
+
+    <!-- ==================== CONNECTORS ==================== -->
+    <!-- 1. students.id (470, 91) to enrollments.student_id (470, 253) [1 : N] -->
+    <path d="M 470 91 L 442 91 L 442 253 L 470 253" class="conn-line"/>
+    <line x1="465" y1="86" x2="465" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="460" y1="86" x2="460" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="470" y1="253" x2="462" y2="247" stroke="#000000" stroke-width="1.5"/>
+    <line x1="470" y1="253" x2="462" y2="259" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="456" cy="253" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 2. enrollments.id (470, 231) to attendance_logs.enrollment_id (390, 478) [1 : N] -->
+    <path d="M 470 231 L 430 231 L 430 478 L 390 478" class="conn-line"/>
+    <line x1="465" y1="226" x2="465" y2="236" stroke="#000000" stroke-width="1.5"/>
+    <line x1="460" y1="226" x2="460" y2="236" stroke="#000000" stroke-width="1.5"/>
+    <line x1="390" y1="478" x2="398" y2="472" stroke="#000000" stroke-width="1.5"/>
+    <line x1="390" y1="478" x2="398" y2="484" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="404" cy="478" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 3. users.id (50, 91) to attendance_logs.scanned_by_user_id (50, 500) [1 : N] -->
+    <path d="M 50 91 L 22 91 L 22 500 L 50 500" class="conn-line"/>
+    <line x1="45" y1="86" x2="45" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="40" y1="86" x2="40" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="500" x2="42" y2="494" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="500" x2="42" y2="506" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="500" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 4. enrollments.id (810, 231) to qr_attendances.enrollment_id (810, 393) [1 : N] -->
+    <path d="M 810 231 L 834 231 L 834 393 L 810 393" class="conn-line"/>
+    <line x1="815" y1="226" x2="815" y2="236" stroke="#000000" stroke-width="1.5"/>
+    <line x1="820" y1="226" x2="820" y2="236" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="393" x2="818" y2="387" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="393" x2="818" y2="399" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="824" cy="393" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 5. attendance_logs.id (390, 456) to qr_attendances.time_in_log_id (470, 415) [1 : 0..1] -->
+    <path d="M 390 456 L 430 456 L 430 415 L 470 415" class="conn-line"/>
+    <line x1="395" y1="451" x2="395" y2="461" stroke="#000000" stroke-width="1.5"/>
+    <line x1="400" y1="451" x2="400" y2="461" stroke="#000000" stroke-width="1.5"/>
+    <line x1="465" y1="410" x2="465" y2="420" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="458" cy="415" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 6. attendance_logs.id (390, 456) to qr_attendances.time_out_log_id (470, 437) [1 : 0..1] -->
+    <path d="M 390 456 L 418 456 L 418 437 L 470 437" class="conn-line"/>
+    <line x1="465" y1="432" x2="465" y2="442" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="458" cy="437" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 7. attendance_logs.id (50, 456) to flagged_scans.attendance_log_id (50, 683) [1 : N] -->
+    <path d="M 50 456 L 30 456 L 30 683 L 50 683" class="conn-line"/>
+    <line x1="45" y1="451" x2="45" y2="461" stroke="#000000" stroke-width="1.5"/>
+    <line x1="40" y1="451" x2="40" y2="461" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="683" x2="42" y2="677" stroke="#000000" stroke-width="1.5"/>
+    <line x1="50" y1="683" x2="42" y2="689" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="36" cy="683" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 8. attendance_logs.id (390, 456) to email_logs.attendance_log_id (470, 598) [1 : N] -->
+    <path d="M 390 456 L 408 456 L 408 598 L 470 598" class="conn-line"/>
+    <line x1="470" y1="598" x2="462" y2="592" stroke="#000000" stroke-width="1.5"/>
+    <line x1="470" y1="598" x2="462" y2="604" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="456" cy="598" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+
+    <!-- 9. students.id (810, 91) to email_logs.student_id (810, 620) [1 : N] -->
+    <path d="M 810 91 L 844 91 L 844 620 L 810 620" class="conn-line"/>
+    <line x1="815" y1="86" x2="815" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="820" y1="86" x2="820" y2="96" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="620" x2="818" y2="614" stroke="#000000" stroke-width="1.5"/>
+    <line x1="810" y1="620" x2="818" y2="626" stroke="#000000" stroke-width="1.5"/>
+    <circle cx="824" cy="620" r="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+</svg>
