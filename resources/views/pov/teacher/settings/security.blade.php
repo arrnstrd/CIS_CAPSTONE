@@ -1,14 +1,15 @@
-<x-layouts.teacher>
-    <x-slot name="pageName">
-        <span class="page-title-icon">
-            <i class="fa-solid fa-shield-halved"></i>
-            Settings
-        </span>
-    </x-slot>
-
-    <x-slot name="subtitle">
-        <span class="page-title-subtitle">Manage your account password and security credentials.</span>
-    </x-slot>
+<x-layouts.teacher-settings-layout>
+    <div class="teacher-settings-content">
+        <div class="teacher-settings-section">
+            <div class="teacher-settings-section__header">
+                <h2 class="teacher-settings-section__title">
+                    <i class="fa-solid fa-shield-halved me-3"></i>
+                    Security
+                </h2>
+                <p class="teacher-settings-section__description">
+                    Manage your account security and password settings.
+                </p>
+            </div>
 
     @if (session('success'))
         <div class="gs-note-banner mb-3" style="background-color: #e1f5ee; color: #085041;">
@@ -18,7 +19,7 @@
     @endif
 
     <div class="row g-3">
-        <div class="col-12 col-lg-8 col-xl-6">
+        <div class="col-12">
             <div class="gs-panel">
                 <p class="gs-panel-title">Account & Security</p>
                 <p class="text-muted small mb-3">
@@ -152,4 +153,44 @@
             }
         }
     </script>
-</x-layouts.teacher>
+        </div>
+    </div>
+
+    <style>
+    .teacher-settings-section {
+        background: white;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+
+    .teacher-settings-section__header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .teacher-settings-section__title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .teacher-settings-section__description {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin: 0.5rem 0 0 0;
+        line-height: 1.5;
+    }
+
+    .teacher-settings-content {
+        background: white;
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    </style>
+</x-layouts.teacher-settings-layout>

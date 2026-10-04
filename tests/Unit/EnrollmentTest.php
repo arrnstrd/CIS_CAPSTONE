@@ -6,12 +6,10 @@ use App\Models\Enrollment;
 use App\Models\Section;
 use App\Models\SchoolYear;
 use App\Models\Student;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class EnrollmentTest extends TestCase
 {
-    use RefreshDatabase;
 
     public function test_enrollment_auto_populates_grade_level_and_section_from_section(): void
     {

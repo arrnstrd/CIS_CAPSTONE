@@ -65,8 +65,18 @@ class AcademicController extends Controller
     {
         $search = $request->query('assignment_search');
         $status = $request->query('assignment_status');
+        $gradeLevel = $request->query('assignment_grade_level');
+        $sectionId = $request->query('assignment_section_id');
 
         return TeachingAssignment::with(['teacher.user', 'subject', 'section', 'schoolYear'])
+            ->when(filled($gradeLevel), function ($q) use ($gradeLevel) {
+                $q->whereHas('section', function ($secQ) use ($gradeLevel) {
+                    $secQ->where('grade_level', $gradeLevel);
+                });
+            })
+            ->when(filled($sectionId), function ($q) use ($sectionId) {
+                $q->where('section_id', $sectionId);
+            })
             ->when(filled($search), function ($q) use ($search) {
                 $q->where(function ($subQ) use ($search) {
                     $subQ->whereHas('teacher.user', function ($tq) use ($search) {
@@ -86,8 +96,11 @@ class AcademicController extends Controller
             ->when(filled($status), function ($q) use ($status) {
                 $q->where('status', $status);
             })
-            ->orderBy('created_at', 'desc')
+            ->join('sections', 'teaching_assignments.section_id', '=', 'sections.id')
+            ->select('teaching_assignments.*')
+            ->orderBy('sections.grade_level', 'asc')
+            ->orderBy('sections.name', 'asc')
             ->paginate(15, ['*'], 'assignment_page')
-            ->appends($request->only('assignment_search', 'assignment_status'));
+            ->appends($request->only('assignment_search', 'assignment_status', 'assignment_grade_level', 'assignment_section_id'));
     }
 }

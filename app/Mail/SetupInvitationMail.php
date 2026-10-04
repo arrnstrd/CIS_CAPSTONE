@@ -26,10 +26,19 @@ class SetupInvitationMail extends Mailable
      */
     public function build(): self
     {
+        $setupUrl = route('setup.show', ['token' => $this->token, 'email' => $this->email]);
+
+        if (str_contains($setupUrl, 'localhost') || str_contains($setupUrl, '127.0.0.1')) {
+            $path = parse_url($setupUrl, PHP_URL_PATH) ?? '';
+            $query = parse_url($setupUrl, PHP_URL_QUERY);
+            $queryString = $query ? '?' . $query : '';
+            $setupUrl = 'https://cis-capstone.onrender.com' . $path . $queryString;
+        }
+
         return $this->subject('Complete Your Account Setup')
             ->markdown('emails.auth.setup-invitation', [
                 'name' => $this->name,
-                'setupUrl' => route('setup.show', ['token' => $this->token, 'email' => $this->email]),
+                'setupUrl' => $setupUrl,
             ]);
     }
 }

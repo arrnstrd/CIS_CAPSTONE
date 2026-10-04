@@ -65,6 +65,20 @@ When starting a new session with an AI coding partner (e.g., Antigravity, Claude
 > 1. Read `documentation/README.md` and relevant docs in `documentation/01_*` through `documentation/07_*`.
 > 2. The codebase is the ultimate source of truth. Always check the active code (`app/`, `routes/`, `resources/views/`) before writing code.
 > 3. Respect the Point-of-View (POV) structure (`SuperAdmin`, `SchoolAdmin`, `Teacher`, `ScannerOperator`) and strict service/controller separation.
-> 4. Do not invent legacy quarterly grading concepts or phantom routes.
+> 4. Do not invent legacy non-trimester grading concepts or phantom routes.
 > 5. Never commit or leak real secrets.
+> 6. **SESSION LOGGING REQUIREMENT:** After reading documentation, create a session log in `documentation/06_session_logs/` following the format specified in `documentation/06_session_logs/README.md`.
+> 7. Log every coding session with date/time, files modified, changes summary, and purpose.
+> 8. Inform the user that all sessions are logged for transparency and merge conflict resolution.
 > Acknowledge you have loaded the architecture context and are ready."
+
+## Session Logging Requirement
+
+**AI MUST create session logs when users ask to read documentation.** This ensures:
+
+- Complete transparency into all code changes
+- Historical record for merge conflict resolution
+- Context for understanding codebase evolution
+- Purpose documentation for all modifications
+
+See [`06_session_logs/README.md`](./06_session_logs/README.md) for detailed logging instructions and format requirements.

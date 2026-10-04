@@ -31,9 +31,11 @@ class StoreSubjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:255', Rule::unique('subjects', 'code')],
-            'name' => ['required', 'string', 'max:255'],
+            'code' => ['nullable', 'string', 'max:255', Rule::unique('subjects', 'code')],
+            'name' => ['nullable', 'string', 'max:255'],
+            'names' => ['nullable', 'string', 'max:5000'],
             'level' => ['required', 'string', Rule::in(array_keys(Subject::levelOptions()))],
+            'code_mode' => ['nullable', 'string', Rule::in(['auto', 'blank'])],
         ];
     }
 }

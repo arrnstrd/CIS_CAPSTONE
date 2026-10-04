@@ -180,4 +180,26 @@ class AttendanceLog extends Model
                 ->count(),
         ];
     }
+
+    public function getDateAttribute(): ?string
+    {
+        return $this->scan_time?->format('M d, Y');
+    }
+
+    public function getTimeInAttribute(): ?string
+    {
+        return $this->scan_type === 'IN' ? $this->scan_time?->format('h:i A') : ($this->scan_time?->format('h:i A') ?? '-');
+    }
+
+    public function getStatusAttribute(): string
+    {
+        if ($this->relationLoaded('flagged_scans')
+            ? $this->flagged_scans->contains('flag_type', 'late_arrival')
+            : $this->flagged_scans()->where('flag_type', 'late_arrival')->exists()
+        ) {
+            return 'Late';
+        }
+
+        return $this->scan_type === 'IN' ? 'Present' : ucfirst(strtolower($this->scan_type));
+    }
 }

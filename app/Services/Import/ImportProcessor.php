@@ -196,19 +196,27 @@ class ImportProcessor
                 ? "The data import \"{$import->original_filename}\" has been completed successfully. {$successCount} student(s) were imported."
                 : "The data import \"{$import->original_filename}\" completed with issues. {$successCount} student(s) were imported and {$failedCount} failed.";
 
-            $this->notificationService->sendToUser(
-                $import->createdBy,
-                NotificationService::CATEGORY_IMPORT,
-                $title,
-                $message,
-                [
-                    'bulk_import_id' => $import->id,
-                    'filename' => $import->original_filename,
-                    'status' => $finalStatus,
-                    'success_count' => $successCount,
-                    'failed_count' => $failedCount,
-                ],
-            );
+            try {
+                $this->notificationService->sendToUser(
+                    $import->createdBy,
+                    NotificationService::CATEGORY_IMPORT,
+                    $title,
+                    $message,
+                    [
+                        'bulk_import_id' => $import->id,
+                        'filename' => $import->original_filename,
+                        'status' => $finalStatus,
+                        'success_count' => $successCount,
+                        'failed_count' => $failedCount,
+                    ],
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Bulk import completion notification failed', [
+                    'import_id' => $import->id,
+                    'user_id' => $import->createdBy->id,
+                    'exception' => $e->getMessage(),
+                ]);
+            }
         }
     }
 

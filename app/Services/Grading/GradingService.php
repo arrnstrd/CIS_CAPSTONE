@@ -5,7 +5,7 @@ namespace App\Services\Grading;
 use App\Models\Assessment;
 use App\Models\AssessmentCategory;
 use App\Models\StudentAssessmentScore;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\Enrollment;
 use App\Models\TeachingAssignment;
 use App\Models\GradingConfig;
@@ -16,10 +16,14 @@ use Illuminate\Support\Facades\Log;
 class GradingService
 {
     protected SubjectWeightResolver $weightResolver;
+    protected SchoolLevelDetector $levelDetector;
 
-    public function __construct(SubjectWeightResolver $weightResolver)
-    {
+    public function __construct(
+        SubjectWeightResolver $weightResolver,
+        ?SchoolLevelDetector $levelDetector = null
+    ) {
         $this->weightResolver = $weightResolver;
+        $this->levelDetector = $levelDetector ?? new SchoolLevelDetector();
     }
 
     /**
@@ -49,8 +53,8 @@ class GradingService
                 ]
             );
 
-            // Recalculate Quarterly Grade for this student, teaching assignment, and grading period
-            $this->recalculateQuarterlyGrade(
+            // Recalculate Term Grade for this student, teaching assignment, and grading period
+            $this->recalculateTermGrade(
                 $data['enrollment_id'],
                 $assessment->teaching_assignment_id,
                 $assessment->grading_period_id
@@ -61,20 +65,20 @@ class GradingService
     }
 
     /**
-     * Recalculate the quarterly grade for a student.
+     * Recalculate the term grade for a student.
      *
      * @param int $enrollmentId
      * @param int $teachingAssignmentId
      * @param int $gradingPeriodId
-     * @return QuarterlyGrade|null
+     * @return TermGrade|null
      */
-    public function recalculateQuarterlyGrade(
+    public function recalculateTermGrade(
         int $enrollmentId,
         int $teachingAssignmentId,
         int $gradingPeriodId
-    ): ?QuarterlyGrade {
+    ): ?TermGrade {
         $enrollment = Enrollment::findOrFail($enrollmentId);
-        $teachingAssignment = TeachingAssignment::with('subject')->findOrFail($teachingAssignmentId);
+        $teachingAssignment = TeachingAssignment::with(['subject', 'section'])->findOrFail($teachingAssignmentId);
         $subject = $teachingAssignment->subject;
 
         if (!$subject) {
@@ -82,12 +86,14 @@ class GradingService
             return null;
         }
 
+        $level = $this->levelDetector->detect($teachingAssignment->section?->grade_level ?? 1);
+
         // Fetch all categories to match assessments
         $categories = AssessmentCategory::all();
 
         $writtenCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'written'));
         $performanceCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'performance'));
-        $quarterlyCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'quarterly') || str_contains(strtolower($c->name), 'exam') || str_contains(strtolower($c->name), 'assessment'));
+        $termAssessmentCategory = $categories->first(fn($c) => str_contains(strtolower($c->name), 'term assessment') || str_contains(strtolower($c->name), 'exam'));
 
         $weights = $this->resolveWeights(
             $teachingAssignmentId,
@@ -95,7 +101,7 @@ class GradingService
             [
                 'written' => $writtenCategory?->id,
                 'performance' => $performanceCategory?->id,
-                'quarterly' => $quarterlyCategory?->id,
+                'term_assessment' => $termAssessmentCategory?->id,
             ]
         );
 
@@ -118,38 +124,22 @@ class GradingService
             [
                 'written' => $writtenCategory?->id,
                 'performance' => $performanceCategory?->id,
-                'quarterly' => $quarterlyCategory?->id,
-            ]
+                'term_assessment' => $termAssessmentCategory?->id,
+            ],
+            $level
         );
-
-        // If no assessments exist at all, we cannot compute any grade yet
-        if (collect($componentSummaries)->every(fn (array $summary) => $summary['hps'] === 0.0)) {
-            return DB::transaction(function () use ($teachingAssignmentId, $enrollmentId, $gradingPeriodId) {
-                return QuarterlyGrade::updateOrCreate(
-                    [
-                        'teaching_assignment_id' => $teachingAssignmentId,
-                        'enrollment_id' => $enrollmentId,
-                        'grading_period_id' => $gradingPeriodId,
-                    ],
-                    [
-                        'written_work_grade' => null,
-                        'performance_task_grade' => null,
-                        'quarterly_assessment_grade' => null,
-                        'initial_grade' => null,
-                        'transmuted_grade' => null,
-                    ]
-                );
-            });
-        }
 
         $computedGrades = collect($componentSummaries)->mapWithKeys(
             fn (array $summary, string $key) => [$key => $summary['ws']]
         )->all();
-        $initialGrade = round(collect($componentSummaries)->sum('ws'), 2);
-        $transmutedGrade = $this->transmute($initialGrade);
+
+        $initialGrade = $this->calculateInitialGrade($componentSummaries, $level);
+        $transmutedGrade = $initialGrade === null
+            ? null
+            : $this->transmute($initialGrade);
 
         return DB::transaction(function () use ($teachingAssignmentId, $enrollmentId, $gradingPeriodId, $computedGrades, $initialGrade, $transmutedGrade) {
-            return QuarterlyGrade::updateOrCreate(
+            return TermGrade::updateOrCreate(
                 [
                     'teaching_assignment_id' => $teachingAssignmentId,
                     'enrollment_id' => $enrollmentId,
@@ -158,7 +148,7 @@ class GradingService
                 [
                     'written_work_grade' => $computedGrades['written'],
                     'performance_task_grade' => $computedGrades['performance'],
-                    'quarterly_assessment_grade' => $computedGrades['quarterly'],
+                    'term_assessment_grade' => $computedGrades['term_assessment'],
                     'initial_grade' => $initialGrade,
                     'transmuted_grade' => $transmutedGrade,
                 ]
@@ -167,18 +157,51 @@ class GradingService
     }
 
     /**
+     * Calculate Initial Grade respecting level-specific ECR template rules:
+     * - Grades 1-10 (Elementary & JHS): ROUND(sum(ws), 0) (whole number integer).
+     * - SHS (Grades 11-12): ROUND(sum(ws), 2) (preserves 2 decimal places).
+     *
+     * @param array<string, array{total: float, hps: float, ps: ?float, ws: ?float, weight: float}> $componentSummaries
+     * @param string|null $level
+     * @return float|null
+     */
+    public function calculateInitialGrade(array $componentSummaries, ?string $level = null): ?float
+    {
+        $isComplete = collect($componentSummaries)->every(
+            fn (array $summary) => ($summary['hps'] ?? 0) > 0 && ($summary['ws'] ?? null) !== null
+        );
+
+        if (!$isComplete) {
+            return null;
+        }
+
+        $rawSum = (float) collect($componentSummaries)->sum('ws');
+
+        return ($level === 'shs')
+            ? round($rawSum, 2)
+            : (float) round($rawSum, 0);
+    }
+
+    /**
      * Calculate School Class Record component totals and scores.
      * Missing learner scores remain zero while each active assessment HPS is included.
      *
+     * @param \Illuminate\Support\Collection|array $assessments
+     * @param \Illuminate\Support\Collection $scores
+     * @param array $weights
+     * @param array $categoryIds
+     * @param string|null $level
      * @return array<string, array{total: float, hps: float, ps: ?float, ws: ?float, weight: float}>
      */
-    public function calculateComponentSummaries($assessments, $scores, array $weights, array $categoryIds): array
+    public function calculateComponentSummaries($assessments, $scores, array $weights, array $categoryIds, ?string $level = null): array
     {
         $summaries = [
-            'written' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['written_work']],
-            'performance' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['performance_task']],
-            'quarterly' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['quarterly_assessment']],
+            'written' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['written_work'] ?? ($weights['written'] ?? 0.0)],
+            'performance' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['performance_task'] ?? ($weights['performance'] ?? 0.0)],
+            'term_assessment' => ['total' => 0.0, 'hps' => 0.0, 'weight' => $weights['term_assessment'] ?? ($weights['exam'] ?? 0.0)],
         ];
+
+        $examAssessments = [];
 
         foreach ($assessments as $assessment) {
             $component = array_search($assessment->assessment_category_id, $categoryIds, true);
@@ -186,14 +209,47 @@ class GradingService
                 continue;
             }
 
+            if ($component === 'term_assessment') {
+                $examAssessments[] = $assessment;
+            }
+
             $summaries[$component]['total'] += $scores->has($assessment->id) ? (float) $scores[$assessment->id]->score : 0.0;
             $summaries[$component]['hps'] += (float) $assessment->total_items;
         }
 
         foreach ($summaries as $component => $summary) {
-            $ps = $summary['hps'] > 0 ? ($summary['total'] / $summary['hps']) * 100 : null;
-            $summaries[$component]['ps'] = $ps === null ? null : round($ps, 2);
-            $summaries[$component]['ws'] = $ps === null ? null : round($ps * $summary['weight'], 2);
+            if ($component === 'term_assessment' && in_array($level, ['elementary', 'jhs'], true)) {
+                // Official DepEd Grades 1-10 (Elementary & JHS) ECR structure:
+                // ST1 (Slot 1) = 30%, ST2 (Slot 2) = 30%, TE (Slot 3) = 40%
+                if ($summary['hps'] <= 0 || empty($examAssessments)) {
+                    $summaries[$component]['ps'] = null;
+                    $summaries[$component]['ws'] = null;
+                } else {
+                    $examPs = 0.0;
+                    $slotWeights = [1 => 30.0, 2 => 30.0, 3 => 40.0];
+
+                    foreach ($examAssessments as $index => $exam) {
+                        $slot = $exam->slot_number ?? ($index + 1);
+                        $slotWeight = $slotWeights[$slot] ?? 0.0;
+                        $itemHps = (float) $exam->total_items;
+                        $itemScore = $scores->has($exam->id) ? (float) $scores[$exam->id]->score : 0.0;
+
+                        if ($itemHps > 0 && $slotWeight > 0) {
+                            $examPs += round(($itemScore / $itemHps) * $slotWeight, 2);
+                        }
+                    }
+
+                    $roundedExamPs = round($examPs, 2);
+                    $summaries[$component]['ps'] = $roundedExamPs;
+                    $summaries[$component]['ws'] = round($roundedExamPs * $summary['weight'], 2);
+                }
+            } else {
+                $rawPs = $summary['hps'] > 0 ? ($summary['total'] / $summary['hps']) * 100 : null;
+                $roundedPs = $rawPs === null ? null : round($rawPs, 2);
+                $summaries[$component]['ps'] = $roundedPs;
+                $summaries[$component]['ws'] = $roundedPs === null ? null : round($roundedPs * $summary['weight'], 2);
+            }
+
             $summaries[$component]['total'] = round($summary['total'], 2);
             $summaries[$component]['hps'] = round($summary['hps'], 2);
         }
@@ -204,12 +260,14 @@ class GradingService
     /** Return the authoritative Class Record summaries for a saved Grade Sheet row. */
     public function getComponentSummaries(int $enrollmentId, int $teachingAssignmentId, int $gradingPeriodId): array
     {
-        $subject = TeachingAssignment::with('subject')->findOrFail($teachingAssignmentId)->subject;
+        $ta = TeachingAssignment::with(['subject', 'section'])->findOrFail($teachingAssignmentId);
+        $subject = $ta->subject;
+        $level = $this->levelDetector->detect($ta->section?->grade_level ?? 1);
         $categories = AssessmentCategory::all();
         $categoryIds = [
             'written' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'written'))?->id,
             'performance' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'performance'))?->id,
-            'quarterly' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'quarterly') || str_contains(strtolower($category->name), 'exam') || str_contains(strtolower($category->name), 'assessment'))?->id,
+            'term_assessment' => $categories->first(fn ($category) => str_contains(strtolower($category->name), 'term assessment') || str_contains(strtolower($category->name), 'exam'))?->id,
         ];
         $assessments = Assessment::where('teaching_assignment_id', $teachingAssignmentId)
             ->where('grading_period_id', $gradingPeriodId)
@@ -224,7 +282,8 @@ class GradingService
             $assessments,
             $scores,
             $this->resolveWeights($teachingAssignmentId, $subject, $categoryIds),
-            $categoryIds
+            $categoryIds,
+            $level
         );
     }
 
@@ -242,7 +301,7 @@ class GradingService
             return [
                 'written_work' => (float) $configuredWeights[$categoryIds['written']] / 100,
                 'performance_task' => (float) $configuredWeights[$categoryIds['performance']] / 100,
-                'quarterly_assessment' => (float) $configuredWeights[$categoryIds['quarterly']] / 100,
+                'term_assessment' => (float) $configuredWeights[$categoryIds['term_assessment']] / 100,
             ];
         }
 
@@ -251,55 +310,55 @@ class GradingService
 
     /**
      * Transmute an initial grade into a report card grade.
-     * Matches official DepEd Transmutation Table (DO 8, s. 2015).
+     * Matches official DepEd 3-Term Electronic Class Record (ECR) Transmutation Table.
      *
      * @param float $initialGrade
      * @return float
      */
     public function transmute(float $initialGrade): float
     {
-        $g = round($initialGrade, 2);
+        $g = round($initialGrade, 0);
 
         if ($g >= 100) return 100;
-        if ($g >= 98.40) return 99;
-        if ($g >= 96.80) return 98;
-        if ($g >= 95.20) return 97;
-        if ($g >= 93.60) return 96;
-        if ($g >= 92.00) return 95;
-        if ($g >= 90.40) return 94;
-        if ($g >= 88.80) return 93;
-        if ($g >= 87.20) return 92;
-        if ($g >= 85.60) return 91;
-        if ($g >= 84.00) return 90;
-        if ($g >= 82.40) return 89;
-        if ($g >= 80.80) return 88;
-        if ($g >= 79.20) return 87;
-        if ($g >= 77.60) return 86;
-        if ($g >= 76.00) return 85;
-        if ($g >= 74.40) return 84;
-        if ($g >= 72.80) return 83;
-        if ($g >= 71.20) return 82;
-        if ($g >= 69.60) return 81;
-        if ($g >= 68.00) return 80;
-        if ($g >= 66.40) return 79;
-        if ($g >= 64.80) return 78;
-        if ($g >= 63.20) return 77;
-        if ($g >= 61.60) return 76;
-        if ($g >= 60.00) return 75;
-        if ($g >= 56.00) return 74;
-        if ($g >= 52.00) return 73;
-        if ($g >= 48.00) return 72;
-        if ($g >= 44.00) return 71;
-        if ($g >= 40.00) return 70;
-        if ($g >= 36.00) return 69;
-        if ($g >= 32.00) return 68;
-        if ($g >= 28.00) return 67;
-        if ($g >= 24.00) return 66;
-        if ($g >= 20.00) return 65;
-        if ($g >= 16.00) return 64;
-        if ($g >= 12.00) return 63;
-        if ($g >= 8.00) return 62;
-        if ($g >= 4.00) return 61;
+        if ($g >= 99) return 99;
+        if ($g >= 98) return 98;
+        if ($g >= 96) return 97;
+        if ($g >= 95) return 96;
+        if ($g >= 94) return 95;
+        if ($g >= 93) return 94;
+        if ($g >= 92) return 93;
+        if ($g >= 91) return 92;
+        if ($g >= 89) return 91;
+        if ($g >= 88) return 90;
+        if ($g >= 87) return 89;
+        if ($g >= 86) return 88;
+        if ($g >= 85) return 87;
+        if ($g >= 83) return 86;
+        if ($g >= 82) return 85;
+        if ($g >= 81) return 84;
+        if ($g >= 80) return 83;
+        if ($g >= 79) return 82;
+        if ($g >= 78) return 81;
+        if ($g >= 76) return 80;
+        if ($g >= 75) return 79;
+        if ($g >= 74) return 78;
+        if ($g >= 73) return 77;
+        if ($g >= 72) return 76;
+        if ($g >= 70) return 75;
+        if ($g >= 66) return 74;
+        if ($g >= 61) return 73;
+        if ($g >= 57) return 72;
+        if ($g >= 52) return 71;
+        if ($g >= 47) return 70;
+        if ($g >= 43) return 69;
+        if ($g >= 38) return 68;
+        if ($g >= 33) return 67;
+        if ($g >= 29) return 66;
+        if ($g >= 24) return 65;
+        if ($g >= 19) return 64;
+        if ($g >= 15) return 63;
+        if ($g >= 10) return 62;
+        if ($g >= 5) return 61;
         return 60;
     }
 }

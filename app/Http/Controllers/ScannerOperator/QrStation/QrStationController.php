@@ -42,17 +42,17 @@ class QrStationController extends Controller
             ->withoutExcessScanFlags()
             ->selectRaw("
                 COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE scan_type = 'IN') AS in_count,
-                COUNT(*) FILTER (WHERE scan_type = 'OUT') AS out_count,
-                COUNT(*) FILTER (WHERE EXISTS (
+                SUM(CASE WHEN scan_type = 'IN' THEN 1 ELSE 0 END) AS in_count,
+                SUM(CASE WHEN scan_type = 'OUT' THEN 1 ELSE 0 END) AS out_count,
+                SUM(CASE WHEN EXISTS (
                     SELECT 1 FROM flagged_scans
                     WHERE flagged_scans.attendance_log_id = attendance_logs.id
-                )) AS flagged,
-                COUNT(*) FILTER (WHERE EXISTS (
+                ) THEN 1 ELSE 0 END) AS flagged,
+                SUM(CASE WHEN EXISTS (
                     SELECT 1 FROM flagged_scans
                     WHERE flagged_scans.attendance_log_id = attendance_logs.id
                         AND flagged_scans.flag_type = 'late_arrival'
-                )) AS late
+                ) THEN 1 ELSE 0 END) AS late
             ")
             ->first();
 

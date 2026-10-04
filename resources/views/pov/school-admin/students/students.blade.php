@@ -1,4 +1,4 @@
-<x-layouts.admin>
+<x-layouts.school-admin>
     <x-slot name="title">
         Student Management
     </x-slot>
@@ -11,9 +11,7 @@
         Student Management
     </x-slot>
 
-    <link rel="stylesheet" href="{{ asset('css/gradeLevel.css') }}">
-
-    <div class="grade-selection-wrapper">
+    <div class="grade-selection-wrapper" data-tour="students-grade-grid">
         @foreach ($grades as $level => $gradeRange)
             <div class="grade-section">
                 <p class="grade-section-title">{{ $level }}</p>
@@ -35,8 +33,9 @@
                                     @endif
                                 </span>
                                 <span class="student-count-badge">
-                                    <i class="fas fa-user-graduate"></i>
-                                    {{ $gradeCounts[(string) $g] ?? 0 }} students
+                                    <i class="fas fa-layer-group"></i>
+                                    @php $count = $sectionCounts[$g] ?? ($sectionCounts[(string) $g] ?? ($gradeCounts[(string) $g] ?? 0)); @endphp
+                                    {{ $count }} {{ $count == 1 ? 'section' : 'sections' }}
                                 </span>
                             </div>
                             <i class="fas fa-chevron-right grade-chevron"></i>
@@ -46,4 +45,4 @@
             </div>
         @endforeach
     </div>
-</x-layouts.admin>
+</x-layouts.school-admin>

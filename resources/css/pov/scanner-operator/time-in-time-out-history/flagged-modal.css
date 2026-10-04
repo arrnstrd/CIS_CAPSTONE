@@ -1,0 +1,230 @@
+/* Flagged Modal Styles */
+.flag-modal-clean .modal-dialog {
+    max-width: 420px;
+}
+
+.flag-modal-clean .modal-content {
+    border: none;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.2);
+    overflow: hidden;
+}
+
+/* Header */
+.flag-modal-clean .modal-header {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 2px solid #e2e8f0;
+    background-color: #ffffff;
+}
+
+.flag-modal-clean .header-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #ef4444;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    margin-right: 12px;
+}
+
+.flag-modal-clean .modal-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.flag-modal-clean .modal-subtitle {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.flag-modal-clean .btn-close {
+    font-size: 0.65rem;
+    opacity: 0.5;
+    padding: 0.65rem;
+}
+
+/* Body */
+.flag-modal-clean .modal-body {
+    padding: 1.25rem;
+}
+
+/* Student Section */
+.flag-modal-clean .student-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+}
+
+.flag-modal-clean .student-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.flag-modal-clean .student-info {
+    min-width: 0;
+    flex-grow: 1;
+}
+
+.flag-modal-clean .student-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+    display: block;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.flag-modal-clean .student-meta {
+    font-size: 0.72rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Scan Grid */
+.flag-modal-clean .scan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.flag-modal-clean .scan-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.flag-modal-clean .scan-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.flag-modal-clean .scan-value {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Flags */
+.flag-modal-clean .flags-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    font-weight: 700;
+    margin-bottom: 0.65rem;
+}
+
+.flag-modal-clean .flag-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.flag-modal-clean .flag-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+}
+
+.flag-modal-clean .flag-item.late_arrival {
+    background: #fffbeb;
+    border-color: #fef3c7;
+}
+
+.flag-modal-clean .flag-item.invalid_checkout {
+    background: #fef2f2;
+    border-color: #fee2e2;
+}
+
+.flag-modal-clean .flag-icon-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    background: #ffffff;
+}
+
+.flag-modal-clean .late_arrival .flag-icon-box {
+    color: #d97706;
+}
+
+.flag-modal-clean .invalid_checkout .flag-icon-box {
+    color: #dc2626;
+}
+
+.flag-modal-clean .flag-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.flag-modal-clean .flag-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.flag-modal-clean .flag-desc {
+    font-size: 0.7rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+/* Footer */
+.flag-modal-clean .modal-footer {
+    border-top: none;
+    padding: 0 1.25rem 1.25rem;
+    justify-content: flex-end;
+}
+
+.flag-modal-clean .btn-dismiss {
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.flag-modal-clean .btn-dismiss:hover {
+    background: #1e293b;
+}

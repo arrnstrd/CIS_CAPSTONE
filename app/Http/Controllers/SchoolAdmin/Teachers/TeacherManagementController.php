@@ -135,11 +135,15 @@ class TeacherManagementController extends Controller
                 'message' => 'Teacher created successfully. Invitation sent to email.',
                 'data' => $teacher['teacher']->fresh()->load('user'),
             ]);
-        } catch (QueryException $e) {
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Teacher creation failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $isDuplicate = str_contains(strtolower($e->getMessage()), 'unique') || str_contains(strtolower($e->getMessage()), 'duplicate') || ($e instanceof QueryException && (string)$e->getCode() === '23505');
+            $msg = $isDuplicate
+                ? 'A teacher with this email address or employee number already exists. Please check the existing records.'
+                : 'Unable to create teacher. Please verify the provided information and try again.';
 
             return response()->json([
-                'message' => 'Unable to create teacher.',
-                'error' => $e->getMessage()
+                'message' => $msg,
             ], 422);
         }
     }
@@ -158,10 +162,22 @@ class TeacherManagementController extends Controller
 
             DB::transaction(function () use ($teacher, $validated) {
 
-                $teacher->user->update([
-                    'first_name' => ucwords(strtolower(trim($validated['first_name']))),
-                    'last_name' => ucwords(strtolower(trim($validated['last_name']))),
-                    'email' => strtolower(trim($validated['email'])),
+                $userData = [
+                    'first_name' => $validated['first_name'],
+                    'last_name' => $validated['last_name'],
+                    'email' => $validated['email'],
+                ];
+
+                if (!empty($validated['password'])) {
+                    $userData['password'] = Hash::make($validated['password']);
+                }
+
+                $teacher->user->update($userData);
+
+                $teacher->update([
+                    'employee_number' => $validated['employee_number'] ?? null,
+                    'phone_number' => $validated['phone_number'] ?? null,
+                    'specialization' => $validated['specialization'] ?? null,
                 ]);
             });
 
@@ -169,10 +185,15 @@ class TeacherManagementController extends Controller
                 'message' => 'Teacher updated successfully.',
                 'data' => $teacher->fresh()->load('user'),
             ]);
-        } catch (QueryException $e) {
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Teacher update failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $isDuplicate = str_contains(strtolower($e->getMessage()), 'unique') || str_contains(strtolower($e->getMessage()), 'duplicate') || ($e instanceof QueryException && (string)$e->getCode() === '23505');
+            $msg = $isDuplicate
+                ? 'A teacher with this email address or employee number already exists. Please check the existing records.'
+                : 'Unable to update teacher. Please verify the information and try again.';
 
             return response()->json([
-                'message' => 'Unable to update teacher.',
+                'message' => $msg,
             ], 422);
         }
     }

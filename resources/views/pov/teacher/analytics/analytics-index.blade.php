@@ -10,17 +10,42 @@
     </x-slot>
 
     {{-- Analytics Sub-Navigation --}}
-    <div class="d-flex align-items-center gap-2 mb-3">
+    <div class="d-flex align-items-center gap-2 mb-3" data-tour="teacher-analytics-overview">
         <a href="{{ route('teacher.grading-system.analytics') }}" class="btn btn-sm {{ request()->routeIs('teacher.grading-system.analytics*') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" style="border-radius: 20px; font-weight: 600; font-size: 0.82rem; padding: 5px 14px;">
             <i class="fa-solid fa-graduation-cap me-1"></i> Academic Analytics
         </a>
         <a href="{{ route('teacher.grading-system.attendance') }}" class="btn btn-sm {{ request()->routeIs('teacher.grading-system.attendance*') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" style="border-radius: 20px; font-weight: 600; font-size: 0.82rem; padding: 5px 14px;">
             <i class="fa-solid fa-clipboard-user me-1"></i> Attendance Analytics
         </a>
+        <a href="{{ route('teacher.grading-system.correlation') }}" class="btn btn-sm {{ request()->routeIs('teacher.grading-system.correlation*') ? 'btn-primary text-white' : 'btn-outline-secondary' }}" style="border-radius: 20px; font-weight: 600; font-size: 0.82rem; padding: 5px 14px;">
+            <i class="fa-solid fa-chart-simple me-1"></i> Attendance vs Performance
+        </a>
     </div>
 
     <form method="GET" action="{{ route('teacher.grading-system.analytics') }}" class="gs-filter-bar mb-3">
         <div class="row g-2 align-items-end">
+            <div class="col-6 col-md-3">
+                <label class="gs-filter-label">School Year</label>
+                <select name="school_year_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All School Years</option>
+                    @foreach ($schoolYears as $schoolYear)
+                        <option value="{{ $schoolYear->id }}" @selected((string) request('school_year_id') === (string) $schoolYear->id)>
+                            {{ $schoolYear->school_year }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="gs-filter-label">Student</label>
+                <select name="student_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All Students</option>
+                    @foreach ($students as $student)
+                        <option value="{{ $student->id }}" @selected((string) request('student_id') === (string) $student->id)>
+                            {{ $student->full_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div class="col-6 col-md-3">
                 <label class="gs-filter-label">Grade Level</label>
                 <select name="grade_level" class="form-select form-select-sm" onchange="this.form.submit()">

@@ -18,7 +18,7 @@
                         </h2>
                         <p
                             style="font-size: 11px; color: #6c757d; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">
-                            Automated Gate Monitoring System
+                            Automated Attendance Monitoring System
                         </p>
                     </div>
 
@@ -54,7 +54,7 @@
                         </table>
 
                         <p style="font-size: 14px; color: #333; line-height: 1.5; margin-bottom: 20px;">
-                            This link will expire 72 hours after this email is sent.
+                            This link will expire 7 days (1 week) after this email is sent.
                             Once the link expires, a new invitation will need to be requested to complete the account setup.
                         </p>
 

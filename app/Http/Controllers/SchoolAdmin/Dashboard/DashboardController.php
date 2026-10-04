@@ -57,9 +57,16 @@ class DashboardController extends Controller
         $chartEnd = $now->greaterThan($todayEnd) ? $now->copy() : $todayEnd;
         $chartStart = $today->copy()->setTime(6, 0);
 
+        $activeSchoolYear = SchoolYear::query()->active()->first();
+
         $todayLogs = AttendanceLog::query()
             ->with(['enrollment.student', 'enrollment.section', 'flagged_scans'])
             ->withoutExcessScanFlags()
+            ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+                $q->whereHas('enrollment', function ($enrollmentQuery) use ($activeSchoolYear) {
+                    $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+                });
+            })
             ->todayOnly()
             ->orderBy('scan_time')
             ->get();
@@ -70,13 +77,24 @@ class DashboardController extends Controller
         $weeklyLogs = AttendanceLog::query()
             ->with(['enrollment.student', 'enrollment.section', 'flagged_scans'])
             ->withoutExcessScanFlags()
+            ->when($activeSchoolYear, function ($q) use ($activeSchoolYear) {
+                $q->whereHas('enrollment', function ($enrollmentQuery) use ($activeSchoolYear) {
+                    $enrollmentQuery->where('school_year_id', $activeSchoolYear->id);
+                });
+            })
             ->whereBetween('scan_time', [$weeklyWindowStart, $weeklyWindowEnd])
             ->orderBy('scan_time')
             ->get();
 
-        $studentCount = Student::count();
+        $studentCount = Student::whereHas('enrollments', function ($query) use ($activeSchoolYear) {
+            $query->where('status', 'active');
+            if ($activeSchoolYear) {
+                $query->where('school_year_id', $activeSchoolYear->id);
+            }
+        })->count();
+        
         $teacherCount = Teacher::query()->where('status', 'active')->count();
-        $activeSchoolYear = SchoolYear::query()->active()->first();
+        
         $activeEnrollments = Enrollment::query()
             ->where('status', 'active')
             ->when($activeSchoolYear, function ($query) use ($activeSchoolYear) {
@@ -98,6 +116,9 @@ class DashboardController extends Controller
         $lateArrivalsToday = $todayLogs->filter(function (AttendanceLog $log) {
             return $log->flagged_scans->contains('flag_type', 'late_arrival');
         })->count();
+        $onTimePercentage = $timeInToday > 0
+            ? round((($timeInToday - $lateArrivalsToday) / $timeInToday) * 100, 1)
+            : 100;
 
         $gradePalette = [
             '#2563eb',
@@ -351,11 +372,14 @@ class DashboardController extends Controller
             'timeInToday',
             'timeOutToday',
             'lateArrivalsToday',
+            'onTimePercentage',
             'departmentLevels',
             'levelTotals',
             'weeklyGradeLevels',
             'gradeDistribution',
-            'gradeDistributionTotal'
+            'gradeDistributionTotal',
+            'intervalMinutes',
+            'chartStart'
         ));
     }
 }

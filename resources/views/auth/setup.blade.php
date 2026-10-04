@@ -38,40 +38,52 @@
             <p class="text-muted">Create your password to access your account</p>
         </div>
 
-        <form method="POST" action="{{ route('setup.complete') }}">
-            @csrf
-            
-            <input type="hidden" name="token" value="{{ $token }}">
-            <input type="hidden" name="email" value="{{ $email }}">
-
-            <div class="mb-3">
-                <label for="email" class="form-label">Email Address</label>
-                <input type="email" class="form-control" id="email" name="email" value="{{ $email }}" readonly>
+        @if (!$isValid || empty($email))
+            <div class="alert alert-warning text-center" role="alert">
+                <h5 class="alert-heading fw-bold mb-2">Invalid or Expired Link</h5>
+                <p class="mb-2 small">
+                    This account setup link is invalid, has expired, or has already been replaced by a newer invitation.
+                </p>
+                <p class="mb-0 small text-muted">
+                    If you recently requested a new invitation, please check your inbox for the newest email, or contact your administrator.
+                </p>
             </div>
+            <a href="{{ route('login') }}" class="btn btn-outline-secondary w-100">Return to Login</a>
+        @else
+            <form method="POST" action="{{ route('setup.submit', $token) }}">
+                @csrf
+                
+                <input type="hidden" name="token" value="{{ $token }}">
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password">
-                <div class="form-text">Password must be at least 8 characters long.</div>
-            </div>
-
-            <div class="mb-3">
-                <label for="password_confirmation" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required autocomplete="new-password">
-            </div>
-
-            @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ $email }}" readonly>
                 </div>
-            @endif
 
-            <button type="submit" class="btn btn-primary w-100">Complete Setup</button>
-        </form>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password">
+                    <div class="form-text">Password must be at least 8 characters long.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password_confirmation" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required autocomplete="new-password">
+                </div>
+
+                @if (isset($errors) && $errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <button type="submit" class="btn btn-primary w-100">Complete Setup</button>
+            </form>
+        @endif
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>

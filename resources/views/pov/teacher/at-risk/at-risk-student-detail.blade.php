@@ -24,6 +24,12 @@
     ]
 ])
 
+@if (session('success'))
+    <div class="gs-note-banner mb-3" style="background-color: #e1f5ee; color: #085041;">
+        <i class="fa-solid fa-circle-check me-2"></i>
+        {{ session('success') }}
+    </div>
+@endif
 
 @php
     $riskLevel = $riskData['risk_level'] ?? 'Low';
@@ -83,6 +89,10 @@
                     Score: <span class="fw-semibold text-dark">{{ number_format((float) $riskScore, 0) }} / 100</span>
                 </p>
             </div>
+
+            <button type="button" class="btn btn-sm btn-primary" data-intervene-enrollment="{{ $enrollment->id }}">
+                <i class="fa-solid fa-paper-plane me-1"></i> Intervene
+            </button>
 
             <x-ui.backButton />
 
@@ -381,6 +391,9 @@
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addRemarkModal">
             <i class="fa-solid fa-plus me-1"></i> Add Remark
         </button>
+
+      
+
     </div>
 
     @if ($riskRemarks->count())
@@ -493,15 +506,64 @@
 ============================================================ --}}
 <div class="gs-panel">
 
-    <p class="gs-panel-title mb-3">Monitoring Follow-Up</p>
-
-    <div class="simple-empty-state">
-        <i class="fa-solid fa-bars-progress"></i>
-        <strong>No follow-up records available</strong>
-        <span>Follow-up tracking will be available in a future update.</span>
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <p class="text-muted mb-1" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #791f1f;">
+                Intervention Tracking
+            </p>
+            <p class="gs-panel-title mb-1">Monitoring Follow-Up</p>
+            <p class="text-muted small mb-0">Record and track manual follow-ups, interventions, and consultation actions.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-primary" data-intervene-enrollment="{{ $enrollment->id }}">
+                <i class="fa-solid fa-paper-plane me-1"></i> Intervene
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addFollowUpModal">
+                <i class="fa-solid fa-plus me-1"></i> Add Follow-Up
+            </button>
+        </div>
     </div>
 
+    @if ($followUps->count())
+        <div class="risk-list">
+            @foreach ($followUps as $followUp)
+                <div class="risk-item d-flex justify-content-between align-items-start">
+                    <div class="d-flex align-items-start gap-2 flex-grow-1">
+                        <div class="risk-item-icon">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                        </div>
+                        <div class="risk-item-content">
+                            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                                <strong>{{ $followUp->intervention }}</strong>
+                                <span class="gs-badge {{ $followUp->status === 'Completed' ? 'gs-badge-success' : 'gs-badge-warning' }}" style="font-size: 0.65rem;">
+                                    {{ $followUp->status }}
+                                </span>
+                            </div>
+                            <div class="text-muted small mb-1" style="font-size: 0.75rem;">
+                                <i class="fa-regular fa-calendar me-1"></i>{{ \Carbon\Carbon::parse($followUp->follow_up_date)->format('M d, Y') }}
+                                <span class="mx-1">&middot;</span>
+                                <i class="fa-solid fa-user-tie me-1"></i>{{ $followUp->teacher->full_name ?? 'Teacher' }}
+                            </div>
+                            @if ($followUp->notes)
+                                <p class="mb-0 text-secondary" style="font-size: 0.82rem; line-height: 1.4;">{{ $followUp->notes }}</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <div class="simple-empty-state">
+            <i class="fa-solid fa-bars-progress"></i>
+            <strong>No follow-up records available</strong>
+            <span>Click Add Follow-Up to record an intervention or monitoring action for this student.</span>
+        </div>
+    @endif
+
 </div>
+
+@include('pov.teacher.at-risk.partials.add-followup-modal')
+@include('pov.teacher.at-risk.partials.intervention-modal')
 
 
 {{-- CHART SCRIPT --}}

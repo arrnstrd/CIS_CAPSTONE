@@ -1,0 +1,153 @@
+/* Student Management Module Styles */
+
+.sm-classes-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px 26px;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.sm-classes-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.sm-classes-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #eef1fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sm-classes-icon-box i {
+    color: #1F3690;
+    font-size: 1.05rem;
+}
+
+.sm-classes-header-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.sm-classes-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.sm-classes-subtitle {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin: 2px 0 0 0;
+    line-height: 1.2;
+}
+
+.sm-classes-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.sm-class-card-link {
+    flex: 1 1 calc(33.333% - 16px);
+    min-width: 220px;
+    text-decoration: none;
+    display: block;
+}
+
+.sm-class-card {
+    background-color: #f9fafb;
+    border: 1px solid #eef0f2;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.15s ease-in-out;
+}
+
+.sm-class-card:hover {
+    background-color: #f3f4f6;
+    border-color: #e5e7eb;
+}
+
+.sm-class-card-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.sm-class-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #1F3690;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sm-class-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sm-class-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sm-class-count {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 2px 0 0 0;
+}
+
+.sm-class-chevron {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    margin-left: 8px;
+    transition: transform 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.sm-class-card-link:hover .sm-class-chevron {
+    color: #1F3690;
+    transform: translateX(2px);
+}
+
+@media (max-width: 768px) {
+    .sm-classes-card {
+        padding: 18px 16px;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+    }
+
+    .sm-class-card-link {
+        flex: 1 1 100%;
+        min-width: 100%;
+    }
+}
+

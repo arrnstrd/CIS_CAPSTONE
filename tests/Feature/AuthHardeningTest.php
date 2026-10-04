@@ -4,12 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AuthHardeningTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected function setUp(): void
     {

@@ -18,7 +18,7 @@ This guide documents the structural boundaries and architectural responsibilitie
 | `app/Http/Resources/` | JSON API transformers | `BulkImportResource` |
 | `app/Libraries/` | Third-party service wrapper adapters | `PDF/DomPdfWrapper`, `QRCode/SimpleQrCodeAdapter`, `Spreadsheet/ExcelSpreadsheetService` |
 | `app/Mail/` | Mailable notifications | `GateScanMail`, `InvitationMail`, `SetupInvitationMail` |
-| `app/Models/` | Shared Eloquent ORM models | `Student`, `User`, `AttendanceLog`, `QuarterlyGrade`, `Section`, `Subject`, `TeachingAssignment` |
+| `app/Models/` | Shared Eloquent ORM models | `Student`, `User`, `AttendanceLog`, `TermGrade`, `Section`, `Subject`, `TeachingAssignment` |
 | `app/Notifications/` | System notifications | `TeacherSystemNotification` |
 | `app/Providers/` | Application bootstrap providers | `AppServiceProvider` |
 | `app/Services/` | Core business logic and calculation engines | `Administration/`, `Grading/`, `Import/`, `Notification/`, `QrSystem/`, `SchoolAdmin/`, `AttendanceStateMachine.php` |
@@ -38,7 +38,7 @@ This guide documents the structural boundaries and architectural responsibilitie
 | `resources/views/super-admin/` | Super Admin views | User management, security audit log, recent activity |
 | `resources/views/teacher/` | Teacher portal views | Room attendance, my classes, grade sheets, student management, analytics, settings |
 | `resources/views/scanner-operator/` | Kiosk views | Fullscreen QR scan station, time-in/out logs |
-| `resources/css/` | Feature stylesheets | Modular CSS (`qr-station.css`, `grading-system.css`, `sidebar.css`, etc.) |
+| `resources/css/` | Feature stylesheets — **Bootstrap 5 + custom POV-isolated CSS only. Tailwind CSS is NOT used.** Modular CSS under `pov/<role>/<page>/`. Valid Bootstrap spacing: `p-0`–`p-5`, `m-0`–`m-5`, `gap-0`–`gap-5` (integer steps only). |
 | `resources/js/` | Client-side logic | Reverb Echo listener (`echo.js`), camera scanner handler (`qr-station.js`), table handlers |
 
 ---

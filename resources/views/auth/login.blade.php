@@ -145,6 +145,12 @@
       color: #b91c1c;
     }
 
+    .alert-success {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+
     .alert-danger ul {
       list-style: none;
       padding-left: 0;
@@ -197,6 +203,24 @@
     <!-- RIGHT COLUMN: Form Container -->
     <div class="right-column">
       <div class="form-container">
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('warning'))
+            <div class="alert alert-warning" style="background-color: #fffbeb; color: #92400e; border: 1px solid #fcd34d; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ session('warning') }}
+            </div>
+        @endif
+
+        @if (session('status'))
+            <div class="alert alert-info" style="background-color: #eff6ff; color: #1e40af; border: 1px solid #93c5fd; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;">
+                {{ session('status') }}
+            </div>
+        @endif
+
         @if (session('error'))
             <div class="alert alert-danger">
                 {{ session('error') }}
@@ -222,7 +246,9 @@
             <label for="demo-role">Quick Demo Access</label>
             <select id="demo-role" class="form-control demo-select">
               <option value="" selected disabled>Select a role to auto-fill…</option>
+
               <option value="super_admin">Super Admin Account</option>
+              
               <option value="school_admin">School Admin Account</option>
               <option value="teacher">Teacher Account</option>
               <option value="scanner_operator">Scanner Operator Account</option>
@@ -240,7 +266,7 @@
             <input type="password" class="form-control" id="password" name="password" required>
           </div>
 
-          <a href="#" class="forgot-password">Forgot Password?</a>
+          <a href="{{ route('password.request') }}" class="forgot-password">Forgot Password?</a>
 
           <button type="submit" class="btn-signin">Sign In</button>
         </form>

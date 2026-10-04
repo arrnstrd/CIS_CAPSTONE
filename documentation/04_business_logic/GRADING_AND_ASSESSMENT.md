@@ -15,7 +15,7 @@ flowchart TD
     E --> F[Calculate Percentage Score per Category: WW, PT, QA]
     F --> G[Compute Weighted Raw Score]
     G --> H[Apply DepEd Transmutation Table]
-    H --> I[Persist Term Grade: QuarterlyGrade]
+    H --> I[Persist Term Grade: TermGrade]
     I --> J[PerformanceDescriptorResolver::resolve]
     I --> K[RiskScoreService::evaluateStudentRisk]
     K --> L{Score < 75 or Frequent Absences?}
@@ -33,7 +33,7 @@ The grading engine enforces strict adherence to Philippine Department of Educati
    Assessments are classified into three standard components:
    * **Written Works (WW):** Quizzes, unit tests, written outputs.
    * **Performance Tasks (PT):** Projects, demonstrations, laboratory experiments, group collaborations.
-   * **Quarterly/Term Assessment (QA):** Cumulative term examinations.
+   * **Term Assessment (QA):** Cumulative term examinations.
 2. **Subject Weight Resolution (`SubjectWeightResolver`):**
    Weights vary dynamically depending on department level and subject classification:
    * **Junior High School (JHS / HS):** WW (20%), PT (50%), QA (30%) across general academic subjects.
@@ -59,7 +59,7 @@ flowchart LR
     B --> C[StudentAssessmentScores]
     D[Attendance Verification] --> E[RiskScoreService]
     C --> E
-    C --> F[Term Grades / QuarterlyGrade]
+    C --> F[Term Grades / TermGrade]
     F --> G[DepEd SF-9 Progress Report Card]
     E --> H[Teacher At-Risk Dashboard]
 ```
@@ -71,4 +71,4 @@ flowchart LR
 > Updating `total_items` on an existing assessment recalculates the percentage score for every enrolled student who already received a score.
 >
 > **DepEd Report Card Finalization (SF-9):**
-> Official DepEd Form 9 report cards compile transmuted trimester grades directly from `QuarterlyGrade`. Incomplete score entry in any single component category prevents final term descriptor calculation.
+> Official DepEd Form 9 report cards compile transmuted trimester grades directly from `TermGrade`. Incomplete score entry in any single component category prevents final term descriptor calculation.

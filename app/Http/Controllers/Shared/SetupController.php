@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shared;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\InvitationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -16,13 +17,33 @@ class SetupController extends Controller
      */
     public function show(Request $request, string $token)
     {
-        // In a real implementation, you would validate the token against a password reset tokens table
-        // For now, we'll just show the form and validate the token exists in the URL
+        $invitationService = app(InvitationService::class);
+        $invitation = $invitationService->validate($token);
         
+        $email = $request->input('email');
+        if ($invitation && $invitation->user) {
+            $email = $email ?: $invitation->user->email;
+        }
+
+        $isValid = (bool) ($invitation && $invitation->user && !empty($email));
+
         return view('auth.setup', [
             'token' => $token,
-            'email' => $request->input('email'),
+            'email' => $email,
+            'isValid' => $isValid,
         ]);
+    }
+
+    /**
+     * Handle form submission for setup via token URL.
+     */
+    public function submit(Request $request, ?string $token = null)
+    {
+        if ($token && !$request->has('token')) {
+            $request->merge(['token' => $token]);
+        }
+
+        return $this->complete($request);
     }
 
     /**
@@ -36,7 +57,6 @@ class SetupController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
         ]);
 
-        // Find user by email (in a real implementation, you would validate the token)
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
@@ -45,10 +65,27 @@ class SetupController extends Controller
                 ->withErrors(['email' => 'No account found with this email address.']);
         }
 
-        // Update the user's password
+        // Validate token using InvitationService
+        $invitationService = app(InvitationService::class);
+        $invitation = $invitationService->validate($request->token);
+
+        // If invitation records exist for this user, require a valid invitation token
+        if (!$invitation && $user->invitationTokens()->exists()) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['token' => 'This account setup link is invalid, has expired, or has already been used.']);
+        }
+
+        // Update the user's password and status
         $user->update([
             'password' => Hash::make($request->password),
+            'status' => 'active',
         ]);
+
+        // Invalidate the invitation token if valid record was found
+        if ($invitation) {
+            $invitationService->invalidate($invitation);
+        }
 
         // Log the user in
         auth()->login($user);

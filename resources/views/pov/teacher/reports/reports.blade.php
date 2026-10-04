@@ -21,11 +21,11 @@
             </div>
 
             {{-- Report Filters --}}
-            <div class="gs-filter-bar mb-4">
+            <div class="gs-filter-bar mb-4" data-tour="teacher-reports-export">
                 <div class="row g-3">
 
                     {{-- Class / Section --}}
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-6 col-lg-3">
                         <label for="classSelect" class="gs-filter-label">
                             Class / Section
                         </label>
@@ -46,7 +46,7 @@
                     </div>
 
                     {{-- Term --}}
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-6 col-lg-3">
                         <label for="termSelect" class="gs-filter-label">
                             Term
                         </label>
@@ -62,8 +62,26 @@
                         </select>
                     </div>
 
+                    {{-- Date From --}}
+                    <div class="col-6 col-md-3 col-lg-3" id="dateFromCol">
+                        <label for="dateFromInput" class="gs-filter-label">
+                            Date From
+                        </label>
+
+                        <input type="date" id="dateFromInput" class="form-control form-control-sm">
+                    </div>
+
+                    {{-- Date To --}}
+                    <div class="col-6 col-md-3 col-lg-3" id="dateToCol">
+                        <label for="dateToInput" class="gs-filter-label">
+                            Date To
+                        </label>
+
+                        <input type="date" id="dateToInput" class="form-control form-control-sm">
+                    </div>
+
                     {{-- Student --}}
-                    <div class="col-12 col-md-4">
+                    <div class="col-12" id="studentSelectWrapper">
                         <label for="studentSelect" class="gs-filter-label">
                             Student
                             <span class="text-muted fw-normal">
@@ -195,13 +213,6 @@
 
                     <div class="d-flex gap-2">
 
-                        <button type="button"
-                                class="btn btn-sm btn-outline-secondary"
-                                id="printReportBtn">
-
-                            <i class="fa-solid fa-print me-1"></i>
-                            Print
-                        </button>
 
                         <button type="button"
                                 class="btn btn-sm btn-outline-secondary"
@@ -238,6 +249,8 @@
 
         const classSelect = document.getElementById('classSelect');
         const termSelect = document.getElementById('termSelect');
+        const dateFromInput = document.getElementById('dateFromInput');
+        const dateToInput = document.getElementById('dateToInput');
         const studentSelect = document.getElementById('studentSelect');
         const reportPreview = document.getElementById('reportPreview');
         const reportContent = document.getElementById('reportContent');
@@ -263,7 +276,7 @@
         }
 
 
-        function displayValue(value, fallback = '—') {
+        function displayValue(value, fallback = '\u2014') {
             return value === null ||
                    value === undefined ||
                    value === ''
@@ -274,7 +287,7 @@
 
         function formatDateTime(value) {
             if (!value) {
-                return '—';
+                return "\u2014";
             }
 
             const date = new Date(value);
@@ -298,6 +311,34 @@
                 return 'No indicators';
             }
 
+            if (typeof indicators === 'string') {
+                try {
+                    const parsed = JSON.parse(indicators);
+                    if (typeof parsed === 'object' && parsed !== null) {
+                        indicators = parsed;
+                    }
+                } catch (e) {
+                    // Plain string, not JSON
+                }
+            }
+
+            const indicatorLabels = {
+                'low_grade': 'Low Grade',
+                'missing_grades': 'Missing Grades',
+                'low_attendance': 'Low Attendance',
+                'declining_performance': 'Declining Performance'
+            };
+
+            if (!Array.isArray(indicators) && typeof indicators === 'object' && indicators !== null) {
+                const active = [];
+                for (const [key, value] of Object.entries(indicators)) {
+                    if (value) {
+                        active.push(indicatorLabels[key] || key);
+                    }
+                }
+                indicators = active;
+            }
+
             if (!Array.isArray(indicators)) {
                 return escapeHtml(String(indicators));
             }
@@ -306,23 +347,26 @@
                 return 'No indicators';
             }
 
-            return indicators
+            const rendered = indicators
                 .map(indicator => {
-
                     if (typeof indicator === 'string') {
+                        const label = indicatorLabels[indicator] || indicator;
                         return `<span class="gs-badge gs-badge-neutral me-1 mb-1">
-                            ${escapeHtml(indicator)}
+                            ${escapeHtml(label)}
                         </span>`;
                     }
 
                     if (typeof indicator === 'object' && indicator !== null) {
-
-                        const text =
+                        const rawText =
                             indicator.label ??
                             indicator.name ??
                             indicator.indicator ??
-                            indicator.title ??
-                            JSON.stringify(indicator);
+                            indicator.title;
+
+                        const text = rawText ? (indicatorLabels[rawText] || rawText) : '';
+                        if (!text) {
+                            return '';
+                        }
 
                         return `<span class="gs-badge gs-badge-neutral me-1 mb-1">
                             ${escapeHtml(text)}
@@ -331,7 +375,10 @@
 
                     return '';
                 })
+                .filter(Boolean)
                 .join('');
+
+            return rendered || 'No indicators';
         }
 
 
@@ -380,15 +427,20 @@
             studentSelect.disabled =
                 !classSelect.value || !isAcademicRecord;
 
-            termSelect.disabled =
-                isAttendance;
+            termSelect.disabled = false;
+
+            if (dateFromInput && dateToInput) {
+                dateFromInput.disabled = !isAttendance;
+                dateToInput.disabled = !isAttendance;
+
+                if (!isAttendance) {
+                    dateFromInput.value = '';
+                    dateToInput.value = '';
+                }
+            }
 
             if (!isAcademicRecord) {
                 studentSelect.value = '';
-            }
-
-            if (isAttendance) {
-                termSelect.value = '';
             }
         }
 
@@ -472,6 +524,8 @@
             const taId = classSelect.value;
             const termId = termSelect.value;
             const studentId = studentSelect.value;
+            const dateFrom = dateFromInput ? dateFromInput.value : '';
+            const dateTo = dateToInput ? dateToInput.value : '';
 
             if (!taId) {
 
@@ -511,16 +565,27 @@
 
 
             /*
-             * Term is used by grade-based
-             * and at-risk reports.
+             * Term filter (for all reports including attendance if chosen)
              */
 
-            if (termId && type !== 'attendance') {
+            if (termId) {
 
                 params.append(
                     'term_id',
                     termId
                 );
+            }
+
+            /*
+             * Specific date range for attendance
+             */
+            if (type === 'attendance') {
+                if (dateFrom) {
+                    params.append('date_from', dateFrom);
+                }
+                if (dateTo) {
+                    params.append('date_to', dateTo);
+                }
             }
 
 
@@ -1204,7 +1269,7 @@
                                         row.attendance_rate !== null &&
                                         row.attendance_rate !== undefined
                                             ? `${escapeHtml(row.attendance_rate)}%`
-                                            : '—'
+                                            : 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â'
                                     }
                                 </td>
 
@@ -1345,42 +1410,52 @@
             const rows =
                 data.rows || [];
 
-
-            const totalStudents =
+            const totalRecords =
                 rows.length;
 
+            const totalPresent =
+                rows.filter(r => ['Present', 'Late', 'Excused'].includes(r.status)).length;
 
-            const totalPresentDays =
-                rows.reduce(
-                    (sum, row) =>
-                        sum + Number(row.present_days || 0),
-                    0
-                );
-
-
-            const averagePresentDays =
-                totalStudents > 0
-                    ? (totalPresentDays / totalStudents).toFixed(1)
-                    : '0.0';
-
+            const totalAbsent =
+                rows.filter(r => ['Absent', 'Not in Classroom'].includes(r.status)).length;
 
             const rowsHtml =
                 rows
                     .map(row => {
 
+                        let badgeClass = 'gs-badge-neutral';
+                        if (row.status === 'Present') {
+                            badgeClass = 'gs-badge-success';
+                        } else if (row.status === 'Late') {
+                            badgeClass = 'gs-badge-warning';
+                        } else if (row.status === 'Absent') {
+                            badgeClass = 'gs-badge-danger';
+                        } else if (row.status === 'Excused') {
+                            badgeClass = 'gs-badge-neutral';
+                        } else if (row.status === 'Not in Classroom') {
+                            badgeClass = 'gs-badge-warning';
+                        }
+
                         return `
                             <tr>
+
+                                <td class="fw-medium">
+                                    <i class="fa-regular fa-calendar me-1 text-muted"></i>
+                                    ${displayValue(row.date)}
+                                </td>
 
                                 <td class="fw-medium">
                                     ${displayValue(row.name)}
                                 </td>
 
                                 <td class="text-center">
-                                    ${Number(row.present_days || 0)}
+                                    <span class="gs-badge ${badgeClass}">
+                                        ${escapeHtml(row.status)}
+                                    </span>
                                 </td>
 
-                                <td>
-                                    ${formatDateTime(row.last_attendance)}
+                                <td class="text-center text-muted">
+                                    ${displayValue(row.time_in)}
                                 </td>
 
                             </tr>
@@ -1394,22 +1469,22 @@
                 ${renderReportHeader(
                     'Attendance Report',
                     data,
-                    'Attendance summary for learners in the selected class.'
+                    'Attendance records and daily statuses for learners in the selected class.'
                 )}
 
 
                 <div class="row g-3 mb-4">
 
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-4">
 
                         <div class="gs-stat-card h-100">
 
                             <p class="gs-stat-label mb-1">
-                                Total Learners
+                                Total Records
                             </p>
 
                             <p class="gs-stat-value mb-0">
-                                ${totalStudents}
+                                ${totalRecords}
                             </p>
 
                         </div>
@@ -1417,16 +1492,33 @@
                     </div>
 
 
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-4">
 
                         <div class="gs-stat-card h-100">
 
                             <p class="gs-stat-label mb-1">
-                                Average Present Days
+                                Present / Excused
                             </p>
 
-                            <p class="gs-stat-value mb-0">
-                                ${averagePresentDays}
+                            <p class="gs-stat-value gs-stat-present mb-0">
+                                ${totalPresent}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-12 col-md-4">
+
+                        <div class="gs-stat-card gs-stat-card-danger h-100">
+
+                            <p class="gs-stat-label gs-stat-label-danger mb-1">
+                                Absent
+                            </p>
+
+                            <p class="gs-stat-value gs-stat-danger mb-0">
+                                ${totalAbsent}
                             </p>
 
                         </div>
@@ -1447,15 +1539,19 @@
                                 <tr>
 
                                     <th>
+                                        Attendance Date
+                                    </th>
+
+                                    <th>
                                         Learner Name
                                     </th>
 
                                     <th class="text-center">
-                                        Present Days
+                                        Status
                                     </th>
 
-                                    <th>
-                                        Last Attendance
+                                    <th class="text-center">
+                                        Time In
                                     </th>
 
                                 </tr>
@@ -1466,7 +1562,7 @@
 
                                 ${
                                     rowsHtml ||
-                                    renderNoData(3)
+                                    renderNoData(4)
                                 }
 
                             </tbody>
@@ -1695,30 +1791,10 @@
 
 
         /*
-        |--------------------------------------------------------------------------
-        | Print
-        |--------------------------------------------------------------------------
-        */
-
-        document
-            .getElementById('printReportBtn')
-            .addEventListener(
-                'click',
-                () => {
-
-                    if (!currentReportData) {
-                        return;
-                    }
-
-                    window.print();
-
-                }
-            );
-
 
         /*
         |--------------------------------------------------------------------------
-        | PDF
+        | PDF Export
         |--------------------------------------------------------------------------
         */
 
@@ -1732,7 +1808,56 @@
                         return;
                     }
 
-                    window.print();
+                    const taId = classSelect.value;
+                    const reportType = currentReportType;
+                    const termId = termSelect.value;
+                    const studentId = studentSelect.value;
+
+                    if (!taId) {
+                        alert('Please select a class first.');
+                        return;
+                    }
+
+                    const params = new URLSearchParams();
+                    params.append('report_type', reportType);
+
+                    if (termId) {
+                        params.append('term_id', termId);
+                    }
+
+                    if (reportType === 'attendance') {
+                        if (dateFromInput && dateFromInput.value) {
+                            params.append('date_from', dateFromInput.value);
+                        }
+                        if (dateToInput && dateToInput.value) {
+                            params.append('date_to', dateToInput.value);
+                        }
+                    }
+
+                    if (reportType === 'academic-record' && studentId) {
+                        params.append('student_id', studentId);
+                    }
+
+                    const exportUrl = `/teacher/grading-system/reports/${taId}/export-pdf?${params.toString()}`;
+
+                    // Create a temporary form to handle the POST request
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = exportUrl;
+
+                    // Add CSRF token
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = csrfToken;
+                        form.appendChild(csrfInput);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
 
                 }
             );
@@ -1740,27 +1865,7 @@
 
         /*
         |--------------------------------------------------------------------------
-        | CSV Helper
-        |--------------------------------------------------------------------------
-        */
-
-        function csvEscape(value) {
-
-            if (
-                value === null ||
-                value === undefined
-            ) {
-                return '';
-            }
-
-            return `"${String(value)
-                .replace(/"/g, '""')}"`;
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Excel / CSV Export
+        | Excel Export
         |--------------------------------------------------------------------------
         */
 
@@ -1774,335 +1879,82 @@
                         return;
                     }
 
+                    const taId = classSelect.value;
+                    const reportType = currentReportType;
+                    const termId = termSelect.value;
+                    const studentId = studentSelect.value;
 
-                    const data =
-                        currentReportData;
-
-                    const type =
-                        currentReportType;
-
-                    let csv = '';
-
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Class Grade
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (type === 'class-grade') {
-
-                        csv =
-                            [
-                                [
-                                    'Learner Name',
-                                    ...(data.terms || []),
-                                    'Final Grade'
-                                ]
-                            ]
-                            .map(row =>
-                                row.map(csvEscape).join(',')
-                            )
-                            .join('\n');
-
-
-                        (data.rows || [])
-                            .forEach(row => {
-
-                                csv += '\n';
-
-                                csv += [
-                                    row.name,
-                                    ...(row.terms || []),
-                                    row.final
-                                ]
-                                .map(csvEscape)
-                                .join(',');
-
-                            });
+                    if (!taId) {
+                        alert('Please select a class first.');
+                        return;
                     }
 
+                    const params = new URLSearchParams();
+                    params.append('report_type', reportType);
 
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Academic Record
-                    |--------------------------------------------------------------------------
-                    */
-
-                    else if (type === 'academic-record') {
-
-                        const student =
-                            data.rows?.[0];
-
-                        csv =
-                            [
-                                [
-                                    'Student',
-                                    student?.name || ''
-                                ],
-                                [
-                                    'Term',
-                                    'Grade'
-                                ]
-                            ]
-                            .map(row =>
-                                row.map(csvEscape).join(',')
-                            )
-                            .join('\n');
-
-
-                        (data.terms || [])
-                            .forEach((term, index) => {
-
-                                csv += '\n';
-
-                                csv += [
-                                    term,
-                                    student?.terms?.[index] ?? ''
-                                ]
-                                .map(csvEscape)
-                                .join(',');
-
-                            });
-
-
-                        csv += '\n';
-
-                        csv += [
-                            'Final Grade',
-                            student?.final ?? ''
-                        ]
-                        .map(csvEscape)
-                        .join(',');
+                    if (termId) {
+                        params.append('term_id', termId);
                     }
 
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Grade Submission
-                    |--------------------------------------------------------------------------
-                    */
-
-                    else if (type === 'grade-submission') {
-
-                        csv =
-                            [
-                                [
-                                    'Term',
-                                    'Submitted',
-                                    'Missing',
-                                    'Total',
-                                    'Completion'
-                                ]
-                            ]
-                            .map(row =>
-                                row.map(csvEscape).join(',')
-                            )
-                            .join('\n');
-
-
-                        (data.rows || [])
-                            .forEach(row => {
-
-                                csv += '\n';
-
-                                csv += [
-                                    row.term,
-                                    row.submitted,
-                                    row.missing,
-                                    row.total,
-                                    `${row.completion ?? 0}%`
-                                ]
-                                .map(csvEscape)
-                                .join(',');
-
-                            });
+                    if (reportType === 'attendance') {
+                        if (dateFromInput && dateFromInput.value) {
+                            params.append('date_from', dateFromInput.value);
+                        }
+                        if (dateToInput && dateToInput.value) {
+                            params.append('date_to', dateToInput.value);
+                        }
                     }
 
-
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | At-Risk
-                    |--------------------------------------------------------------------------
-                    */
-
-                    else if (type === 'at-risk') {
-
-                        csv =
-                            [
-                                [
-                                    'Learner Name',
-                                    'Risk Score',
-                                    'Risk Level',
-                                    'Attendance Rate',
-                                    'Risk Indicators'
-                                ]
-                            ]
-                            .map(row =>
-                                row.map(csvEscape).join(',')
-                            )
-                            .join('\n');
-
-
-                        (data.rows || [])
-                            .forEach(row => {
-
-                                let indicators = '';
-
-                                if (
-                                    Array.isArray(
-                                        row.indicators
-                                    )
-                                ) {
-
-                                    indicators =
-                                        row.indicators
-                                            .map(indicator => {
-
-                                                if (
-                                                    typeof indicator ===
-                                                    'string'
-                                                ) {
-                                                    return indicator;
-                                                }
-
-                                                if (
-                                                    indicator &&
-                                                    typeof indicator ===
-                                                    'object'
-                                                ) {
-
-                                                    return (
-                                                        indicator.label ??
-                                                        indicator.name ??
-                                                        indicator.indicator ??
-                                                        indicator.title ??
-                                                        JSON.stringify(indicator)
-                                                    );
-                                                }
-
-                                                return '';
-                                            })
-                                            .filter(Boolean)
-                                            .join('; ');
-
-                                } else {
-
-                                    indicators =
-                                        row.indicators || '';
-
-                                }
-
-
-                                csv += '\n';
-
-                                csv += [
-                                    row.name,
-                                    row.risk_score,
-                                    row.risk_level,
-                                    row.attendance_rate !== null &&
-                                    row.attendance_rate !== undefined
-                                        ? `${row.attendance_rate}%`
-                                        : '',
-                                    indicators
-                                ]
-                                .map(csvEscape)
-                                .join(',');
-
-                            });
+                    if (reportType === 'academic-record' && studentId) {
+                        params.append('student_id', studentId);
                     }
 
+                    const exportUrl = `/teacher/grading-system/reports/${taId}/export-excel?${params.toString()}`;
 
+                    // Create a temporary form to handle the POST request
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = exportUrl;
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Attendance
-                    |--------------------------------------------------------------------------
-                    */
-
-                    else if (type === 'attendance') {
-
-                        csv =
-                            [
-                                [
-                                    'Learner Name',
-                                    'Present Days',
-                                    'Last Attendance'
-                                ]
-                            ]
-                            .map(row =>
-                                row.map(csvEscape).join(',')
-                            )
-                            .join('\n');
-
-
-                        (data.rows || [])
-                            .forEach(row => {
-
-                                csv += '\n';
-
-                                csv += [
-                                    row.name,
-                                    row.present_days,
-                                    row.last_attendance
-                                        ? formatDateTime(row.last_attendance)
-                                        : ''
-                                ]
-                                .map(csvEscape)
-                                .join(',');
-
-                            });
+                    // Add CSRF token
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                    if (csrfToken) {
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = csrfToken;
+                        form.appendChild(csrfInput);
                     }
 
-
-                    const blob =
-                        new Blob(
-                            [csv],
-                            {
-                                type:
-                                    'text/csv;charset=utf-8;'
-                            }
-                        );
-
-
-                    const link =
-                        document.createElement('a');
-
-
-                    const fileName =
-                        type
-                            ? `${type.replace(/-/g, '_')}_report.csv`
-                            : 'academic_report.csv';
-
-
-                    link.href =
-                        URL.createObjectURL(blob);
-
-                    link.download =
-                        fileName;
-
-
-                    document.body.appendChild(
-                        link
-                    );
-
-                    link.click();
-
-                    document.body.removeChild(
-                        link
-                    );
-
-
-                    URL.revokeObjectURL(
-                        link.href
-                    );
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
 
                 }
             );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Date Range Change
+        |--------------------------------------------------------------------------
+        */
+
+        if (dateFromInput) {
+            dateFromInput.addEventListener('change', () => {
+                if (currentReportType === 'attendance') {
+                    generateReport('attendance');
+                }
+            });
+        }
+
+        if (dateToInput) {
+            dateToInput.addEventListener('change', () => {
+                if (currentReportType === 'attendance') {
+                    generateReport('attendance');
+                }
+            });
+        }
 
 
         /*

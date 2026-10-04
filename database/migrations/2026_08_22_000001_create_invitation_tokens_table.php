@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('token_hash', 64)->unique(); // SHA-256 hash of token
-            $table->timestamp('expires_at'); // Exactly 72 hours from creation
+            $table->timestamp('expires_at'); // Exactly 7 days (1 week) from creation
             $table->timestamp('used_at')->nullable(); // Single-use tracking
             $table->timestamps();
 

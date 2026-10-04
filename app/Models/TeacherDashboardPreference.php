@@ -25,7 +25,6 @@ class TeacherDashboardPreference extends Model
         'show_progress_indicators',
         'default_class_id',
         'default_term',
-        'theme',
     ];
 
     protected $casts = [

@@ -50,6 +50,62 @@ class TeachingAssignmentService
     }
 
     /**
+     * Create multiple teaching assignments for a teacher and section across multiple subjects atomically.
+     *
+     * @param array{
+     *   teacher_id: int,
+     *   section_id: int,
+     *   school_year_id: int,
+     *   subject_ids: array<int>,
+     *   status?: string
+     * } $data
+     * @return \Illuminate\Support\Collection<int, TeachingAssignment>
+     * @throws \InvalidArgumentException
+     */
+    public function createBatch(array $data): \Illuminate\Support\Collection
+    {
+        return DB::transaction(function () use ($data) {
+            $createdAssignments = collect();
+            $targetSubjectIds = array_values(array_unique($data['subject_ids']));
+
+            $existingAssignments = TeachingAssignment::where('section_id', $data['section_id'])
+                ->where('school_year_id', $data['school_year_id'])
+                ->whereIn('subject_id', $targetSubjectIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('subject_id');
+
+            foreach ($targetSubjectIds as $subjectId) {
+                if ($existingAssignments->has($subjectId)) {
+                    $existing = $existingAssignments->get($subjectId);
+                    if ($existing->teacher_id == $data['teacher_id']) {
+                        $createdAssignments->push($existing);
+                        continue;
+                    }
+
+                    $subject = Subject::find($subjectId);
+                    $subjectName = $subject ? $subject->name : "ID {$subjectId}";
+                    throw new \InvalidArgumentException(
+                        "Subject '{$subjectName}' is already assigned to another teacher in this section."
+                    );
+                }
+
+                $assignment = TeachingAssignment::create([
+                    'teacher_id' => $data['teacher_id'],
+                    'section_id' => $data['section_id'],
+                    'subject_id' => $subjectId,
+                    'school_year_id' => $data['school_year_id'],
+                    'status' => $data['status'] ?? 'active',
+                ]);
+
+                $createdAssignments->push($assignment);
+            }
+
+            return $createdAssignments;
+        });
+    }
+
+    /**
      * Update an existing teaching assignment.
      *
      * @param TeachingAssignment $teachingAssignment

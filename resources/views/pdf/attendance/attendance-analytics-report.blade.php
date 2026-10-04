@@ -147,7 +147,7 @@
         <table>
             <tr>
                 <td>
-                    <h1>Executive Attendance & Gate Flow Report</h1>
+                    <h1>Executive Attendance Flow Report</h1>
                     <div class="subtitle">Decision-Support Analytics & Operational Directives</div>
                 </td>
                 <td class="meta">
@@ -216,11 +216,11 @@
     </table>
 
     {{-- 2. Diagnostic Findings --}}
-    <div class="section-title">2. Operational Diagnostics & Gate Congestion (Why it Happened)</div>
+    <div class="section-title">2. Operational Diagnostics & Attendance Congestion (Why it Happened)</div>
     <table class="data-table">
         <thead>
             <tr>
-                <th style="width: 33%;">Peak Gate Surge Window</th>
+                <th style="width: 33%;">Peak Surge Window</th>
                 <th style="width: 33%;">Scanner Velocity</th>
                 <th style="width: 34%;">Average Timing Diagnostics</th>
             </tr>
@@ -229,7 +229,7 @@
             <tr>
                 <td>
                     <strong>{{ $a['rushWindow'] ?? 'Even Flow' }}</strong><br>
-                    <span class="kpi-sub">Highest gate traffic period</span>
+                    <span class="kpi-sub">Highest traffic period</span>
                 </td>
                 <td>
                     <strong>{{ $a['rushVelocity'] ? $a['rushVelocity'] . ' scans / min' : 'Normal velocity' }}</strong><br>

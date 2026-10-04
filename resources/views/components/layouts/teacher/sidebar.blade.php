@@ -8,24 +8,24 @@
     $initials = mb_strtoupper($firstInitial . $lastInitial) ?: 'T';
     $roleName = $currentUser?->role_label ?? 'Teacher';
 @endphp
-<nav id="sidebar" class="sidebar-wrapper">
+<nav id="sidebar" class="teacher-sidebar-wrapper">
 
-    <div class="sidebar-brand d-flex flex-column align-items-center py-3 px-4 text-center">
-        <img src="{{ asset('./images/CIS-logo.png') }}" alt="Concepcion Integrated School Logo" class="sidebar-brand-logo mb-2" style="width: 50px; height: 50px; object-fit: contain;">
+    <div class="teacher-sidebar-brand d-flex flex-column align-items-center py-3 px-4 text-center">
+        <img src="{{ asset('./images/CIS-logo.png') }}" alt="Concepcion Integrated School Logo" class="teacher-sidebar-brand-logo mb-2" style="width: 50px; height: 50px; object-fit: contain;">
         <h5 class="text-white mb-0 fw-bold" style="font-size: 1.05rem;">TEACHER PORTAL</h5>
         <small class="text-uppercase text-white fw-semibold" style="font-size: 0.62rem; letter-spacing: 1px;">
             CONCEPCION INTEGRATED SCHOOL
         </small>
     </div>
 
-    <div class="sidebar-content">
+    <div class="teacher-sidebar-content">
 
         <!-- Navigation Menu -->
-        <div class="sidebar-menu">
+        <div class="teacher-sidebar-menu">
             <ul>
 
                 <!-- MONITORING SECTION -->
-                <li class="sidebar-section-label">
+                <li class="teacher-sidebar-section-label">
                     <small>General</small>
                 </li>
                 <li class="{{ request()->routeIs('room-attendance.*') || request()->routeIs('teacher.dashboard') || request()->routeIs('teacher.attendance') || request()->routeIs('teacher.time-in-time-out-history.*') ? 'active' : '' }}">
@@ -41,7 +41,7 @@
                         <span>Student Management</span>
                     </a>
                 </li>
-                <li class="sidebar-section-label">
+                <li class="teacher-sidebar-section-label">
                     <small>Grading System</small>
                 </li>
                 <li class="{{ request()->routeIs('teacher.grading-system.dashboard') || request()->routeIs('teacher.grading-system') || request()->routeIs('teacher.grading-system.grades') || request()->routeIs('teacher.grading-system.grades.*') || request()->routeIs('teacher.grading-system.grade-sheet*') || request()->routeIs('teacher.grading-system.assessments.*') || request()->routeIs('teacher.grading-system.import-data') || request()->routeIs('teacher.grading-system.debug-risk-scores') ? 'active' : '' }}">
@@ -94,58 +94,23 @@
                     </a>
                 </li> --}}
 
-                <!-- SETTINGS SECTION -->
-                <li class="sidebar-section-label">
-                    <small>SETTINGS</small>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.profile') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.profile') }}">
-                        <i class="fas fa-user"></i>
-                        <span>Profile</span>
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.notifications') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.notifications') }}">
-                        <i class="fas fa-bell"></i>
-                        <span>Notifications</span>
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.appearance') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.appearance') }}">
-                        <i class="fas fa-palette"></i>
-                        <span>Appearance</span>
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.dashboard') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.dashboard') }}">
-                        <i class="fas fa-sliders"></i>
-                        <span>Dashboard Preferences</span>
-                    </a>
-                </li>
-                <li class="{{ request()->routeIs('teacher.settings.security') ? 'active' : '' }}">
-                    <a href="{{ route('teacher.settings.security') }}">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>Account & Security</span>
-                    </a>
-                </li>
-
             </ul>
         </div>
 
     </div>
 
     <!-- User Profile Footer -->
-    <div class="sidebar-footer">
-        <div class="sidebar-user-block">
-            <div class="sidebar-user-avatar">
+    <div class="teacher-sidebar-footer">
+        <div class="teacher-sidebar-user-block">
+            <div class="teacher-sidebar-user-avatar">
                 {{ $initials }}
             </div>
-            <div class="sidebar-user-info">
-                <span class="sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
-                <span class="sidebar-user-role">{{ $roleName }}</span>
+            <div class="teacher-sidebar-user-info">
+                <span class="teacher-sidebar-user-name" title="{{ $fullName }}">{{ $fullName }}</span>
+                <span class="teacher-sidebar-user-role">{{ $roleName }}</span>
             </div>
             <a href="#" data-bs-toggle="modal" data-bs-target="#logoutModal"
-                class="sidebar-logout-btn" title="Log Out" aria-label="Log Out">
+                class="teacher-sidebar-logout-btn" title="Log Out" aria-label="Log Out">
                 <i class="fas fa-sign-out-alt"></i>
             </a>
         </div>

@@ -18,7 +18,13 @@ class EnsureUserHasRole
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (!Auth::check()) {
-            return redirect()->route('login');
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => 'Your session has expired. Please log in again to continue.',
+                ], 401);
+            }
+
+            return redirect()->route('login')->with('warning', 'Your session has expired. Please log in again to continue.');
         }
 
         $user = Auth::user();
@@ -29,7 +35,7 @@ class EnsureUserHasRole
         );
 
         if (! $user->hasRole(...$normalizedRoles)) {
-            abort(403, 'Unauthorized. You do not have permission to access this resource.');
+            abort(403, 'You do not have permission to access this page. Please contact the system administrator if you need access to this feature.');
         }
 
         return $next($request);

@@ -219,15 +219,13 @@ class User extends Authenticatable
     {
         static::created(function (User $user) {
             try {
-                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'employee_id')) {
-                    $user->updateQuietly([
-                        'employee_id' => sprintf(
-                            'EMP-%s-%04d',
-                            now()->year,
-                            $user->id
-                        ),
-                    ]);
-                }
+                $user->updateQuietly([
+                    'employee_id' => sprintf(
+                        'EMP-%s-%04d',
+                        now()->year,
+                        $user->id
+                    ),
+                ]);
             } catch (\Exception $e) {
                 // In some test DB drivers (sqlite in-memory) migrations that
                 // rename/add columns may be skipped. Silently ignore update

@@ -386,6 +386,11 @@ class BulkImportService
                 'trace' => $e->getTraceAsString(),
             ]);
 
+            $fresh = $import->fresh();
+            if ($fresh && in_array($fresh->status, [ImportStatus::Completed, ImportStatus::CompletedWithIssues], true)) {
+                return $fresh;
+            }
+
             $import->update(['status' => 'failed']);
             throw new \RuntimeException('Import processing failed. Please check the import issues for details.');
         }

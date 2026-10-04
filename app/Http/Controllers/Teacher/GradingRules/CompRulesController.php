@@ -47,7 +47,7 @@ class CompRulesController extends Controller
             SystemSetting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 
-        return redirect()->route('teacher.grading-rules.comp-rules')->with('success', 'Computation rules updated.');
+        return redirect()->route('teacher.grading-system.comp-rules')->with('success', 'Computation rules updated.');
     }
 
     private function getSettings(): array

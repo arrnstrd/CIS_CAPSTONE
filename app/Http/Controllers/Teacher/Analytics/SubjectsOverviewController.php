@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Teacher\Analytics;
 
 use App\Http\Controllers\Controller;
 use App\Models\GradingPeriod;
-use App\Models\QuarterlyGrade;
+use App\Models\TermGrade;
 use App\Models\TeachingAssignment;
 use Illuminate\Http\Request;
 
@@ -48,7 +48,7 @@ class SubjectsOverviewController extends Controller
         $subjectRows = collect();
         foreach ($filtered->groupBy(fn ($ta) => $ta->subject->name) as $subjectName => $assignments) {
             $taIds = $assignments->pluck('id');
-            $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+            $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
                 ->whereNotNull('transmuted_grade')
                 ->get();
 
@@ -66,7 +66,7 @@ class SubjectsOverviewController extends Controller
         }
         $subjectRows = $subjectRows->sortBy('subject_name')->values();
 
-        $gradingPeriods = GradingPeriod::orderBy('sequence')->where('sequence', '<=', 3)->get();
+        $gradingPeriods = GradingPeriod::orderBy('sequence')->trimester()->get();
         $trendLabels = $gradingPeriods->map(fn ($p) => 'Term ' . $p->sequence)->values();
         $colors = ['#2438b9', '#f5a623', '#0f9d58', '#6c63ff', '#e05d5d'];
 
@@ -76,7 +76,7 @@ class SubjectsOverviewController extends Controller
             $taIds = $assignments->pluck('id');
             $series = [];
             foreach ($gradingPeriods as $period) {
-                $periodGrades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+                $periodGrades = TermGrade::whereIn('teaching_assignment_id', $taIds)
                     ->where('grading_period_id', $period->id)
                     ->whereNotNull('transmuted_grade')
                     ->get();
@@ -130,7 +130,7 @@ class SubjectsOverviewController extends Controller
                     continue;
                 }
 
-                $grades = QuarterlyGrade::whereIn('teaching_assignment_id', $taIds)
+                $grades = TermGrade::whereIn('teaching_assignment_id', $taIds)
                     ->whereNotNull('transmuted_grade')
                     ->get();
 

@@ -41,8 +41,8 @@ class TeachingAssignment extends Model
 
 
 
-    public function quarterlyGrades()
+    public function termGrades()
     {
-        return $this->hasMany(QuarterlyGrade::class);
+        return $this->hasMany(TermGrade::class);
     }
 }

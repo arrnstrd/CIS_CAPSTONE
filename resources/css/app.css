@@ -1,25 +1,56 @@
+/* ===================================================================
+   Master CSS Manifest
+   Hierarchy: Vendor -> Global Core -> POV Isolated -> Overrides
+   =================================================================== */
+
 /* 1. Vendor Dependencies */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import '@fortawesome/fontawesome-free/css/all.min.css';
 
-/* 2. Core Layout & Shell */
-@import './sidebar.css';
-@import './top-nav.css';
-@import './layout.css';
+/* 2. Global Core (Genuinely Application-Wide) */
 @import './table.css';
-
-/* 3. Feature Modules */
-@import './room-attendance.css';
-@import './grading-system.css';
-@import './students.css';
-@import './academic.css';
-@import './bulk-import.css';
-@import './flagged-modal.css';
-@import './gradeLevel.css';
-@import './import.css';
-@import './qr-generation.css';
-@import './qr-station.css';
 @import './status-badges.css';
+@import './shared/tour-overlay.css';
 
-/* 4. Theme & Overrides */
-@import './dark-mode.css';
+/* 2.1 Global Responsive Layout Utilities */
+@import './responsive.css';
+
+/* 3. POV: School Admin */
+/* 3.1 School Admin Layout & Shell */
+@import './pov/school-admin/layout/layout.css';
+@import './pov/school-admin/layout/sidebar.css';
+/* 3.2 School Admin Shared */
+@import './pov/school-admin/shared/grade-level.css';
+/* 3.3 School Admin Page-Specific */
+@import './pov/school-admin/academic/academic.css';
+@import './pov/school-admin/academic/import.css';
+@import './pov/school-admin/bulk-import/bulk-import.css';
+@import './pov/school-admin/students/class-hub.css';
+@import './pov/school-admin/attendance/attendance.css';
+@import './pov/school-admin/qr-generation/qr-generation.css';
+@import './pov/school-admin/in-out-monitoring/flagged-modal.css';
+
+/* 4. POV: Teacher */
+/* 4.1 Teacher Layout & Shell */
+@import './pov/teacher/layout/layout.css';
+@import './pov/teacher/layout/sidebar.css';
+@import './pov/teacher/layout/top-nav.css';
+/* 4.2 Teacher Shared */
+@import './pov/teacher/shared/grading-system.css';
+/* 4.3 Teacher Page-Specific */
+@import './pov/teacher/attendance/room-attendance.css';
+@import './pov/teacher/attendance/attendance-side-panel.css';
+@import './pov/teacher/student-management/students.css';
+
+/* 5. POV: Scanner Operator */
+/* 5.1 Scanner Operator Layout & Shell */
+@import './pov/scanner-operator/layout/layout.css';
+@import './pov/scanner-operator/layout/sidebar.css';
+/* 5.2 Scanner Operator Page-Specific */
+@import './pov/scanner-operator/qr-station/qr-station.css';
+@import './pov/scanner-operator/time-in-time-out-history/flagged-modal.css';
+
+/* 6. POV: Super Admin */
+/* 6.1 Super Admin Layout & Shell */
+@import './pov/super-admin/layout/layout.css';
+@import './pov/super-admin/layout/sidebar.css';

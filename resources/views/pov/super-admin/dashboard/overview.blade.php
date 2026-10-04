@@ -147,7 +147,7 @@
                                         </td>
                                         <td class="text-muted small">{{ $pUser->created_at ? $pUser->created_at->format('M d, Y') : '-' }}</td>
                                         <td class="text-end pe-3">
-                                            <form action="/api/users/{{ $pUser->id }}/resend-invitation" method="POST" class="d-inline">
+                                            <form action="/api/users/{{ $pUser->id }}/resend-invitation" method="POST" class="d-inline" data-ajax-form="resend">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-primary fw-medium rounded-2">
                                                     <i class="fas fa-paper-plane me-1"></i> Resend Invitation

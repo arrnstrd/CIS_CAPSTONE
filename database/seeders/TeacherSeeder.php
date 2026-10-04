@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -14,18 +13,28 @@ class TeacherSeeder extends Seeder
 
     public function run(): void
     {
-        $user = User::create([
-            'first_name' => 'Arriane',
-            'last_name' => 'Estrada',
-            'email' => 'arriane.estrada.dev',
-            'password' => Hash::make('Password123'),
-            'role' => User::ROLE_TEACHER,
-            'status' => 'active',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'arriane.estrada.dev'],
+            [
+                'first_name' => 'Arriane',
+                'last_name' => 'Estrada',
+                'email' => 'arriane.estrada.dev',
+                'password' => Hash::make('TeacherPassword2026#'),
+                'role' => User::ROLE_TEACHER,
+                'status' => 'active',
+            ]
+        );
 
-        Teacher::create([
-            'user_id' => $user->id,
-            'status' => 'active',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'teacher@cis.edu.ph'],
+            [
+                'first_name' => 'Arriane',
+                'last_name' => 'Estrada',
+                'email' => 'teacher@cis.edu.ph',
+                'password' => Hash::make('TeacherPassword2026#'),
+                'role' => User::ROLE_TEACHER,
+                'status' => 'active',
+            ]
+        );
     }
 }
